@@ -25,7 +25,7 @@ export interface NetCommand {
   readonly viewTick: number;
   readonly steer: NetSteer;
   readonly yaw: number; readonly pitch: number;
-  /** NET_BUTTONS bits, 16 of them: the presses jump, dodge, hover; the holds sprint, crouch, dive, surface, heavy, lock. */
+  /** NET_BUTTONS bits, 16 of them: the presses jump, dodge, hover, lock; the holds sprint, crouch, dive, surface, heavy. */
   readonly buttons: number;
   /** A swing or shot start (J41); `targetId` keeps today's lock-on. */
   readonly attack?: { readonly targetId?: string; readonly aim: NetAim };
@@ -33,6 +33,8 @@ export interface NetCommand {
   readonly heavyTarget?: string;
   /** J116: the target this client's lock-on orbits. Both sides compute the same orbit from it; the server checks it is real and in range. */
   readonly lockTarget?: string;
+  /** The hook a LOCK press picks: its index in the course's `hooks`, which have no id or handle. The server checks it is real, in range and in sight. */
+  readonly hookTarget?: number;
   readonly launcher?: { readonly slot: number; readonly ads: number; readonly fire?: true };
 }
 /** A non-movement action that must not be lost (§4.2), carrying the `seq` it belongs to. */
@@ -48,6 +50,7 @@ export const NetCommandSchema: v.GenericSchema<NetCommand> = v.strictObject({
   attack: v.exactOptional(v.strictObject({ targetId: v.exactOptional(id), aim: v.strictObject({ origin: point, direction: point }) })),
   heavyTarget: v.exactOptional(id),
   lockTarget: v.exactOptional(id),
+  hookTarget: v.exactOptional(u16),
   launcher: v.exactOptional(v.strictObject({ slot,
     ads: v.pipe(finite, v.minValue(0), v.maxValue(1)), fire: v.exactOptional(v.literal(true)) })),
 });

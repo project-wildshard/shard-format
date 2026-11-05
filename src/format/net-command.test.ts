@@ -27,6 +27,17 @@ test('a command may name its lock-on target (J116)', (): void => {
   ).toBe(false)
 })
 
+test('a command may name the hook a LOCK press picks', (): void => {
+  expect(
+    parse(NetCommandSchema, { ...command, hookTarget: 3 }).hookTarget,
+  ).toBe(3)
+  for (const hookTarget of [-1, 1.5, TOP + 1, Number.NaN]) {
+    expect(
+      safeParse(NetCommandSchema, { ...command, hookTarget }).success,
+    ).toBe(false)
+  }
+})
+
 test('equip and ride are acts', (): void => {
   const equip = { kind: 'equip', seq: 1, slot: 2 }
   const ride = { action: 'mount', kind: 'ride', seq: 1 }
