@@ -2656,12 +2656,12 @@
   },
   "src/format/netCommand.ts": {
    "eslint(id-length)": 10,
-   "eslint(no-magic-numbers)": 16,
+   "eslint(no-magic-numbers)": 12,
    "import(group-exports)": 6,
    "import(no-namespace)": 1,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 14,
-   "unicorn(number-literal-case)": 2,
+   "unicorn(max-nested-calls)": 7,
+   "unicorn(number-literal-case)": 1,
    "unicorn(numeric-separators-style)": 1
   },
   "src/format/npcs.ts": {

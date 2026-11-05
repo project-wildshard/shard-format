@@ -31,7 +31,8 @@ export type NativeAssemblyFeature =
   | { host: 'riding.environment'; wind: { x: number; z: number; strength: number }; flatten: number }
   | { host: 'riding.elites'; rows: NativeAssemblyRead; strikes: NativeAssemblyRead; conditions: NativeEliteConditions; projected: number }
   | { host: 'riding.hunt'; config: NativeAssemblyRead } | { host: 'riding.mounted'; profile: NativeAssemblyRead }
-  | { host: 'riding.taming'; rows: NativeAssemblyRead; poses: NativeAssemblyRead; pose: NativeAssemblyRead };
+  | { host: 'riding.taming'; rows: NativeAssemblyRead; poses: NativeAssemblyRead; pose: NativeAssemblyRead }
+  | { host: 'grapple'; mode: string; profile: NativeAssemblyRead; hooks: NativeAssemblyRead; guard: string; rise?: boolean };
 /** How an elite row's condition word maps to its programme's inputs. */
 export interface NativeEliteConditions { rules: Record<string, { rule: number; phase: boolean; storm: boolean }>; phases: Record<string, number>; storm: { calm: number; storm: number } }
 /** The native bake: its rows, reader settings and binary blocks, and what joins the read. */
@@ -93,6 +94,7 @@ const feature = v.variant('host', [
   v.strictObject({ host: v.literal('riding.elites'), rows: read, strikes: read, conditions, projected: number }),
   v.strictObject({ host: v.literal('riding.hunt'), config: read }), v.strictObject({ host: v.literal('riding.mounted'), profile: read }),
   v.strictObject({ host: v.literal('riding.taming'), rows: read, poses: read, pose: read }),
+  v.strictObject({ host: v.literal('grapple'), mode: key, profile: read, hooks: read, guard: key, rise: v.exactOptional(flag) }),
 ]);
 /** Admit the plan as plain bounded JSON. Each host still admits its own rows when it installs them. */
 export const NativeAssemblySchema: v.GenericSchema<unknown, NativeAssemblyPlan> = v.pipe(v.unknown(), v.check(isJsonData, 'Native assembly must be plain bounded JSON'), v.strictObject({
