@@ -39,10 +39,12 @@ which ended J81. Nothing edits format anywhere else.
 2. Batch changes, then release:
    `ASSISTED_BY=Claude-Code:<model> ../leftover/src/repo-kit/release.sh vX.Y.Z`.
 3. In singleplayer, set the tag in all four manifests (root, `src/game`,
-   `src/sdk`, `src/commons`) and update `pnpm-lock.yaml` with pnpm 10.26
-   or newer. An older pnpm records the annotated tag's object id instead
-   of its commit, and CI's pnpm then refuses the install with
-   `ERR_PNPM_GIT_CHECKOUT_FAILED`.
+   `src/sdk`, `src/commons`) and update `pnpm-lock.yaml` with pnpm 10.34.9
+   or newer. An older pnpm can record the annotated tag's object id
+   instead of its commit (10.21 and 10.26.0 both do), and an install
+   from an empty store then fails with `ERR_PNPM_GIT_CHECKOUT_FAILED`.
+   A warm store hides this locally. Check the lock's `commit:` against
+   `git rev-parse vX.Y.Z^{commit}`.
 4. A new module needs its entry in `exports` here before singleplayer
    can import it.
 
