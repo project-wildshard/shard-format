@@ -1,0 +1,13 @@
+{
+  // The shipped library alone: no Node, no DOM, only ES2022 and the few
+  // portable globals in standards/. Proves format runs in any host.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["es2022"],
+    "types": [],
+    "declaration": true,
+    "isolatedDeclarations": true
+  },
+  "include": ["*.ts", "standards/format-standards.d.ts"],
+  "exclude": ["*.test.ts"]
+}

@@ -1,14 +1,14 @@
 // oxlint-disable-next-line import/no-nodejs-modules -- Read the actual production compiler project and schema source.
 import {readFileSync} from 'node:fs';
 // oxlint-disable-next-line import/no-nodejs-modules -- Keep emitted declarations virtual, beside their defining modules.
-import {basename,resolve} from 'node:path';
+import {basename,dirname,resolve} from 'node:path';
 import ts from '@typescript/typescript6';
 import {expect,test} from 'vitest';
 
 function formatProject():ts.ParsedCommandLine {
- const path=resolve('tsconfig.format.json'),config=ts.readConfigFile(path,file=>ts.sys.readFile(file));
+ const path=resolve('src/format/tsconfig.lib.json'),config=ts.readConfigFile(path,file=>ts.sys.readFile(file));
  if(config.error!==undefined)throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText,' '));
- return ts.parseJsonConfigFileContent(config.config,ts.sys,'.',undefined,path);
+ return ts.parseJsonConfigFileContent(config.config,ts.sys,dirname(path),undefined,path);
 }
 
 test('format production requires isolated declarations without owning tests',()=>{

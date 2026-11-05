@@ -9,3 +9,18 @@
 - No freeze was announced to the singleplayer lanes: format keeps
   changing there until the switch, so the switch re-imports from a
   newer SHA (copy, diff, commit) before singleplayer depends on this.
+- Made it green. Root `package.json` is now `@wildshard/format` with
+  format's 321 exports (D30); valibot replaces zod (J56). Format
+  typechecks under this repo's strict `nodenext` options three ways (CLI
+  project, format + tests with Node types, library alone with no Node
+  or DOM); only Node's missing `TextDecoder` type and `WebAssembly`
+  namespace needed `standards/node.d.ts`.
+- Lint: 38,892 strict findings in the imported code. They sit in a
+  shrink-only baseline (`src/format/ratchet.json`, D29) instead of an
+  exemption; plain lint/fmt skip src/format so the rules stay whole.
+- Format's 79 vitest files run as-is under vitest (D31); one test read
+  singleplayer's `tsconfig.format.json` and now reads
+  `src/format/tsconfig.lib.json`. 419 tests pass.
+- `shardfile validate <dir>` over format's F3 validator with Node
+  ports. All 10 first-party products singleplayer builds pass it; the
+  test fixture is a 48 KB product the singleplayer author SDK wrote.

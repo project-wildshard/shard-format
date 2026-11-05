@@ -1,6 +1,7 @@
 # shardfile: PRD
 
 Status: draft 2026-11-05: drafted by Claude from `Raynos/project-wildshard-meta` plans, for Jake to correct.
+R-1, R-2 and R-4 ship in v0.1.0; R-3 is retired by J55.
 
 Living doc: **what** this repo does and **why**. How it is built is
 `docs/design.md`; decisions are `docs/decisions.md`; the first plan is
@@ -19,7 +20,9 @@ The raw shardfile format: the spec, the validator and a validate CLI. The public
 
 - **R-1**: The shardfile spec (`shard.json`, file families, the script ABI) and `SHARDFILE_VERSION`
 - **R-2**: The validator: schema, hashes, budgets, admission rows
-- **R-3**: The JSON Schema
+- **R-3**: ~~The JSON Schema~~ Retired by J55: the valibot schemas in
+  `@wildshard/format` are the contract. A JSON Schema export comes back
+  only if editors or non-JS tools need one.
 - **R-4**: The `shardfile validate` CLI (format checks only)
 
 ## Not this repo

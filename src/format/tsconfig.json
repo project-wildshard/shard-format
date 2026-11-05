@@ -1,11 +1,6 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "../../tsconfig.format.json"
-    },
-    {
-      "path": "./tsconfig.test.json"
-    }
-  ]
+  // The format package and its tests under this repo's strict options and
+  // Node types (the tests read files). Type-aware lint uses this project.
+  "extends": "../tsconfig.json",
+  "include": ["*.ts", "standards/node.d.ts"]
 }

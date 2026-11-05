@@ -26,5 +26,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["cli", "test"]
+  "include": ["cli", "test", "tools", "format/standards/node.d.ts"]
 }
