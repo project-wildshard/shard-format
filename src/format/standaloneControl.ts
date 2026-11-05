@@ -9,7 +9,9 @@ const id = natural;
 
 /** What the page sends the server worker. */
 export type ShellMessage =
-  | { readonly kind: 'boot'; readonly slug: string; readonly base: string; readonly build: string; readonly savePrefix: string; readonly saves: Readonly<Record<string, string>> }
+  | { readonly kind: 'boot'; readonly slug: string; readonly base: string; readonly build: string; readonly savePrefix: string; readonly saves: Readonly<Record<string, string>>;
+    /** A one-shard page: the server runs this cell alone, with its own walls and no road, whether or not the grid places it. */
+    readonly lone?: true }
   | { readonly kind: 'ready' } | { readonly kind: 'pause' } | { readonly kind: 'resume' }
   | { readonly kind: 'save'; readonly id: number } | { readonly kind: 'probe'; readonly id: number }
   | { readonly kind: 'written'; readonly seq: number; readonly ok: boolean };
@@ -25,7 +27,7 @@ export type ServerMessage =
 
 /** The page's messages, checked on arrival in the worker. */
 export const ShellMessageSchema: v.GenericSchema<ShellMessage> = v.variant('kind', [
-  v.strictObject({ kind: v.literal('boot'), slug: text, base: text, build: v.string(), savePrefix: text, saves: v.record(v.string(), v.string()) }),
+  v.strictObject({ kind: v.literal('boot'), slug: text, base: text, build: v.string(), savePrefix: text, saves: v.record(v.string(), v.string()), lone: v.exactOptional(v.literal(true)) }),
   v.strictObject({ kind: v.literal('ready') }), v.strictObject({ kind: v.literal('pause') }), v.strictObject({ kind: v.literal('resume') }),
   v.strictObject({ kind: v.literal('save'), id }), v.strictObject({ kind: v.literal('probe'), id }),
   v.strictObject({ kind: v.literal('written'), seq: natural, ok: v.boolean() }),
