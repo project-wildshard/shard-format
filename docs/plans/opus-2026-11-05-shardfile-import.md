@@ -16,7 +16,7 @@ From `Raynos/project-wildshard-singleplayer@727236c625` (paths may move before t
 - `docs/PLATFORM-FILE-FAMILIES.md`
 - `docs/SCRIPT-ABI.md`
 - `scripts/gen-format-schema.mjs`
-- `the format half of `validate` in src/sdk/cli.ts (after P1 F3)`
+- the format half of `validate` in src/sdk/cli.ts (after P1 F3)
 
 ## Before the import
 

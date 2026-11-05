@@ -28,5 +28,5 @@ Only the scaffold exists:
 - `docs/PLATFORM-FILE-FAMILIES.md`
 - `docs/SCRIPT-ABI.md`
 - `scripts/gen-format-schema.mjs`
-- `the format half of `validate` in src/sdk/cli.ts (after P1 F3)`
+- the format half of `validate` in src/sdk/cli.ts (after P1 F3)
 - src/format changed 2,403 times in 30 days in singleplayer: batch format changes into tagged releases.
