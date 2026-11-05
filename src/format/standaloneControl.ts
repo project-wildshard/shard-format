@@ -6,6 +6,7 @@ import * as v from 'valibot';
 const text = v.pipe(v.string(), v.minLength(1), v.maxLength(2048));
 const natural = v.pipe(v.number(), v.finite(), v.integer(), v.minValue(0), v.maxValue(Number.MAX_SAFE_INTEGER));
 const id = natural;
+const lone = v.exactOptional(v.literal(true));
 
 /** What the page sends the server worker. */
 export type ShellMessage =
@@ -27,7 +28,7 @@ export type ServerMessage =
 
 /** The page's messages, checked on arrival in the worker. */
 export const ShellMessageSchema: v.GenericSchema<ShellMessage> = v.variant('kind', [
-  v.strictObject({ kind: v.literal('boot'), slug: text, base: text, build: v.string(), savePrefix: text, saves: v.record(v.string(), v.string()), lone: v.exactOptional(v.literal(true)) }),
+  v.strictObject({ kind: v.literal('boot'), slug: text, base: text, build: v.string(), savePrefix: text, saves: v.record(v.string(), v.string()), lone }),
   v.strictObject({ kind: v.literal('ready') }), v.strictObject({ kind: v.literal('pause') }), v.strictObject({ kind: v.literal('resume') }),
   v.strictObject({ kind: v.literal('save'), id }), v.strictObject({ kind: v.literal('probe'), id }),
   v.strictObject({ kind: v.literal('written'), seq: natural, ok: v.boolean() }),
