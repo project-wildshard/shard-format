@@ -1,7 +1,7 @@
 # shardfile: design
 
 Status: living 2026-11-05: src/format imported from singleplayer
-(`36d00c6645`); `shardfile validate` works; released as v0.1.0.
+(re-imported from `1546ceedf8`); `shardfile validate` works.
 
 Living doc: **how** this repo is built. What it does and why is
 `docs/prd.md`. Keep this true as the code changes.

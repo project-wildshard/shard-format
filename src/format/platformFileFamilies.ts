@@ -58,6 +58,7 @@ import { ChapterDirectorSchema, ChapterWakeSchema } from './chapterDirector.ts';
 import { QuestPageInteractionsSchema } from './questInteractions.ts';
 import { QuestServiceActionsSchema, QuestHintRowsSchema, CarriedQuestSchema } from './questSteps.ts';
 import { DirectorProductSchema } from './directorProduct.ts';
+import { NativeAssemblySchema, NativeAssemblyDataSchema, NATIVE_ASSEMBLY_SCHEMA, NATIVE_ASSEMBLY_DATA_SCHEMA } from './nativeAssembly.ts';
 import { QuestPanelCatalogueSchema } from './panelTemplate.ts';
 import { ForestWeatherSchema } from './forestWeather.ts';
 import { WeatherEffectsSchema } from './weatherEffects.ts';
@@ -81,6 +82,9 @@ export interface PlatformFileFamily {
  * ground and encounter grammars remain outside this registry unless separately
  * admitted by Jake, as G1004 admits the two exact baked placement plans. */
 export const PLATFORM_FILE_FAMILIES: readonly PlatformFileFamily[] = [
+  // P1-E3.1b (J90, Jake's approval): the three native shards' server inputs. Server class only (J91).
+  { pattern: /^server\/native-assembly\.json$/u, schema: NativeAssemblySchema, source: NATIVE_ASSEMBLY_SCHEMA, reader: 'src/game/shardfile/nativeAssembly.ts' },
+  { pattern: /^server\/[a-z0-9][a-z0-9.-]*\.json$/u, schema: NativeAssemblyDataSchema, source: NATIVE_ASSEMBLY_DATA_SCHEMA, reader: 'src/game/shardfile/nativeAssembly.ts' },
   { pattern: /^quests\/runtime\.json$/u, schema: QuestRuntimeDocumentSchema,
     source: '@wildshard/format/questRuntime#QuestRuntimeDocumentSchema', reader: 'src/game/quest/chapterDirector.ts' },
   { pattern: /^quests\/forest-story\.json$/u, schema: QuestStoryBindingsSchema,
@@ -95,13 +99,13 @@ export const PLATFORM_FILE_FAMILIES: readonly PlatformFileFamily[] = [
   { pattern: /^quests\/interaction-source\.json$/u, schema: QuestInteractionSourceSchema,
     source: '@wildshard/format/questInteractionSource#QuestInteractionSourceSchema', reader: 'src/game/quest/pageComposition.ts' },
   { pattern: /^sim\/enemy-placement\.json$/u, schema: EnemyPlacementsSchema,
-    source: '@wildshard/format/populationProjection#EnemyPlacementsSchema', reader: 'test/fixtures/driftwood-headless.ts' },
+    source: '@wildshard/format/populationProjection#EnemyPlacementsSchema', reader: 'src/game/shardfile/nativeAssembly.ts' },
   { pattern: /^sim\/population-metadata\.json$/u, schema: PopulationHabitatSchema,
-    source: '@wildshard/format/populationEnvironment#PopulationHabitatSchema', reader: 'test/fixtures/nalati-headless.ts' },
+    source: '@wildshard/format/populationEnvironment#PopulationHabitatSchema', reader: 'src/game/shardfile/nativeAssemblyHosts.ts' },
   { pattern: /^sim\/taming-poses\.json$/u, schema: TamingPoseFileSchema,
-    source: '@wildshard/format/populationRoster#TamingPoseFileSchema', reader: 'test/fixtures/nalati-headless.ts' },
+    source: '@wildshard/format/populationRoster#TamingPoseFileSchema', reader: 'src/game/shardfile/nativeAssemblyHosts.ts' },
   { pattern: /^quests\/native-spots\.json$/u, schema: NativeQuestServiceSpotsSchema,
-    source: '@wildshard/format/nativeQuestComposition#NativeQuestServiceSpotsSchema', reader: 'test/fixtures/pine-headless.ts' },
+    source: '@wildshard/format/nativeQuestComposition#NativeQuestServiceSpotsSchema', reader: 'src/game/shardfile/nativeAssembly.ts' },
   { pattern: /^quests\/contracts\.json$/u, schema: ContractCatalogueSchema,
     source: '@wildshard/format/contracts#ContractCatalogueSchema', reader: 'src/game/quest/contracts.ts' },
   { pattern: /^quests\/discovery\.json$/u, schema: AdventureContentSchema,
@@ -256,7 +260,7 @@ export const PLATFORM_FILE_FAMILIES: readonly PlatformFileFamily[] = [
   { pattern: /^world\/building-sites\.json$/u, schema: LivingPageSitesSchema,
     source: '@wildshard/format/forestPage#LivingPageSitesSchema', reader: 'src/game/shardfile/clientForestPage.ts' },
   { pattern: /^data\/physics\.generated\.json$/u, schema: ForestNativeInputsSchema,
-    source: '@wildshard/format/forestNativeInputs#ForestNativeInputsSchema', reader: 'test/fixtures/pine-headless.ts' },
+    source: '@wildshard/format/forestNativeInputs#ForestNativeInputsSchema', reader: 'src/game/shardfile/nativeAssembly.ts' },
   { pattern: /^world\/meadow\.json$/u, schema: PopulationFieldSchema,
     source: '@wildshard/format/populationEnvironment#PopulationFieldSchema', reader: 'src/game/shardfile/clientMeadow.ts' },
   { pattern: /^world\/water\.json$/u, schema: WaterWorldSchema,

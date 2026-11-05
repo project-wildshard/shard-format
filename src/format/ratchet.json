@@ -104,6 +104,18 @@
    "unicorn(filename-case)": 1,
    "unicorn(numeric-separators-style)": 2
   },
+  "src/format/admissionServer.ts": {
+   "eslint(id-length)": 1,
+   "eslint(no-magic-numbers)": 5,
+   "eslint(no-use-before-define)": 1,
+   "import(exports-last)": 2,
+   "import(group-exports)": 5,
+   "import(no-namespace)": 1,
+   "typescript(explicit-function-return-type)": 10,
+   "typescript(prefer-readonly-parameter-types)": 5,
+   "unicorn(filename-case)": 1,
+   "unicorn(max-nested-calls)": 9
+  },
   "src/format/ambientLife.ts": {
    "eslint(capitalized-comments)": 9,
    "eslint(id-length)": 37,
@@ -2468,6 +2480,15 @@
    "unicorn(filename-case)": 1,
    "unicorn(max-nested-calls)": 7
   },
+  "src/format/nativeAssembly.ts": {
+   "eslint(id-length)": 5,
+   "eslint(no-magic-numbers)": 9,
+   "import(exports-last)": 8,
+   "import(group-exports)": 11,
+   "import(no-namespace)": 1,
+   "unicorn(filename-case)": 1,
+   "unicorn(max-nested-calls)": 39
+  },
   "src/format/nativeGround.ts": {
    "eslint(curly)": 4,
    "eslint(id-length)": 1,
@@ -2633,6 +2654,16 @@
    "typescript(prefer-readonly-parameter-types)": 2,
    "unicorn(filename-case)": 1
   },
+  "src/format/netCommand.ts": {
+   "eslint(id-length)": 10,
+   "eslint(no-magic-numbers)": 16,
+   "import(group-exports)": 6,
+   "import(no-namespace)": 1,
+   "unicorn(filename-case)": 1,
+   "unicorn(max-nested-calls)": 14,
+   "unicorn(number-literal-case)": 2,
+   "unicorn(numeric-separators-style)": 1
+  },
   "src/format/npcs.ts": {
    "eslint(capitalized-comments)": 2,
    "eslint(curly)": 6,
@@ -2685,8 +2716,9 @@
   "src/format/outputIndex.ts": {
    "eslint(capitalized-comments)": 2,
    "eslint(complexity)": 1,
-   "eslint(curly)": 27,
+   "eslint(curly)": 30,
    "eslint(id-length)": 1,
+   "eslint(max-lines-per-function)": 1,
    "eslint(max-lines)": 1,
    "eslint(max-statements)": 2,
    "eslint(no-magic-numbers)": 28,
@@ -2694,7 +2726,7 @@
    "eslint(no-nested-ternary)": 1,
    "eslint(no-use-before-define)": 3,
    "eslint(sort-vars)": 2,
-   "import(consistent-type-specifier-style)": 9,
+   "import(consistent-type-specifier-style)": 10,
    "import(exports-last)": 11,
    "import(group-exports)": 12,
    "import(max-dependencies)": 1,
@@ -3083,7 +3115,7 @@
   },
   "src/format/productValidation.ts": {
    "eslint(complexity)": 1,
-   "eslint(curly)": 30,
+   "eslint(curly)": 32,
    "eslint(max-params)": 2,
    "eslint(max-statements)": 2,
    "eslint(no-magic-numbers)": 12,
@@ -3344,7 +3376,7 @@
   },
   "src/format/registeredJson.ts": {
    "eslint(complexity)": 1,
-   "eslint(curly)": 7,
+   "eslint(curly)": 8,
    "eslint(id-length)": 1,
    "eslint(max-lines-per-function)": 1,
    "eslint(max-lines)": 1,
@@ -4413,6 +4445,15 @@
    "unicorn(no-null)": 5,
    "unicorn(prefer-spread)": 1
   },
+  "src/format/standaloneControl.ts": {
+   "eslint(id-length)": 7,
+   "eslint(no-magic-numbers)": 3,
+   "import(exports-last)": 4,
+   "import(group-exports)": 5,
+   "import(no-namespace)": 1,
+   "unicorn(filename-case)": 1,
+   "unicorn(max-nested-calls)": 4
+  },
   "src/format/standards/format-standards.d.ts": {
    "eslint(id-length)": 1,
    "eslint(max-classes-per-file)": 1,
@@ -5157,6 +5198,7 @@
   "src/format/admissionControl.ts",
   "src/format/admissionLate.ts",
   "src/format/admissionLimits.ts",
+  "src/format/admissionServer.ts",
   "src/format/ambientLife.ts",
   "src/format/arena-script-declarations.test.ts",
   "src/format/arenaRoomDocument.ts",
@@ -5345,6 +5387,7 @@
   "src/format/native-module-declarations.test.ts",
   "src/format/native-runtime-plan-declarations.test.ts",
   "src/format/nativeActors.ts",
+  "src/format/nativeAssembly.ts",
   "src/format/nativeGround.ts",
   "src/format/nativeGroundAssets.ts",
   "src/format/nativeItems.ts",
@@ -5357,6 +5400,7 @@
   "src/format/navigationBytes.ts",
   "src/format/nearPlaceholder.ts",
   "src/format/nearPlaceholderAssets.ts",
+  "src/format/netCommand.ts",
   "src/format/npcs.ts",
   "src/format/output-download.test.ts",
   "src/format/outputAddress.ts",
@@ -5495,6 +5539,7 @@
   "src/format/specimen-declarations.test.ts",
   "src/format/specimenCatalogue.ts",
   "src/format/splatTerrain.ts",
+  "src/format/standaloneControl.ts",
   "src/format/standards/format-standards.d.ts",
   "src/format/state.ts",
   "src/format/stateLineage.ts",

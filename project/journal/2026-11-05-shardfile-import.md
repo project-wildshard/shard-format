@@ -24,3 +24,19 @@
 - `shardfile validate <dir>` over format's F3 validator with Node
   ports. All 10 first-party products singleplayer builds pass it; the
   test fixture is a 48 KB product the singleplayer author SDK wrote.
+
+## Re-import from 1546ceedf8
+
+- Second copy of singleplayer's `src/format`, now from
+  `1546ceedf8`, ahead of the switch (MOVES.md step 6, J81). Brings the
+  `server` admission class, `nativeAssembly.ts`, the combat fields, and
+  the net and standalone schemas: 4 new modules, 16 changed. Same
+  whitespace fix as the first import (`audioProfiles.ts:477`, blank
+  lines at EOF in 10 files); this repo's test edit, `standards/` and
+  tsconfigs kept.
+- The 4 new modules join `exports`, plus 6 that singleplayer's tests
+  and scripts imported by relative path and so never needed an entry
+  (`cellBounds`, `fenceReads`, `glbImages`, `trail`, `uiStrings`,
+  `wireLimits`), and `memoryGates.json`, which its scripts read.
+- Ratchet: `init` again, because every rise is imported code. The two
+  spec docs took the same SHA's edits.
