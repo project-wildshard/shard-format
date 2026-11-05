@@ -13,7 +13,7 @@ export type NativeAssemblyRead = { file: string; path?: string[] } | { section: 
 /** One host's rows: what it reads and its data-only settings, in the install order the plan lists. */
 export type NativeAssemblyFeature =
   | { host: 'decisions' | 'commands' | 'loadout' | 'quest.body-scripts' | 'population.elites-ready' | 'population.reactions' | 'population.settle' | 'riding.elites-ready' | 'water.field' }
-  | { host: 'collision'; skipOnRestore?: boolean }
+  | { host: 'collision'; skipOnRestore?: boolean } | { host: 'collision.pieces'; rows: NativeAssemblyRead }
   | { host: 'day.keyed-sky' } | { host: 'day.toon'; start: number; cycle: number; phases: Record<string, string> } | { host: 'day.declared'; clock: NativeAssemblyRead }
   | { host: 'water.sea'; id: string } | { host: 'combat.motion'; speed: number }
   | { host: 'item.ranged'; kind: 'bolt' | 'cycle' | 'bow'; weapon: string } | { host: 'item.swept'; policy: NativeAssemblyRead }
@@ -33,6 +33,7 @@ export type NativeAssemblyFeature =
   | { host: 'riding.hunt'; config: NativeAssemblyRead } | { host: 'riding.mounted'; profile: NativeAssemblyRead }
   | { host: 'riding.taming'; rows: NativeAssemblyRead; poses: NativeAssemblyRead; pose: NativeAssemblyRead }
   | { host: 'grapple'; mode: string; profile: NativeAssemblyRead; hooks: NativeAssemblyRead; guard: string; rise?: boolean }
+  | { host: 'portal.ride'; step: string; rows: NativeAssemblyRead }
   | { host: 'boss.arena'; id: string; file: string; body: { kind: string; variant: string }; reward: string; entrance: [number, number, number, number] }
   | { host: 'held.arms'; step: string; slots: string; speed: number; weather: NativeAssemblyRead; input: { attack: string; swap: string; aim: string; pitch: string } }
   | { host: 'encounter.patrol'; step: string; rows: string; actors: string; looks: string; herds: string; external: NativeAssemblyRead }
@@ -57,13 +58,17 @@ export interface NativeAssemblyBake {
  */
 export interface NativeAssemblyPlan {
   kind: 'native-assembly';
-  level: { speed: number; authorCap?: boolean; ground: { size: number; height: number } };
-  terrain: { kind: 'baked'; file: string; rows: unknown } | { kind: 'shard-tile'; resolution: number; size: number } | { kind: 'bake-ground' };
+  /** `stand`: the lowest height the player spawns at, for a world whose floors stand above its terrain. */
+  level: { speed: number; authorCap?: boolean; ground: { size: number; height: number }; stand?: number };
+  /** `flat`: no terrain at all. Every solid is a collision row, and height queries answer the level's ground. */
+  terrain: { kind: 'baked'; file: string; rows: unknown } | { kind: 'shard-tile'; resolution: number; size: number } | { kind: 'bake-ground' } | { kind: 'flat' };
   /** `shard`: the shard's declared navigation asset; otherwise the named file. */
   navigation: 'shard' | { file: string };
-  bake: NativeAssemblyBake;
-  collision: { resolution: number; provenance?: unknown };
-  entries: { walk: unknown; fresh?: { omit: string[] } };
+  /** The population bake, which a world with no population has none of. */
+  bake?: NativeAssemblyBake;
+  collision?: { resolution: number; provenance?: unknown };
+  /** `walk`: the walks a host proves. `proven`: what the build's own entry proof counted, for a world that proves its entries there. */
+  entries: { walk?: unknown; fresh?: { omit: string[] }; proven?: { lanes: number; steps: number; portalTransfers: number } };
   /** A native riding world's admitted boot rows. */
   boot?: NativeAssemblyRead;
   /** A native riding world's field and its named masks. */
@@ -84,7 +89,7 @@ const grant = v.strictObject({ item: key, count: number });
 const grants = v.pipe(v.array(grant), v.maxLength(MAX_GRANTS));
 const feature = v.variant('host', [
   v.strictObject({ host: v.picklist(['decisions', 'commands', 'loadout', 'quest.body-scripts', 'population.elites-ready', 'population.reactions', 'population.settle', 'riding.elites-ready', 'water.field']) }),
-  v.strictObject({ host: v.literal('collision'), skipOnRestore: flag }),
+  v.strictObject({ host: v.literal('collision'), skipOnRestore: flag }), v.strictObject({ host: v.literal('collision.pieces'), rows: read }),
   v.strictObject({ host: v.literal('day.keyed-sky') }), v.strictObject({ host: v.literal('day.toon'), start: number, cycle: number, phases: v.record(key, key) }), v.strictObject({ host: v.literal('day.declared'), clock: read }),
   v.strictObject({ host: v.literal('water.sea'), id: key }), v.strictObject({ host: v.literal('combat.motion'), speed: number }),
   v.strictObject({ host: v.literal('item.ranged'), kind: v.picklist(['bolt', 'cycle', 'bow']), weapon: key }), v.strictObject({ host: v.literal('item.swept'), policy: read }),
@@ -104,22 +109,29 @@ const feature = v.variant('host', [
   v.strictObject({ host: v.literal('riding.hunt'), config: read }), v.strictObject({ host: v.literal('riding.mounted'), profile: read }),
   v.strictObject({ host: v.literal('riding.taming'), rows: read, poses: read, pose: read }),
   v.strictObject({ host: v.literal('grapple'), mode: key, profile: read, hooks: read, guard: key, rise: v.exactOptional(flag) }),
+  v.strictObject({ host: v.literal('portal.ride'), step: key, rows: read }),
   v.strictObject({ host: v.literal('boss.arena'), id: key, file: key, body: v.strictObject({ kind: key, variant: key }), reward: key,
     entrance: v.tuple([number, number, number, number]) }),
   v.strictObject({ host: v.literal('held.arms'), step: key, slots: key, speed: number, weather: read, input: heldInput }),
   v.strictObject({ host: v.literal('encounter.patrol'), step: key, rows: key, actors: key, looks: key, herds: key, external: read }),
   v.strictObject({ host: v.literal('boss.open-arena'), id: key, fight: key, geometry: key, view: key, groups: key, input: arenaInput, target: key, grants }),
 ]);
+const names = v.pipe(v.array(key), v.maxLength(16));
+const levelGround = v.strictObject({ size: number, height: number });
+const bakeSchema = v.strictObject({ rows: read, reader: v.looseObject({ label: key, resolution: number, size: number }), ground: key, colliders: names, read: v.picklist(['bake', 'solids']),
+  keep: v.exactOptional(names), owners: v.exactOptional(read), pick: v.exactOptional(names), seal: v.exactOptional(read) });
+const collisionSchema = v.strictObject({ resolution: number, provenance: v.exactOptional(v.unknown()) });
+const provenEntries = v.strictObject({ lanes: number, steps: number, portalTransfers: number });
+const entriesSchema = v.strictObject({ walk: v.exactOptional(v.unknown()), fresh: v.exactOptional(v.strictObject({ omit: names })), proven: v.exactOptional(provenEntries) });
 /** Admit the plan as plain bounded JSON. Each host still admits its own rows when it installs them. */
 export const NativeAssemblySchema: v.GenericSchema<unknown, NativeAssemblyPlan> = v.pipe(v.unknown(), v.check(isJsonData, 'Native assembly must be plain bounded JSON'), v.strictObject({
   kind: v.literal('native-assembly'),
-  level: v.strictObject({ speed: number, authorCap: flag, ground: v.strictObject({ size: number, height: number }) }),
-  terrain: v.variant('kind', [v.strictObject({ kind: v.literal('baked'), file: key, rows: v.unknown() }), v.strictObject({ kind: v.literal('shard-tile'), resolution: number, size: number }), v.strictObject({ kind: v.literal('bake-ground') })]),
+  level: v.strictObject({ speed: number, authorCap: flag, ground: levelGround, stand: v.exactOptional(number) }),
+  terrain: v.variant('kind', [v.strictObject({ kind: v.literal('baked'), file: key, rows: v.unknown() }), v.strictObject({ kind: v.literal('shard-tile'), resolution: number, size: number }), v.strictObject({ kind: v.literal('bake-ground') }), v.strictObject({ kind: v.literal('flat') })]),
   navigation: v.union([v.literal('shard'), v.strictObject({ file: key })]),
-  bake: v.strictObject({ rows: read, reader: v.looseObject({ label: key, resolution: number, size: number }), ground: key, colliders: v.pipe(v.array(key), v.maxLength(16)), read: v.picklist(['bake', 'solids']),
-    keep: v.exactOptional(v.pipe(v.array(key), v.maxLength(16))), owners: v.exactOptional(read), pick: v.exactOptional(v.pipe(v.array(key), v.maxLength(16))), seal: v.exactOptional(read) }),
-  collision: v.strictObject({ resolution: number, provenance: v.exactOptional(v.unknown()) }),
-  entries: v.strictObject({ walk: v.unknown(), fresh: v.exactOptional(v.strictObject({ omit: v.pipe(v.array(key), v.maxLength(16)) })) }),
+  bake: v.exactOptional(bakeSchema),
+  collision: v.exactOptional(collisionSchema),
+  entries: entriesSchema,
   boot: v.exactOptional(read), field: v.exactOptional(v.strictObject({ rows: read, pond: key })),
   features: v.pipe(v.array(feature), v.minLength(1), v.maxLength(64)),
 }));

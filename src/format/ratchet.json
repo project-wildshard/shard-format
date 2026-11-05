@@ -2482,12 +2482,12 @@
   },
   "src/format/nativeAssembly.ts": {
    "eslint(id-length)": 5,
-   "eslint(no-magic-numbers)": 9,
+   "eslint(no-magic-numbers)": 6,
    "import(exports-last)": 8,
    "import(group-exports)": 11,
    "import(no-namespace)": 1,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 39
+   "unicorn(max-nested-calls)": 18
   },
   "src/format/nativeGround.ts": {
    "eslint(curly)": 4,
