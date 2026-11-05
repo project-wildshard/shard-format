@@ -1,6 +1,6 @@
 {
   "name": "@wildshard/shardfile",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "The raw shardfile format: the spec, the validator and a validate CLI. The public, versioned contract every other repo builds on.",
   "type": "module",
