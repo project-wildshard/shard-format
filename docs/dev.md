@@ -29,6 +29,23 @@ Run from the repo root.
 - `pnpm md:wrap`: rewraps Markdown prose to ~72 columns.
 - `src/scripts/ask-new.sh "<Jake's words>"`: opens an ask (`docs/tasks/asks/README.md`).
 
+## Changing the format
+
+This repo is the source of truth for `@wildshard/format`. Singleplayer
+deleted its `src/format` when it switched to `v0.2.0` (MOVES.md step 7),
+which ended J81. Nothing edits format anywhere else.
+
+1. Change `src/format` here, with its tests. `pnpm check`, commit, push.
+2. Batch changes, then release:
+   `ASSISTED_BY=Claude-Code:<model> ../leftover/src/repo-kit/release.sh vX.Y.Z`.
+3. In singleplayer, set the tag in all four manifests (root, `src/game`,
+   `src/sdk`, `src/commons`) and update `pnpm-lock.yaml` with pnpm 10.26
+   or newer. An older pnpm records the annotated tag's object id instead
+   of its commit, and CI's pnpm then refuses the install with
+   `ERR_PNPM_GIT_CHECKOUT_FAILED`.
+4. A new module needs its entry in `exports` here before singleplayer
+   can import it.
+
 ## Layout
 
 The root stays thin: README.md and AGENTS.md (humans only), CLAUDE.md

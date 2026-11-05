@@ -1,8 +1,9 @@
 # shardfile: import from singleplayer
 
-Status: in progress 2026-11-05: steps 1–5 done (imported from
-singleplayer `36d00c6645`, green, v0.1.0 tagged); steps 6–8 wait on the
-CI token (P0.2) and a go from the singleplayer side.
+Status: finished 2026-11-05: imported, released and switched.
+Singleplayer consumes `@wildshard/format` from `v0.2.0` and has deleted
+its `src/format`. This repo is now the source of truth (J81 ended);
+changing the format is in `docs/dev.md`.
 
 One-page runbook for bringing this repo's code over from
 `Raynos/project-wildshard-singleplayer`. The why and the full plan live in `Raynos/project-wildshard-meta`:
@@ -40,8 +41,8 @@ export; singleplayer's author tooling still generates JSON Schema
 | 3 | Binaries over 1 MB go to R2 by hash (J13) | The pre-commit size cap passes without `ALLOW_BIG` | Done: none over 1 MB |
 | 4 | Green: `pnpm check` and CI pass; imported code that fails the strict lint goes under a shrink-only ratchet (D28) | CI green on `main` | Done: D29 ratchet, `shardfile validate` |
 | 5 | Release `v0.1.0` (raw `.ts` at the tag, J42) with repo-kit's `release.sh` | The tag installs as a git dependency | Done |
-| 6 | Switch: singleplayer uses this repo (git dependency or deploy) instead of its own copy | Singleplayer CI green | Waits: singleplayer CI has no org token (P0.2) |
-| 7 | Delete the paths from singleplayer in one commit naming this repo and tag | Gone from singleplayer | Waits on 6 |
-| 8 | Unfreeze; record the move in the meta repo's `STATE.md`; set this plan to finished | STATE.md says moved | Waits on 7 |
+| 6 | Switch: singleplayer uses this repo (git dependency or deploy) instead of its own copy | Singleplayer CI green | Done: re-import `cfd1b77` from `1546ceedf8`, released `v0.2.0`, singleplayer `3f6f229e33` |
+| 7 | Delete the paths from singleplayer in one commit naming this repo and tag | Gone from singleplayer | Done: singleplayer `9a449a8ed9` |
+| 8 | Unfreeze; record the move in the meta repo's `STATE.md`; set this plan to finished | STATE.md says moved | Plan finished; `STATE.md` is the coordinator's to update |
 
 Rollback: until step 7 singleplayer still has everything, so drop the import commit.

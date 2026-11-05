@@ -40,3 +40,13 @@
   `wireLimits`), and `memoryGates.json`, which its scripts read.
 - Ratchet: `init` again, because every rise is imported code. The two
   spec docs took the same SHA's edits.
+
+## The switch
+
+- Singleplayer moved to `v0.2.0` (`3f6f229e33`) and deleted its copy
+  (`9a449a8ed9`), so this repo is the source of truth and J81 is over.
+- Two install traps, both only under the pnpm CI runs: a `prepare`
+  script is refused for git dependencies from pnpm 10.26, so hooks moved
+  to `pnpm:devPreinstall`; and pnpm 10.21 locks an annotated tag's
+  object id, which newer pnpm refuses at checkout, so the lockfile must
+  come from 10.26+ or name the tag's commit.

@@ -1,7 +1,8 @@
 # shardfile: design
 
 Status: living 2026-11-05: src/format imported from singleplayer
-(re-imported from `1546ceedf8`); `shardfile validate` works.
+(re-imported from `1546ceedf8`); `shardfile validate` works; singleplayer
+consumes it from `v0.2.0`.
 
 Living doc: **how** this repo is built. What it does and why is
 `docs/prd.md`. Keep this true as the code changes.
@@ -79,12 +80,9 @@ pass it.
   own modules (`import/no-nodejs-modules` under the ratchet; the
   imported singleplayer rule is not ported).
 
-## Keeping in step with singleplayer
+## The source of truth
 
-Until singleplayer switches to this repo (MOVES.md step 6), its
-`src/format` keeps changing. Before the switch, copy singleplayer's
-`src/format` at a newer SHA over this one, keep this repo's files
-(`standards/`, `tsconfig*.json`, `ratchet.json`, the test edit noted
-in the journal), commit naming the SHA, and run `pnpm lint:format
-update` if counts fell. After the switch, format changes land here
-first and ship as tagged releases.
+This repo. Singleplayer's `src/format` was the source until its switch
+(J81); the last copy came from `1546ceedf8`, and singleplayer deleted
+its own after moving to `v0.2.0`. Format changes land here first and
+ship as tagged releases: `docs/dev.md`, "Changing the format".
