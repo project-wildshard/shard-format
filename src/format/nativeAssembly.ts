@@ -33,7 +33,10 @@ export type NativeAssemblyFeature =
   | { host: 'riding.hunt'; config: NativeAssemblyRead } | { host: 'riding.mounted'; profile: NativeAssemblyRead }
   | { host: 'riding.taming'; rows: NativeAssemblyRead; poses: NativeAssemblyRead; pose: NativeAssemblyRead }
   | { host: 'grapple'; mode: string; profile: NativeAssemblyRead; hooks: NativeAssemblyRead; guard: string; rise?: boolean }
-  | { host: 'boss.arena'; id: string; file: string; body: { kind: string; variant: string }; reward: string; entrance: [number, number, number, number] };
+  | { host: 'boss.arena'; id: string; file: string; body: { kind: string; variant: string }; reward: string; entrance: [number, number, number, number] }
+  | { host: 'held.arms'; step: string; slots: string; speed: number; weather: NativeAssemblyRead; input: { attack: string; swap: string; aim: string; pitch: string } }
+  | { host: 'encounter.patrol'; step: string; rows: string; actors: string; looks: string; herds: string; external: NativeAssemblyRead }
+  | { host: 'boss.open-arena'; id: string; fight: string; geometry: string; view: string; groups: string; input: { use: string; skip: string }; target: string; grants: { item: string; count: number }[] };
 /** How an elite row's condition word maps to its programme's inputs. */
 export interface NativeEliteConditions { rules: Record<string, { rule: number; phase: boolean; storm: boolean }>; phases: Record<string, number>; storm: { calm: number; storm: number } }
 /** The native bake: its rows, reader settings and binary blocks, and what joins the read. */
@@ -74,6 +77,11 @@ const path = v.pipe(v.array(key), v.maxLength(16));
 const read: v.GenericSchema<unknown, NativeAssemblyRead> = v.union([v.strictObject({ file: key, path: v.exactOptional(path) }), v.strictObject({ section: key, path: v.exactOptional(path) }), v.strictObject({ value: v.unknown() })]);
 const flag = v.exactOptional(v.boolean());
 const conditions = v.strictObject({ rules: v.record(key, v.strictObject({ rule: number, phase: v.boolean(), storm: v.boolean() })), phases: v.record(key, number), storm: v.strictObject({ calm: number, storm: number }) });
+const MAX_GRANTS = 16;
+const heldInput = v.strictObject({ attack: key, swap: key, aim: key, pitch: key });
+const arenaInput = v.strictObject({ use: key, skip: key });
+const grant = v.strictObject({ item: key, count: number });
+const grants = v.pipe(v.array(grant), v.maxLength(MAX_GRANTS));
 const feature = v.variant('host', [
   v.strictObject({ host: v.picklist(['decisions', 'commands', 'loadout', 'quest.body-scripts', 'population.elites-ready', 'population.reactions', 'population.settle', 'riding.elites-ready', 'water.field']) }),
   v.strictObject({ host: v.literal('collision'), skipOnRestore: flag }),
@@ -98,6 +106,9 @@ const feature = v.variant('host', [
   v.strictObject({ host: v.literal('grapple'), mode: key, profile: read, hooks: read, guard: key, rise: v.exactOptional(flag) }),
   v.strictObject({ host: v.literal('boss.arena'), id: key, file: key, body: v.strictObject({ kind: key, variant: key }), reward: key,
     entrance: v.tuple([number, number, number, number]) }),
+  v.strictObject({ host: v.literal('held.arms'), step: key, slots: key, speed: number, weather: read, input: heldInput }),
+  v.strictObject({ host: v.literal('encounter.patrol'), step: key, rows: key, actors: key, looks: key, herds: key, external: read }),
+  v.strictObject({ host: v.literal('boss.open-arena'), id: key, fight: key, geometry: key, view: key, groups: key, input: arenaInput, target: key, grants }),
 ]);
 /** Admit the plan as plain bounded JSON. Each host still admits its own rows when it installs them. */
 export const NativeAssemblySchema: v.GenericSchema<unknown, NativeAssemblyPlan> = v.pipe(v.unknown(), v.check(isJsonData, 'Native assembly must be plain bounded JSON'), v.strictObject({
