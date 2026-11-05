@@ -46,7 +46,8 @@ which ended J81. Nothing edits format anywhere else.
    A warm store hides this locally. Check the lock's `commit:` against
    `git rev-parse vX.Y.Z^{commit}`.
 4. A new module needs its entry in `exports` here before singleplayer
-   can import it.
+   can import it, and any path outside `src/format` and `src/cli` also
+   needs one in `files`, or the git dependency installs without it.
 
 ## Layout
 
@@ -59,6 +60,9 @@ goes in `tmp/<task>/` and is deleted when done.
   singleplayer; its `exports` are in the root `package.json` (D30).
   `standards/` holds the globals it may use; `ratchet.json` is the
   D29 baseline.
+- `src/hook/`: `@wildshard/format/formatHook`, the strip-types hook every
+  Node consumer installs before it imports format. Plain JS on purpose:
+  as .ts, nothing could load it from `node_modules`.
 - `src/cli/`: the `shardfile` CLI (`validate <dir>`, `--version`, `--help`).
 - `src/tools/`: repo tooling in TypeScript (the format ratchet).
 - `src/test/helpers/`: shared test helpers; `git.ts` makes real git repos in temp dirs.
@@ -77,6 +81,9 @@ goes in `tmp/<task>/` and is deleted when done.
   a new file there must be lint-clean and formatted, and a count in an
   imported file may only fall. Fixing imported code: fix, then
   `pnpm lint:format update` in the same commit.
+- A module shared with other repos goes here if both already depend on
+  format (J27): `tar` (the tarball, read and write), `uploadWire`,
+  `gridCatalogue`, `standaloneCatalogue`.
 - The library (`src/format`, not its tests) imports only `valibot`,
   `meshoptimizer/decoder` and its own modules, by relative `./x.ts`
   path, never by its package name.

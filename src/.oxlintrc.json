@@ -31,6 +31,9 @@
     // Plain-JS repo scripts, outside the TS project; covered by
     // `pnpm test:hooks` instead. (.githooks/ sits outside src/.)
     "scripts/**",
+    // Plain JS by necessity (its header says why), outside the TS project;
+    // format-hook.test.ts runs it in real Node processes.
+    "hook/format-hook.mjs",
     "dist/**",
     "node_modules/**",
     "test-results/**",
