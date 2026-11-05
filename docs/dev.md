@@ -7,7 +7,10 @@ here; what the repo does is `docs/prd.md`, how it is built `docs/design.md`.
 
 Run from the repo root.
 
-- `pnpm install`: installs deps and points `core.hooksPath` at `.githooks/`.
+- `pnpm install`: installs deps and points `core.hooksPath` at `.githooks/`,
+  through `pnpm:devPreinstall`, which runs only in this repo. Never use
+  `prepare` here: pnpm then builds the git dependency in every consumer,
+  and pnpm 10.26+ refuses that unless the consumer allowlists it.
 - `pnpm check`: typecheck + lint + the src/format ratchet + format:check
   + unit tests + format's tests + asks. The pre-push hook and CI run it.
 - `pnpm typecheck`: `src/tsconfig.json` (CLI, tools, tests),
