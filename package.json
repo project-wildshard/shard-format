@@ -314,6 +314,7 @@
     "./stillImage": "./src/format/stillImage.ts",
     "./streamedCover": "./src/format/streamedCover.ts",
     "./surfaceLooks": "./src/format/surfaceLooks.ts",
+    "./product-reads": "./src/format/product-reads.ts",
     "./tar": "./src/format/tar.ts",
     "./targets": "./src/format/targets.ts",
     "./terrain": "./src/format/terrain.ts",

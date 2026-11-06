@@ -17,3 +17,7 @@ the peak follows the largest file, not the shard. Real Pine (372 MB) peaks at
 A tarball may also leave `blobs/pack/` out. Every member already ships at its
 own path, so that is 109 MB of Pine saved, and a validator rebuilds the pack
 and checks its hash, so the bytes are still proved.
+
+The read-through and pack helpers moved to `product-reads.ts`:
+`validateShardfileProduct` sat at its size limit, and `packFromMembers` needs
+an export of its own for whoever serves a product.

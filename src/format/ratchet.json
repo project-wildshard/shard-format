@@ -3115,11 +3115,11 @@
   },
   "src/format/productValidation.ts": {
    "eslint(complexity)": 1,
-   "eslint(curly)": 32,
+   "eslint(curly)": 29,
    "eslint(max-params)": 2,
    "eslint(max-statements)": 2,
    "eslint(no-magic-numbers)": 12,
-   "eslint(sort-vars)": 2,
+   "eslint(sort-vars)": 1,
    "import(consistent-type-specifier-style)": 5,
    "import(exports-last)": 9,
    "import(group-exports)": 10,

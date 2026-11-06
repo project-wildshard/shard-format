@@ -13,6 +13,7 @@ import { assetCost, offlineMemoryAdmission, performanceTargetIssues } from './pr
 import { preflightDeclaredCosts, validateShardfileAssets } from './assetAdmission.ts';
 import { validationSourceBytes } from './validationReceipt.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
+import { assetStore, checkPacks } from './product-reads.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -60,29 +61,6 @@ export interface ValidatedProduct {
 }
 
 const decoder = (): TextDecoder => new TextDecoder('utf-8', { fatal: true });
-
-interface AssetPlace { readonly path: string; readonly bytes: number }
-
-/** Admitted bytes read again on each `get`: the map a read-through validation keeps instead of the bytes. */
-function readThroughAssets(files: ProductFiles, places: ReadonlyMap<string, AssetPlace>): ReadonlyMap<string, Uint8Array> {
-  const get = (key: string): Uint8Array | undefined => { const place = places.get(key); return place === undefined ? undefined : files.read(place.path, place.bytes); };
-  const all = (): Map<string, Uint8Array> => new Map([...places.keys()].flatMap((key): [string, Uint8Array][] => { const bytes = get(key); return bytes === undefined ? [] : [[key, bytes]]; }));
-  return { get, has: key => places.has(key), get size() { return places.size; }, keys: () => places.keys(), values: () => all().values(), entries: () => all().entries(),
-    forEach: visit => { for (const [key, bytes] of all()) visit(bytes, key, all()); }, [Symbol.iterator]: () => all().entries() };
-}
-
-/** A pack again, byte for byte, from its members. Every member keeps its own path, so a tarball may leave packs out (C0);
- *  whoever serves a product rebuilds them with this. `read` is by a listed path, as `ProductFiles.read` is. */
-export function packFromMembers(pack: NonNullable<OutputIndex['packs']>[number], index: Pick<OutputIndex, 'sections' | 'schemas' | 'files'>, read: (path: string, maxBytes: number) => Uint8Array): Uint8Array {
-  const paths = new Map([...index.sections, ...index.schemas, ...index.files].map(row => [row.hash, row.path] as const));
-  const bytes = new Uint8Array(pack.bytes);
-  for (const entry of pack.entries) {
-    const path = paths.get(entry.hash);
-    if (path === undefined) throw new Error(`Pack member outside its listed inventory: ${pack.path}`);
-    bytes.set(read(path, entry.bytes), entry.offset);
-  }
-  return bytes;
-}
 
 /** Parse canonical JSON bytes (sorted keys, one trailing newline), refusing any other encoding of the same value. */
 export function readCanonicalJson(bytes: Uint8Array): unknown {
@@ -167,9 +145,7 @@ function inspectBlob(file: OutputFile, bytes: Uint8Array, ports: ProductValidati
 export function validateShardfileProduct(files: ProductFiles, ports: ProductValidationPorts): ValidatedProduct {
   const verify = ports.verify ?? ((bytes: Uint8Array, expected: string): boolean => ports.hash(bytes) === expected);
   const index = parseOutputIndex(readCanonicalJson(files.read('shard.json', limits.sourceBytes)));
-  const listed = new Set(['shard.json', 'validation.json']), payloads = new Map<string, unknown>(), held = new Map<string, Uint8Array>(), places = new Map<string, AssetPlace>();
-  const assets = ports.readThrough === true ? readThroughAssets(files, places) : held;
-  const keep = (key: string, entry: OutputFile, bytes: Uint8Array): void => { if (ports.readThrough === true) places.set(key, { path: entry.path, bytes: entry.compressed }); else held.set(key, bytes); };
+  const listed = new Set(['shard.json', 'validation.json']), payloads = new Map<string, unknown>(), { assets, keep } = assetStore(files.read, ports.readThrough === true);
   const read = (entry: { path: string; hash: string; bytes: number }): Uint8Array => {
     listed.add(entry.path);
     const bytes = files.read(entry.path, entry.bytes);
@@ -181,8 +157,7 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
   for (const entry of index.files) {
     const bytes = read({ path: entry.path, hash: entry.hash, bytes: entry.compressed });
     inspectBlob(entry, bytes, ports, entry.kind === 'wasm' ? contracts.get(entry.hash) ?? { abi: 0 } : undefined);
-    keep(`${entry.commons === true ? 'commons:' : ''}${entry.hash}`, entry, bytes);
-    if (index.requires.commons.includes(entry.hash)) keep(`commons:${entry.hash}`, entry, bytes);
+    keep(entry, bytes, index.requires.commons.includes(entry.hash));
   }
   // J91: server files pass the same hash, size and schema checks; they stay out of the client's admitted assets
   for (const entry of index.admission.server ?? []) {
@@ -195,16 +170,7 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
     const bytes = assets.get(hash);
     if (bytes === undefined || decoder().decode(validationSourceBytes(cost)) !== decoder().decode(validationSourceBytes(ktx2DeviceCosts(bytes)))) throw new Error('KTX2 device costs differ from verified bytes');
   }
-  // C0: a tarball may leave a pack out, since its members ship anyway; left out, it must still come out of them exactly.
-  const present = new Set(files.paths());
-  for (const pack of index.packs ?? []) {
-    if (!present.has(pack.path)) {
-      if (ports.hash(packFromMembers(pack, index, files.read)) !== pack.hash) throw new Error(`Pack differs from its members: ${pack.path}`);
-      continue;
-    }
-    const bytes = read(pack);
-    for (const entry of pack.entries) if (!verify(bytes.subarray(entry.offset, entry.offset + entry.bytes), entry.hash, false)) throw new Error(`Pack member differs: ${pack.path}`);
-  }
+  checkPacks(index, new Set(files.paths()), { readFile: files.read, readListed: read, verify, hash: ports.hash });
   // C0 (J137): a mount passes the same hash and size checks as any listed file; nothing else may sit under `mounts/`.
   if (index.cook !== undefined) {
     for (const mount of readCookData(readCanonicalJson(read(index.cook))).mounts) {
