@@ -19,3 +19,11 @@
 - New `src/format` files had to be ratchet-clean, so they have
   kebab-case names behind camelCase `exports` keys, and named valibot
   imports where the old files use `* as v`.
+
+## cook.json (C0, J137)
+
+A shardfile that stands alone has to carry the art its sections name by
+public URL. `cook.json` lists those mounts plus the optional fence and
+packs hints (D5). It sits beside the index rather than in it, so the
+`shard.json` every boot reads grows by one row, and the validator hashes
+each mount like any listed file.

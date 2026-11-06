@@ -1,3 +1,4 @@
+import { cookMountPath, readCookData } from './cook-data.ts';
 import { parseOutputIndex, validateOutputSection, assembleOutputShardfile, type OutputFile, type OutputIndex } from './outputIndex.ts';
 import { decisionModuleContracts, scriptAdmissionRows, type ScriptAdmissionRows, type ScriptContract } from './scriptContract.ts';
 import { registeredJsonContract, validateRegisteredJson } from './registeredJson.ts';
@@ -169,6 +170,13 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
   for (const pack of index.packs ?? []) {
     const bytes = read(pack);
     for (const entry of pack.entries) if (!verify(bytes.subarray(entry.offset, entry.offset + entry.bytes), entry.hash, false)) throw new Error(`Pack member differs: ${pack.path}`);
+  }
+  // C0 (J137): a mount passes the same hash and size checks as any listed file; nothing else may sit under `mounts/`.
+  if (index.cook !== undefined) {
+    for (const mount of readCookData(readCanonicalJson(read(index.cook))).mounts) {
+      if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
+      read(mount);
+    }
   }
   for (const entry of index.runtime?.files ?? []) {
     if (ports.runtimeImports === undefined) throw new Error('Copied runtime files need a runtime import checker');

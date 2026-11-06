@@ -106,6 +106,7 @@
     "./entryways": "./src/format/entryways.ts",
     "./exchange": "./src/format/exchange.ts",
     "./explorerCatalogue": "./src/format/explorerCatalogue.ts",
+    "./cookData": "./src/format/cook-data.ts",
     "./fenceReads": "./src/format/fenceReads.ts",
     "./formatHook": "./src/hook/format-hook.mjs",
     "./fieldPresentation": "./src/format/fieldPresentation.ts",

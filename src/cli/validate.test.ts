@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import type { SpawnSyncReturns } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import {
   cpSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -75,6 +77,68 @@ describe('shardfile validate on a broken product', (): void => {
 
     assert.equal(run.status, 3)
     assert.match(run.stderr, /Unlisted output file: extra\.js/u)
+  })
+})
+
+function hashOf(text: string): string {
+  return createHash('sha256').update(text).digest('hex')
+}
+
+/** One mount's `cook.json`, as canonical JSON. */
+function cookData(listed: string): string {
+  const row = {
+    bytes: Buffer.byteLength(listed),
+    hash: hashOf(listed),
+    path: 'mounts/assets/fixture/art.bin',
+    url: '/assets/fixture/art.bin',
+  }
+  return `${JSON.stringify({ mounts: [row], version: 1 })}\n`
+}
+
+/** Adds the `cook` row to `shard.json`, which keeps sorted keys. */
+function listCookData(dir: string, data: string): void {
+  const file = path.join(dir, 'shard.json')
+  const text = readFileSync(file, 'utf8')
+  const row = JSON.stringify({
+    bytes: Buffer.byteLength(data),
+    hash: hashOf(data),
+    path: 'cook.json',
+  })
+  writeFileSync(file, text.replace('"files":', `"cook":${row},"files":`))
+}
+
+/** The fixture carrying one mounted file, as a product that stands alone does. */
+function mounted(name: string, body: string, listed: string): string {
+  const dir = copy(name)
+  const data = cookData(listed)
+  mkdirSync(path.join(dir, 'mounts/assets/fixture'), { recursive: true })
+  writeFileSync(path.join(dir, 'mounts/assets/fixture/art.bin'), body)
+  writeFileSync(path.join(dir, 'cook.json'), data)
+  listCookData(dir, data)
+  return dir
+}
+
+describe('shardfile validate on a product with mounts', (): void => {
+  it('takes a mount whose bytes match cook.json', (): void => {
+    const run = cli(['validate', mounted('mount-good', 'art', 'art')])
+
+    assert.equal(run.status, 0, run.stderr)
+  })
+
+  it('refuses a mount whose bytes differ', (): void => {
+    const run = cli(['validate', mounted('mount-bad', 'tra', 'art')])
+
+    assert.equal(run.status, 3)
+    assert.match(run.stderr, /Output hash or size mismatch/u)
+  })
+
+  it('refuses a file under mounts/ that cook.json does not list', (): void => {
+    const dir = mounted('mount-extra', 'art', 'art')
+    writeFileSync(path.join(dir, 'mounts/assets/fixture/more.bin'), 'more')
+    const run = cli(['validate', dir])
+
+    assert.equal(run.status, 3)
+    assert.match(run.stderr, /Unlisted output file/u)
   })
 })
 

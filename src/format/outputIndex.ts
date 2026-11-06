@@ -22,6 +22,7 @@ const path = v.pipe(v.string(), v.maxLength(240), v.regex(/^(?:[a-zA-Z0-9_-][a-z
 const sectionName = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9-]*\/[a-zA-Z][a-zA-Z0-9_-]*$/u));
 const measuredFile = { path, hash: ShardHashSchema, bytes: ShardNaturalSchema };
 const section = v.strictObject({ ...measuredFile, name: sectionName, schema: v.pipe(v.string(), v.maxLength(240)) });
+const cookRow = v.exactOptional(v.strictObject({ ...measuredFile, path: v.literal('cook.json') }));
 const costs = v.omit(FilesSchema.pipe[0].item, ['kind']).entries;
 const fileSchema = v.strictObject({ ...costs, path, kind: v.picklist(['glb', 'ktx2', 'audio', 'json', 'wasm', 'tile', 'bin', 'image']), name: v.exactOptional(v.pipe(v.string(), v.maxLength(240))), tier: v.exactOptional(v.picklist(['phone', 'desktop'])), variantOf: v.exactOptional(v.pipe(v.string(), v.minLength(1), v.maxLength(240))), commons: v.exactOptional(v.literal(true)), jsonSchema: v.exactOptional(v.record(v.string(), v.unknown())) });
 const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['spawns']).entries, trust: v.literal('first-party'), files: v.pipe(v.array(v.strictObject({ ...measuredFile, lines: ShardNaturalSchema })), v.maxLength(0)), lines: v.literal(0) });
@@ -37,6 +38,8 @@ export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputInde
    *  one pack instead of hundreds of files; every member keeps its own listed path, hash and size */
   packs: v.exactOptional(v.pipe(v.array(v.strictObject({ ...measuredFile, entries: v.pipe(v.array(v.strictObject({
     hash: ShardHashSchema, offset: ShardNaturalSchema, bytes: ShardNaturalSchema })), v.minLength(1), v.maxLength(8192)) })), v.maxLength(64))),
+  /** C0 (J137): `cook.json` (cook-data.ts), what makes the product stand alone. Absent on a product with no mounts or hints. */
+  cook: cookRow,
 });
 export type OutputIndex = v.InferOutput<typeof OutputIndexSchema>;
 export type OutputFile = OutputIndex['files'][number];
@@ -205,6 +208,11 @@ interface OutputIndexRowsInputFields {
             bytes: number;
         }[];
     }[];
+    cook?: {
+        path: "cook.json";
+        hash: string;
+        bytes: number;
+    } | undefined;
     runtime: {
         trust: "first-party";
         files: {
@@ -297,6 +305,11 @@ interface OutputIndexRowsFields {
             bytes: number;
         }[];
     }[];
+    cook?: {
+        path: "cook.json";
+        hash: string;
+        bytes: number;
+    } | undefined;
     runtime: {
         trust: "first-party";
         files: {
