@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { packFromMembers } from '../format/product-reads.ts'
+import { mountSharesBlob, packFromMembers } from '../format/product-reads.ts'
 
 const utf8 = new TextEncoder()
 const files = new Map([
@@ -38,4 +38,12 @@ test('a member nothing lists is refused', (): void => {
     (): unknown => packFromMembers({ ...pack, entries }, index, read),
     /outside its listed inventory/u,
   )
+})
+
+test('a mount shares a blob only of its exact bytes', (): void => {
+  const rows = [{ path: 'blobs/bin/b.bin', hash: 'bb', compressed: 4 }]
+  const mount = { path: 'blobs/bin/b.bin', hash: 'bb', bytes: 4 }
+  assert.equal(mountSharesBlob(mount, rows), true)
+  assert.equal(mountSharesBlob({ ...mount, hash: 'cc' }, rows), false)
+  assert.equal(mountSharesBlob({ ...mount, bytes: 5 }, rows), false)
 })

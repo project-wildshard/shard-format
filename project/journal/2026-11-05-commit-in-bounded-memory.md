@@ -21,3 +21,8 @@ and checks its hash, so the bytes are still proved.
 The read-through and pack helpers moved to `product-reads.ts`:
 `validateShardfileProduct` sat at its size limit, and `packFromMembers` needs
 an export of its own for whoever serves a product.
+
+A mount may now name the listed blob it equals, so a shardfile holds a file
+once however many URLs serve it: 47 MB of Pine sat there twice. `spawnManifest`
+and the fence helpers left for singleplayer's cook (J22: packs never cross
+repos).

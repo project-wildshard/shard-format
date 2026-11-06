@@ -162,4 +162,17 @@ function checkPacks(
   }
 }
 
-export { assetStore, checkPacks, packFromMembers }
+/** Whether a mount that isn't under `mounts/` is a listed file of its exact bytes. */
+function mountSharesBlob(
+  mount: Readonly<{ path: string; hash: string; bytes: number }>,
+  files: readonly Readonly<AssetRow>[],
+): boolean {
+  return files.some(
+    (row: Readonly<AssetRow>): boolean =>
+      row.path === mount.path &&
+      row.hash === mount.hash &&
+      row.compressed === mount.bytes,
+  )
+}
+
+export { assetStore, checkPacks, mountSharesBlob, packFromMembers }

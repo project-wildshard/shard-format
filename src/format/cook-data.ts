@@ -8,7 +8,6 @@ import {
   pipe,
   regex,
   safeInteger,
-  startsWith,
   strictObject,
   string,
 } from 'valibot'
@@ -55,9 +54,11 @@ const publicUrl: GenericSchema<unknown, string> = pipe(
   regex(/^(?:\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*)+$/u),
 )
 
+// A mount's bytes sit under `mounts/`, or in the listed blob they equal, so a
+// shardfile holds a file once however many URLs serve it.
 const mountPath: GenericSchema<unknown, string> = pipe(
   boundedPath,
-  startsWith('mounts/'),
+  regex(/^(?:mounts|blobs)\//u),
 )
 
 const sha256Hex: GenericSchema<unknown, string> = pipe(

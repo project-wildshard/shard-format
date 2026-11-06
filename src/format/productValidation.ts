@@ -13,7 +13,7 @@ import { assetCost, offlineMemoryAdmission, performanceTargetIssues } from './pr
 import { preflightDeclaredCosts, validateShardfileAssets } from './assetAdmission.ts';
 import { validationSourceBytes } from './validationReceipt.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
-import { assetStore, checkPacks } from './product-reads.ts';
+import { assetStore, checkPacks, mountSharesBlob } from './product-reads.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -174,8 +174,10 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
   // C0 (J137): a mount passes the same hash and size checks as any listed file; nothing else may sit under `mounts/`.
   if (index.cook !== undefined) {
     for (const mount of readCookData(readCanonicalJson(read(index.cook))).mounts) {
-      if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
-      read(mount);
+      if (!mountSharesBlob(mount, index.files)) {
+        if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
+        read(mount);
+      }
     }
   }
   for (const entry of index.runtime?.files ?? []) {
