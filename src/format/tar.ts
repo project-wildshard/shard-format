@@ -5,6 +5,8 @@
 // same files always give the same bytes, because a tarball's hash is its
 // identity (J60): sorted paths, no directories, no times, no owners.
 
+import type { TarEntry, TarSource } from './tar-source.ts'
+
 const BLOCK = 512
 const NAME = { at: 0, length: 100 }
 const MODE = { at: 100, length: 8 }
@@ -21,6 +23,7 @@ const OCTAL = 8
 const SPACE = 0x20
 const NUL = 0
 const END_BLOCKS = 2
+const END_CHUNK = 65_536
 const START = 0
 const NOT_FOUND = -1
 const NEXT = 1
@@ -120,47 +123,65 @@ function padded(size: number): number {
 
 /** Where the next header starts, after reading the entry at `offset`. */
 function readEntry(
-  bytes: Readonly<Uint8Array>,
+  source: TarSource,
   offset: number,
-  files: Map<string, Uint8Array>,
+  files: Map<string, TarEntry>,
 ): number {
-  const entry = header(bytes.subarray(offset, offset + BLOCK))
+  const entry = header(source.read(offset, BLOCK))
   const start = offset + BLOCK
-  if (start + entry.size > bytes.length) {
+  if (start + entry.size > source.length) {
     throw new Error(`tar: truncated entry ${entry.path}`)
   }
   if (REGULAR_TYPES.has(entry.type)) {
     if (files.has(entry.path)) {
       throw new Error(`tar: duplicate entry ${entry.path}`)
     }
-    // A view, not a copy: a full shard is hundreds of megabytes.
-    files.set(entry.path, bytes.subarray(start, start + entry.size))
+    files.set(entry.path, { offset: start, size: entry.size })
   }
   return start + padded(entry.size)
 }
 
-function assertEnd(bytes: Readonly<Uint8Array>, offset: number): void {
-  const rest = bytes.subarray(offset)
-  if (rest.length < END_BLOCKS * BLOCK || !isZero(rest)) {
+function assertEnd(source: TarSource, offset: number): void {
+  if (source.length - offset < END_BLOCKS * BLOCK) {
     throw new Error('tar: bad end-of-archive blocks')
+  }
+  for (let at = offset; at < source.length; at += END_CHUNK) {
+    if (!isZero(source.read(at, Math.min(END_CHUNK, source.length - at)))) {
+      throw new Error('tar: bad end-of-archive blocks')
+    }
+  }
+}
+
+/** Each regular file's place, reading only headers; refuses what `readTar` does. */
+function indexTar(source: TarSource): ReadonlyMap<string, TarEntry> {
+  const files = new Map<string, TarEntry>()
+  let offset = START
+  for (;;) {
+    const block = source.read(offset, BLOCK)
+    if (block.length < BLOCK) {
+      throw new Error('tar: truncated (no end-of-archive blocks)')
+    }
+    if (isZero(block)) {
+      assertEnd(source, offset)
+      return files
+    }
+    offset = readEntry(source, offset, files)
   }
 }
 
 /** The tarball's regular files by path; throws on anything not strictly ustar. */
 function readTar(bytes: Readonly<Uint8Array>): ReadonlyMap<string, Uint8Array> {
+  const index = indexTar({
+    length: bytes.length,
+    read: (offset: number, length: number): Readonly<Uint8Array> =>
+      bytes.subarray(offset, offset + length),
+  })
   const files = new Map<string, Uint8Array>()
-  let offset = START
-  for (;;) {
-    const block = bytes.subarray(offset, offset + BLOCK)
-    if (block.length < BLOCK) {
-      throw new Error('tar: truncated (no end-of-archive blocks)')
-    }
-    if (isZero(block)) {
-      assertEnd(bytes, offset)
-      return files
-    }
-    offset = readEntry(bytes, offset, files)
+  for (const [path, { offset, size }] of index) {
+    // A view, not a copy: a full shard is hundreds of megabytes.
+    files.set(path, bytes.subarray(offset, offset + size))
   }
+  return files
 }
 
 function byteLength(value: string): number {
@@ -271,4 +292,5 @@ function writeTar(
   return tarball
 }
 
-export { readTar, writeTar }
+export type { TarEntry, TarSource } from './tar-source.ts'
+export { indexTar, readTar, writeTar }

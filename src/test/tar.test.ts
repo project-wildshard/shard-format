@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { readTar, writeTar } from '../format/tar.ts'
+import { indexTar, readTar, writeTar } from '../format/tar.ts'
 
 const BLOCK = 512
 const TYPE_AT = 156
@@ -117,4 +117,22 @@ test('refuses a link', (): void => {
   const link = retyped(writeTar(files('a')), '2')
 
   assert.throws((): unknown => readTar(link), /unsupported entry type/u)
+})
+
+test('indexes by position what readTar reads, past the first block', (): void => {
+  const tarball = writeTar(files('a.txt', 'b/c.txt'))
+  const reads: number[] = []
+  const index = indexTar({
+    length: tarball.length,
+    read: (offset: number, length: number): Uint8Array => {
+      reads.push(length)
+      return tarball.subarray(offset, offset + length)
+    },
+  })
+  const held = readTar(tarball)
+  assert.deepEqual([...index.keys()], [...held.keys()])
+  for (const [path, { offset, size }] of index) {
+    assert.deepEqual(tarball.subarray(offset, offset + size), held.get(path))
+  }
+  assert.ok(reads.every((length: number): boolean => length <= 65_536))
 })
