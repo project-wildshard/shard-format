@@ -5,14 +5,16 @@
   "description": "The raw shardfile format: the spec, the validator and a validate CLI. The public, versioned contract every other repo builds on.",
   "type": "module",
   "bin": {
-    "shardfile": "./src/cli/main.ts"
+    "shardfile": "./src/cli/bin.mjs"
   },
   "files": [
     "src/format/*.ts",
     "!src/format/*.test.ts",
     "src/format/memoryGates.json",
     "src/cli/*.ts",
+    "src/cli/*.mjs",
     "!src/cli/*.test.ts",
+    "corpus/handwritten/**",
     "src/hook/format-hook.mjs",
     "src/hook/format-hook.d.mts"
   ],
