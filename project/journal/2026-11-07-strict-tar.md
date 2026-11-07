@@ -12,3 +12,6 @@
 - Padding was the easy identity hole. The header's own spare bytes,
   such as mtime and uname, still let one set of files take many hashes,
   and a system `tar` writes them, so the reader can't refuse them.
+- J186 says new tests never go in hooks, so the audit's cases moved to
+  `src/ci`, which `pnpm test:ci` runs in CI. The refusal corpus is off
+  the list too: only the bugs get tests.

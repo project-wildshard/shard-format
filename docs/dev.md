@@ -20,6 +20,7 @@ Run from the repo root.
 - `pnpm test`: `node:test` on every `*.test.ts` outside `src/format`,
   run as .ts by Node's type stripping.
 - `pnpm test:format`: format's imported vitest tests (D31).
+- `pnpm test:ci`: `src/ci`, outer-edge bug tests. CI only, never a hook (J186).
 - `pnpm lint:format`: the src/format ratchet (D29). `pnpm lint:format
   update` lowers the baseline after a fix; it refuses any rise.
 - `pnpm test:hooks`: the `.githooks/` suite (CI, and pre-commit when hooks change).

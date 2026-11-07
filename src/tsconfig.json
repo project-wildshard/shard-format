@@ -26,5 +26,12 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["cli", "hook", "test", "tools", "format/standards/node.d.ts"]
+  "include": [
+    "ci",
+    "cli",
+    "hook",
+    "test",
+    "tools",
+    "format/standards/node.d.ts"
+  ]
 }
