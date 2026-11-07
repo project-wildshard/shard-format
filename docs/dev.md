@@ -20,13 +20,17 @@ Run from the repo root.
 - `pnpm test`: `node:test` on every `*.test.ts` outside `src/format`,
   run as .ts by Node's type stripping.
 - `pnpm test:format`: format's imported vitest tests (D31).
-- `pnpm test:ci`: `src/ci`, outer-edge bug tests. CI only, never a hook (J186).
+- `pnpm test:ci`: `src/ci`, outer-edge tests: Template 2 through the real
+  CLI, hostile uploads, a packed install. CI only, never a hook (J186).
 - `pnpm lint:format`: the src/format ratchet (D29). `pnpm lint:format
   update` lowers the baseline after a fix; it refuses any rise.
 - `pnpm test:hooks`: the `.githooks/` suite (CI, and pre-commit when hooks change).
 - `pnpm lint:fix` / `pnpm format`: the hooks only check; these fix.
 - `node src/cli/main.ts --help`: the CLI without installing it.
-- `node src/cli/main.ts validate <dir>`: validate a built product folder.
+- `node src/cli/main.ts validate <dir|tar>`: validate a built product,
+  a folder or a tarball.
+- `node src/cli/main.ts pack <dir> [--out <file>]`: tar a folder. What its
+  sections measure follows them, so edit a section and pack.
 - `pnpm md:wrap`: rewraps Markdown prose to ~72 columns.
 - `src/scripts/ask-new.sh "<Jake's words>"`: opens an ask (`docs/tasks/asks/README.md`).
 
@@ -54,7 +58,7 @@ which ended J81. Nothing edits format anywhere else.
 
 The root stays thin: README.md and AGENTS.md (humans only), CLAUDE.md
 (`@AGENTS.md`), package.json, pnpm-lock.yaml, .npmrc, .gitignore,
-.editorconfig, `docs/`, `project/`, `src/` and the dot dirs. Scratch
+.editorconfig, `corpus/`, `docs/`, `project/`, `src/` and the dot dirs. Scratch
 goes in `tmp/<task>/` and is deleted when done.
 
 - `src/format/`: the `@wildshard/format` package, imported from
@@ -64,9 +68,16 @@ goes in `tmp/<task>/` and is deleted when done.
 - `src/hook/`: `@wildshard/format/formatHook`, the strip-types hook every
   Node consumer installs before it imports format. Plain JS on purpose:
   as .ts, nothing could load it from `node_modules`.
-- `src/cli/`: the `shardfile` CLI (`validate <dir>`, `--version`, `--help`).
+- `corpus/handwritten/`: Template 2 (J168), JSON held by hand and baked
+  blobs, with no build. Its sections are edited here and packed with
+  `shardfile pack`; its blobs are frozen Blender output (J88). It ships in
+  `files`, so consumers can run it. Pinned as `blender-template`.
+- `src/cli/`: the `shardfile` CLI (`validate <dir|tar>`, `pack <dir>`,
+  `--version`, `--help`). `bin.mjs` is the installed entry: Node won't strip
+  types under `node_modules`, so it installs the format hook first.
 - `src/tools/`: repo tooling in TypeScript (the format ratchet).
-- `src/test/helpers/`: shared test helpers; `git.ts` makes real git repos in temp dirs.
+- `src/test/helpers/`: shared test helpers; `git.ts` makes real git repos in
+  temp dirs, `corpus.ts` holds Template 2 for `src/ci`.
 - `src/test/fixtures/`: test inputs, outside oxfmt (a product's JSON is
   canonical and hash-bound).
 - `src/scripts/`: repo tooling (asks, md-wrap), plain JS.

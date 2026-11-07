@@ -4,6 +4,7 @@ import {
   fstatSync,
   lstatSync,
   openSync,
+  readFileSync,
   readSync,
   readdirSync,
 } from 'node:fs'
@@ -11,11 +12,12 @@ import path from 'node:path'
 
 import { prepareAssetDecoders } from '../format/product.ts'
 import { validateShardfileProduct } from '../format/productValidation.ts'
+import { readTar } from '../format/tar.ts'
 
 import type { ProductFiles } from '../format/productValidation.ts'
 
-// `shardfile validate <dir>`: format validation of a built product folder
-// (P1 F3 (a)): schema, inventory, hashes, sizes, costs, budgets and
+// `shardfile validate <dir|tar>`: format validation of a built product, as a
+// folder or as the tarball a host takes (P1 F3 (a)): schema, inventory, hashes, sizes, costs, budgets and
 // admission rows. It never runs script bytes; that is the execution proof
 // in sharddev and the cook worker.
 //
@@ -97,10 +99,38 @@ function productFiles(root: string): ProductFiles {
   }
 }
 
-/** Validates the built product folder at `dir` with format alone. */
-async function validateProduct(dir: string): Promise<ProductSummary> {
+/** A product already in memory: an unpacked tarball, or `pack`'s result. */
+function memoryFiles(
+  files: ReadonlyMap<string, Readonly<Uint8Array>>,
+): ProductFiles {
+  return {
+    read: (file: string, maxBytes: number): Uint8Array => {
+      const bytes = files.get(file)
+      if (bytes === undefined) {
+        throw new Error(`missing file: ${file}`)
+      }
+      if (bytes.length > maxBytes) {
+        throw new Error(`larger than its declared size: ${file}`)
+      }
+      return bytes
+    },
+    paths: (): Iterable<string> => files.keys(),
+  }
+}
+
+function targetFiles(target: string): ProductFiles {
+  // oxlint-disable-next-line node/no-sync -- read before the sync validator
+  if (lstatSync(target).isFile()) {
+    // oxlint-disable-next-line node/no-sync -- read before the sync validator
+    return memoryFiles(readTar(readFileSync(target)))
+  }
+  return productFiles(target)
+}
+
+/** Validates the built product at `target` with format alone. */
+async function validateProduct(target: string): Promise<ProductSummary> {
   await prepareAssetDecoders()
-  const valid = validateShardfileProduct(productFiles(path.resolve(dir)), {
+  const valid = validateShardfileProduct(targetFiles(path.resolve(target)), {
     hash: sha256,
   })
   return {
@@ -119,4 +149,4 @@ function summary(product: ProductSummary): string {
 }
 
 export type { ProductSummary }
-export { summary, validateProduct }
+export { memoryFiles, productFiles, summary, validateProduct }
