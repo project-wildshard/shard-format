@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import type { SpawnSyncReturns } from 'node:child_process'
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 
@@ -11,43 +17,56 @@ import { ROOT, scratch } from '../test/helpers/corpus.ts'
 
 // A consumer's install, not this tree. `files` is a list of globs, so a new
 // folder doesn't ship; Node won't strip types under node_modules, so a bin that
-// runs here can die there. `pnpm pack` then a real, offline install finds both.
-// The store already holds this repo's dependencies, so there's no network.
+// runs here can die there. So: `pnpm pack`'s tarball, unpacked where an install
+// puts it, beside only what it declares. pnpm doesn't do the install, because
+// that needs the registry's metadata, and tests have no network.
 
 const dir = scratch('installed')
-const ManifestSchema = object({ exports: record(string(), string()) })
+const ManifestSchema = object({
+  bin: record(string(), string()),
+  dependencies: record(string(), string()),
+  exports: record(string(), string()),
+})
 
-function pnpm(args: readonly string[], cwd: string): SpawnSyncReturns<string> {
-  const run = spawnSync('pnpm', [...args], { cwd, encoding: 'utf8' })
+function shell(command: string, args: readonly string[]): void {
+  const run = spawnSync(command, [...args], { cwd: ROOT, encoding: 'utf8' })
   assert.equal(run.status, 0, run.stderr + run.stdout)
-  return run
 }
 
-function install(): string {
-  pnpm(['pack', '--pack-destination', dir], ROOT)
+function packToDir(): string {
+  shell('pnpm', ['pack', '--pack-destination', dir])
   const tarball = readdirSync(dir).find((file: string): boolean =>
     file.endsWith('.tgz'),
   )
   assert.ok(tarball !== undefined)
-  const app = path.join(dir, 'app')
-  mkdirSync(app)
-  writeFileSync(
-    path.join(app, 'package.json'),
-    '{"name":"consumer","private":true,"type":"module"}\n',
-  )
-  // A per-run link in the shared store would outlive the test.
-  writeFileSync(path.join(app, '.npmrc'), 'enable-global-virtual-store=false\n')
-  pnpm(['add', '--offline', `file:${path.join(dir, tarball)}`], app)
-  return app
+  return path.join(dir, tarball)
 }
 
-const app = install()
-const PACKAGE = path.join(app, 'node_modules/@wildshard/format')
-const BIN = path.join(app, 'node_modules/.bin/shardfile')
+function install(): string {
+  const unpacked = path.join(dir, 'app/node_modules/@wildshard/format')
+  mkdirSync(unpacked, { recursive: true })
+  shell('tar', ['-xzf', packToDir(), '-C', unpacked, '--strip-components', '1'])
+  return unpacked
+}
+
+const PACKAGE = install()
+const APP = path.join(dir, 'app')
 const SHIPPED = path.join(PACKAGE, 'corpus/handwritten')
+const raw = readFileSync(path.join(PACKAGE, 'package.json'), 'utf8')
+const manifest = parse(ManifestSchema, JSON.parse(raw))
+const BIN = path.join(PACKAGE, manifest.bin['shardfile'] ?? 'no bin')
+for (const name of Object.keys(manifest.dependencies)) {
+  symlinkSync(
+    path.join(ROOT, 'node_modules', name),
+    path.join(APP, 'node_modules', name),
+  )
+}
 
 function installed(args: readonly string[]): SpawnSyncReturns<string> {
-  return spawnSync(BIN, [...args], { cwd: app, encoding: 'utf8' })
+  return spawnSync(process.execPath, [BIN, ...args], {
+    cwd: APP,
+    encoding: 'utf8',
+  })
 }
 
 test('the installed bin validates and packs the shipped Template 2', (): void => {
@@ -61,8 +80,6 @@ test('the installed bin validates and packs the shipped Template 2', (): void =>
 })
 
 test('every subpath a consumer can name loads', (): void => {
-  const raw = readFileSync(path.join(PACKAGE, 'package.json'), 'utf8')
-  const manifest = parse(ManifestSchema, JSON.parse(raw))
   const names = Object.entries(manifest.exports)
     .filter(([, file]: readonly [string, string]): boolean =>
       file.endsWith('.ts'),
@@ -70,7 +87,7 @@ test('every subpath a consumer can name loads', (): void => {
     .map(([name]: readonly [string, string]): string =>
       name.replace('.', '@wildshard/format'),
     )
-  const script = path.join(app, 'imports.mjs')
+  const script = path.join(APP, 'imports.mjs')
   writeFileSync(
     script,
     `import { installFormatHook } from '@wildshard/format/formatHook'
@@ -79,7 +96,7 @@ for (const name of ${JSON.stringify(names)}) await import(name)
 `,
   )
   const run = spawnSync(process.execPath, [script], {
-    cwd: app,
+    cwd: APP,
     encoding: 'utf8',
   })
 
