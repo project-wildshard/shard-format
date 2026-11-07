@@ -610,26 +610,19 @@ working storage. This is a rest-pose, local-axis estimate before camera selectio
 culling or occlusion; it is neither measured screen overdraw nor an admission cap.
 The CLI prints it as an advisory alongside the admitted asset costs.
 
-First-party products rebuild every build. The client accepts current `"0.1"`; the only
-previous-version exception is offline-cached first-party content.
-Older content needs upgrade without touching its source or saves. A version bump
-migrates all first-party source and retains saves in one commit. Outside authors
-must update `version`, `requires.sdk`, the sim ABI and affected fields, then rebuild
-and validate; incompatible state changes require an explicit save migration.
+First-party products rebuild every build. The client accepts the current version only.
+Older content needs upgrade without touching its source. A version bump migrates all
+first-party source in one commit. Outside authors must update `version`, `requires.sdk`,
+the sim ABI and affected fields, then rebuild and validate.
+Saves wipe at a breaking promotion: this is pre-alpha, so there are no save migrations
+(J149) and no legacy reader (Q18).
 The format never freezes or cuts stable 1.0 in this plan (G195). Every breaking
 change increments the integer revision in the canonical string `"0.<revision>"`
-and migrates all first-party declarations and affected saves in that commit.
+and migrates all first-party declarations in that commit.
 `requires.sdk` names the same string; command/snapshot ABI integers change only
 when their own contracts change. No float comparison is used: 0.10 follows 0.9.
 Malformed strings, unsupported revisions and numeric versions are refused by
-normal admission. One bounded trusted reader explicitly names the previous wire
-form, legacy integer `0`: only a completely visited first-party offline cache
-can select it. It rewrites the two version fields, then repeats the current
-strict grammar, graph/cost and immutable-byte admission. Missing old fields or
-corrupt old assets remain refused. Online upgrades compare strict saved-state
-lineage before publishing a new visit, preserving identity and migration rules.
-The legacy reader is replaced explicitly at the next revision, never carried
-forward as a general old-format or external-content bypass.
+normal admission.
 
 The author CLI is built with `node scripts/build-sdk.mjs` in this checkout and run
 as `node src/sdk/bin/wildshard.mjs`. Outside projects get `wildshard` from the SDK
