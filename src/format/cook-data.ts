@@ -9,9 +9,13 @@ import {
   regex,
   safeInteger,
   strictObject,
+  variant,
   string,
 } from 'valibot'
 
+import { CookPreparationSchema } from './cook-preparation.ts'
+
+import type { CookPreparation } from './cook-preparation.ts'
 import type { GenericSchema } from 'valibot'
 
 // C0 (J137, D5): what makes a shardfile stand alone, in one file beside
@@ -19,8 +23,7 @@ import type { GenericSchema } from 'valibot'
 // `mounts` are the shard's own files that its sections and boot tables
 // name by a public URL: the bytes travel in the product under `mounts/`
 // and the cook publishes each one at its URL. `packs` and `fence` are
-// optional author data: a missing or stale one costs seconds, never a
-// refused cook (D5).
+// optional only on legacy version 1. Version 2 requires J198 preparation.
 
 interface CookMount {
   readonly url: string
@@ -29,7 +32,7 @@ interface CookMount {
   readonly bytes: number
 }
 
-interface CookData {
+interface LegacyCookData {
   readonly version: typeof COOK_DATA_VERSION
   readonly mounts: readonly CookMount[]
   /** 'fence' packs what the boot reads before control; unset, the whole level. */
@@ -90,12 +93,25 @@ const identities: GenericSchema<unknown, string[]> = pipe(
   maxLength(ROW_LIMIT),
 )
 
-const CookDataSchema: GenericSchema<unknown, CookData> = strictObject({
+const LegacyCookDataSchema = strictObject({
   version: literal(COOK_DATA_VERSION),
   mounts: mountRows,
   packs: exactOptional(literal('fence')),
   fence: exactOptional(identities),
 })
+
+const PreparedCookDataSchema = strictObject({
+  ...CookPreparationSchema.entries,
+  mounts: mountRows,
+})
+interface PreparedCookData extends CookPreparation {
+  readonly mounts: readonly CookMount[]
+}
+type CookData = LegacyCookData | PreparedCookData
+const CookDataSchema: GenericSchema<unknown, CookData> = variant('version', [
+  LegacyCookDataSchema,
+  PreparedCookDataSchema,
+])
 
 /** Where a mount's bytes sit in a product. */
 function cookMountPath(url: string): string {

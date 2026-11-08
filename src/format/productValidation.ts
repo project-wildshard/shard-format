@@ -1,4 +1,5 @@
 import { cookMountPath, readCookData } from './cook-data.ts';
+import { requireCookPreparation } from './cook-preparation.ts';
 import { parseOutputIndex, validateOutputSection, assembleOutputShardfile, type OutputFile, type OutputIndex } from './outputIndex.ts';
 import { decisionModuleContracts, scriptAdmissionRows, type ScriptAdmissionRows, type ScriptContract } from './scriptContract.ts';
 import { registeredJsonContract, validateRegisteredJson } from './registeredJson.ts';
@@ -172,8 +173,10 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
   }
   checkPacks(index, new Set(files.paths()), { readFile: files.read, readListed: read, verify, hash: ports.hash });
   // C0 (J137): a mount passes the same hash and size checks as any listed file; nothing else may sit under `mounts/`.
-  if (index.cook !== undefined) {
-    for (const mount of readCookData(readCanonicalJson(read(index.cook))).mounts) {
+  const cook = index.cook === undefined ? undefined : readCookData(readCanonicalJson(read(index.cook)));
+  requireCookPreparation(index, cook, ports.hash);
+  if (cook !== undefined) {
+    for (const mount of cook.mounts) {
       if (!mountSharesBlob(mount, index.files)) {
         if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
         read(mount);

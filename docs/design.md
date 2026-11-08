@@ -82,6 +82,27 @@ pass it.
 
 ## The source of truth
 
+## J198 cook preparation
+
+New prepared products use `sdk: "0.3"` in the format-2 header and must
+name `cook.json`. Its version 2 requires `mounts`, `inputHash`, `packs`
+(`whole` or `fence`), a unique hash-valued `fence`, and the actual version-2
+GLSL `programs` table. The program mount must equal the canonical program
+table; source lines, shader indexes and linked pairs are bounded and
+checked. Cook metadata is capped at 8 MiB for the new producer version.
+
+`cookPreparationBytes` canonically binds every header field except the
+cook pointer itself, plus the complete mount inventory. The producer hashes
+that value; admission and cook recompute it before using any lists. A stale
+value refuses with `wildshard prepare <product-dir> --base <exact-preview-url>`.
+No browser is launched by format or by the VPS cook.
+
+Immutable `sdk: "0.2"` products retain the legacy version-1 reader. This
+compatibility is explicit; it does not certify the existing 28 heads for
+J198. Producer capture, renderer matching, consumer pinning and replacing
+those heads are coordinated in meta `DOWNLOAD-THEN-C.md` D5-1 through D5-4.
+The quick CLI proof lives in `src/ci/cook-preparation.test.ts`, outside hooks.
+
 This repo. Singleplayer's `src/format` was the source until its switch
 (J81); the last copy came from `1546ceedf8`, and singleplayer deleted
 its own after moving to `v0.2.0`. Format changes land here first and

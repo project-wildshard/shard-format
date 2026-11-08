@@ -109,6 +109,7 @@
     "./exchange": "./src/format/exchange.ts",
     "./explorerCatalogue": "./src/format/explorerCatalogue.ts",
     "./cookData": "./src/format/cook-data.ts",
+    "./cookPreparation": "./src/format/cook-preparation.ts",
     "./formatHook": "./src/hook/format-hook.mjs",
     "./fieldPresentation": "./src/format/fieldPresentation.ts",
     "./figures": "./src/format/figures.ts",

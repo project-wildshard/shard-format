@@ -1,4 +1,5 @@
 import { platformFileFamily } from './platformFileFamilies.ts';
+import { MAX_COOK_BYTES } from './cook-preparation.ts';
 import type { Ktx2DeviceCosts } from './ktx2Cost.ts';
 import { AdmissionLateSchema, lateLibraryRootsValid, type AdmissionLate } from './admissionLate.ts';
 import { AdmissionServerSchema, serverFilesExclusive, type AdmissionServer } from './admissionServer.ts';
@@ -28,7 +29,7 @@ const fileSchema = v.strictObject({ ...costs, path, kind: v.picklist(['glb', 'kt
 const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['spawns']).entries, trust: v.literal('first-party'), files: v.pipe(v.array(v.strictObject({ ...measuredFile, lines: ShardNaturalSchema })), v.maxLength(0)), lines: v.literal(0) });
 /** Format 2 inventories every emitted byte except its index and validation receipt. */
 export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputIndexRows> & { readonly entries: { readonly [Key in keyof OutputIndexRows]-?: v.GenericSchema<OutputIndexRowsInput[Key], OutputIndexRows[Key]> } } = v.strictObject({
-  format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.literal('0.2'), version: v.literal(SHARDFILE_VERSION),
+  format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.picklist(['0.2', '0.3']), version: v.literal(SHARDFILE_VERSION),
   identity: IdentitySchema, build: v.strictObject({ sourceHash: ShardHashSchema, validator: v.pipe(v.string(), v.minLength(1), v.maxLength(160)) }), requires: RequiresSchema,
   admission: v.strictObject({ budgets: ShardfileFieldSchemas.budgets, serverBudget: ShardfileFieldSchemas.serverBudget, authorCaps: ShardfileFieldSchemas.authorCaps, critical: ShardfileFieldSchemas.critical, library: ShardfileFieldSchemas.library, late: v.exactOptional(AdmissionLateSchema), server: v.exactOptional(AdmissionServerSchema) }),
   sections: v.pipe(v.array(section), v.maxLength(256)), schemas: v.pipe(v.array(v.strictObject(measuredFile)), v.maxLength(0)),
@@ -58,7 +59,10 @@ export function parseOutputDescriptorIndex(input: unknown): OutputIndex | null {
   return isOutputIndex(input) ? parseOutputIndexRows(input) : null;
 }
 function parseOutputIndexRows(input: unknown): OutputIndex {
-  const index = v.parse(OutputIndexSchema, input), paths = new Set(['shard.json', 'validation.json']), names = new Set<string>();
+  const index = v.parse(OutputIndexSchema, input);
+  if (index.sdk === '0.3' && index.cook === undefined) { throw new Error(`Missing cook preparation: run wildshard prepare <product-dir> --base <exact-preview-url> (${index.identity.slug})`); }
+  if (index.sdk === '0.3' && index.cook !== undefined && index.cook.bytes > MAX_COOK_BYTES) { throw new Error('Cook preparation exceeds byte cap'); }
+  const paths = new Set(['shard.json', 'validation.json']), names = new Set<string>();
   if (index.ktx2Costs !== undefined) {
     const textures = new Map(index.files.filter(row=>row.kind==='ktx2' && row.commons!==true).map(row=>[row.hash,row]));
     for (const [hash,cost] of Object.entries(index.ktx2Costs)) {
@@ -151,7 +155,7 @@ export function assembleOutputShardfile(input: unknown, sections: ReadonlyMap<st
 interface OutputIndexRowsInputFields {
     format: "wildshard.shardfile";
     formatVersion: 2;
-    sdk: "0.2";
+    sdk: "0.2" | "0.3";
     version: "0.1";
     identity: ShardIdentityInput;
     build: {
@@ -248,7 +252,7 @@ export type OutputIndexRowsInput = { [Key in keyof OutputIndexRowsInputFields]: 
 interface OutputIndexRowsFields {
     format: "wildshard.shardfile";
     formatVersion: 2;
-    sdk: "0.2";
+    sdk: "0.2" | "0.3";
     version: "0.1";
     identity: ShardIdentity;
     build: {
