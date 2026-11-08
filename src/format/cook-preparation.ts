@@ -30,12 +30,13 @@ const MAX_BUILD = 160
 const MAX_FENCE = 8192
 const ZERO = 0
 const ONE = 1
-const VERSION = 2
+const VERSION = 3
+const PROGRAM_VERSION = 2
 const MAX_COOK_BYTES = 8_388_608
 
 /** Actual linked GLSL pairs, not decision programs. The recorder owns provenance. */
 interface EntryPrograms {
-  readonly version: typeof VERSION
+  readonly version: typeof PROGRAM_VERSION
   readonly build: string
   readonly lines: readonly string[]
   readonly shaders: readonly (readonly number[])[]
@@ -44,6 +45,7 @@ interface EntryPrograms {
 interface CookPreparation {
   readonly version: typeof VERSION
   readonly inputHash: string
+  readonly renderer: string
   readonly packs: 'fence' | 'whole'
   readonly fence: readonly string[]
   readonly programs: EntryPrograms
@@ -89,7 +91,7 @@ function programPairsValid(row: EntryPrograms): boolean {
   return true
 }
 const programRows: GenericSchema<unknown, EntryPrograms> = strictObject({
-  version: literal(VERSION),
+  version: literal(PROGRAM_VERSION),
   build,
   lines,
   shaders,
@@ -120,6 +122,7 @@ const CookPreparationSchema: GenericSchema<unknown, CookPreparation> & {
 } = strictObject({
   version: literal(VERSION),
   inputHash: hash,
+  renderer: hash,
   packs: picklist(['fence', 'whole']),
   fence,
   programs: EntryProgramsSchema,
@@ -136,9 +139,14 @@ function cookPreparationBytes(
     hash: string
     bytes: number
   }>[],
+  renderer?: string,
 ): Uint8Array {
   const { cook: _cook, ...inputs } = index
-  return validationSourceBytes({ index: inputs, mounts })
+  return validationSourceBytes({
+    index: inputs,
+    mounts,
+    ...(renderer === undefined ? {} : { renderer }),
+  })
 }
 /** Shared by admission and the cook. Legacy sdk 0.2 is an explicit migration boundary. */
 function fenceValid(
@@ -195,6 +203,7 @@ function requireCookPreparation(
           bytes: number
         }>[]
         inputHash?: string
+        renderer?: string
         fence?: readonly string[]
         programs?: EntryPrograms
         packs?: 'fence' | 'whole'
@@ -209,7 +218,10 @@ function requireCookPreparation(
   if (cook?.version !== VERSION) {
     throw new Error(`Missing cook preparation: run ${fix}`)
   }
-  if (cook.inputHash !== digest(cookPreparationBytes(index, cook.mounts))) {
+  if (
+    cook.inputHash !==
+    digest(cookPreparationBytes(index, cook.mounts, cook.renderer))
+  ) {
     throw new Error(`stale cook preparation: run ${fix}`)
   }
   fenceValid(index, { fence: cook.fence ?? [], mounts: cook.mounts }, fix)

@@ -83,17 +83,19 @@ pass it.
 ## J198 cook preparation
 
 New prepared products use `sdk: "0.3"` in the format-2 header and must
-name `cook.json`. Its version 2 requires `mounts`, `inputHash`, `packs`
+name `cook.json`. Its version 3 requires `mounts`, `inputHash`, `renderer`, `packs`
 (`whole` or `fence`), a unique hash-valued `fence`, and the actual version-2
 GLSL `programs` table. The program mount must equal the canonical program
 table; source lines, shader indexes and linked pairs are bounded and
 checked. Cook metadata is capped at 8 MiB for the new producer version.
 
 `cookPreparationBytes` canonically binds every header field except the
-cook pointer itself, plus the complete mount inventory. The producer hashes
+cook pointer itself, plus the complete mount inventory and renderer digest. The producer hashes
 that value; admission and cook recompute it before using any lists. A stale
 value refuses with `wildshard prepare <product-dir> --base <exact-preview-url>`.
 No browser is launched by format or by the VPS cook.
+The version-2 prototype remains readable as legacy sdk 0.2; new sdk 0.3
+requires version 3, so a missing renderer agreement names regeneration.
 
 Immutable `sdk: "0.2"` products retain the legacy version-1 reader. This
 compatibility is explicit; it does not certify the existing 28 heads for

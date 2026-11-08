@@ -14,6 +14,7 @@ import { cli, scratch, sha256, TEMPLATE_2 } from '../test/helpers/corpus.ts'
 import type { CookMount } from '../format/cook-data.ts'
 
 const dir = scratch('cook-preparation')
+const RENDERER = '1'.repeat(64)
 const ObjectSchema = record(string(), unknown())
 const PROGRAMS = {
   version: 2,
@@ -57,11 +58,12 @@ function prepared(name: string): string {
   const legacy = readCookData(readObject(folder, 'cook.json'))
   const mounts = [...legacy.mounts, programFixture(folder, index.identity.slug)]
   const bytes = writeJson(folder, 'cook.json', {
-    version: 2,
+    version: 3,
     mounts,
+    renderer: RENDERER,
     packs: 'whole',
     fence: [],
-    inputHash: sha256(cookPreparationBytes(index, mounts)),
+    inputHash: sha256(cookPreparationBytes(index, mounts, RENDERER)),
     programs: PROGRAMS,
   })
   writeJson(folder, 'shard.json', {
@@ -85,7 +87,8 @@ test('required preparation refuses stale product inputs at the pack edge', (): v
   const index = readObject(folder, 'shard.json')
   const bytes = Buffer.from(
     validationSourceBytes({
-      version: 2,
+      version: 3,
+      renderer: RENDERER,
       mounts: [],
       packs: 'whole',
       fence: [],
@@ -134,6 +137,7 @@ test('admission refuses missing lists, duplicate hashes and hostile program inde
   const raw = readObject(folder, 'cook.json')
   const index = parseOutputIndex(readObject(folder, 'shard.json'))
   const variants = [
+    { ...raw, renderer: undefined },
     { ...raw, fence: undefined },
     { ...raw, programs: undefined },
     { ...raw, packs: undefined },

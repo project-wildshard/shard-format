@@ -104,12 +104,29 @@ const PreparedCookDataSchema = strictObject({
   ...CookPreparationSchema.entries,
   mounts: mountRows,
 })
+const PREVIOUS_COOK_VERSION = 2
+const PreviousCookDataSchema = strictObject({
+  version: literal(PREVIOUS_COOK_VERSION),
+  inputHash: CookPreparationSchema.entries.inputHash,
+  packs: CookPreparationSchema.entries.packs,
+  fence: CookPreparationSchema.entries.fence,
+  programs: CookPreparationSchema.entries.programs,
+  mounts: mountRows,
+})
+interface PreviousCookData extends Omit<
+  CookPreparation,
+  'version' | 'renderer'
+> {
+  readonly version: typeof PREVIOUS_COOK_VERSION
+  readonly mounts: readonly CookMount[]
+}
 interface PreparedCookData extends CookPreparation {
   readonly mounts: readonly CookMount[]
 }
-type CookData = LegacyCookData | PreparedCookData
+type CookData = LegacyCookData | PreviousCookData | PreparedCookData
 const CookDataSchema: GenericSchema<unknown, CookData> = variant('version', [
   LegacyCookDataSchema,
+  PreviousCookDataSchema,
   PreparedCookDataSchema,
 ])
 
