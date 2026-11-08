@@ -37,3 +37,8 @@ This commit does not activate a local workspace or deploy a game.
 It does not claim the old 28 immutable heads have been regenerated.
 Renderer provenance still needs an exact consumer/capture agreement.
 That rollout remains named in D5 rather than hidden by a fallback.
+
+The dependency fence can also name a verified mounted asset hash.
+Those URLs are observed by the same cold recording as product reads.
+The shared admission check includes mounts in its known-hash set.
+This keeps external asset reads representable without legacy name hints.

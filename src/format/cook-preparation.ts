@@ -143,14 +143,20 @@ function cookPreparationBytes(
 /** Shared by admission and the cook. Legacy sdk 0.2 is an explicit migration boundary. */
 function fenceValid(
   index: Frozen<OutputIndex>,
-  fenceHashes: readonly string[],
+  lists: Readonly<{
+    fence: readonly string[]
+    mounts: readonly Readonly<{ hash: string }>[]
+  }>,
   fix: string,
 ): void {
   const known = new Set<string>()
   for (const file of index.files) {
     known.add(file.hash)
   }
-  for (const row of fenceHashes) {
+  for (const mount of lists.mounts) {
+    known.add(mount.hash)
+  }
+  for (const row of lists.fence) {
     if (!known.has(row) && !index.requires.commons.includes(row)) {
       throw new Error(`stale fence preparation: run ${fix}`)
     }
@@ -206,7 +212,7 @@ function requireCookPreparation(
   if (cook.inputHash !== digest(cookPreparationBytes(index, cook.mounts))) {
     throw new Error(`stale cook preparation: run ${fix}`)
   }
-  fenceValid(index, cook.fence ?? [], fix)
+  fenceValid(index, { fence: cook.fence ?? [], mounts: cook.mounts }, fix)
   programMountValid(index, cook, digest)
 }
 function readEntryPrograms(input: unknown): EntryPrograms {
