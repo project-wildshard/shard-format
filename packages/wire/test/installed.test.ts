@@ -31,6 +31,17 @@ function checked(command: string, args: readonly string[], cwd: string): void {
   assert.equal(result.status, 0, result.stderr + result.stdout)
 }
 
+function packInputs(dir: string): void {
+  checked('pnpm', ['pack', '--pack-destination', dir], ROOT)
+  // Frozen installs cache package bytes, not registry metadata. Supply those
+  // same pinned bytes locally; an override never invents a missing dependency.
+  checked(
+    'pnpm',
+    ['pack', '--pack-destination', dir],
+    path.join(ROOT, '../../node_modules/valibot'),
+  )
+}
+
 function prepareConsumer(dir: string): string {
   const consumer = path.join(dir, 'consumer')
   mkdirSync(consumer, { recursive: true })
@@ -47,6 +58,7 @@ function prepareConsumer(dir: string): string {
       dependencies: {
         '@wildshard/wire': 'file:../wildshard-wire-0.0.0.tgz',
       },
+      pnpm: { overrides: { valibot: 'file:../valibot-1.5.0.tgz' } },
     }),
   )
   return consumer
@@ -62,13 +74,15 @@ function install(dir: string): {
   readonly consumer: string
   readonly installed: string
 } {
-  checked('pnpm', ['pack', '--pack-destination', dir], ROOT)
+  packInputs(dir)
   const consumer = prepareConsumer(dir)
   const installed = path.join(consumer, 'node_modules/@wildshard/wire')
   const options = [
     'install',
     '--offline',
     '--config.enable-global-virtual-store=false',
+    `--store-dir=${path.join(dir, 'store')}`,
+    `--config.cache-dir=${path.join(dir, 'metadata')}`,
   ]
   checked('pnpm', [...options, '--no-frozen-lockfile'], consumer)
   checked('pnpm', [...options, '--frozen-lockfile'], consumer)
