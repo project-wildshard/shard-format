@@ -66,14 +66,8 @@ function replayCapturedFrame(record) {
         ...(record.hasDue
             ? { due: (handle) => calls.due(handle) }
             : {}),
-        ...(record.ride === undefined
-            ? {}
-            : {
-                ride: unpackDoubles(record.ride),
-                ...(record.rideWords === undefined
-                    ? {}
-                    : { rideWords: record.rideWords }),
-            }),
+        ...(record.ride === undefined ? {} : { ride: unpackDoubles(record.ride) }),
+        ...(record.rideWords === undefined ? {} : { rideWords: record.rideWords }),
     });
     calls.assertConsumed();
     return result;

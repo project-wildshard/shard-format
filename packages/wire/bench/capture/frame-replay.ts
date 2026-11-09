@@ -83,14 +83,8 @@ function replayCapturedFrame(record: CapturedFrame): ArrayBuffer {
     ...(record.hasDue
       ? { due: (handle: number): boolean => calls.due(handle) }
       : {}),
-    ...(record.ride === undefined
-      ? {}
-      : {
-          ride: unpackDoubles(record.ride),
-          ...(record.rideWords === undefined
-            ? {}
-            : { rideWords: record.rideWords }),
-        }),
+    ...(record.ride === undefined ? {} : { ride: unpackDoubles(record.ride) }),
+    ...(record.rideWords === undefined ? {} : { rideWords: record.rideWords }),
   })
   calls.assertConsumed()
   return result

@@ -73,7 +73,8 @@ function frame(bytes) {
     const world = new WorldFrame();
     world.reset(decoded.tick);
     for (const [handle, row] of decoded.rows) {
-        world.data.set(row, world.claim(handle, row.length));
+        const offset = world.claim(handle, row.length);
+        world.data.set(row, offset);
     }
     return encodeFrame(new BitWriter(), {
         frame: world,

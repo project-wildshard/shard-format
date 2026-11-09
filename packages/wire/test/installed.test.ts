@@ -5,9 +5,11 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -29,26 +31,48 @@ function checked(command: string, args: readonly string[], cwd: string): void {
   assert.equal(result.status, 0, result.stderr + result.stdout)
 }
 
+function prepareConsumer(dir: string): string {
+  const consumer = path.join(dir, 'consumer')
+  mkdirSync(consumer, { recursive: true })
+  writeFileSync(path.join(consumer, 'pnpm-workspace.yaml'), 'packages: []\n')
+  writeFileSync(
+    path.join(consumer, '.npmrc'),
+    'node-linker=isolated\npackage-import-method=copy\nenable-global-virtual-store=false\n',
+  )
+  writeFileSync(
+    path.join(consumer, 'package.json'),
+    JSON.stringify({
+      private: true,
+      type: 'module',
+      dependencies: {
+        '@wildshard/wire': 'file:../wildshard-wire-0.0.0.tgz',
+      },
+    }),
+  )
+  return consumer
+}
+
+function checkDependency(installed: string, consumer: string): void {
+  const entry = realpathSync(path.join(installed, 'bin.mjs'))
+  const dependency = realpathSync(createRequire(entry).resolve('valibot'))
+  assert.ok(dependency.startsWith(`${consumer}${path.sep}`), dependency)
+}
+
 function install(dir: string): {
   readonly consumer: string
   readonly installed: string
 } {
   checked('pnpm', ['pack', '--pack-destination', dir], ROOT)
-  const consumer = path.join(dir, 'consumer')
+  const consumer = prepareConsumer(dir)
   const installed = path.join(consumer, 'node_modules/@wildshard/wire')
-  mkdirSync(installed, { recursive: true })
-  checked(
-    'tar',
-    [
-      '-xzf',
-      path.join(dir, 'wildshard-wire-0.0.0.tgz'),
-      '-C',
-      installed,
-      '--strip-components',
-      '1',
-    ],
-    ROOT,
-  )
+  const options = [
+    'install',
+    '--offline',
+    '--config.enable-global-virtual-store=false',
+  ]
+  checked('pnpm', [...options, '--no-frozen-lockfile'], consumer)
+  checked('pnpm', [...options, '--frozen-lockfile'], consumer)
+  checkDependency(installed, consumer)
   checked(
     process.execPath,
     [

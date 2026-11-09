@@ -60,7 +60,8 @@ function world(data: Snapshot): WorldFrame {
     if (values.length !== frozenClass(row.classId).row.length) {
       throw new Error('Captured row width differs')
     }
-    frame.data.set(values, frame.claim(row.handle, values.length))
+    const offset = frame.claim(row.handle, values.length)
+    frame.data.set(values, offset)
   }
   return frame
 }

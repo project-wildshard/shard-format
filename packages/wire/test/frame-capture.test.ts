@@ -18,11 +18,19 @@ import type { NetClass } from '../frozen/v0/schema.ts'
 function classOf(handle: number): NetClass<never> {
   return frozenClass(handle - 1)
 }
-function frame(tick: number, value: number): WorldFrame {
+const DEFAULT_SELECTION = { handles: [1, 2], lookup: classOf }
+function frame(
+  tick: number,
+  value: number,
+  selection: {
+    readonly handles: readonly number[]
+    readonly lookup: typeof classOf
+  } = DEFAULT_SELECTION,
+): WorldFrame {
   const out = new WorldFrame()
   out.reset(tick)
-  for (const handle of [1, 2]) {
-    const cls = classOf(handle),
+  for (const handle of selection.handles) {
+    const cls = selection.lookup(handle),
       offset = out.claim(handle, cls.row.length)
     for (const [index, column] of cls.row.entries()) {
       out.data[offset + index] = (value + index) % 2 ** column.bits
@@ -68,7 +76,7 @@ function observed(
         }),
   }
 }
-function capture(evicted = false): CapturedFrame {
+function capture(evicted = false, rideWords?: number): CapturedFrame {
   const current = frame(5, 5),
     globalFrame = frame(4, 4),
     later = frame(2, 2),
@@ -89,6 +97,7 @@ function capture(evicted = false): CapturedFrame {
     lastSeq: 8,
     visible: new Set([1, 2]),
     baseline: { frame: globalFrame, visible: new Set([1, 2]), rowFrom: source },
+    ...(rideWords === undefined ? {} : { rideWords }),
     due: (handle: number): boolean => handle !== 2,
     classOf,
   }
@@ -145,5 +154,40 @@ test('a missing per-handle baseline remains null rather than falling back to glo
   assert.ok(
     record.rowFromCalls.every((call): boolean => call.source === undefined),
   )
+  assertFrameReplay(record)
+})
+
+function denseClass(handle: number): NetClass<never> {
+  return frozenClass(handle <= 32 ? 0 : 1)
+}
+function denseCapture(): CapturedFrame {
+  const handles = Array.from(
+    { length: 91 },
+    (_unused: unknown, index: number): number => index + 2,
+  )
+  const input: FrameInput = {
+    frame: frame(1, 1, { handles, lookup: denseClass }),
+    ownerClass: frozenClass(0),
+    owner: new Float64Array(frozenClass(0).owner.length),
+    cell: 2,
+    lastSeq: 3,
+    visible: new Set(handles),
+    baseline: missingBaseline(),
+    classOf: denseClass,
+  }
+  const trace = new FrameTrace()
+  const bytes = encodeFrame(new BitWriter(), observed(input, trace))
+  return trace.finish(input, bytes)
+}
+
+test('a full 32-player 60-creature frame survives reconstruction buffer growth', (): void => {
+  const record = denseCapture()
+  assert.equal(record.frame.rows.length, 91)
+  assertFrameReplay(record)
+})
+test('an explicit ride word count without ride storage preserves zero words', (): void => {
+  const record = capture(false, 3)
+  assert.equal(record.rideWords, 3)
+  assert.equal(record.ride, undefined)
   assertFrameReplay(record)
 })

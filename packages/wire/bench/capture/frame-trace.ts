@@ -71,9 +71,8 @@ class FrameTrace {
       ownerClass: input.ownerClass.id,
       owner: packDoubles(input.owner),
       visible: [...input.visible],
-      ...(input.ride === undefined
-        ? {}
-        : { ride: packDoubles(input.ride), rideWords: input.rideWords }),
+      ...(input.ride === undefined ? {} : { ride: packDoubles(input.ride) }),
+      ...(input.rideWords === undefined ? {} : { rideWords: input.rideWords }),
       ...(base === null
         ? {}
         : {
