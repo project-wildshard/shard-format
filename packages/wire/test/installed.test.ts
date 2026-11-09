@@ -58,6 +58,15 @@ function install(dir: string): {
     ],
     consumer,
   )
+  checked(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      "import assert from 'node:assert/strict'; import { quantiseCommand } from '@wildshard/wire/command'; import { STEER_AXIS_CODEC } from '@wildshard/wire/fixed'; const value=0.5/127; const steer={keyX:value,keyY:0,stickX:0,stickY:0}; assert.equal(quantiseCommand({steer,yaw:0,pitch:0}).steer.keyX, STEER_AXIS_CODEC.decode(STEER_AXIS_CODEC.encode(value)))",
+    ],
+    consumer,
+  )
   return { consumer, installed }
 }
 

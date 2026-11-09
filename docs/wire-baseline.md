@@ -38,3 +38,11 @@ record skipping and new malformed framing cases belong to WR3.
 
 WS3 adds real traffic recordings on the same frozen engine, isolated
 locally. Live proofs never use production (J205).
+
+The public `@wildshard/wire/fixed` codec stores an integer divisor. Its
+encode is `round(value * divisor) - offset`, and its decode is
+`(word + offset) / divisor`. Steering is `(8, 127, -128)`. The public wire
+`quantiseCommand` uses this codec. Tests compare all 256 bytes and every
+half step plus adjacent doubles against the independent frozen command
+code. No reciprocal scale is permitted. The current engine still uses
+its original correct arithmetic; gated WR adoption switches its caller.

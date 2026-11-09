@@ -11,6 +11,7 @@
   },
   "include": [
     "cli/**/*.ts",
-    "frozen/v0/*.ts"
+    "frozen/v0/*.ts",
+    "src/*.ts"
   ]
 }

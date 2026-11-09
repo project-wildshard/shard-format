@@ -8,7 +8,9 @@
     "wire": "./bin.mjs"
   },
   "exports": {
-    "./version": "./src/version.mjs"
+    "./version": "./src/version.mjs",
+    "./fixed": "./lib/src/fixed.js",
+    "./command": "./lib/src/command.js"
   },
   "files": [
     "bin.mjs",
