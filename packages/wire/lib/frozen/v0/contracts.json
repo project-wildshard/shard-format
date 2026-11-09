@@ -1,0 +1,189 @@
+{
+    "messages": [
+        {
+            "tag": 1,
+            "name": "hello",
+            "form": "schemaHash:u32,build:text,player:text,name:text,ledger:u32"
+        },
+        {
+            "tag": 2,
+            "name": "cmds",
+            "form": "ackFrame:u32,count:u8,commands[count]"
+        },
+        {
+            "tag": 3,
+            "name": "act",
+            "form": "seq:u16,tag:u8,body"
+        },
+        {
+            "tag": 4,
+            "name": "welcome",
+            "form": "handle:u16,player:text,tick:u32,cell:u16,schemaHash:u32,simHz:u8,frameHz:u8"
+        },
+        {
+            "tag": 5,
+            "name": "frame",
+            "form": "tick:u32,baseline:u32,cell:u16,lastSeq:u16,owner,ride,rows"
+        },
+        {
+            "tag": 6,
+            "name": "events",
+            "form": "tick:u32,count:u16,events[count]"
+        }
+    ],
+    "events": [
+        {
+            "tag": 1,
+            "name": "spawn",
+            "form": "handle:u16,cls:u8,id:text,initial:classWidths,text:classText"
+        },
+        {
+            "tag": 2,
+            "name": "despawn",
+            "form": "handle:u16"
+        },
+        {
+            "tag": 3,
+            "name": "hit",
+            "form": "tick:u32,target:u16,amount:f32,at:quant(-260,260,16)[3],head:bool,killed:bool,blow:bool,confirmFor:u16"
+        },
+        {
+            "tag": 4,
+            "name": "died",
+            "form": "tick:u32,id:u16,by:u16,dir:quant(-1,1,8)[3],impulse:f32"
+        },
+        {
+            "tag": 5,
+            "name": "quest",
+            "form": "tick:u32,quest:text,started:bool,hasStep:bool,step:text,n:u16"
+        },
+        {
+            "tag": 6,
+            "name": "phase",
+            "form": "tick:u32,flag:text,on:bool"
+        },
+        {
+            "tag": 7,
+            "name": "reward",
+            "form": "tick:u32,coins:u32,body:u16,hasItem:bool,item?:text"
+        },
+        {
+            "tag": 8,
+            "name": "travel",
+            "form": "tick:u32,from:u16,to:u16"
+        },
+        {
+            "tag": 9,
+            "name": "ledger",
+            "form": "tick:u32,serial:u32,id:text,grant:u2,name:text,amount:f32,pending:bool"
+        },
+        {
+            "tag": 10,
+            "name": "chat",
+            "form": "tick:u32,line:u32,proximity:bool,from:u16,name:text,text:text"
+        },
+        {
+            "tag": 11,
+            "name": "mount",
+            "form": "tick:u32,rider:u16,mount:u16,seq:u16"
+        },
+        {
+            "tag": 12,
+            "name": "dismount",
+            "form": "tick:u32,rider:u16,mount:u16,seq:u16"
+        },
+        {
+            "tag": 13,
+            "name": "owned",
+            "form": "tick:u32,name:text,value:f32"
+        },
+        {
+            "tag": 14,
+            "name": "view",
+            "form": "tick:u32,name:text,count:u8,args:f32[count]"
+        },
+        {
+            "tag": 15,
+            "name": "player-died",
+            "form": "tick:u32,id:u16,checkpoint:bool,hasCause:bool,cause?:{kind:text,label:text,hasText:bool,text?:text}"
+        }
+    ],
+    "acts": [
+        {
+            "tag": 1,
+            "name": "interact",
+            "form": "id:text"
+        },
+        {
+            "tag": 2,
+            "name": "reload",
+            "form": "slot:u8"
+        },
+        {
+            "tag": 3,
+            "name": "equip",
+            "form": "slot:u8"
+        },
+        {
+            "tag": 4,
+            "name": "chat",
+            "form": "proximity:bool,text:text"
+        },
+        {
+            "tag": 5,
+            "name": "report",
+            "form": "line:u32"
+        },
+        {
+            "tag": 6,
+            "name": "ride",
+            "form": "action:u8[offer,mount,dismount]"
+        },
+        {
+            "tag": 7,
+            "name": "climate",
+            "form": "op:u8[mode,force,time,day],name:text,at:f32"
+        },
+        {
+            "tag": 8,
+            "name": "buy",
+            "form": "good:u16"
+        },
+        {
+            "tag": 9,
+            "name": "board",
+            "form": "tear:bool,slot:u16"
+        },
+        {
+            "tag": 10,
+            "name": "wear",
+            "form": "id:text"
+        },
+        {
+            "tag": 11,
+            "name": "pose",
+            "form": "names:text"
+        }
+    ],
+    "command": {
+        "bundleMax": 7,
+        "fields": [
+            "seq:u16",
+            "viewTick:u16",
+            "steer.keyX:fixed(8,1/127,-128)",
+            "steer.keyY:fixed(8,1/127,-128)",
+            "steer.stickX:fixed(8,1/127,-128)",
+            "steer.stickY:fixed(8,1/127,-128)",
+            "yaw:angle(16)",
+            "pitch:quant(-pi/2,pi/2,16)",
+            "buttons.low:u8",
+            "buttons.high?:presence(1)+u8",
+            "presence:attack,heavyTarget,lockTarget,hookTarget,launcher",
+            "attack?:hasTarget:bool,targetId?:ref16,aim.origin:f32[3],aim.direction:f32[3]",
+            "heavyTarget?:ref16",
+            "lockTarget?:ref16",
+            "hookTarget?:u16",
+            "launcher?:slot:u5,ads:quant(0,1,8),fire:bool"
+        ]
+    }
+}

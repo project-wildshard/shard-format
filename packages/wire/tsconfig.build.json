@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "checkJs": false,
+    "noEmit": false,
+    "rootDir": ".",
+    "outDir": "lib",
+    "rewriteRelativeImportExtensions": true,
+    "declaration": true
+  },
+  "include": [
+    "cli/**/*.ts",
+    "frozen/v0/*.ts"
+  ]
+}

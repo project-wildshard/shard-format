@@ -1,0 +1,85 @@
+{
+  "engine": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+  "schemaHash": 3951578209,
+  "adaptation": "Only relative import paths, extracted pure FNV/button constants, and inlined type-only boundaries; original codec function bodies unchanged. Compiled class descriptors/data captured by executing exact engine source.",
+  "files": {
+    "bits.ts": {
+      "repo": "engine",
+      "commit": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+      "path": "src/shared/engine/net/bits.ts",
+      "originalSha256": "e99b6e1f218a5f81d25fd99b53ccb7c10cf6f6ea4f5d25f971c3c2c66c51d4d6",
+      "frozenSha256": "e99b6e1f218a5f81d25fd99b53ccb7c10cf6f6ea4f5d25f971c3c2c66c51d4d6"
+    },
+    "schema.ts": {
+      "repo": "engine",
+      "commit": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+      "path": "src/shared/engine/net/schema.ts",
+      "originalSha256": "4e0856444cefe03345ebc9621a323f54ceae77952db64362c43fb3f571d42a03",
+      "frozenSha256": "d3f7c6284c87d80a65906caaaffd0f01b83dcaf429ff6824eb7ae1eef9b92b3f"
+    },
+    "frame.ts": {
+      "repo": "engine",
+      "commit": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+      "path": "src/shared/engine/net/frame.ts",
+      "originalSha256": "3696324a94c3b93b29379b66861c41a28eaa4333fd7db3213452e6f4cd618930",
+      "frozenSha256": "62c882c0864899b1736ff3553eb13e453f590db610a0fcc3e8f516a8cc6550d4"
+    },
+    "messages.ts": {
+      "repo": "engine",
+      "commit": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+      "path": "src/shared/engine/net/messages.ts",
+      "originalSha256": "12d9a76e0d99d57d780b9e415e9cf79a562f6814fa33b7b5c1b7f475ffffc83d",
+      "frozenSha256": "9c640ffb26c5b75d5cff73b236215632397c7b05f10ffb3c965438b5197e11da"
+    },
+    "command.ts": {
+      "repo": "engine",
+      "commit": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+      "path": "src/shared/engine/net/command.ts",
+      "originalSha256": "c3e02b2b035e2373796386e90b6590b6e7d777ef6e1fc07596b6b004ed2e1b33",
+      "frozenSha256": "a8d8203db017a811057215f0d7594f4804a4b154a8a5881f9a78bc9327163bf0"
+    },
+    "acts.ts": {
+      "repo": "engine",
+      "commit": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+      "path": "src/shared/engine/net/acts.ts",
+      "originalSha256": "59ed248bea3e0bf06c2700116686dda82f7bbf701d0b465788a64f7ca141eb76",
+      "frozenSha256": "4d8af0c91124db5b1d1363a82c8e2665307f8d97e0195426f9dbe4991d39cd81"
+    },
+    "chatWire.ts": {
+      "repo": "engine",
+      "commit": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+      "path": "src/shared/engine/net/chatWire.ts",
+      "originalSha256": "87889e2d02f08b0dcf7616d8554351c5578aae1fb77ff366d30421da5549c228",
+      "frozenSha256": "edc401794b2e6ec74388b9f409547ea893b599e815aedd388f18cabe898a503a"
+    },
+    "ledgerWire.ts": {
+      "repo": "engine",
+      "commit": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+      "path": "src/shared/engine/net/ledgerWire.ts",
+      "originalSha256": "7e73d21c038203cb975e61283742e882990186b3641dd61a4cccdb9b540c1ea0",
+      "frozenSha256": "235e5b40d05b1ee6244a8d8a503992eef4e1d7f35698e3903dac89de9f84e646"
+    },
+    "netCommand.ts": {
+      "repo": "shardfile",
+      "commit": "4f8280c58ab6e527aa9735eaa80fccf1f34ab6d3",
+      "path": "src/format/netCommand.ts",
+      "originalSha256": "0c0785678a3e332881942ee7600ef99fbc27d89237f63b310009cc424f012db4",
+      "frozenSha256": "0c0785678a3e332881942ee7600ef99fbc27d89237f63b310009cc424f012db4"
+    },
+    "support.ts": {
+      "frozenSha256": "420ea5a22c5ef8d82e0451733a8c6c1c764f636b3a028b1f5c4aa9c452e158f6"
+    },
+    "types.ts": {
+      "frozenSha256": "ce1c79d91a8a084f9d66c7df2f8132dbbbee7660dbc027f6e788a7136f6489c0"
+    },
+    "tables.ts": {
+      "frozenSha256": "296e2f02cc35914c264a520fb88f1a68271698adb15d6905f3f289081e3f611b"
+    },
+    "tables.json": {
+      "frozenSha256": "35152832956e4e7ade5b1a9316cd53d769628b904a4770d5ee862f97585dddfb"
+    },
+    "contracts.json": {
+      "frozenSha256": "b604d1629d90785ad8a2dd12524cfa272422997879edbdb1eeaa326f123c0967"
+    }
+  }
+}

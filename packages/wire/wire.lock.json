@@ -1,0 +1,2049 @@
+{
+  "version": 0,
+  "engine": "cfd668102efcb7c10a6fb57d3021c1f3d23c37a5",
+  "schemaHash": 3951578209,
+  "hashAlgorithm": "engine fnv1a32(class descriptions joined with event forms)",
+  "descriptions": [
+    "player{x:f32q:-260,260,16:others:;y:f32q:-260,260,16:others:;z:f32q:-260,260,16:others:;yaw:angle:10:others:;board:bool::all:;swim:bool::all:;hp:u16::all:;maxHp:u16::owner:;statusStun:f32::owner:;held:u8::all:;px:f64::all:p;py:f64::all:p;pz:f64::all:p;vx:f64::all:p;vy:f64::all:p;vz:f64::all:p;grounded:bool::all:p;dashT:f32::all:p;dodgeT:f32::all:p;dodgeCd:f32::all:p;shoveT:f32::all:p;shoveX:f32::all:p;shoveZ:f32::all:p;dashX:f32::all:p;dashZ:f32::all:p;impulseX:f32::all:p;impulseY:f32::all:p;impulseZ:f32::all:p;lockR0:f32::all:p;jumpAgo:f32::all:p;jumpLeft:f32::all:p;hoverAir:bool::all:p;hoverBob:f32::all:p;stood:bool::all:p;diving:bool::all:p;climbTo:f32::all:p;climbCooldown:f32::all:p;strokeTime:f32::all:p;water:f32::all:p;depth:f32::all:p;wading:bool::all:p;onPlatform:bool::all:p;sliding:bool::all:p;motorGrounded:bool::all:p;groundNormalY:f32::all:p;downhillX:f32::all:p;downhillZ:f32::all:p;freedom:f32::all:p;swingPhase:f32::owner:;lastSwingSeq:u16::owner:;moveScale:f32::owner:;resets:u16::owner:;led:bool::owner:}@",
+    "animal{x:f32q:-260,260,16:all:;y:f32q:-260,260,16:all:;z:f32q:-260,260,16:all:;yaw:angle:10:all:;state:enum:idle,graze,wander,alert,flee,charge,stalk,dead,attack,perch,rise,hide,sidestep:all:;attackT:f32q:0,1,8:all:;attackDur:u32::all:;attackStamp:u32::all:;winding:bool::all:;flinch:f32q:0,1,6:all:;strafe:f32q:-9,9,8:all:;brace:f32q:0,1,6:all:;hp:u16::all:;alive:bool::all:;target:ref::all:;rideable:bool::all:;rise:f32q:0,1,6:all:;act:u8::all:;kind:text::initial:;variant:text::initial:;rarity:text::initial:;scale:f32::initial:;seed:u32::initial:}@160",
+    "encounter{state:enum:dormant,armed,intro,fight,beat,victory,absent,idle,aware,engaged,leash,dead,broken,retired:all:;hp:f32q:0,1,10:all:;phase:u8::all:;shield:bool::all:;body:ref::all:;skip:f32q:0,1,6:all:;banners:u8::all:;signatures:u8::all:;known:bool::all:;sleep:f32q:0,1,8:all:;rewarded:bool::all:;rewardX:f32q:-260,260,16:all:;rewardY:f32q:-260,260,16:all:;rewardZ:f32q:-260,260,16:all:;kind:text::initial:}@",
+    "script{x:f32::all:;y:f32::all:;z:f32::all:;pitch:angle:16:all:;yaw:angle:16:all:;roll:angle:16:all:;enabled:bool::all:}@",
+    "state{value:f32::all:}@",
+    "flag{}@"
+  ],
+  "eventForms": "view:s,u8,f32n;hit:h16,f32,p48,b,b,b,u16;died:h16,h16,d24,f32;player-died:h16,b,b,?s,?s,b,?s;quest:s,b,b,s,u16;phase:s,b;reward:u32,h16,b,?s;travel:u16,u16;ledger:u32,u32,s,u2,s,f32,b;chat:u32,u32,b,h16,s,s;buttons:u8,b,u8;lockTarget:h16;hookTarget:u16;ride:u8;fresh:b;mount:h16,h16,u16;dismount:h16,h16,u16;rideWords:b,u8,f32;climate:b,s,f32;buy:u16;board:b,u16;wear:s;pose:s;owned:s,f32",
+  "classes": [
+    {
+      "v0Index": 0,
+      "v1Id": 1,
+      "name": "player",
+      "fields": [
+        {
+          "id": 1,
+          "order": 0,
+          "name": "x",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "others",
+          "predicted": false
+        },
+        {
+          "id": 2,
+          "order": 1,
+          "name": "y",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "others",
+          "predicted": false
+        },
+        {
+          "id": 3,
+          "order": 2,
+          "name": "z",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "others",
+          "predicted": false
+        },
+        {
+          "id": 4,
+          "order": 3,
+          "name": "yaw",
+          "kind": "angle",
+          "bits": 10,
+          "send": "others",
+          "predicted": false
+        },
+        {
+          "id": 5,
+          "order": 4,
+          "name": "board",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 6,
+          "order": 5,
+          "name": "swim",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 7,
+          "order": 6,
+          "name": "hp",
+          "kind": "u16",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 8,
+          "order": 7,
+          "name": "maxHp",
+          "kind": "u16",
+          "send": "owner",
+          "predicted": false
+        },
+        {
+          "id": 9,
+          "order": 8,
+          "name": "statusStun",
+          "kind": "f32",
+          "send": "owner",
+          "predicted": false
+        },
+        {
+          "id": 10,
+          "order": 9,
+          "name": "held",
+          "kind": "u8",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 11,
+          "order": 10,
+          "name": "px",
+          "kind": "f64",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 12,
+          "order": 11,
+          "name": "py",
+          "kind": "f64",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 13,
+          "order": 12,
+          "name": "pz",
+          "kind": "f64",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 14,
+          "order": 13,
+          "name": "vx",
+          "kind": "f64",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 15,
+          "order": 14,
+          "name": "vy",
+          "kind": "f64",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 16,
+          "order": 15,
+          "name": "vz",
+          "kind": "f64",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 17,
+          "order": 16,
+          "name": "grounded",
+          "kind": "bool",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 18,
+          "order": 17,
+          "name": "dashT",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 19,
+          "order": 18,
+          "name": "dodgeT",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 20,
+          "order": 19,
+          "name": "dodgeCd",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 21,
+          "order": 20,
+          "name": "shoveT",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 22,
+          "order": 21,
+          "name": "shoveX",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 23,
+          "order": 22,
+          "name": "shoveZ",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 24,
+          "order": 23,
+          "name": "dashX",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 25,
+          "order": 24,
+          "name": "dashZ",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 26,
+          "order": 25,
+          "name": "impulseX",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 27,
+          "order": 26,
+          "name": "impulseY",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 28,
+          "order": 27,
+          "name": "impulseZ",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 29,
+          "order": 28,
+          "name": "lockR0",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 30,
+          "order": 29,
+          "name": "jumpAgo",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 31,
+          "order": 30,
+          "name": "jumpLeft",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 32,
+          "order": 31,
+          "name": "hoverAir",
+          "kind": "bool",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 33,
+          "order": 32,
+          "name": "hoverBob",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 34,
+          "order": 33,
+          "name": "stood",
+          "kind": "bool",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 35,
+          "order": 34,
+          "name": "diving",
+          "kind": "bool",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 36,
+          "order": 35,
+          "name": "climbTo",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 37,
+          "order": 36,
+          "name": "climbCooldown",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 38,
+          "order": 37,
+          "name": "strokeTime",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 39,
+          "order": 38,
+          "name": "water",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 40,
+          "order": 39,
+          "name": "depth",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 41,
+          "order": 40,
+          "name": "wading",
+          "kind": "bool",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 42,
+          "order": 41,
+          "name": "onPlatform",
+          "kind": "bool",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 43,
+          "order": 42,
+          "name": "sliding",
+          "kind": "bool",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 44,
+          "order": 43,
+          "name": "motorGrounded",
+          "kind": "bool",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 45,
+          "order": 44,
+          "name": "groundNormalY",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 46,
+          "order": 45,
+          "name": "downhillX",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 47,
+          "order": 46,
+          "name": "downhillZ",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 48,
+          "order": 47,
+          "name": "freedom",
+          "kind": "f32",
+          "predicted": true,
+          "send": "all"
+        },
+        {
+          "id": 49,
+          "order": 48,
+          "name": "swingPhase",
+          "kind": "f32",
+          "send": "owner",
+          "predicted": false
+        },
+        {
+          "id": 50,
+          "order": 49,
+          "name": "lastSwingSeq",
+          "kind": "u16",
+          "send": "owner",
+          "predicted": false
+        },
+        {
+          "id": 51,
+          "order": 50,
+          "name": "moveScale",
+          "kind": "f32",
+          "send": "owner",
+          "predicted": false
+        },
+        {
+          "id": 52,
+          "order": 51,
+          "name": "resets",
+          "kind": "u16",
+          "send": "owner",
+          "predicted": false
+        },
+        {
+          "id": 53,
+          "order": 52,
+          "name": "led",
+          "kind": "bool",
+          "send": "owner",
+          "predicted": false
+        }
+      ]
+    },
+    {
+      "v0Index": 1,
+      "v1Id": 2,
+      "name": "animal",
+      "fields": [
+        {
+          "id": 1,
+          "order": 0,
+          "name": "x",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 2,
+          "order": 1,
+          "name": "y",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 3,
+          "order": 2,
+          "name": "z",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 4,
+          "order": 3,
+          "name": "yaw",
+          "kind": "angle",
+          "bits": 10,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 5,
+          "order": 4,
+          "name": "state",
+          "kind": "enum",
+          "values": [
+            "idle",
+            "graze",
+            "wander",
+            "alert",
+            "flee",
+            "charge",
+            "stalk",
+            "dead",
+            "attack",
+            "perch",
+            "rise",
+            "hide",
+            "sidestep"
+          ],
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 6,
+          "order": 5,
+          "name": "attackT",
+          "kind": "f32q",
+          "min": 0,
+          "max": 1,
+          "bits": 8,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 7,
+          "order": 6,
+          "name": "attackDur",
+          "kind": "u32",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 8,
+          "order": 7,
+          "name": "attackStamp",
+          "kind": "u32",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 9,
+          "order": 8,
+          "name": "winding",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 10,
+          "order": 9,
+          "name": "flinch",
+          "kind": "f32q",
+          "min": 0,
+          "max": 1,
+          "bits": 6,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 11,
+          "order": 10,
+          "name": "strafe",
+          "kind": "f32q",
+          "min": -9,
+          "max": 9,
+          "bits": 8,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 12,
+          "order": 11,
+          "name": "brace",
+          "kind": "f32q",
+          "min": 0,
+          "max": 1,
+          "bits": 6,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 13,
+          "order": 12,
+          "name": "hp",
+          "kind": "u16",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 14,
+          "order": 13,
+          "name": "alive",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 15,
+          "order": 14,
+          "name": "target",
+          "kind": "ref",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 16,
+          "order": 15,
+          "name": "rideable",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 17,
+          "order": 16,
+          "name": "rise",
+          "kind": "f32q",
+          "min": 0,
+          "max": 1,
+          "bits": 6,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 18,
+          "order": 17,
+          "name": "act",
+          "kind": "u8",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 19,
+          "order": 18,
+          "name": "kind",
+          "kind": "text",
+          "send": "initial",
+          "predicted": false
+        },
+        {
+          "id": 20,
+          "order": 19,
+          "name": "variant",
+          "kind": "text",
+          "send": "initial",
+          "predicted": false
+        },
+        {
+          "id": 21,
+          "order": 20,
+          "name": "rarity",
+          "kind": "text",
+          "send": "initial",
+          "predicted": false
+        },
+        {
+          "id": 22,
+          "order": 21,
+          "name": "scale",
+          "kind": "f32",
+          "send": "initial",
+          "predicted": false
+        },
+        {
+          "id": 23,
+          "order": 22,
+          "name": "seed",
+          "kind": "u32",
+          "send": "initial",
+          "predicted": false
+        }
+      ]
+    },
+    {
+      "v0Index": 2,
+      "v1Id": 3,
+      "name": "encounter",
+      "fields": [
+        {
+          "id": 1,
+          "order": 0,
+          "name": "state",
+          "kind": "enum",
+          "values": [
+            "dormant",
+            "armed",
+            "intro",
+            "fight",
+            "beat",
+            "victory",
+            "absent",
+            "idle",
+            "aware",
+            "engaged",
+            "leash",
+            "dead",
+            "broken",
+            "retired"
+          ],
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 2,
+          "order": 1,
+          "name": "hp",
+          "kind": "f32q",
+          "min": 0,
+          "max": 1,
+          "bits": 10,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 3,
+          "order": 2,
+          "name": "phase",
+          "kind": "u8",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 4,
+          "order": 3,
+          "name": "shield",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 5,
+          "order": 4,
+          "name": "body",
+          "kind": "ref",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 6,
+          "order": 5,
+          "name": "skip",
+          "kind": "f32q",
+          "min": 0,
+          "max": 1,
+          "bits": 6,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 7,
+          "order": 6,
+          "name": "banners",
+          "kind": "u8",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 8,
+          "order": 7,
+          "name": "signatures",
+          "kind": "u8",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 9,
+          "order": 8,
+          "name": "known",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 10,
+          "order": 9,
+          "name": "sleep",
+          "kind": "f32q",
+          "min": 0,
+          "max": 1,
+          "bits": 8,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 11,
+          "order": 10,
+          "name": "rewarded",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 12,
+          "order": 11,
+          "name": "rewardX",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 13,
+          "order": 12,
+          "name": "rewardY",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 14,
+          "order": 13,
+          "name": "rewardZ",
+          "kind": "f32q",
+          "min": -260,
+          "max": 260,
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 15,
+          "order": 14,
+          "name": "kind",
+          "kind": "text",
+          "send": "initial",
+          "predicted": false
+        }
+      ]
+    },
+    {
+      "v0Index": 3,
+      "v1Id": 4,
+      "name": "script",
+      "fields": [
+        {
+          "id": 1,
+          "order": 0,
+          "name": "x",
+          "kind": "f32",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 2,
+          "order": 1,
+          "name": "y",
+          "kind": "f32",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 3,
+          "order": 2,
+          "name": "z",
+          "kind": "f32",
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 4,
+          "order": 3,
+          "name": "pitch",
+          "kind": "angle",
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 5,
+          "order": 4,
+          "name": "yaw",
+          "kind": "angle",
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 6,
+          "order": 5,
+          "name": "roll",
+          "kind": "angle",
+          "bits": 16,
+          "send": "all",
+          "predicted": false
+        },
+        {
+          "id": 7,
+          "order": 6,
+          "name": "enabled",
+          "kind": "bool",
+          "send": "all",
+          "predicted": false
+        }
+      ]
+    },
+    {
+      "v0Index": 4,
+      "v1Id": 5,
+      "name": "state",
+      "fields": [
+        {
+          "id": 1,
+          "order": 0,
+          "name": "value",
+          "kind": "f32",
+          "send": "all",
+          "predicted": false
+        }
+      ]
+    },
+    {
+      "v0Index": 5,
+      "v1Id": 6,
+      "name": "flag",
+      "fields": []
+    }
+  ],
+  "messages": [
+    {
+      "tag": 1,
+      "name": "hello",
+      "form": "schemaHash:u32,build:text,player:text,name:text,ledger:u32"
+    },
+    {
+      "tag": 2,
+      "name": "cmds",
+      "form": "ackFrame:u32,count:u8,commands[count]"
+    },
+    {
+      "tag": 3,
+      "name": "act",
+      "form": "seq:u16,tag:u8,body"
+    },
+    {
+      "tag": 4,
+      "name": "welcome",
+      "form": "handle:u16,player:text,tick:u32,cell:u16,schemaHash:u32,simHz:u8,frameHz:u8"
+    },
+    {
+      "tag": 5,
+      "name": "frame",
+      "form": "tick:u32,baseline:u32,cell:u16,lastSeq:u16,owner,ride,rows"
+    },
+    {
+      "tag": 6,
+      "name": "events",
+      "form": "tick:u32,count:u16,events[count]"
+    }
+  ],
+  "events": [
+    {
+      "tag": 1,
+      "name": "spawn",
+      "form": "handle:u16,cls:u8,id:text,initial:classWidths,text:classText"
+    },
+    {
+      "tag": 2,
+      "name": "despawn",
+      "form": "handle:u16"
+    },
+    {
+      "tag": 3,
+      "name": "hit",
+      "form": "tick:u32,target:u16,amount:f32,at:quant(-260,260,16)[3],head:bool,killed:bool,blow:bool,confirmFor:u16"
+    },
+    {
+      "tag": 4,
+      "name": "died",
+      "form": "tick:u32,id:u16,by:u16,dir:quant(-1,1,8)[3],impulse:f32"
+    },
+    {
+      "tag": 5,
+      "name": "quest",
+      "form": "tick:u32,quest:text,started:bool,hasStep:bool,step:text,n:u16"
+    },
+    {
+      "tag": 6,
+      "name": "phase",
+      "form": "tick:u32,flag:text,on:bool"
+    },
+    {
+      "tag": 7,
+      "name": "reward",
+      "form": "tick:u32,coins:u32,body:u16,hasItem:bool,item?:text"
+    },
+    {
+      "tag": 8,
+      "name": "travel",
+      "form": "tick:u32,from:u16,to:u16"
+    },
+    {
+      "tag": 9,
+      "name": "ledger",
+      "form": "tick:u32,serial:u32,id:text,grant:u2,name:text,amount:f32,pending:bool"
+    },
+    {
+      "tag": 10,
+      "name": "chat",
+      "form": "tick:u32,line:u32,proximity:bool,from:u16,name:text,text:text"
+    },
+    {
+      "tag": 11,
+      "name": "mount",
+      "form": "tick:u32,rider:u16,mount:u16,seq:u16"
+    },
+    {
+      "tag": 12,
+      "name": "dismount",
+      "form": "tick:u32,rider:u16,mount:u16,seq:u16"
+    },
+    {
+      "tag": 13,
+      "name": "owned",
+      "form": "tick:u32,name:text,value:f32"
+    },
+    {
+      "tag": 14,
+      "name": "view",
+      "form": "tick:u32,name:text,count:u8,args:f32[count]"
+    },
+    {
+      "tag": 15,
+      "name": "player-died",
+      "form": "tick:u32,id:u16,checkpoint:bool,hasCause:bool,cause?:{kind:text,label:text,hasText:bool,text?:text}"
+    }
+  ],
+  "acts": [
+    {
+      "tag": 1,
+      "name": "interact",
+      "form": "id:text"
+    },
+    {
+      "tag": 2,
+      "name": "reload",
+      "form": "slot:u8"
+    },
+    {
+      "tag": 3,
+      "name": "equip",
+      "form": "slot:u8"
+    },
+    {
+      "tag": 4,
+      "name": "chat",
+      "form": "proximity:bool,text:text"
+    },
+    {
+      "tag": 5,
+      "name": "report",
+      "form": "line:u32"
+    },
+    {
+      "tag": 6,
+      "name": "ride",
+      "form": "action:u8[offer,mount,dismount]"
+    },
+    {
+      "tag": 7,
+      "name": "climate",
+      "form": "op:u8[mode,force,time,day],name:text,at:f32"
+    },
+    {
+      "tag": 8,
+      "name": "buy",
+      "form": "good:u16"
+    },
+    {
+      "tag": 9,
+      "name": "board",
+      "form": "tear:bool,slot:u16"
+    },
+    {
+      "tag": 10,
+      "name": "wear",
+      "form": "id:text"
+    },
+    {
+      "tag": 11,
+      "name": "pose",
+      "form": "names:text"
+    }
+  ],
+  "command": {
+    "bundleMax": 7,
+    "fields": [
+      "seq:u16",
+      "viewTick:u16",
+      "steer.keyX:fixed(8,1/127,-128)",
+      "steer.keyY:fixed(8,1/127,-128)",
+      "steer.stickX:fixed(8,1/127,-128)",
+      "steer.stickY:fixed(8,1/127,-128)",
+      "yaw:angle(16)",
+      "pitch:quant(-pi/2,pi/2,16)",
+      "buttons.low:u8",
+      "buttons.high?:presence(1)+u8",
+      "presence:attack,heavyTarget,lockTarget,hookTarget,launcher",
+      "attack?:hasTarget:bool,targetId?:ref16,aim.origin:f32[3],aim.direction:f32[3]",
+      "heavyTarget?:ref16",
+      "lockTarget?:ref16",
+      "hookTarget?:u16",
+      "launcher?:slot:u5,ads:quant(0,1,8),fire:bool"
+    ]
+  },
+  "columns": [
+    {
+      "id": 0,
+      "cls": "player",
+      "row": [
+        {
+          "name": "x",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "y",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "z",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "yaw",
+          "kind": "angle",
+          "bits": 10,
+          "step": 0.006135923151542565
+        },
+        {
+          "name": "board",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "swim",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "hp",
+          "kind": "u16",
+          "bits": 16,
+          "step": 1
+        },
+        {
+          "name": "held",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        }
+      ],
+      "owner": [
+        {
+          "name": "board",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "swim",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "hp",
+          "kind": "u16",
+          "bits": 16,
+          "step": 1
+        },
+        {
+          "name": "maxHp",
+          "kind": "u16",
+          "bits": 16,
+          "step": 1
+        },
+        {
+          "name": "statusStun",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "held",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        },
+        {
+          "name": "px",
+          "kind": "f64",
+          "bits": 64,
+          "step": 0
+        },
+        {
+          "name": "py",
+          "kind": "f64",
+          "bits": 64,
+          "step": 0
+        },
+        {
+          "name": "pz",
+          "kind": "f64",
+          "bits": 64,
+          "step": 0
+        },
+        {
+          "name": "vx",
+          "kind": "f64",
+          "bits": 64,
+          "step": 0
+        },
+        {
+          "name": "vy",
+          "kind": "f64",
+          "bits": 64,
+          "step": 0
+        },
+        {
+          "name": "vz",
+          "kind": "f64",
+          "bits": 64,
+          "step": 0
+        },
+        {
+          "name": "grounded",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "dashT",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "dodgeT",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "dodgeCd",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "shoveT",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "shoveX",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "shoveZ",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "dashX",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "dashZ",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "impulseX",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "impulseY",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "impulseZ",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "lockR0",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "jumpAgo",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "jumpLeft",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "hoverAir",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "hoverBob",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "stood",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "diving",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "climbTo",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "climbCooldown",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "strokeTime",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "water",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "depth",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "wading",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "onPlatform",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "sliding",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "motorGrounded",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "groundNormalY",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "downhillX",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "downhillZ",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "freedom",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "swingPhase",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "lastSwingSeq",
+          "kind": "u16",
+          "bits": 16,
+          "step": 1
+        },
+        {
+          "name": "moveScale",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "resets",
+          "kind": "u16",
+          "bits": 16,
+          "step": 1
+        },
+        {
+          "name": "led",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        }
+      ],
+      "initial": [],
+      "text": [],
+      "radius": null,
+      "position": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 1,
+      "cls": "animal",
+      "row": [
+        {
+          "name": "x",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "y",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "z",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "yaw",
+          "kind": "angle",
+          "bits": 10,
+          "step": 0.006135923151542565
+        },
+        {
+          "name": "state",
+          "kind": "enum",
+          "bits": 4,
+          "step": 0
+        },
+        {
+          "name": "attackT",
+          "kind": "f32q",
+          "bits": 8,
+          "step": 0.00392156862745098
+        },
+        {
+          "name": "attackDur",
+          "kind": "u32",
+          "bits": 32,
+          "step": 1
+        },
+        {
+          "name": "attackStamp",
+          "kind": "u32",
+          "bits": 32,
+          "step": 1
+        },
+        {
+          "name": "winding",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "flinch",
+          "kind": "f32q",
+          "bits": 6,
+          "step": 0.015873015873015872
+        },
+        {
+          "name": "strafe",
+          "kind": "f32q",
+          "bits": 8,
+          "step": 0.07058823529411765
+        },
+        {
+          "name": "brace",
+          "kind": "f32q",
+          "bits": 6,
+          "step": 0.015873015873015872
+        },
+        {
+          "name": "hp",
+          "kind": "u16",
+          "bits": 16,
+          "step": 1
+        },
+        {
+          "name": "alive",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "target",
+          "kind": "ref",
+          "bits": 16,
+          "step": 0
+        },
+        {
+          "name": "rideable",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "rise",
+          "kind": "f32q",
+          "bits": 6,
+          "step": 0.015873015873015872
+        },
+        {
+          "name": "act",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        }
+      ],
+      "owner": [
+        {
+          "name": "x",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "y",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "z",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "yaw",
+          "kind": "angle",
+          "bits": 10,
+          "step": 0.006135923151542565
+        },
+        {
+          "name": "state",
+          "kind": "enum",
+          "bits": 4,
+          "step": 0
+        },
+        {
+          "name": "attackT",
+          "kind": "f32q",
+          "bits": 8,
+          "step": 0.00392156862745098
+        },
+        {
+          "name": "attackDur",
+          "kind": "u32",
+          "bits": 32,
+          "step": 1
+        },
+        {
+          "name": "attackStamp",
+          "kind": "u32",
+          "bits": 32,
+          "step": 1
+        },
+        {
+          "name": "winding",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "flinch",
+          "kind": "f32q",
+          "bits": 6,
+          "step": 0.015873015873015872
+        },
+        {
+          "name": "strafe",
+          "kind": "f32q",
+          "bits": 8,
+          "step": 0.07058823529411765
+        },
+        {
+          "name": "brace",
+          "kind": "f32q",
+          "bits": 6,
+          "step": 0.015873015873015872
+        },
+        {
+          "name": "hp",
+          "kind": "u16",
+          "bits": 16,
+          "step": 1
+        },
+        {
+          "name": "alive",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "target",
+          "kind": "ref",
+          "bits": 16,
+          "step": 0
+        },
+        {
+          "name": "rideable",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "rise",
+          "kind": "f32q",
+          "bits": 6,
+          "step": 0.015873015873015872
+        },
+        {
+          "name": "act",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        }
+      ],
+      "initial": [
+        {
+          "name": "scale",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "seed",
+          "kind": "u32",
+          "bits": 32,
+          "step": 1
+        }
+      ],
+      "text": [
+        "kind",
+        "variant",
+        "rarity"
+      ],
+      "radius": 160,
+      "position": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 2,
+      "cls": "encounter",
+      "row": [
+        {
+          "name": "state",
+          "kind": "enum",
+          "bits": 4,
+          "step": 0
+        },
+        {
+          "name": "hp",
+          "kind": "f32q",
+          "bits": 10,
+          "step": 0.0009775171065493646
+        },
+        {
+          "name": "phase",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        },
+        {
+          "name": "shield",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "body",
+          "kind": "ref",
+          "bits": 16,
+          "step": 0
+        },
+        {
+          "name": "skip",
+          "kind": "f32q",
+          "bits": 6,
+          "step": 0.015873015873015872
+        },
+        {
+          "name": "banners",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        },
+        {
+          "name": "signatures",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        },
+        {
+          "name": "known",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "sleep",
+          "kind": "f32q",
+          "bits": 8,
+          "step": 0.00392156862745098
+        },
+        {
+          "name": "rewarded",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "rewardX",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "rewardY",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "rewardZ",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        }
+      ],
+      "owner": [
+        {
+          "name": "state",
+          "kind": "enum",
+          "bits": 4,
+          "step": 0
+        },
+        {
+          "name": "hp",
+          "kind": "f32q",
+          "bits": 10,
+          "step": 0.0009775171065493646
+        },
+        {
+          "name": "phase",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        },
+        {
+          "name": "shield",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "body",
+          "kind": "ref",
+          "bits": 16,
+          "step": 0
+        },
+        {
+          "name": "skip",
+          "kind": "f32q",
+          "bits": 6,
+          "step": 0.015873015873015872
+        },
+        {
+          "name": "banners",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        },
+        {
+          "name": "signatures",
+          "kind": "u8",
+          "bits": 8,
+          "step": 1
+        },
+        {
+          "name": "known",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "sleep",
+          "kind": "f32q",
+          "bits": 8,
+          "step": 0.00392156862745098
+        },
+        {
+          "name": "rewarded",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        },
+        {
+          "name": "rewardX",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "rewardY",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        },
+        {
+          "name": "rewardZ",
+          "kind": "f32q",
+          "bits": 16,
+          "step": 0.007934691386282139
+        }
+      ],
+      "initial": [],
+      "text": [
+        "kind"
+      ],
+      "radius": null,
+      "position": null
+    },
+    {
+      "id": 3,
+      "cls": "script",
+      "row": [
+        {
+          "name": "x",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "y",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "z",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "pitch",
+          "kind": "angle",
+          "bits": 16,
+          "step": 0.00009587379924285257
+        },
+        {
+          "name": "yaw",
+          "kind": "angle",
+          "bits": 16,
+          "step": 0.00009587379924285257
+        },
+        {
+          "name": "roll",
+          "kind": "angle",
+          "bits": 16,
+          "step": 0.00009587379924285257
+        },
+        {
+          "name": "enabled",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        }
+      ],
+      "owner": [
+        {
+          "name": "x",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "y",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "z",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        },
+        {
+          "name": "pitch",
+          "kind": "angle",
+          "bits": 16,
+          "step": 0.00009587379924285257
+        },
+        {
+          "name": "yaw",
+          "kind": "angle",
+          "bits": 16,
+          "step": 0.00009587379924285257
+        },
+        {
+          "name": "roll",
+          "kind": "angle",
+          "bits": 16,
+          "step": 0.00009587379924285257
+        },
+        {
+          "name": "enabled",
+          "kind": "bool",
+          "bits": 1,
+          "step": 0
+        }
+      ],
+      "initial": [],
+      "text": [],
+      "radius": null,
+      "position": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": 4,
+      "cls": "state",
+      "row": [
+        {
+          "name": "value",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        }
+      ],
+      "owner": [
+        {
+          "name": "value",
+          "kind": "f32",
+          "bits": 32,
+          "step": 0
+        }
+      ],
+      "initial": [],
+      "text": [],
+      "radius": null,
+      "position": null
+    },
+    {
+      "id": 5,
+      "cls": "flag",
+      "row": [],
+      "owner": [],
+      "initial": [],
+      "text": [],
+      "radius": null,
+      "position": null
+    }
+  ]
+}

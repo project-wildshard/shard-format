@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import type { SpawnSyncReturns } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -56,16 +62,44 @@ function install(dir: string): {
 }
 
 function checkRefusals(bin: string, consumer: string): void {
-  for (const args of [
-    [],
-    ['check', '--unknown'],
-    ['unknown'],
-    ['check', '--baseline'],
-  ]) {
+  for (const args of [[], ['check', '--unknown'], ['unknown']]) {
     const refused = run(process.execPath, [bin, ...args], consumer)
     assert.equal(refused.status, 1)
     assert.match(refused.stderr, /Usage/u)
   }
+}
+
+function checkInstalledBaseline(installed: string, consumer: string): void {
+  const bin = path.join(installed, 'bin.mjs')
+  checked(process.execPath, [bin, 'check', '--baseline'], consumer)
+  const lock = path.join(installed, 'wire.lock.json')
+  const original = readFileSync(lock, 'utf8')
+  writeFileSync(lock, `${original} `)
+  assert.equal(
+    run(process.execPath, [bin, 'check', '--baseline'], consumer).status,
+    1,
+  )
+  writeFileSync(lock, original)
+}
+
+function checkFrozenRefusal(installed: string, consumer: string): void {
+  const source = path.join(installed, 'frozen/v0/bits.ts')
+  const original = readFileSync(source, 'utf8')
+  writeFileSync(source, `${original}\n`)
+  const result = run(
+    process.execPath,
+    [path.join(installed, 'bin.mjs'), 'check', '--baseline'],
+    consumer,
+  )
+  assert.equal(result.status, 1)
+  assert.match(result.stderr, /Frozen v0 input changed: bits.ts/u)
+  writeFileSync(source, original)
+}
+
+function checkEmptyCommand(bin: string, consumer: string): void {
+  const check = run(process.execPath, [bin, 'check'], consumer)
+  assert.equal(check.status, 0, check.stderr)
+  assert.match(check.stdout, /scaffold only/u)
 }
 
 test('the packed package imports and checks inside a real consumer node_modules', (): void => {
@@ -73,10 +107,10 @@ test('the packed package imports and checks inside a real consumer node_modules'
   try {
     const { consumer, installed } = install(dir)
     const bin = path.join(installed, 'bin.mjs')
-    const check = run(process.execPath, [bin, 'check'], consumer)
-    assert.equal(check.status, 0, check.stderr)
-    assert.match(check.stdout, /scaffold only/u)
+    checkEmptyCommand(bin, consumer)
     checkRefusals(bin, consumer)
+    checkInstalledBaseline(installed, consumer)
+    checkFrozenRefusal(installed, consumer)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
