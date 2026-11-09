@@ -10,6 +10,7 @@
     "test/*.ts",
     "cli/**/*.ts",
     "frozen/v0/*.ts",
-    "src/*.ts"
+    "src/*.ts",
+    "bench/capture/**/*.ts"
   ]
 }

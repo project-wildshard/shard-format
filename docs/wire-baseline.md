@@ -46,3 +46,11 @@ encode is `round(value * divisor) - offset`, and its decode is
 half step plus adjacent doubles against the independent frozen command
 code. No reciprocal scale is permitted. The current engine still uses
 its original correct arithmetic; gated WR adoption switches its caller.
+
+WS3 frame capture tees each actual `rowFrom(handle)` and `due(handle)`
+call, preserving its result and call order. It stores per-handle source
+ticks/row words, absence, false due, visibility, class bindings and IEEE
+owner/ride bits. Capture never calls those callbacks a second time. A
+record can leave `FrameTrace.finish` only after JSON round-trip and
+byte-identical frozen-v0 replay; missing/extra calls or bytes refuse.
+The four full recordings and CPU results remain separate milestones.
