@@ -376,7 +376,8 @@
     "check:asks": "node src/scripts/asks.mjs check",
     "md:wrap": "node src/scripts/md-wrap.mjs",
     "test:hooks": "node --test '.githooks/*.test.mjs'",
-    "check": "pnpm typecheck && pnpm lint && pnpm lint:format && pnpm format:check && pnpm test && pnpm test:format && pnpm check:asks && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs"
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:format && pnpm format:check && pnpm test && pnpm test:format && pnpm check:asks && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs && pnpm check:wire",
+    "check:wire": "pnpm --dir packages/wire check && pnpm --dir packages/wire test"
   },
   "dependencies": {
     "meshoptimizer": "1.2.0",

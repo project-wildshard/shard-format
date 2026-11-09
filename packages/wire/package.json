@@ -1,0 +1,22 @@
+{
+  "name": "@wildshard/wire",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The Wildshard wire contract and frozen compatibility baseline.",
+  "bin": {
+    "wire": "./bin.mjs"
+  },
+  "exports": {
+    "./version": "./src/version.mjs"
+  },
+  "files": [
+    "bin.mjs",
+    "src/*.mjs",
+    "src/*.d.mts"
+  ],
+  "scripts": {
+    "check": "node --check bin.mjs && node --check src/version.mjs && tsc -p tsconfig.json && oxfmt -c ../../src/.oxfmtrc.json --check .",
+    "test": "node --test 'test/*.test.ts'"
+  }
+}

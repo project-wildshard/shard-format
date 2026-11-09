@@ -11,6 +11,9 @@ Run from the repo root.
   through `pnpm:devPreinstall`, which runs only in this repo. Never use
   `prepare` here: pnpm then builds the git dependency in every consumer,
   and pnpm 10.26+ refuses that unless the consumer allowlists it.
+- `pnpm check:wire`: the separate `packages/wire` syntax/type checks and
+  packed-consumer tests. Also runs in pre-push through `pnpm check`, and
+  in its own CI job. `wire check` is an empty scaffold until WS2.
 - `pnpm check`: typecheck + lint + the src/format ratchet + format:check
   + unit tests + format's tests + asks. The pre-push hook and CI run it.
 - `pnpm typecheck`: `src/tsconfig.json` (CLI, tools, tests),
@@ -33,6 +36,15 @@ Run from the repo root.
   sections measure follows them, so edit a section and pack.
 - `pnpm md:wrap`: rewraps Markdown prose to ~72 columns.
 - `src/scripts/ask-new.sh "<Jake's words>"`: opens an ask (`docs/tasks/asks/README.md`).
+
+## Wire package workspace
+
+`packages/wire` is `@wildshard/wire`, a separate package beside the root
+`@wildshard/format`. It ships plain JavaScript so installed consumers need
+no type-strip hook. Its source and tests have their own strict typecheck.
+The root format exports, runtime files and dependency targets stay intact.
+CI installs the exact Git subdirectory into engine and api-server:
+`github:project-wildshard/shardfile#<full-sha>&path:/packages/wire`.
 
 ## Changing the format
 
