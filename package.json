@@ -372,7 +372,7 @@
     "format:check": "oxfmt -c src/.oxfmtrc.json --check src '!src/format/**' '!src/test/fixtures/**'",
     "test": "node --test 'src/!(format|ci)/**/*.test.ts'",
     "test:ci": "node --test 'src/ci/**/*.test.ts'",
-    "test:format": "vitest run src/format --testTimeout=30000",
+    "test:format": "vitest run src/format --testTimeout=30000 --maxWorkers=2",
     "check:asks": "node src/scripts/asks.mjs check",
     "md:wrap": "node src/scripts/md-wrap.mjs",
     "test:hooks": "node --test '.githooks/*.test.mjs'",
