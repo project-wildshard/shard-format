@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -58,7 +59,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check:wire
 
+  # WS1 cross-repo access is an operator prerequisite, not a push gate.
+  # Keep the real install probes mandatory when explicitly dispatched.
   wire-git-install:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
