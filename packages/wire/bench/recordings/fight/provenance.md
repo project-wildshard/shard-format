@@ -2,7 +2,7 @@
 
 Exact engine cfd668102efcb7c10a6fb57d3021c1f3d23c37a5, actual admitted
 Driftwood product, native physics, SimNetWorld, NetRoom and two NetClients.
-Run scripts/wire/capture-fight.mjs with the same BASE/NEW_OUTPUT arguments
+Run src/scripts/wire/capture-fight.mjs with the same BASE/NEW_OUTPUT arguments
 and exact-tee preflight as capture-walking.mjs (docs/dev.md).
 
 The benchmark fixture starts both physical players next to an actual

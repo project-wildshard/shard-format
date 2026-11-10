@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import {capturePacket} from '../../packages/wire/lib/bench/capture/packet-replay.js';
+import {capturePacket} from '../../../packages/wire/lib/bench/capture/packet-replay.js';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve,join} from 'node:path';
 import {pathToFileURL,fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {archiveGraphSession} from '../../packages/wire/lib/bench/capture/session-graph.js';
+import {archiveGraphSession} from '../../../packages/wire/lib/bench/capture/session-graph.js';
 const root=resolve(process.argv[2] ?? ''), output=resolve(process.argv[3] ?? '');
 assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),'cfd668102efcb7c10a6fb57d3021c1f3d23c37a5');
 if (!process.argv[2] || !process.argv[3]) throw new Error('Usage: capture-dense.mjs <exact-cfd-engine> <new-output-directory>');
@@ -76,7 +76,7 @@ assert.equal(host.players.size,32);assert.equal(host.entities.size,60);assert.ok
 const movingPlayers=players.filter((player,i)=>player.position.distanceTo(playerStart[i])>0.1).length;
 const movingCreatures=[...host.entities.values()].filter((actor,i)=>actor.position.distanceTo(creatureStart[i])>0.1).length;
 assert.equal(movingPlayers,32);assert.equal(movingCreatures,60);
-const {packFrameWords}=await import('../../packages/wire/lib/bench/capture/frame-words.js');
+const {packFrameWords}=await import('../../../packages/wire/lib/bench/capture/frame-words.js');
 const document={version:1,engine:'cfd668102efcb7c10a6fb57d3021c1f3d23c37a5',product:'synthetic-dense-32-60',ticks:180,frames:packFrameWords(records),packets};
 const archive=await archiveGraphSession(document);
 mkdirSync(output,{recursive:false});

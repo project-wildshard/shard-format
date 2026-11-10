@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import {capturePacket} from '../../packages/wire/lib/bench/capture/packet-replay.js';
+import {capturePacket} from '../../../packages/wire/lib/bench/capture/packet-replay.js';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve,join} from 'node:path';
 import {pathToFileURL,fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {archiveSession} from '../../packages/wire/lib/bench/capture/session-archive.js';
+import {archiveSession} from '../../../packages/wire/lib/bench/capture/session-archive.js';
 const root=resolve(process.argv[2] ?? ''), output=resolve(process.argv[3] ?? '');
 assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),'cfd668102efcb7c10a6fb57d3021c1f3d23c37a5');
 if (!process.argv[2] || !process.argv[3]) throw new Error('Usage: capture-walking.mjs <exact-cfd-engine> <new-output-directory>');
@@ -59,7 +59,7 @@ const report={engine:'cfd668102efcb7c10a6fb57d3021c1f3d23c37a5',product:'sunscar
 const lost=packets.filter(p=>!p.delivered).length,fullAfterLost=records.filter(r=>r.frame.tick>660&&r.baseline===undefined).length;
 assert.ok(lost>0);assert.ok(fullAfterLost>0);
 const recording={version:1,engine:report.engine,product:report.product,ticks:1800,frames:records,packets};
-const {packFrameWords}=await import('../../packages/wire/lib/bench/capture/frame-words.js');
+const {packFrameWords}=await import('../../../packages/wire/lib/bench/capture/frame-words.js');
 const archive=await archiveSession({...recording,frames:packFrameWords(records)});
 mkdirSync(output,{recursive:false});
 for(const [file,bytes] of archive.files)writeFileSync(join(output,file),bytes,{flag:'wx'});

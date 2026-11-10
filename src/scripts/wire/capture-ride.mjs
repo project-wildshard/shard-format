@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import {capturePacket} from '../../packages/wire/lib/bench/capture/packet-replay.js';
+import {capturePacket} from '../../../packages/wire/lib/bench/capture/packet-replay.js';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve,join} from 'node:path';
 import {pathToFileURL,fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {archiveSession} from '../../packages/wire/lib/bench/capture/session-archive.js';
+import {archiveSession} from '../../../packages/wire/lib/bench/capture/session-archive.js';
 const root=resolve(process.argv[2] ?? ''), output=resolve(process.argv[3] ?? '');
 assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),'cfd668102efcb7c10a6fb57d3021c1f3d23c37a5');
 if (!process.argv[2] || !process.argv[3]) throw new Error('Usage: capture-ride.mjs <exact-cfd-engine> <new-output-directory>');
@@ -65,7 +65,7 @@ for(tick=0;tick<240;tick++){
 assert.ok(rode);assert.equal(seat.mounted,false);assert.equal(client.dropped,0);assert.ok(body.position.distanceTo(start)>1);
 const mounted=records.filter(record=>(record.rideWords??0)>0).length;assert.ok(mounted>0);assert.ok(records.some(record=>(record.rideWords??0)===0));
 const lost=packets.filter(packet=>!packet.delivered).length,fullAfterLost=records.filter(record=>record.frame.tick>140&&record.baseline===undefined).length;assert.ok(lost>0);assert.ok(fullAfterLost>0);
-const {packFrameWords}=await import('../../packages/wire/lib/bench/capture/frame-words.js');
+const {packFrameWords}=await import('../../../packages/wire/lib/bench/capture/frame-words.js');
 const archive=await archiveSession({version:1,engine:'cfd668102efcb7c10a6fb57d3021c1f3d23c37a5',product:'nalati-grasslands',ticks:240,frames:packFrameWords(records),packets});
 mkdirSync(output,{recursive:false});
 for(const [file,bytes]of archive.files)writeFileSync(join(output,file),bytes,{flag:'wx'});

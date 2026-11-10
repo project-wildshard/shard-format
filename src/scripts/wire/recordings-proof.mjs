@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { archiveSession, readSessionArchive } from '../../packages/wire/lib/bench/capture/session-archive.js';
-import { preparePacket } from '../../packages/wire/lib/bench/capture/packet-replay.js';
-const root = new URL('../../packages/wire/bench/recordings/walking/', import.meta.url);
+import { archiveSession, readSessionArchive } from '../../../packages/wire/lib/bench/capture/session-archive.js';
+import { preparePacket } from '../../../packages/wire/lib/bench/capture/packet-replay.js';
+const root = new URL('../../../packages/wire/bench/recordings/walking/', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8'));
 const load = async name => Uint8Array.from(readFileSync(new URL(name, root)));
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -92,7 +92,7 @@ check('the writer also refuses corrupt capture bytes before publishing an archiv
 });
 
 check('two real Driftwood clients preserve the complete fight, chat, command loss and recovery', async () => {
-  const directory = new URL('../../packages/wire/bench/recordings/fight/', import.meta.url);
+  const directory = new URL('../../../packages/wire/bench/recordings/fight/', import.meta.url);
   const header = JSON.parse(readFileSync(new URL('manifest.json', directory), 'utf8'));
   const session = await readSessionArchive(header, async file => readFileSync(new URL(file, directory)));
   assert.equal(session.product, 'driftwood-isle'); assert.equal(session.ticks, 300);
@@ -125,7 +125,7 @@ check('two real Driftwood clients preserve the complete fight, chat, command los
 });
 
 check('actual Nalati mount and dismount preserve ride words, loss and recovery', async () => {
-  const directory = new URL('../../packages/wire/bench/recordings/ride/', import.meta.url);
+  const directory = new URL('../../../packages/wire/bench/recordings/ride/', import.meta.url);
   const header = JSON.parse(readFileSync(new URL('manifest.json', directory), 'utf8'));
   const session = await readSessionArchive(header, async file => readFileSync(new URL(file, directory)));
   assert.equal(session.product, 'nalati-grasslands'); assert.equal(session.ticks, 240);

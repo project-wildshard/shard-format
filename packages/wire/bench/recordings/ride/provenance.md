@@ -2,7 +2,7 @@
 
 Exact engine cfd668102efcb7c10a6fb57d3021c1f3d23c37a5, actual admitted
 Nalati product, native physics, mounted law, NetRoom and NetClient.
-Run scripts/wire/capture-ride.mjs with the documented BASE/NEW_OUTPUT
+Run src/scripts/wire/capture-ride.mjs with the documented BASE/NEW_OUTPUT
 arguments and exact-tee preflight. No live server or browser is opened.
 
 The fixture initially places the player next to the actual available

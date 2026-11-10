@@ -3,17 +3,17 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {sealGraphPart,openGraphPart} from '../../packages/wire/lib/bench/capture/graph-part.js';
+import {sealGraphPart,openGraphPart} from '../../../packages/wire/lib/bench/capture/graph-part.js';
 import {deflateSync} from 'node:zlib';
-import {Dictionary,expand} from '../../packages/wire/lib/bench/capture/capture-graph.js';
-import {archiveGraphSession,readGraphSession} from '../../packages/wire/lib/bench/capture/session-graph.js';
-import {readSessionArchive} from '../../packages/wire/lib/bench/capture/session-archive.js';
-import {packFrameWords} from '../../packages/wire/lib/bench/capture/frame-words.js';
-import {preparePacket} from '../../packages/wire/lib/bench/capture/packet-replay.js';
+import {Dictionary,expand} from '../../../packages/wire/lib/bench/capture/capture-graph.js';
+import {archiveGraphSession,readGraphSession} from '../../../packages/wire/lib/bench/capture/session-graph.js';
+import {readSessionArchive} from '../../../packages/wire/lib/bench/capture/session-archive.js';
+import {packFrameWords} from '../../../packages/wire/lib/bench/capture/frame-words.js';
+import {preparePacket} from '../../../packages/wire/lib/bench/capture/packet-replay.js';
 const bytes=value=>Buffer.from(JSON.stringify(value)+'\n');
 const digest=data=>createHash('sha256').update(data).digest('hex');
 function check(name,work){void test(name,{timeout:9500},async()=>{const start=performance.now();await work();assert.ok(performance.now()-start<9500,'Graph proof exceeds 9.5 seconds');});}
-const walk=new URL('../../packages/wire/bench/recordings/walking/',import.meta.url);
+const walk=new URL('../../../packages/wire/bench/recordings/walking/',import.meta.url);
 const original=await readSessionArchive(JSON.parse(readFileSync(new URL('manifest.json',walk))),async file=>readFileSync(new URL(file,walk)));
 const fixture={version:1,engine:original.engine,product:original.product,ticks:1,frames:packFrameWords([original.frames[0]]),packets:original.packets.filter(packet=>packet.tick===0)};
 const small=await archiveGraphSession(fixture);
@@ -67,7 +67,7 @@ check('correctly resealed frame and valid-prefix packet corruption still refuse 
  await assert.rejects(archiveGraphSession(packet),/Frozen v0 packet replay differs/);
 });
 check('all 32 clients retain the complete moving 60-creature dense stream',async()=>{
- const directory=new URL('../../packages/wire/bench/recordings/dense/',import.meta.url),header=JSON.parse(readFileSync(new URL('manifest.json',directory)));
+ const directory=new URL('../../../packages/wire/bench/recordings/dense/',import.meta.url),header=JSON.parse(readFileSync(new URL('manifest.json',directory)));
  const session=await readGraphSession(header,async file=>readFileSync(new URL(file,directory)));
  assert.equal(session.product,'synthetic-dense-32-60');assert.equal(session.ticks,180);
  assert.equal(session.frames.length,2912);assert.equal(session.packets.length,8768);

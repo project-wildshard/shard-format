@@ -6,8 +6,8 @@ import {join,resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 if (!process.argv[2]) throw new Error('Usage: installer-proof.mjs <owned-exact-cfd-engine>');
 const started=performance.now();
-const root=fileURLToPath(new URL('../../',import.meta.url)),base=resolve(process.argv[2]);
-const fixed=join(root,'scripts/wire/install-capture-tee.mjs');
+const root=fileURLToPath(new URL('../../../',import.meta.url)),base=resolve(process.argv[2]);
+const fixed=join(root,'src/scripts/wire/install-capture-tee.mjs');
 mkdirSync(join(root,'tmp'),{recursive:true});const temporary=mkdtempSync(join(root,'tmp/wire-installer-proof-'));
 try {
   const fixture=join(temporary,'engine'),old=join(temporary,'old.mjs');
@@ -19,7 +19,7 @@ try {
   source=source.slice(0,source.indexOf('const directory ='))+source.slice(source.indexOf('const current ='));
   source=source.slice(0,source.indexOf('const changes ='))+"for (const changed of git(['diff', '--name-only']).trim().split('\\n').filter(Boolean)) assert.ok(allowed.has(changed), `Baseline source is dirty: ${changed}`);\n"+source.slice(source.indexOf('const module ='));
   for(const path of ['bench/templates/wireCapture.ts.txt','lib/bench/capture/frame-trace.js']) {
-    const relative=`../../packages/wire/${path}`,absolute=pathToFileURL(join(root,'packages/wire',path)).href;
+    const relative=`../../../packages/wire/${path}`,absolute=pathToFileURL(join(root,'packages/wire',path)).href;
     source=source.replace(`new URL('${relative}', import.meta.url)`,`new URL('${absolute}')`);
   }
   writeFileSync(old,source,{flag:'wx'});

@@ -41,7 +41,7 @@ duplicate object keys, then requires every frozen frame and non-frame
 packet to replay byte-identically. This includes per-handle rowFrom
 sources and due decisions. Correctly resealed corrupt bytes still fail.
 
-Run scripts/wire/capture-dense.mjs with the documented BASE/NEW_OUTPUT
+Run src/scripts/wire/capture-dense.mjs with the documented BASE/NEW_OUTPUT
 arguments and exact-tee preflight. The independent CI graph proof is
 outside hooks and retains 9.5-second timeout/elapsed bounds per case.
 This is capture integrity, not Node/4x Chromium timing or a v1 gate pass.

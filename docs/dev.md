@@ -150,12 +150,12 @@ WS3 captures the frozen v0.1.2 engine at full commit
 uncommitted encode tee in an owned scratch clone. From this repo:
 
 ```sh
-node scripts/wire/install-capture-tee.mjs "$BASE"
+node src/scripts/wire/install-capture-tee.mjs "$BASE"
 python3 ~/projects/games/wildshard/engine/scripts/cpu-admission.py run --slots 2 -- \
   node --experimental-transform-types --import "$BASE/scripts/sim-node-loader.mjs" \
-  scripts/wire/capture-walking.mjs "$BASE" "$NEW_OUTPUT"
-node --test scripts/wire/recordings-proof.mjs
-node scripts/wire/installer-proof.mjs "$BASE"
+  src/scripts/wire/capture-walking.mjs "$BASE" "$NEW_OUTPUT"
+node --test src/scripts/wire/recordings-proof.mjs
+node src/scripts/wire/installer-proof.mjs "$BASE"
 ```
 
 `BASE` is an owned full scratch clone at that exact commit, with its
@@ -181,19 +181,19 @@ frame and packet replays to be byte-identical before returning data.
 Hash-valid corrupt codec bytes still refuse. Proof cases run explicitly
 in CI, outside hooks, with timeout and elapsed caps of 9.5 seconds.
 
-A second runner, `scripts/wire/capture-fight.mjs`, uses the same
+A second runner, `src/scripts/wire/capture-fight.mjs`, uses the same
 arguments/preflight and captures a real two-client Driftwood melee and
 chat stream with command loss/recovery. The fixture begins beside an
 actual living creature; it claims no journey from spawn. Its five parts
 and manifest are 3,364,687 bytes. Both clients and all native resources
 are disposed in finally.
 
-`scripts/wire/capture-ride.mjs` records the actual Nalati camp horse,
+`src/scripts/wire/capture-ride.mjs` records the actual Nalati camp horse,
 real mount/dismount acts and command-driven steering. Its complete
 parts and manifest total 2,057,162 bytes. The mounted law reports actual
 stand/walk/trot; no horse flag or pose is forced after initial placement.
 
-`scripts/wire/capture-dense.mjs` creates a synthetic flat arena with
+`src/scripts/wire/capture-dense.mjs` creates a synthetic flat arena with
 32 real native clients and 60 moving creatures, warms it for 60 ticks,
 then retains 180 ticks of all traffic. It is not a live-server capacity
 proof. The expanded 80.16 MB tree has lossless structural sharing across

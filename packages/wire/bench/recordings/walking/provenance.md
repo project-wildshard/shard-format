@@ -1,7 +1,7 @@
 # Full Sunscar walking recording
 
 Captured from exact engine cfd668102efcb7c10a6fb57d3021c1f3d23c37a5,
-with only the source tee in scripts/wire/install-capture-tee.mjs. The real
+with only the source tee in src/scripts/wire/install-capture-tee.mjs. The real
 NetRoom/SimNetWorld, native physics and admitted Sunscar product run
 1,800 command ticks. The runner and docs/dev.md give the repeat command.
 

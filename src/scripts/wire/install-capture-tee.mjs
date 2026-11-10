@@ -23,7 +23,7 @@ ordinary(resolve(root, path));
 ordinary(resolve(root, 'src/shared/engine/net/wireCapture.ts'));
 const current = readFileSync(resolve(root, path), 'utf8');
 assert.ok(current === original || current === patched, 'Refuse a foreign frame edit');
-const template = readFileSync(new URL('../../packages/wire/bench/templates/wireCapture.ts.txt', import.meta.url), 'utf8');
+const template = readFileSync(new URL('../../../packages/wire/bench/templates/wireCapture.ts.txt', import.meta.url), 'utf8');
 const helperPath = resolve(root, 'src/shared/engine/net/wireCapture.ts');
 const normalize = text => text.replace(/import \{ FrameTrace \} from '[^']+';/u, "import { FrameTrace } from '{{WIRE_TRACE_MODULE}}';");
 if (existsSync(helperPath)) assert.equal(normalize(readFileSync(helperPath, 'utf8')), template, 'Refuse a foreign capture helper');
@@ -31,7 +31,7 @@ const allowed = new Set([path, 'src/client/game/boot/audio.generated.ts', 'src/c
 const changes = [...git(['diff', '--name-only', '-z']).split('\0'), ...git(['diff', '--cached', '--name-only', '-z']).split('\0')];
 for (const changed of changes.filter(Boolean)) assert.ok(allowed.has(changed), `Baseline source is dirty: ${changed}`);
 for (const untracked of git(['ls-files', '--others', '--exclude-standard', '-z']).split('\0').filter(Boolean)) assert.equal(untracked, 'src/shared/engine/net/wireCapture.ts', 'Refuse an untracked baseline source');
-const module = pathToFileURL(fileURLToPath(new URL('../../packages/wire/lib/bench/capture/frame-trace.js', import.meta.url))).href;
+const module = pathToFileURL(fileURLToPath(new URL('../../../packages/wire/lib/bench/capture/frame-trace.js', import.meta.url))).href;
 const expected = template.replace('{{WIRE_TRACE_MODULE}}', module);
 if (process.argv.includes('--check')) {
   assert.equal(current, patched, 'Missing exact frame tee');
