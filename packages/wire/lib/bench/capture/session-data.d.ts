@@ -34,7 +34,6 @@ interface CapturedSession {
     readonly frames: readonly CapturedFrame[];
     readonly packets: readonly CapturedPacket[];
 }
-/** Validate every actual stream and per-handle callback before timing or storage. */
 declare function parseStoredSession(value: unknown): StoredSession;
 /** Expanded values remain opaque, bit-exact snapshots from frozen-v0 replay. */
 declare function parseSession(value: unknown): CapturedSession;

@@ -193,8 +193,23 @@ real mount/dismount acts and command-driven steering. Its complete
 parts and manifest total 2,057,162 bytes. The mounted law reports actual
 stand/walk/trot; no horse flag or pose is forced after initial placement.
 
-These are three of four required recordings. The dense
-32-player/60-creature room, Node/4x Chromium timing
-harness and two-run timing stability are still open. No benchmark gate
+`scripts/wire/capture-dense.mjs` creates a synthetic flat arena with
+32 real native clients and 60 moving creatures, warms it for 60 ticks,
+then retains 180 ticks of all traffic. It is not a live-server capacity
+proof. The expanded 80.16 MB tree has lossless structural sharing across
+14 explicit deflate-JSON envelopes plus manifest, totaling 1,491,667 bytes. Every
+file remains below 1 MB; no hook limit is raised. The older array writer
+keeps its 5 MB whole-session bound. Dense has separate explicit bounds:
+5 MB stored, 1 MB decompressed per part, 100 MB expanded canonical JSON,
+500,000 nodes and depth 64. Standard browser compression changes storage
+only; the frozen transport bytes stay exact. The graph
+reader checks complete ordered hashes, bounded streaming decompression
+and expansion size before materializing JSON, then the same mandatory frozen byte oracle. Cycles, duplicate keys,
+expansion bombs and correctly resealed corrupt codec bytes refuse.
+
+Walking and dense captures each repeated with all committed data files
+literally byte-identical. Those are reproducibility checks, not timing.
+All four complete recordings are present locally. Node/4x Chromium timing
+and two-run timing stability are still open. No benchmark gate
 or v1 performance pass is claimed; voice control prefix 8 belongs to the
 later v1 work and is not injected into this historical baseline.

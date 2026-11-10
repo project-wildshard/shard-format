@@ -114,7 +114,10 @@ class PacketReplayGuard {
   }
 }
 /** Validate every actual stream and per-handle callback before timing or storage. */
-function parseStoredSession(value: unknown): StoredSession {
+function validateSession(value: unknown): {
+  readonly source: StoredSession
+  readonly frames: readonly CapturedFrame[]
+} {
   const source = parse(SessionSchema, value)
   const frames = unpackFrameWords(source.frames)
   const guard = new PacketReplayGuard(source.ticks, frames.length)
@@ -122,12 +125,15 @@ function parseStoredSession(value: unknown): StoredSession {
     guard.observe(packet)
   }
   guard.complete()
-  return source
+  return { source, frames }
+}
+function parseStoredSession(value: unknown): StoredSession {
+  return validateSession(value).source
 }
 /** Expanded values remain opaque, bit-exact snapshots from frozen-v0 replay. */
 function parseSession(value: unknown): CapturedSession {
-  const source = parseStoredSession(value)
-  return { ...source, frames: unpackFrameWords(source.frames) }
+  const { source, frames } = validateSession(value)
+  return { ...source, frames }
 }
 
 export {
