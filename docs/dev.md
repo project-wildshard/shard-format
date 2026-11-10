@@ -181,8 +181,15 @@ frame and packet replays to be byte-identical before returning data.
 Hash-valid corrupt codec bytes still refuse. Proof cases run explicitly
 in CI, outside hooks, with timeout and elapsed caps of 9.5 seconds.
 
-This is one of four required recordings. The Driftwood two-bot fight,
-mounted ride, dense 32-player/60-creature room, Node/4x Chromium timing
+A second runner, `scripts/wire/capture-fight.mjs`, uses the same
+arguments/preflight and captures a real two-client Driftwood melee and
+chat stream with command loss/recovery. The fixture begins beside an
+actual living creature; it claims no journey from spawn. Its five parts
+and manifest are 3,364,687 bytes. Both clients and all native resources
+are disposed in finally.
+
+These are two of four required recordings. The mounted ride, dense
+32-player/60-creature room, Node/4x Chromium timing
 harness and two-run timing stability are still open. No benchmark gate
 or v1 performance pass is claimed; voice control prefix 8 belongs to the
 later v1 work and is not injected into this historical baseline.

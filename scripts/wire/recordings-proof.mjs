@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { archiveSession, readSessionArchive } from '../../packages/wire/lib/bench/capture/session-archive.js';
+import { preparePacket } from '../../packages/wire/lib/bench/capture/packet-replay.js';
 const root = new URL('../../packages/wire/bench/recordings/walking/', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8'));
 const load = async name => Uint8Array.from(readFileSync(new URL(name, root)));
@@ -88,4 +89,24 @@ check('the writer also refuses corrupt capture bytes before publishing an archiv
   const files = new Map(await Promise.all(manifest.parts.map(async part => [part.file, await load(part.file)])));
   const source = stored(manifest, files), frame = source.frames.frames[0]; assert.ok(frame);
   frame.bytes = ''; await assert.rejects(archiveSession(source), /Frozen v0 frame replay differs/);
+});
+
+check('two real Driftwood clients preserve the complete fight, chat, command loss and recovery', async () => {
+  const directory = new URL('../../packages/wire/bench/recordings/fight/', import.meta.url);
+  const header = JSON.parse(readFileSync(new URL('manifest.json', directory), 'utf8'));
+  const session = await readSessionArchive(header, async file => readFileSync(new URL(file, directory)));
+  assert.equal(session.product, 'driftwood-isle'); assert.equal(session.ticks, 300);
+  assert.equal(session.frames.length, 302); assert.equal(session.packets.length, 928);
+  assert.equal(session.packets.filter(row => !row.delivered).length, 160);
+  assert.equal(session.frames.filter(row => row.frame.tick > 240 && row.baseline === undefined).length, 20);
+  const streams = {}, events = {}, owners = [];
+  for (const row of session.packets) if ('packet' in row) {
+    const packet = preparePacket(row.packet); streams[packet.stream] = (streams[packet.stream] ?? 0) + 1;
+    if (packet.stream === 'welcome') owners.push(packet.decode().player);
+    if (packet.stream === 'events') for (const event of packet.decode().events) events[event.kind] = (events[event.kind] ?? 0) + 1;
+  }
+  assert.deepEqual(owners, ['actor.player', 'bot:wire-fight']);
+  assert.deepEqual(streams, { hello: 2, welcome: 2, events: 18, act: 4, commands: 600 });
+  assert.equal(events.hit, 12); assert.equal(events.died, 2); assert.equal(events.chat, 8); assert.equal(events.reward, 2);
+  assert.equal(header.hash, '0eb9ad661cabfbbce08da88e3a6183736ba8ba7b613a6a60b29183be0e897035');
 });
