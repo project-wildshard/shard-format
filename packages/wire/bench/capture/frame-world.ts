@@ -5,6 +5,8 @@ import { packWords, unpackWords } from './frame-data.ts'
 import type { NetClass } from '../../frozen/v0/schema.ts'
 import type { Snapshot, CapturedRow } from './frame-data.ts'
 
+const ZERO = 0
+
 interface FrameView {
   readonly tick: number
   readonly data: Readonly<Uint32Array>
@@ -56,6 +58,8 @@ class CapturedWorld {
   private readonly frame = new WorldFrame()
   public read(data: Snapshot): WorldFrame {
     const { frame } = this
+    // Fresh frozen worlds expose zero outside supplied rows, even for a hostile class mismatch.
+    frame.data.fill(ZERO)
     frame.reset(data.tick)
     for (const row of data.rows) {
       const values = unpackWords(row.words)

@@ -1,6 +1,7 @@
 import { WorldFrame } from '../../frozen/v0/frame.js';
 import { V0_CLASSES } from '../../frozen/v0/tables.js';
 import { packWords, unpackWords } from './frame-data.js';
+const ZERO = 0;
 const CLASSES = new Map(V0_CLASSES.map((entry) => [
     entry.id,
     entry,
@@ -32,6 +33,8 @@ class CapturedWorld {
     frame = new WorldFrame();
     read(data) {
         const { frame } = this;
+        // Fresh frozen worlds expose zero outside supplied rows, even for a hostile class mismatch.
+        frame.data.fill(ZERO);
         frame.reset(data.tick);
         for (const row of data.rows) {
             const values = unpackWords(row.words);

@@ -98,3 +98,19 @@ test('corrupt input cannot enter the dictionary without frozen replay', (): void
     /differs from real bytes/u,
   )
 })
+
+test('a corrupt final dictionary frame refuses before any admitted session reaches its consumer', (): void => {
+  const packed = packFrameWords(frames)
+  const changed = structuredClone(packed),
+    values: unknown = changed.frames
+  assert.ok(Array.isArray(values))
+  const last: unknown = values.at(-1)
+  assert.ok(typeof last === 'object' && last !== null && 'bytes' in last)
+  last.bytes = 'YmFk'
+  let published = 0
+  assert.throws((): void => {
+    published += unpackFrameWords(changed).length
+  }, /differs from real bytes/u)
+  assert.equal(published, 0)
+  assert.deepEqual(unpackFrameWords(jsonReload(packed)), frames)
+})

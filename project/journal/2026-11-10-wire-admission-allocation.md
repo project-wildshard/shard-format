@@ -26,3 +26,17 @@ are not two-run qualification or proof of the hosted root. Strict types,
 focused lint and generated declarations build locally. Full dense
 admission, memory and hosted evidence remain pending; no full gate,
 benchmark timing or publication is run in the release priority window.
+
+J206 one-shot admission review found a real MUST-FIX in the initial
+scratch reuse: an admitted short-class callback can expose stale trailing
+words to the replay class width. Its exact two-call counterexample fails
+the new regression on 996b113 because corrupted bytes were accepted.
+Clearing the whole reused buffer before reconstruction restores fresh
+zero-tail semantics; the same case then refuses. No class-width rule is
+relaxed. The SHOULD is closed with a corrupt final dictionary frame that
+cannot reach its consumer, plus a valid complete-stream control.
+
+Original review retained at
+`~/.cache/wildshard/session-keep/reviews/ws3-recordings-shardfile-20261110-WS3-admission-allocation-20261110T111142Z-45803.md`.
+Focused cases, strict generated build and narrow typed lint pass. Dense
+and hosted qualification remain pending; no full gate or publication.
