@@ -40,3 +40,9 @@ Two fresh native captures produced seven literally identical data files.
 Only the owned repeat files, mutation script and fixture were removed.
 The full intended source recording and original scratch baseline remain.
 Review: `~/.cache/wildshard/session-keep/reviews/ws3-recordings-shardfile-20261110-WS3-walking-archive-20261110T025329Z-59188.md`.
+
+The manual proof also redirects the entire destination parent directory.
+The old installer writes outside the checkout; the fixed installer
+refuses the redirected parent before changing those outside bytes.
+All three real Git/destination/parent controls finish under 9.5 seconds
+and remove only the newly created fixture root.

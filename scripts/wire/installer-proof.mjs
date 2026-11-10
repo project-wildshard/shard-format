@@ -35,6 +35,14 @@ try {
   const accepted=spawnSync(process.execPath,[old,fixture],{encoding:'utf8',timeout:9500});assert.equal(accepted.status,0,accepted.stderr);assert.notEqual(readFileSync(outside,'utf8'),target);
   writeFileSync(outside,target);
   const refused=spawnSync(process.execPath,[fixed,fixture],{encoding:'utf8',timeout:9500});assert.notEqual(refused.status,0);assert.match(refused.stderr,/Refuse a symlink or non-file destination/);assert.equal(readFileSync(outside,'utf8'),target);
+  rmSync(helper); renameSync(helper+'.owned',helper);
+  const directory=join(fixture,'src/shared/engine/net'),redirected=join(temporary,'redirected-net');
+  renameSync(directory,redirected);symlinkSync(redirected,directory,'dir');
+  const frame=join(redirected,'frame.ts'),cleanFrame=execFileSync('git',['show','HEAD:src/shared/engine/net/frame.ts'],{cwd:fixture,encoding:'utf8',timeout:9500});
+  writeFileSync(frame,cleanFrame);
+  const oldParent=spawnSync(process.execPath,[old,fixture],{encoding:'utf8',timeout:9500});assert.equal(oldParent.status,0,oldParent.stderr);assert.notEqual(readFileSync(frame,'utf8'),cleanFrame);
+  writeFileSync(frame,cleanFrame);
+  const newParent=spawnSync(process.execPath,[fixed,fixture],{encoding:'utf8',timeout:9500});assert.notEqual(newParent.status,0);assert.match(newParent.stderr,/Refuse a redirected destination parent/);assert.equal(readFileSync(frame,'utf8'),cleanFrame);
   assert.ok(performance.now()-started<9500,'Complete installer proof exceeds9.5seconds');
-  console.log('Real Git staged-only edit: old accepts, fixed refuses; real symlink: old overwrites outside target, fixed refuses with outside bytes untouched');
+  console.log('Real Git staged-only edit: old accepts, fixed refuses; destination and parent symlinks: old overwrites outside targets, fixed refuses with outside bytes untouched');
 } finally { rmSync(temporary,{recursive:true}); }
