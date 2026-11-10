@@ -131,3 +131,14 @@ goes in `tmp/<task>/` and is deleted when done.
 
 Bypasses are for the case they name, never for a red gate: fix the code,
 not the gate.
+
+### Wire recording integrity
+
+`packages/wire/bench/capture/packet-replay.ts` captures the five non-frame
+v0 transport streams. `preparePacket` validates byte-identical frozen
+replay before returning separate encode/decode closures for timing.
+Preparation preserves original BOM text; ordinary records use the
+unchanged frozen BitWriter. A BOM record includes its prepared text
+adapter in encode cost. Frames still require FrameTrace with actual
+per-handle baselines and due results. These helpers are recording
+integrity, not the four complete WS3 recordings or a benchmark result.
