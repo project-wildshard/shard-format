@@ -1,6 +1,6 @@
 import { prepareTraffic } from './benchmark-data.js';
 import { POLICY } from './benchmark-stats.js';
-import { measureTraffic } from './benchmark.js';
+import { measureTraffic, benchmarkSink } from './benchmark.js';
 const held = {};
 const NAMES = new Set(['walking', 'fight', 'ride', 'dense']);
 async function get(name, file) {
@@ -30,7 +30,14 @@ function measure() {
 }
 function release() {
     delete held.traffic;
+    benchmarkSink.value = undefined;
 }
 Object.assign(globalThis, {
-    wireBenchmark: Object.freeze({ policy: POLICY, prepare, measure, release }),
+    wireBenchmark: Object.freeze({
+        policy: POLICY,
+        sink: benchmarkSink,
+        prepare,
+        measure,
+        release,
+    }),
 });

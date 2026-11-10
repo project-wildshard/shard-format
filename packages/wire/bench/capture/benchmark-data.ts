@@ -7,6 +7,8 @@ import { readSessionArchive } from './session-archive.ts'
 import { readGraphSession } from './session-graph.ts'
 
 import type { BytesReading } from './benchmark-stats.ts'
+import type { PreparedPacket } from './packet-replay.ts'
+import type { PreparedFrame } from './prepared-frame.ts'
 import type { CapturedSession } from './session-data.ts'
 
 interface Task {
@@ -14,8 +16,9 @@ interface Task {
   readonly direction: 'up' | 'down'
   readonly bytes: number
   readonly delivered: boolean
-  readonly encode: (writer: () => BitWriter) => ArrayBuffer
-  readonly decode: () => unknown
+  readonly payload:
+    | { readonly frame: PreparedFrame }
+    | { readonly packet: PreparedPacket }
 }
 interface PreparedTraffic {
   readonly product: string
@@ -79,8 +82,7 @@ async function prepareTraffic(
       delivered: packet.delivered,
       stream: 'stream' in source ? source.stream : 'frame',
       bytes: bytes.byteLength,
-      encode,
-      decode: source.decode,
+      payload: 'encodeWith' in source ? { packet: source } : { frame: source },
     }
   })
   if (tasks.length * POLICY.meanPasses < POLICY.minimumOperations) {

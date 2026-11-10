@@ -4,7 +4,15 @@ interface Distribution {
     readonly mean: number;
     readonly p95: number;
 }
+interface TimingResolution {
+    readonly zeroSamples: number;
+    readonly minimumPositiveMs: number;
+    readonly distinctSamples: number;
+}
 interface CpuReading {
+    readonly clock: TimingResolution;
+    readonly sampleResolution: TimingResolution;
+    readonly samplesMs: readonly number[];
     readonly meanMs: number;
     readonly p95Ms: number;
     readonly sampled: Distribution;
@@ -33,6 +41,7 @@ interface Stability {
     readonly differences: Readonly<Record<string, number>>;
 }
 declare const POLICY: Readonly<{
+    clockPairs: 1024;
     warmPasses: 16;
     meanPasses: 32;
     samplePasses: 32;

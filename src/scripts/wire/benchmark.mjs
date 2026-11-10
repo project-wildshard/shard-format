@@ -1,6 +1,7 @@
 // Manual Node + Chromium 4x benchmark; byte admission precedes every timer, exactly two runs, no automatic retries.
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
+import {createHash} from 'node:crypto';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
@@ -10,7 +11,7 @@ import {chromium} from 'playwright';
 import {KEYCHAIN_ARGS} from '../../../scripts/chromium-keychain.mjs';
 import {POLICY,compareRuns} from '../../../packages/wire/lib/bench/capture/benchmark-stats.js';
 import {prepareTraffic} from '../../../packages/wire/lib/bench/capture/benchmark-data.js';
-import {measureTraffic} from '../../../packages/wire/lib/bench/capture/benchmark.js';
+import {measureTraffic,benchmarkSink} from '../../../packages/wire/lib/bench/capture/benchmark.js';
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const names=['walking','fight','ride','dense'];
 const args=process.argv.slice(2);
@@ -28,12 +29,20 @@ const sourceFor=name=>new URL(`../../../packages/wire/bench/recordings/${name}/`
 const manifests=Object.fromEntries(names.map(name=>[name,JSON.parse(readFileSync(new URL('manifest.json',sourceFor(name)),'utf8'))]));
 report.manifests=Object.fromEntries(names.map(name=>[name,manifests[name].hash]));
 save();
-function note(profile,name,run,result){report.profiles[profile].runs[run][name]=result;save();console.info(`${profile} ${name} run${run+1} frame bytes mean=${result.frameBytes.mean.toFixed(3)} p95=${result.frameBytes.p95} steady up=${result.steadyBytes.up} down=${result.steadyBytes.down} handshake up=${result.handshakeBytes.up} down=${result.handshakeBytes.down} welcome-max=${result.streams['down:welcome']?.maxBytes??0}`);console.info(`${profile} ${name} run${run+1} encode mean=${result.encode.meanMs.toFixed(6)}ms p95=${result.encode.p95Ms.toFixed(6)}ms decode mean=${result.decode.meanMs.toFixed(6)}ms p95=${result.decode.p95Ms.toFixed(6)}ms`);}
+function note(profile,name,run,result){
+  const raw=JSON.stringify(result)+'\n',rawFile=output.replace(/\.json$/u,`-${profile}-${name}-run${run+1}.json`);
+  assert.notEqual(rawFile,output,'Report path must end in .json');writeFileSync(rawFile,raw);
+  const compact={...result,encode:{...result.encode,samplesMs:undefined},decode:{...result.decode,samplesMs:undefined},raw:{file:rawFile.slice(root.length),sha256:createHash('sha256').update(raw).digest('hex')}};
+  report.profiles[profile].runs[run][name]=compact;save();
+  console.info(`${profile} ${name} run${run+1} frame bytes mean=${result.frameBytes.mean.toFixed(3)} p95=${result.frameBytes.p95} steady up=${result.steadyBytes.up} down=${result.steadyBytes.down} handshake up=${result.handshakeBytes.up} down=${result.handshakeBytes.down} welcome-max=${result.streams['down:welcome']?.maxBytes??0}`);
+  console.info(`${profile} ${name} run${run+1} encode mean=${result.encode.meanMs.toFixed(6)}ms p95=${result.encode.p95Ms.toFixed(6)}ms decode mean=${result.decode.meanMs.toFixed(6)}ms p95=${result.decode.p95Ms.toFixed(6)}ms`);
+}
+
 async function native(){
   const profile=report.profiles.node={runtime:process.version,platform:process.platform,arch:process.arch,runs:[{},{}],stability:{}};
   for(let run=0;run<POLICY.runs;run++)for(const name of names){
     let traffic=await prepareTraffic(manifests[name],async file=>Uint8Array.from(readFileSync(new URL(file,sourceFor(name)))));
-    global.gc();note('node',name,run,measureTraffic(traffic));traffic=undefined;global.gc();
+    global.gc();note('node',name,run,measureTraffic(traffic));assert.ok(benchmarkSink.value!==undefined&&typeof benchmarkSink.value==='object');traffic=undefined;benchmarkSink.value=undefined;global.gc();
   }
   for(const name of names)profile.stability[name]=compareRuns(profile.runs[0][name],profile.runs[1][name]);save();
 }
@@ -68,6 +77,7 @@ async function phone(){
       await page.evaluate(async name=>await globalThis.wireBenchmark.prepare(name),name);await cdp.send('HeapProfiler.collectGarbage');
       await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
       note('chromium4x',name,run,await page.evaluate(()=>globalThis.wireBenchmark.measure()));
+      assert.equal(await page.evaluate(()=>{const value=globalThis.wireBenchmark.sink.value;return value!==undefined&&typeof value==='object'&&Object.keys(value).length>0;}),true,'Browser sink must remain observable outside clocks');
     }
     assert.deepEqual(errors,[]);for(const name of names)profile.stability[name]=compareRuns(profile.runs[0][name],profile.runs[1][name]);save();
   }finally{try{if(browser)await browser.close();}finally{await new Promise((yes,no)=>server.close(error=>error?no(error):yes()));}}

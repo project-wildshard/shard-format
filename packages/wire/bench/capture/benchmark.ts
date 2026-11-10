@@ -38,8 +38,18 @@ function runner(traffic: PreparedTraffic, mode: 'encode' | 'decode'): Runner {
     if (task === undefined) {
       throw new Error('Missing benchmark traffic index')
     }
+    const { payload } = task
+    if ('frame' in payload) {
+      benchmarkSink.value =
+        mode === 'decode'
+          ? payload.frame.decode()
+          : payload.frame.encode(select[task.direction])
+      return
+    }
     benchmarkSink.value =
-      mode === 'decode' ? task.decode() : task.encode(select[task.direction])
+      mode === 'decode'
+        ? payload.packet.decode()
+        : payload.packet.encodeWith(select[task.direction])
   }
   const pass = (): void => {
     for (const index of indices) {
@@ -62,11 +72,20 @@ function mean(run: Runner, now: () => number): number {
 }
 class Samples {
   private readonly values: number[] = []
+  private zeroSamples = ZERO
+  private minimumPositive = Infinity
+  private readonly distinct = new Set<number>()
   private readonly streams: Record<string, number[]> = {}
   public add(key: string, value: number): void {
     if (!(Number.isFinite(value) && value >= ZERO)) {
       throw new Error('Invalid sampled CPU clock')
     }
+    this.zeroSamples += Number(value === ZERO)
+    this.minimumPositive =
+      value > ZERO
+        ? Math.min(value, this.minimumPositive)
+        : this.minimumPositive
+    this.distinct.add(value)
     this.values.push(value)
     const group = this.streams[key] ?? []
     group.push(value)
@@ -74,10 +93,24 @@ class Samples {
   }
   public reading(): {
     readonly all: Distribution
+    readonly raw: readonly number[]
+    readonly resolution: {
+      readonly zeroSamples: number
+      readonly minimumPositiveMs: number
+      readonly distinctSamples: number
+    }
     readonly streams: Readonly<Record<string, Distribution>>
   } {
     return {
       all: distribution(this.values),
+      raw: this.values,
+      resolution: {
+        zeroSamples: this.zeroSamples,
+        minimumPositiveMs: Number.isFinite(this.minimumPositive)
+          ? this.minimumPositive
+          : ZERO,
+        distinctSamples: this.distinct.size,
+      },
       streams: Object.fromEntries(
         Object.keys(this.streams).map(
           (key): readonly [string, Distribution] => [
@@ -102,7 +135,8 @@ function samples(
     }
     const start = now()
     run.operation(index)
-    book.add(`${task.direction}:${task.stream}`, now() - start)
+    const end = now()
+    book.add(`${task.direction}:${task.stream}`, end - start)
   }
   for (let sample = ZERO; sample < POLICY.samplePasses; sample += ONE) {
     for (const index of run.indices) {
@@ -111,16 +145,31 @@ function samples(
   }
   return book.reading()
 }
+function clockResolution(
+  now: () => number,
+): ReturnType<Samples['reading']>['resolution'] {
+  const book = new Samples()
+  for (let index = ZERO; index < POLICY.clockPairs; index += ONE) {
+    const start = now()
+    const end = now()
+    book.add('clock', end - start)
+  }
+  return book.reading().resolution
+}
 function cpu(
   traffic: PreparedTraffic,
   mode: 'encode' | 'decode',
   now: () => number,
 ): CpuReading {
+  const clock = clockResolution(now)
   const run = runner(traffic, mode)
   const meanMs = mean(run, now)
   const sampled = samples(traffic, run, now)
   return {
     meanMs,
+    clock,
+    sampleResolution: sampled.resolution,
+    samplesMs: sampled.raw,
     p95Ms: sampled.all.p95,
     sampled: sampled.all,
     streams: sampled.streams,

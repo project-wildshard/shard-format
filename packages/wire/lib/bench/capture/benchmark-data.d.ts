@@ -1,12 +1,16 @@
-import { BitWriter } from '../../frozen/v0/bits.ts';
 import type { BytesReading } from './benchmark-stats.ts';
+import type { PreparedPacket } from './packet-replay.ts';
+import type { PreparedFrame } from './prepared-frame.ts';
 interface Task {
     readonly stream: string;
     readonly direction: 'up' | 'down';
     readonly bytes: number;
     readonly delivered: boolean;
-    readonly encode: (writer: () => BitWriter) => ArrayBuffer;
-    readonly decode: () => unknown;
+    readonly payload: {
+        readonly frame: PreparedFrame;
+    } | {
+        readonly packet: PreparedPacket;
+    };
 }
 interface PreparedTraffic {
     readonly product: string;

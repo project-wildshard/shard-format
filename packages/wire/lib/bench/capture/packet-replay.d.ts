@@ -8,7 +8,7 @@ interface PreparedPacket {
     readonly encodeWith: (writer: () => BitWriter) => ArrayBuffer;
     readonly decode: () => unknown;
 }
-/** The byte oracle is mandatory when reading a persisted recording too. */
+/** Byte oracle first. Prepared values stay outside timing, common codec dispatch does not. */
 declare function preparePacket(record: CapturedPacket): PreparedPacket;
 /** Refuse any non-identical replay before a transport packet reaches the sink. */
 declare function capturePacket(bytes: Readonly<Uint8Array>): CapturedPacket;

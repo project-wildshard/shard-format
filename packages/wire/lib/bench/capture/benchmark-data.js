@@ -48,8 +48,7 @@ async function prepareTraffic(header, read) {
             delivered: packet.delivered,
             stream: 'stream' in source ? source.stream : 'frame',
             bytes: bytes.byteLength,
-            encode,
-            decode: source.decode,
+            payload: 'encodeWith' in source ? { packet: source } : { frame: source },
         };
     });
     if (tasks.length * POLICY.meanPasses < POLICY.minimumOperations) {

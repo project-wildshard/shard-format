@@ -259,6 +259,11 @@ an isolated high-resolution clock and actual CDP rate 4 during codec
 work. Initial parsing, bundle preparation and collection of abandoned
 fixture graphs happen outside timing; normal in-run GC remains timed.
 
+Raw per-operation samples are saved beside the compact report, with
+SHA-256 references. Paired-clock resolution, zero samples and distinct
+clock bins stay alongside p95; no quantisation is hidden or deducted.
+The browser sink is exposed and consumed outside the clock intervals.
+
 Reports print frame-byte mean/p95, steady bytes by direction, handshake
 bytes separately and maximum welcome, then encode/decode mean/p95 and
 per-stream breakdowns. Node and browser each require under 3 percent

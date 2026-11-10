@@ -23,8 +23,18 @@ function runner(traffic, mode) {
         if (task === undefined) {
             throw new Error('Missing benchmark traffic index');
         }
+        const { payload } = task;
+        if ('frame' in payload) {
+            benchmarkSink.value =
+                mode === 'decode'
+                    ? payload.frame.decode()
+                    : payload.frame.encode(select[task.direction]);
+            return;
+        }
         benchmarkSink.value =
-            mode === 'decode' ? task.decode() : task.encode(select[task.direction]);
+            mode === 'decode'
+                ? payload.packet.decode()
+                : payload.packet.encodeWith(select[task.direction]);
     };
     const pass = () => {
         for (const index of indices) {
@@ -47,11 +57,20 @@ function mean(run, now) {
 }
 class Samples {
     values = [];
+    zeroSamples = ZERO;
+    minimumPositive = Infinity;
+    distinct = new Set();
     streams = {};
     add(key, value) {
         if (!(Number.isFinite(value) && value >= ZERO)) {
             throw new Error('Invalid sampled CPU clock');
         }
+        this.zeroSamples += Number(value === ZERO);
+        this.minimumPositive =
+            value > ZERO
+                ? Math.min(value, this.minimumPositive)
+                : this.minimumPositive;
+        this.distinct.add(value);
         this.values.push(value);
         const group = this.streams[key] ?? [];
         group.push(value);
@@ -60,6 +79,14 @@ class Samples {
     reading() {
         return {
             all: distribution(this.values),
+            raw: this.values,
+            resolution: {
+                zeroSamples: this.zeroSamples,
+                minimumPositiveMs: Number.isFinite(this.minimumPositive)
+                    ? this.minimumPositive
+                    : ZERO,
+                distinctSamples: this.distinct.size,
+            },
             streams: Object.fromEntries(Object.keys(this.streams).map((key) => [
                 key,
                 distribution(this.streams[key] ?? []),
@@ -76,7 +103,8 @@ function samples(traffic, run, now) {
         }
         const start = now();
         run.operation(index);
-        book.add(`${task.direction}:${task.stream}`, now() - start);
+        const end = now();
+        book.add(`${task.direction}:${task.stream}`, end - start);
     };
     for (let sample = ZERO; sample < POLICY.samplePasses; sample += ONE) {
         for (const index of run.indices) {
@@ -85,12 +113,25 @@ function samples(traffic, run, now) {
     }
     return book.reading();
 }
+function clockResolution(now) {
+    const book = new Samples();
+    for (let index = ZERO; index < POLICY.clockPairs; index += ONE) {
+        const start = now();
+        const end = now();
+        book.add('clock', end - start);
+    }
+    return book.reading().resolution;
+}
 function cpu(traffic, mode, now) {
+    const clock = clockResolution(now);
     const run = runner(traffic, mode);
     const meanMs = mean(run, now);
     const sampled = samples(traffic, run, now);
     return {
         meanMs,
+        clock,
+        sampleResolution: sampled.resolution,
+        samplesMs: sampled.raw,
         p95Ms: sampled.all.p95,
         sampled: sampled.all,
         streams: sampled.streams,

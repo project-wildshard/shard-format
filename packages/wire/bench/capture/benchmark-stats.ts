@@ -4,7 +4,15 @@ interface Distribution {
   readonly mean: number
   readonly p95: number
 }
+interface TimingResolution {
+  readonly zeroSamples: number
+  readonly minimumPositiveMs: number
+  readonly distinctSamples: number
+}
 interface CpuReading {
+  readonly clock: TimingResolution
+  readonly sampleResolution: TimingResolution
+  readonly samplesMs: readonly number[]
   readonly meanMs: number
   readonly p95Ms: number
   readonly sampled: Distribution
@@ -39,6 +47,7 @@ interface Stability {
 }
 // Fixed before timing. Never adapt samples or select the fastest result.
 const POLICY = Object.freeze({
+  clockPairs: 1024,
   warmPasses: 16,
   meanPasses: 32,
   samplePasses: 32,

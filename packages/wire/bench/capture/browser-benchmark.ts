@@ -1,6 +1,6 @@
 import { prepareTraffic } from './benchmark-data.ts'
 import { POLICY } from './benchmark-stats.ts'
-import { measureTraffic } from './benchmark.ts'
+import { measureTraffic, benchmarkSink } from './benchmark.ts'
 
 import type { PreparedTraffic } from './benchmark-data.ts'
 import type { BenchmarkReading } from './benchmark-stats.ts'
@@ -41,7 +41,14 @@ function measure(): BenchmarkReading {
 }
 function release(): void {
   delete held.traffic
+  benchmarkSink.value = undefined
 }
 Object.assign(globalThis, {
-  wireBenchmark: Object.freeze({ policy: POLICY, prepare, measure, release }),
+  wireBenchmark: Object.freeze({
+    policy: POLICY,
+    sink: benchmarkSink,
+    prepare,
+    measure,
+    release,
+  }),
 })

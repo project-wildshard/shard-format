@@ -1,5 +1,6 @@
 // Fixed before timing. Never adapt samples or select the fastest result.
 const POLICY = Object.freeze({
+    clockPairs: 1024,
     warmPasses: 16,
     meanPasses: 32,
     samplePasses: 32,

@@ -7,7 +7,15 @@ import type { BenchmarkReading } from '../bench/capture/benchmark-stats.ts'
 
 function reading(mean: number, p95: number): BenchmarkReading {
   const sampled = distribution([mean, p95])
+  const resolution = {
+    zeroSamples: 0,
+    minimumPositiveMs: 1,
+    distinctSamples: 1,
+  }
   const cpu = {
+    clock: resolution,
+    sampleResolution: resolution,
+    samplesMs: [mean, p95],
     meanMs: mean,
     p95Ms: p95,
     sampled,
