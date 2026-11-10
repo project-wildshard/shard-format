@@ -1,0 +1,17 @@
+import { FrameTrace } from '{{WIRE_TRACE_MODULE}}';
+import type { FrameInput, WorldFrame } from './frame';
+import type { NetClass } from './schema';
+let sink: ((record: unknown) => void) | undefined;
+export function installFrameCapture(next: (record: unknown) => void): void { sink = next; }
+export function startFrameCapture(input: FrameInput): { input: FrameInput; finish: (bytes: ArrayBuffer) => void } {
+  const active = sink;
+  if (active === undefined) throw new Error('WS3 frame capture sink not installed');
+  const trace = new FrameTrace(), base = input.baseline, rowFrom = base?.rowFrom, due = input.due;
+  const wrapped: FrameInput = { ...input,
+    classOf: (handle: number): NetClass<never> | undefined => trace.recordClass(handle, input.classOf(handle)),
+    baseline: base === null ? null : { ...base,
+      ...(rowFrom === undefined ? {} : { rowFrom: (handle: number): WorldFrame | null => trace.recordRowFrom(handle, rowFrom(handle)) }) },
+    ...(due === undefined ? {} : { due: (handle: number): boolean => trace.recordDue(handle, due(handle)) }),
+  };
+  return { input: wrapped, finish: bytes => active(trace.finish(input, bytes)) };
+}

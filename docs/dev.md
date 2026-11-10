@@ -142,3 +142,47 @@ unchanged frozen BitWriter. A BOM record includes its prepared text
 adapter in encode cost. Frames still require FrameTrace with actual
 per-handle baselines and due results. These helpers are recording
 integrity, not the four complete WS3 recordings or a benchmark result.
+
+## Historical wire recordings
+
+WS3 captures the frozen v0.1.2 engine at full commit
+`cfd668102efcb7c10a6fb57d3021c1f3d23c37a5`. It changes only an
+uncommitted encode tee in an owned scratch clone. From this repo:
+
+```sh
+node scripts/wire/install-capture-tee.mjs "$BASE"
+python3 ~/projects/games/wildshard/engine/scripts/cpu-admission.py run --slots 2 -- \
+  node --experimental-transform-types --import "$BASE/scripts/sim-node-loader.mjs" \
+  scripts/wire/capture-walking.mjs "$BASE" "$NEW_OUTPUT"
+node --test scripts/wire/recordings-proof.mjs
+node scripts/wire/installer-proof.mjs "$BASE"
+```
+
+`BASE` is an owned full scratch clone at that exact commit, with its
+frozen install and actual `out/sunscar-dunes` product already built.
+`NEW_OUTPUT` must not exist. The installer refuses other commits, foreign
+frame/helper edits, staged source edits, redirected destinations and
+untracked source. It permits only the exact tee plus
+three generated boot tables unused by the headless capture. The manual
+installer proof uses a real sparse Git fixture sharing the owned baseline
+objects, demonstrates the old staged-edit and symlink failures, and
+cleans only its own temporary root. `--check`
+verifies without writing; the runner requires that exact check before
+loading the real room. No live network server or browser is opened.
+
+The complete walking session lives in
+`packages/wire/bench/recordings/walking/`. Its six JSON array parts and
+manifest total 4,475,972 bytes; every file is under the existing 1 MB cap,
+and the whole recording is under 5 MB. No hook limit or bypass changed.
+Parts retain every frame, callback, word, packet and delivery decision.
+The browser-compatible typed reader verifies lengths, SHA-256, ordered
+complete ranges and the whole source hash, then requires all frozen-v0
+frame and packet replays to be byte-identical before returning data.
+Hash-valid corrupt codec bytes still refuse. Proof cases run explicitly
+in CI, outside hooks, with timeout and elapsed caps of 9.5 seconds.
+
+This is one of four required recordings. The Driftwood two-bot fight,
+mounted ride, dense 32-player/60-creature room, Node/4x Chromium timing
+harness and two-run timing stability are still open. No benchmark gate
+or v1 performance pass is claimed; voice control prefix 8 belongs to the
+later v1 work and is not injected into this historical baseline.
