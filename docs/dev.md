@@ -188,7 +188,12 @@ actual living creature; it claims no journey from spawn. Its five parts
 and manifest are 3,364,687 bytes. Both clients and all native resources
 are disposed in finally.
 
-These are two of four required recordings. The mounted ride, dense
+`scripts/wire/capture-ride.mjs` records the actual Nalati camp horse,
+real mount/dismount acts and command-driven steering. Its complete
+parts and manifest total 2,057,162 bytes. The mounted law reports actual
+stand/walk/trot; no horse flag or pose is forced after initial placement.
+
+These are three of four required recordings. The dense
 32-player/60-creature room, Node/4x Chromium timing
 harness and two-run timing stability are still open. No benchmark gate
 or v1 performance pass is claimed; voice control prefix 8 belongs to the

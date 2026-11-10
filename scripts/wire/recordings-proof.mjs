@@ -123,3 +123,28 @@ check('two real Driftwood clients preserve the complete fight, chat, command los
   assert.equal(events.hit, 12); assert.equal(events.died, 2); assert.equal(events.chat, 8); assert.equal(events.reward, 2);
   assert.equal(header.hash, '0eb9ad661cabfbbce08da88e3a6183736ba8ba7b613a6a60b29183be0e897035');
 });
+
+check('actual Nalati mount and dismount preserve ride words, loss and recovery', async () => {
+  const directory = new URL('../../packages/wire/bench/recordings/ride/', import.meta.url);
+  const header = JSON.parse(readFileSync(new URL('manifest.json', directory), 'utf8'));
+  const session = await readSessionArchive(header, async file => readFileSync(new URL(file, directory)));
+  assert.equal(session.product, 'nalati-grasslands'); assert.equal(session.ticks, 240);
+  assert.equal(session.frames.length, 121); assert.equal(session.packets.length, 486);
+  assert.equal(session.frames.filter(row => (row.rideWords ?? 0) > 0).length, 115);
+  assert.equal(session.frames[0].rideWords ?? 0, 0); assert.equal(session.frames.at(-1).rideWords ?? 0, 0);
+  const events = {}, streams = {}, lostTicks = [];
+  for (const row of session.packets) if ('packet' in row) {
+    const packet = preparePacket(row.packet); streams[packet.stream] = (streams[packet.stream] ?? 0) + 1;
+    if (packet.stream === 'events') for (const event of packet.decode().events) events[event.kind] = (events[event.kind] ?? 0) + 1;
+    if (!row.delivered) {
+      assert.equal(packet.stream, 'commands'); assert.equal(row.direction, 'up'); assert.equal(row.channel, 'unreliable'); lostTicks.push(row.tick);
+    }
+  }
+  assert.deepEqual(lostTicks, Array.from({length: 80}, (_, i) => i + 80));
+  assert.deepEqual(streams, {hello: 1, welcome: 1, events: 121, act: 2, commands: 240});
+  assert.equal(events.mount, 1); assert.equal(events.dismount, 1);
+  assert.equal(session.frames.filter(row => row.frame.tick > 140 && row.baseline === undefined).length, 10);
+  assert.equal(header.hash, '16b14ca61208077d26e124a017b59ed49440416b34a626469a592524a8f4aace');
+  assert.ok(header.parts.every(part => part.bytes < 1000000));
+  assert.ok(header.parts.reduce((n, part) => n + part.bytes, bytes(header).length) < 5000000);
+});
