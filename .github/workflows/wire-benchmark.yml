@@ -1,0 +1,59 @@
+name: wire-benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Exact 40-character shardfile commit to measure
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  fixed-timing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SOURCE_SHA: ${{ inputs.source }}
+    steps:
+      - name: Require an exact committed source
+        run: |
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 2
+          printf 'Both fixed runs cover shardfile %s\n' "$SOURCE_SHA"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.source }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
+        with:
+          version: 10.34.9
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: package.json
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Build the committed benchmark library
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          pnpm --dir packages/wire build
+          git diff --exit-code -- packages/wire/lib
+      - name: Install the real Chromium browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Record both fixed Node and Chromium 4x runs
+        id: measure
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tmp/wire-hosted
+          pnpm bench "$PWD/tmp/wire-hosted/report.json" 2>&1 | tee tmp/wire-hosted/benchmark.log
+      - name: Retain the actual verdict and every raw clock sample
+        if: ${{ always() && steps.measure.outcome != 'skipped' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: wire-timing-${{ inputs.source }}
+          path: tmp/wire-hosted/
+          if-no-files-found: error
+          retention-days: 30

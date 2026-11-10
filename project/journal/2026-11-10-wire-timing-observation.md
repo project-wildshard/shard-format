@@ -39,3 +39,11 @@ the exact original scalar and unchanged timed dispatch/order/loss laws.
 Five focused checks pass in 98 ms. This is diagnostic evidence only:
 both prior red attempts remain red and WS3 stays open until an actual
 two-run result meets its unchanged gate. No wire codec or capture changes.
+
+The manual hosted workflow accepts only a full commit SHA and uses the
+same exact harness, frozen dependency graph and real Chromium CDP4x.
+It provides an isolated-host comparison for the unresolved shared-Mac
+variance hypothesis, with a 20-minute cap and estimated 4–6 runner
+minutes. It runs on dispatch only, needs no secret or deploy permission,
+and preserves partial/red logs plus every raw sample for 30 days.
+Neither its estimate nor an eventual result is claimed here.

@@ -280,6 +280,13 @@ before/after the complete measurement call include warm-up and statistic
 collection; they are context, not per-primary-clock CPU attribution.
 The browser sink is exposed and consumed outside the clock intervals.
 
+`wire-benchmark` is a manual-only hosted comparison. Dispatch with the
+exact 40-character `source` SHA after its normal publication. It runs
+the same harness on an isolated Linux runner, retains every red result
+and raw sample as a 30-day artifact, and has a 20-minute job cap. No
+deploy or secret is involved. Estimated cost is 4–6 runner-minutes;
+record the actual duration rather than treating that estimate as proof.
+
 Reports print frame-byte mean/p95, steady bytes by direction, handshake
 bytes separately and maximum welcome, then encode/decode mean/p95 and
 per-stream breakdowns. Node and browser each require under 3 percent
