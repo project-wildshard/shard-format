@@ -99,12 +99,25 @@ check('two real Driftwood clients preserve the complete fight, chat, command los
   assert.equal(session.frames.length, 302); assert.equal(session.packets.length, 928);
   assert.equal(session.packets.filter(row => !row.delivered).length, 160);
   assert.equal(session.frames.filter(row => row.frame.tick > 240 && row.baseline === undefined).length, 20);
-  const streams = {}, events = {}, owners = [];
+  const streams = {}, events = {}, owners = [], handles = [];
   for (const row of session.packets) if ('packet' in row) {
     const packet = preparePacket(row.packet); streams[packet.stream] = (streams[packet.stream] ?? 0) + 1;
-    if (packet.stream === 'welcome') owners.push(packet.decode().player);
+    if (packet.stream === 'welcome') { const welcome = packet.decode(); owners.push(welcome.player); handles.push(welcome.handle); }
     if (packet.stream === 'events') for (const event of packet.decode().events) events[event.kind] = (events[event.kind] ?? 0) + 1;
   }
+  const frameCounts = [0, 0], lostTicks = new Map();
+  for (const [index, frame] of session.frames.entries()) {
+    const peer = index % 2, own = handles[peer], other = handles[1 - peer]; assert.ok(own !== undefined && other !== undefined);
+    assert.equal(frame.visible.includes(own), false); assert.ok(frame.frame.rows.some(row => row.handle === other));
+    frameCounts[peer]++;
+  }
+  assert.deepEqual(frameCounts, [151, 151]);
+  for (const packet of session.packets.filter(row => !row.delivered)) {
+    assert.ok(packet.tick >= 180 && packet.tick < 260); assert.equal(packet.direction, 'up'); assert.equal(packet.channel, 'unreliable');
+    assert.ok('packet' in packet); assert.equal(preparePacket(packet.packet).stream, 'commands');
+    lostTicks.set(packet.tick, (lostTicks.get(packet.tick) ?? 0) + 1);
+  }
+  for (let tick = 180; tick < 260; tick++) assert.equal(lostTicks.get(tick), 2);
   assert.deepEqual(owners, ['actor.player', 'bot:wire-fight']);
   assert.deepEqual(streams, { hello: 2, welcome: 2, events: 18, act: 4, commands: 600 });
   assert.equal(events.hit, 12); assert.equal(events.died, 2); assert.equal(events.chat, 8); assert.equal(events.reward, 2);
