@@ -1,9 +1,11 @@
+import { BitWriter } from '../../frozen/v0/bits.ts';
 interface CapturedPacket {
     readonly bytes: string;
 }
 interface PreparedPacket {
     readonly stream: string;
     readonly encode: () => ArrayBuffer;
+    readonly encodeWith: (writer: () => BitWriter) => ArrayBuffer;
     readonly decode: () => unknown;
 }
 /** The byte oracle is mandatory when reading a persisted recording too. */

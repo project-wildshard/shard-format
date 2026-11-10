@@ -108,6 +108,7 @@ function preparePacket(record) {
     return {
         stream: decoded.stream,
         encode: () => decoded.encode(() => restoresText ? new PreparedTextWriter(values) : new BitWriter()),
+        encodeWith: (shared) => decoded.encode(restoresText ? () => new PreparedTextWriter(values) : shared),
         decode: decoded.decode,
     };
 }

@@ -23,6 +23,7 @@ interface CapturedPacket {
 interface PreparedPacket {
   readonly stream: string
   readonly encode: () => ArrayBuffer
+  readonly encodeWith: (writer: () => BitWriter) => ArrayBuffer
   readonly decode: () => unknown
 }
 interface DecodedPacket {
@@ -148,6 +149,10 @@ function preparePacket(record: CapturedPacket): PreparedPacket {
     encode: (): ArrayBuffer =>
       decoded.encode((): BitWriter =>
         restoresText ? new PreparedTextWriter(values) : new BitWriter(),
+      ),
+    encodeWith: (shared: () => BitWriter): ArrayBuffer =>
+      decoded.encode(
+        restoresText ? (): BitWriter => new PreparedTextWriter(values) : shared,
       ),
     decode: decoded.decode,
   }

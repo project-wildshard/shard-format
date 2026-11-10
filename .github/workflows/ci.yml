@@ -62,6 +62,8 @@ jobs:
         run: node --test src/scripts/wire/recordings-proof.mjs
       - name: Prove complete dense recording admission
         run: node --test src/scripts/wire/graph-proof.mjs
+      - name: Prove prepared benchmark byte and receiver fidelity
+        run: node --test src/scripts/wire/prepared-frame-proof.mjs
 
   # WS1 cross-repo access is an operator prerequisite, not a push gate.
   # Keep the real install probes mandatory when explicitly dispatched.
