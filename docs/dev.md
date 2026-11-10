@@ -230,14 +230,26 @@ later v1 work and is not injected into this historical baseline.
 `pnpm bench <absolute-checkout-tmp-report.json>` runs Node and Chromium
 with CDP 4x CPU throttling, exactly twice each. Run from a clean
 committed checkout after `pnpm --dir packages/wire build`, with the
-supported engine plain full-test FIFO and browser-lane wrappers. For
+supported engine foreground check and browser-lane wrappers. For
 this shared Mac:
 
 ```sh
-WS_FULL_SUITE=1 python3 ~/projects/games/wildshard/engine/scripts/heavy-lane.py full-test --admission-wait-seconds 6000 --max 20 -- bash ~/projects/games/wildshard/engine/scripts/browser-lane.sh --max 20 pnpm bench "$PWD/tmp/wire-bench/result.json"
+WS_FULL_SUITE=1 python3 \
+  ~/projects/games/wildshard/engine/scripts/heavy-lane.py \
+  check --max 20 -- bash \
+  ~/projects/games/wildshard/engine/scripts/browser-lane.sh \
+  --max 20 pnpm bench "$PWD/tmp/wire-bench/result.json"
 ```
 
-The manual command owns one global full-test lease and one browser slot;
+Start from a normal-priority parent with no inherited heavy lease or
+background flag. The runner records actual parent/child niceness and
+refuses inherited background priority before timing. Never pretend to
+be a push gate to obtain its profile. The Vite library compilation makes
+`check` the correct resource kind: one global full-test lease plus one
+build slot. The ordinary plain full-test wrapper yields with utility
+QoS and nice 10; it is not the foreground timing route.
+
+The manual command also owns one browser slot;
 no hook or ordinary CI starts it. Every browser is muted, portrait
 390x844, with the shared keychain flags. The only server binds localhost
 and closes with the browser in finally. No live game/socket is involved.
@@ -262,6 +274,10 @@ fixture graphs happen outside timing; normal in-run GC remains timed.
 Raw per-operation samples are saved beside the compact report, with
 SHA-256 references. Paired-clock resolution, zero samples and distinct
 clock bins stay alongside p95; no quantisation is hidden or deducted.
+All 32 existing full-pass timer values are retained, in order, without
+another clock read or added measured operation. Node process counters
+before/after the complete measurement call include warm-up and statistic
+collection; they are context, not per-primary-clock CPU attribution.
 The browser sink is exposed and consumed outside the clock intervals.
 
 Reports print frame-byte mean/p95, steady bytes by direction, handshake

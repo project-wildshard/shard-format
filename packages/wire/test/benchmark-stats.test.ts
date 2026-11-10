@@ -16,6 +16,7 @@ function reading(mean: number, p95: number): BenchmarkReading {
     clock: resolution,
     sampleResolution: resolution,
     samplesMs: [mean, p95],
+    meanPassesMs: [mean],
     meanMs: mean,
     p95Ms: p95,
     sampled,

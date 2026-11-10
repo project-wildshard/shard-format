@@ -13,6 +13,8 @@ interface CpuReading {
     readonly clock: TimingResolution;
     readonly sampleResolution: TimingResolution;
     readonly samplesMs: readonly number[];
+    /** Every existing full-pass timer pair, in observed order. No added timing work. */
+    readonly meanPassesMs: readonly number[];
     readonly meanMs: number;
     readonly p95Ms: number;
     readonly sampled: Distribution;

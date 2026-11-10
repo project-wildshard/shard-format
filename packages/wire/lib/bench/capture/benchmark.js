@@ -44,16 +44,24 @@ function runner(traffic, mode) {
     return { indices, operation, pass };
 }
 function mean(run, now) {
-    let elapsed = ZERO;
+    const observed = {
+        elapsed: ZERO,
+        passes: [],
+    };
     for (let warm = ZERO; warm < POLICY.warmPasses; warm += ONE) {
         run.pass();
     }
     for (let sample = ZERO; sample < POLICY.meanPasses; sample += ONE) {
         const start = now();
         run.pass();
-        elapsed += now() - start;
+        const duration = now() - start;
+        observed.elapsed += duration;
+        observed.passes.push(duration);
     }
-    return elapsed / (run.indices.length * POLICY.meanPasses);
+    return {
+        value: observed.elapsed / (run.indices.length * POLICY.meanPasses),
+        passes: observed.passes,
+    };
 }
 class Samples {
     values = [];
@@ -125,10 +133,11 @@ function clockResolution(now) {
 function cpu(traffic, mode, now) {
     const clock = clockResolution(now);
     const run = runner(traffic, mode);
-    const meanMs = mean(run, now);
+    const measured = mean(run, now);
     const sampled = samples(traffic, run, now);
     return {
-        meanMs,
+        meanMs: measured.value,
+        meanPassesMs: measured.passes,
         clock,
         sampleResolution: sampled.resolution,
         samplesMs: sampled.raw,

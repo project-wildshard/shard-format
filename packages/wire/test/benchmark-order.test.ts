@@ -18,6 +18,7 @@ const COPIES = 129
 const ZERO = 0
 const ONE = 1
 const TWO = 2
+const CLOCK_VARIATION = 7
 const HELLO = {
   schemaHash: 0,
   build: 'order-contract',
@@ -29,9 +30,16 @@ class Contract {
   private readonly events: string[] = []
   private inside = false
   private clock = ZERO
+  private start = ZERO
+  private readonly pairs: number[] = []
   public readonly now = (): number => {
     this.inside = !this.inside
-    this.clock += ONE
+    this.clock += this.inside ? ONE : this.pairs.length % CLOCK_VARIATION
+    if (this.inside) {
+      this.start = this.clock
+    } else {
+      this.pairs.push(this.clock - this.start)
+    }
     return this.clock
   }
   private event(name: string): void {
@@ -123,7 +131,38 @@ class Contract {
       COPIES * passes,
     )
   }
+  private meanClocks(value: BenchmarkReading): void {
+    const encodeStart = POLICY.clockPairs
+    const decodeStart =
+      POLICY.clockPairs +
+      POLICY.meanPasses +
+      COPIES * TWO * POLICY.samplePasses +
+      POLICY.clockPairs
+    const encodePasses = this.pairs.slice(
+      encodeStart,
+      encodeStart + POLICY.meanPasses,
+    )
+    const decodePasses = this.pairs.slice(
+      decodeStart,
+      decodeStart + POLICY.meanPasses,
+    )
+    assert.deepEqual(value.encode.meanPassesMs, encodePasses)
+    assert.deepEqual(value.decode.meanPassesMs, decodePasses)
+    assert.ok(value.encode.meanPassesMs.includes(ZERO))
+    assert.ok(value.decode.meanPassesMs.includes(ZERO))
+    assert.equal(
+      value.encode.meanMs,
+      encodePasses.reduce((sum, elapsed): number => sum + elapsed, ZERO) /
+        (COPIES * TWO * POLICY.meanPasses),
+    )
+    assert.equal(
+      value.decode.meanMs,
+      decodePasses.reduce((sum, elapsed): number => sum + elapsed, ZERO) /
+        (COPIES * POLICY.meanPasses),
+    )
+  }
   private result(value: BenchmarkReading): void {
+    this.meanClocks(value)
     assert.equal(
       value.encode.samplesMs.length,
       COPIES * TWO * POLICY.samplePasses,

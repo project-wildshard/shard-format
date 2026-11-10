@@ -58,17 +58,28 @@ function runner(traffic: PreparedTraffic, mode: 'encode' | 'decode'): Runner {
   }
   return { indices, operation, pass }
 }
-function mean(run: Runner, now: () => number): number {
-  let elapsed = ZERO
+function mean(
+  run: Runner,
+  now: () => number,
+): { value: number; passes: readonly number[] } {
+  const observed: { elapsed: number; passes: number[] } = {
+    elapsed: ZERO,
+    passes: [],
+  }
   for (let warm = ZERO; warm < POLICY.warmPasses; warm += ONE) {
     run.pass()
   }
   for (let sample = ZERO; sample < POLICY.meanPasses; sample += ONE) {
     const start = now()
     run.pass()
-    elapsed += now() - start
+    const duration = now() - start
+    observed.elapsed += duration
+    observed.passes.push(duration)
   }
-  return elapsed / (run.indices.length * POLICY.meanPasses)
+  return {
+    value: observed.elapsed / (run.indices.length * POLICY.meanPasses),
+    passes: observed.passes,
+  }
 }
 class Samples {
   private readonly values: number[] = []
@@ -163,10 +174,11 @@ function cpu(
 ): CpuReading {
   const clock = clockResolution(now)
   const run = runner(traffic, mode)
-  const meanMs = mean(run, now)
+  const measured = mean(run, now)
   const sampled = samples(traffic, run, now)
   return {
-    meanMs,
+    meanMs: measured.value,
+    meanPassesMs: measured.passes,
     clock,
     sampleResolution: sampled.resolution,
     samplesMs: sampled.raw,

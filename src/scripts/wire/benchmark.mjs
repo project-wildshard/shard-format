@@ -6,6 +6,7 @@ import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
 import {execFileSync} from 'node:child_process';
+import {getPriority,loadavg} from 'node:os';
 import {build} from 'vite';
 import {chromium} from 'playwright';
 import {KEYCHAIN_ARGS} from '../../../scripts/chromium-keychain.mjs';
@@ -23,7 +24,10 @@ assert.equal(typeof global.gc,'function','Run the benchmark with node --expose-g
 const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
 const source=execFileSync('git',['status','--porcelain','--untracked-files=normal'],{cwd:root,encoding:'utf8'}).trim();
 assert.equal(source,'','Timing requires an exactly committed clean source');
-const report={format:'wildshard-wire-benchmark/1',sha,engine:'cfd668102efcb7c10a6fb57d3021c1f3d23c37a5',started:new Date().toISOString(),policy:POLICY,clock:'mean: full ordered pass; p95: individual outer-call samples; no overhead subtraction',profiles:{},complete:false};
+const priority={nice:getPriority(),parentNice:getPriority(process.ppid)};
+assert.equal(priority.nice,0,'Use foreground check admission from a normal parent');
+assert.equal(priority.parentNice,0,'Inherited background niceness cannot qualify');
+const report={format:'wildshard-wire-benchmark/1',sha,engine:'cfd668102efcb7c10a6fb57d3021c1f3d23c37a5',started:new Date().toISOString(),policy:POLICY,priority,clock:'mean: full ordered pass; p95: individual outer-call samples; no overhead subtraction',profiles:{},complete:false};
 const save=()=>writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 const sourceFor=name=>new URL(`../../../packages/wire/bench/recordings/${name}/`,import.meta.url);
 const manifests=Object.fromEntries(names.map(name=>[name,JSON.parse(readFileSync(new URL('manifest.json',sourceFor(name)),'utf8'))]));
@@ -42,7 +46,11 @@ async function native(){
   const profile=report.profiles.node={runtime:process.version,platform:process.platform,arch:process.arch,runs:[{},{}],stability:{}};
   for(let run=0;run<POLICY.runs;run++)for(const name of names){
     let traffic=await prepareTraffic(manifests[name],async file=>Uint8Array.from(readFileSync(new URL(file,sourceFor(name)))));
-    global.gc();note('node',name,run,measureTraffic(traffic));assert.ok(benchmarkSink.value!==undefined&&typeof benchmarkSink.value==='object');traffic=undefined;benchmarkSink.value=undefined;global.gc();
+    global.gc();
+    const observation=()=>({atMs:performance.now(),cpu:process.cpuUsage(),resource:process.resourceUsage(),load:loadavg()});
+    const before=observation(),result=measureTraffic(traffic),after=observation();
+    note('node',name,run,{...result,process:{scope:'whole measureTraffic call, including warm-up and statistics; not per-clock CPU',before,after}});
+    assert.ok(benchmarkSink.value!==undefined&&typeof benchmarkSink.value==='object');traffic=undefined;benchmarkSink.value=undefined;global.gc();
   }
   for(const name of names)profile.stability[name]=compareRuns(profile.runs[0][name],profile.runs[1][name]);save();
 }
