@@ -2,12 +2,18 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import {
+  packWords,
   parseFrameCapture,
   unpackDoubles,
 } from '../bench/capture/frame-data.ts'
 import { assertFrameReplay } from '../bench/capture/frame-replay.ts'
 import { FrameTrace } from '../bench/capture/frame-trace.ts'
-import { frozenClass, missingBaseline } from '../bench/capture/frame-world.ts'
+import {
+  CapturedWorld,
+  frozenClass,
+  missingBaseline,
+  snapshot,
+} from '../bench/capture/frame-world.ts'
 import { BitWriter } from '../frozen/v0/bits.ts'
 import { encodeFrame, WorldFrame } from '../frozen/v0/frame.ts'
 
@@ -190,4 +196,64 @@ test('an explicit ride word count without ride storage preserves zero words', ()
   assert.equal(record.rideWords, 3)
   assert.equal(record.ride, undefined)
   assertFrameReplay(record)
+})
+
+test('a replay scratch world resets ticks and retires prior offsets', (): void => {
+  const first = frame(1, 1),
+    second = frame(9, 7, { handles: [2], lookup: classOf })
+  const classes = new Map([
+    [1, 0],
+    [2, 1],
+  ])
+  const scratch = new CapturedWorld()
+  const held = scratch.read(snapshot(first, [1, 2], classes))
+  const storage = held.data
+  assert.equal(scratch.read(snapshot(second, [2], classes)), held)
+  assert.equal(held.data, storage)
+  assert.deepEqual(
+    [held.tick, held.offset(1), held.offset(2)],
+    [9, undefined, 0],
+  )
+  assert.deepEqual(
+    held.data.slice(0, frozenClass(1).row.length),
+    second.data.slice(0, frozenClass(1).row.length),
+  )
+})
+test('reused replay storage still refuses a changed row width', (): void => {
+  const second = frame(9, 7, { handles: [2], lookup: classOf })
+  const classes = new Map([[2, 1]])
+  const scratch = new CapturedWorld()
+  scratch.read(snapshot(second, [2], classes))
+  const saved = snapshot(second, [2], classes)
+  const [row] = saved.rows
+  assert.ok(row !== undefined)
+  assert.throws((): void => {
+    scratch.read({ tick: saved.tick, rows: [{ ...row, words: '' }] })
+  }, /row width differs/u)
+})
+
+test('later callback values remain observable rather than reusing a prior handle result', (): void => {
+  const record = capture()
+  const calls = [...record.rowFromCalls]
+  const last = calls.at(-1)
+  assert.ok(last?.source !== undefined)
+  const [row] = last.source.rows
+  assert.ok(row !== undefined)
+  calls[calls.length - 1] = {
+    ...last,
+    source: {
+      ...last.source,
+      rows: [
+        {
+          ...row,
+          words: packWords(
+            new Uint32Array(frozenClass(row.classId).row.length).fill(7),
+          ),
+        },
+      ],
+    },
+  }
+  assert.throws((): void => {
+    assertFrameReplay({ ...record, rowFromCalls: calls })
+  }, /differs from real bytes/u)
 })

@@ -40,29 +40,36 @@ function packFrameWords(frames) {
     const packed = JSON.parse(text);
     return { version: VERSION, wordTable, frames: packed };
 }
-/** Validate and replay every expanded frame before returning it to any timing run. */
-function unpackFrameWords(value) {
-    const record = parse(DictionarySchema, value);
-    const text = JSON.stringify(record.frames, (key, item) => {
+function unpackFrame(item, words) {
+    const text = JSON.stringify(item, (key, field) => {
         if (!wordField(key)) {
-            return item;
+            return field;
         }
-        if (typeof item !== 'number' || !Number.isInteger(item) || item < ZERO) {
+        if (typeof field !== 'number' || !Number.isInteger(field) || field < ZERO) {
             throw new Error('Captured word reference must be an unsigned integer');
         }
-        const word = record.wordTable[item];
+        const word = words[field];
         if (word === undefined) {
             throw new Error('Missing captured word reference');
         }
         return word;
     });
     const expanded = JSON.parse(text);
-    const frames = parse(array(unknown()), expanded).map((frame) => parseFrameCapture(frame));
-    if (frames.length === ZERO) {
+    const frame = parseFrameCapture(expanded);
+    assertFrameReplay(frame);
+    return frame;
+}
+/** Validate and replay every expanded frame before returning it to any timing run. */
+function unpackFrameWords(value) {
+    const record = parse(DictionarySchema, value);
+    const packed = parse(array(unknown()), record.frames);
+    if (packed.length === ZERO) {
         throw new Error('A recording requires actual captured frames');
     }
-    for (const frame of frames) {
-        assertFrameReplay(frame);
+    const frames = [];
+    for (const item of packed) {
+        // One expanded text/parse temporary, with the same grammar and byte oracle.
+        frames.push(unpackFrame(item, record.wordTable));
     }
     return frames;
 }

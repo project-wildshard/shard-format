@@ -14,6 +14,10 @@ interface ClassView {
 }
 declare function frozenClass(id: number): (typeof V0_CLASSES)[number];
 declare function snapshot(frame: FrameView, handles: readonly number[], classes: ReadonlyMap<number, number>): Snapshot;
+declare class CapturedWorld {
+    private readonly frame;
+    read(data: Snapshot): WorldFrame;
+}
 declare function world(data: Snapshot): WorldFrame;
 declare function missingBaseline(): null;
-export { frozenClass, snapshot, world, missingBaseline, type FrameView, type ClassView, };
+export { CapturedWorld, frozenClass, snapshot, world, missingBaseline, type FrameView, type ClassView, };

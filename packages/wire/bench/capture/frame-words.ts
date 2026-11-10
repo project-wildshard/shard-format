@@ -53,34 +53,37 @@ function packFrameWords(frames: readonly CapturedFrame[]): PackedFrameWords {
   const packed: unknown = JSON.parse(text)
   return { version: VERSION, wordTable, frames: packed }
 }
+function unpackFrame(item: unknown, words: readonly string[]): CapturedFrame {
+  const text = JSON.stringify(item, (key: string, field: unknown): unknown => {
+    if (!wordField(key)) {
+      return field
+    }
+    if (typeof field !== 'number' || !Number.isInteger(field) || field < ZERO) {
+      throw new Error('Captured word reference must be an unsigned integer')
+    }
+    const word = words[field]
+    if (word === undefined) {
+      throw new Error('Missing captured word reference')
+    }
+    return word
+  })
+  const expanded: unknown = JSON.parse(text)
+  const frame = parseFrameCapture(expanded)
+  assertFrameReplay(frame)
+  return frame
+}
+
 /** Validate and replay every expanded frame before returning it to any timing run. */
 function unpackFrameWords(value: unknown): readonly CapturedFrame[] {
   const record = parse(DictionarySchema, value)
-  const text = JSON.stringify(
-    record.frames,
-    (key: string, item: unknown): unknown => {
-      if (!wordField(key)) {
-        return item
-      }
-      if (typeof item !== 'number' || !Number.isInteger(item) || item < ZERO) {
-        throw new Error('Captured word reference must be an unsigned integer')
-      }
-      const word = record.wordTable[item]
-      if (word === undefined) {
-        throw new Error('Missing captured word reference')
-      }
-      return word
-    },
-  )
-  const expanded: unknown = JSON.parse(text)
-  const frames = parse(array(unknown()), expanded).map(
-    (frame: unknown): CapturedFrame => parseFrameCapture(frame),
-  )
-  if (frames.length === ZERO) {
+  const packed = parse(array(unknown()), record.frames)
+  if (packed.length === ZERO) {
     throw new Error('A recording requires actual captured frames')
   }
-  for (const frame of frames) {
-    assertFrameReplay(frame)
+  const frames: CapturedFrame[] = []
+  for (const item of packed) {
+    // One expanded text/parse temporary, with the same grammar and byte oracle.
+    frames.push(unpackFrame(item, record.wordTable))
   }
   return frames
 }

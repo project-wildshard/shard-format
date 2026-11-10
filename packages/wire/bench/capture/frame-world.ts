@@ -52,18 +52,24 @@ function snapshot(
   return { tick: frame.tick, rows }
 }
 
-function world(data: Snapshot): WorldFrame {
-  const frame = new WorldFrame()
-  frame.reset(data.tick)
-  for (const row of data.rows) {
-    const values = unpackWords(row.words)
-    if (values.length !== frozenClass(row.classId).row.length) {
-      throw new Error('Captured row width differs')
+class CapturedWorld {
+  private readonly frame = new WorldFrame()
+  public read(data: Snapshot): WorldFrame {
+    const { frame } = this
+    frame.reset(data.tick)
+    for (const row of data.rows) {
+      const values = unpackWords(row.words)
+      if (values.length !== frozenClass(row.classId).row.length) {
+        throw new Error('Captured row width differs')
+      }
+      const offset = frame.claim(row.handle, values.length)
+      frame.data.set(values, offset)
     }
-    const offset = frame.claim(row.handle, values.length)
-    frame.data.set(values, offset)
+    return frame
   }
-  return frame
+}
+function world(data: Snapshot): WorldFrame {
+  return new CapturedWorld().read(data)
 }
 
 function missingBaseline(): null {
@@ -72,6 +78,7 @@ function missingBaseline(): null {
 }
 
 export {
+  CapturedWorld,
   frozenClass,
   snapshot,
   world,

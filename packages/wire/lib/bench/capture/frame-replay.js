@@ -1,11 +1,15 @@
 import { BitWriter } from '../../frozen/v0/bits.js';
 import { encodeFrame } from '../../frozen/v0/frame.js';
 import { bytesText, unpackDoubles } from './frame-data.js';
-import { world, frozenClass, missingBaseline } from './frame-world.js';
+import { world, CapturedWorld, frozenClass, missingBaseline, } from './frame-world.js';
 const ZERO = 0;
 const ONE = 1;
 class ReplayCalls {
     record;
+    // Frozen encodeFrame consumes each callback synchronously before its next call.
+    // Rebuild every captured source, preserving order and strict width admission,
+    // while retiring prior offsets instead of allocating 4 KiB per callback.
+    rowWorld = new CapturedWorld();
     rowIndex = ZERO;
     dueIndex = ZERO;
     constructor(record) {
@@ -17,7 +21,9 @@ class ReplayCalls {
         if (call === undefined || call.handle !== handle) {
             throw new Error('rowFrom capture call mismatch');
         }
-        return call.source === undefined ? missingBaseline() : world(call.source);
+        return call.source === undefined
+            ? missingBaseline()
+            : this.rowWorld.read(call.source);
     }
     due(handle) {
         const call = this.record.dueCalls[this.dueIndex];

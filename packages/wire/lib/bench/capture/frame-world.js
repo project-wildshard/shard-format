@@ -28,21 +28,27 @@ function snapshot(frame, handles, classes) {
     }
     return { tick: frame.tick, rows };
 }
-function world(data) {
-    const frame = new WorldFrame();
-    frame.reset(data.tick);
-    for (const row of data.rows) {
-        const values = unpackWords(row.words);
-        if (values.length !== frozenClass(row.classId).row.length) {
-            throw new Error('Captured row width differs');
+class CapturedWorld {
+    frame = new WorldFrame();
+    read(data) {
+        const { frame } = this;
+        frame.reset(data.tick);
+        for (const row of data.rows) {
+            const values = unpackWords(row.words);
+            if (values.length !== frozenClass(row.classId).row.length) {
+                throw new Error('Captured row width differs');
+            }
+            const offset = frame.claim(row.handle, values.length);
+            frame.data.set(values, offset);
         }
-        const offset = frame.claim(row.handle, values.length);
-        frame.data.set(values, offset);
+        return frame;
     }
-    return frame;
+}
+function world(data) {
+    return new CapturedWorld().read(data);
 }
 function missingBaseline() {
     // oxlint-disable-next-line unicorn/no-null -- Frozen FrameInput requires null for no baseline.
     return null;
 }
-export { frozenClass, snapshot, world, missingBaseline, };
+export { CapturedWorld, frozenClass, snapshot, world, missingBaseline, };

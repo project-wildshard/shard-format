@@ -1,7 +1,12 @@
 import { BitWriter } from '../../frozen/v0/bits.ts'
 import { encodeFrame } from '../../frozen/v0/frame.ts'
 import { bytesText, unpackDoubles } from './frame-data.ts'
-import { world, frozenClass, missingBaseline } from './frame-world.ts'
+import {
+  world,
+  CapturedWorld,
+  frozenClass,
+  missingBaseline,
+} from './frame-world.ts'
 
 import type { FrameInput, WorldFrame } from '../../frozen/v0/frame.ts'
 import type { NetClass } from '../../frozen/v0/schema.ts'
@@ -12,6 +17,10 @@ const ONE = 1
 
 class ReplayCalls {
   private readonly record: CapturedFrame
+  // Frozen encodeFrame consumes each callback synchronously before its next call.
+  // Rebuild every captured source, preserving order and strict width admission,
+  // while retiring prior offsets instead of allocating 4 KiB per callback.
+  private readonly rowWorld = new CapturedWorld()
   private rowIndex = ZERO
   private dueIndex = ZERO
   public constructor(record: CapturedFrame) {
@@ -23,7 +32,9 @@ class ReplayCalls {
     if (call === undefined || call.handle !== handle) {
       throw new Error('rowFrom capture call mismatch')
     }
-    return call.source === undefined ? missingBaseline() : world(call.source)
+    return call.source === undefined
+      ? missingBaseline()
+      : this.rowWorld.read(call.source)
   }
   public due(handle: number): boolean {
     const call = this.record.dueCalls[this.dueIndex]
