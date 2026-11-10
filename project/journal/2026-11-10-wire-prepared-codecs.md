@@ -32,3 +32,8 @@ outside hooks/default discovery. Local complete proof is 1.45 seconds.
 
 No live server, socket, game browser or timing gate is run by this slice.
 The runner, Node and 4x Chromium clocks, and two-run 3% check remain open.
+
+J206 one-shot WS3-prepared-codecs-20261110T053525Z-29174 is OK, no MUST or
+SHOULD. It independently checks mandatory bytes, held receiver state,
+compiled parity, meaningful baseline/due mutants and CI inclusion. No
+timing or broader completion is inferred from that static review.
