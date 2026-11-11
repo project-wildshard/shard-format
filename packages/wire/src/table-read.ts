@@ -1,4 +1,4 @@
-import { nodeProblems } from './node-checks.ts'
+import { checkSpace, nodeProblems } from './node-checks.ts'
 import { TableReader } from './table-reader.ts'
 import { FIRST_CODE, KIND_CODES, unzigzag } from './tables.ts'
 import { WireDecodeError } from './wire-error.ts'
@@ -122,7 +122,13 @@ function decodeTable(
   if (!reader.done) {
     throw new WireDecodeError('A table has trailing bytes')
   }
-  const problems = nodeProblems('table', { kind: 'struct', fields: entries })
+  // Entries are checked one by one: a top-level entry may hold no fields.
+  const problems = [
+    ...checkSpace('table', entries),
+    ...entries.flatMap((entry: WireField): readonly string[] =>
+      nodeProblems(`table.${entry.name}`, entry.node),
+    ),
+  ]
   if (problems.length > ZERO) {
     throw new WireDecodeError(`A table is unsound: ${problems.join('; ')}`)
   }

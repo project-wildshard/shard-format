@@ -70,4 +70,10 @@ class TableReader {
         }
     }
 }
-export { TableReader };
+/** The bounds a peer's table must keep; part of the v1 contract (a raise is a major). */
+const TABLE_LIMITS = {
+    maxDepth: MAX_DEPTH,
+    maxCount: MAX_COUNT,
+    maxNodes: MAX_NODES,
+};
+export { TABLE_LIMITS, TableReader };

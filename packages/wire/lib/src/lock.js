@@ -1,8 +1,10 @@
 import { WIRE_CLASSES } from './classes.js';
 import { WIRE_EVENTS } from './events.js';
+import { MAX_MESSAGE_BYTES } from './framing.js';
 import { WIRE_MAJOR, WIRE_MINOR } from './major.js';
 import { HELLO, WELCOME, WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, } from './records.js';
 import { RIDE_LAWS } from './rides.js';
+import { TABLE_LIMITS } from './table-reader.js';
 import { v0SchemaHash } from './v0.js';
 // WIRE-STABILITY 5.2 and 7: `wire.lock.json` is generated from the
 // descriptors, never edited by hand. It lists every id in every space, each
@@ -192,6 +194,7 @@ function wireLock() {
         wireMajor: WIRE_MAJOR,
         wireMinor: WIRE_MINOR,
         maxRowFields: MAX_ROW_FIELDS,
+        tableLimits: { ...TABLE_LIMITS, maxMessageBytes: MAX_MESSAGE_BYTES },
         v0SchemaHash: v0SchemaHash(WIRE_CLASSES),
         messages: WIRE_MESSAGES.map((message) => lockMessage(message)),
         cold: [HELLO, WELCOME].map((record) => lockCold(record)),

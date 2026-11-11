@@ -1,7 +1,7 @@
 import { bitSink, bitSource } from './bits.ts'
 import { asStruct, compileDecoder, compileEncoder } from './codec.ts'
 import { WIRE_EVENTS } from './events.ts'
-import { readRecords, writeRecord } from './framing.ts'
+import { readRecords, recordBytes, writeRecord } from './framing.ts'
 import { entry, struct, TAG_EVENTS, TICK_BITS, TICK_BYTES } from './game.ts'
 import { decodeTable } from './table-read.ts'
 import { encodeTable } from './tables.ts'
@@ -71,10 +71,16 @@ function writeEvent(
   if (local === undefined) {
     throw new RangeError(`Undeclared event ${event.event}`)
   }
-  // One writer per process: `take` detaches each body and resets it.
-  local.encode(SHARED, event.fields)
-  if (local.record.tail === 'class-columns') {
-    columns.write(SHARED, event.fields)
+  // One writer per process: `take` detaches each body and resets it, and a
+  // throw resets it too, so a bad event never leaks bits into the next.
+  try {
+    local.encode(SHARED, event.fields)
+    if (local.record.tail === 'class-columns') {
+      columns.write(SHARED, event.fields)
+    }
+  } catch (error) {
+    SHARED.take()
+    throw error
   }
   writeRecord(out, local.record.id, SHARED.take())
 }
@@ -90,9 +96,7 @@ function encodeEvents(
   for (const event of events) {
     writeEvent(body, event, columns)
   }
-  const out: number[] = []
-  writeRecord(out, TAG_EVENTS, Uint8Array.from(body))
-  return Uint8Array.from(out)
+  return recordBytes(TAG_EVENTS, Uint8Array.from(body))
 }
 
 /** The peer's events this receiver knows, by tag. */

@@ -24,4 +24,10 @@ declare class TableReader implements TableSource {
     /** Count one node at `depth`, refusing a table too deep or too large. */
     tick(depth: number): void;
 }
-export { TableReader, type TableSource };
+/** The bounds a peer's table must keep; part of the v1 contract (a raise is a major). */
+declare const TABLE_LIMITS: {
+    readonly maxDepth: 8;
+    readonly maxCount: 255;
+    readonly maxNodes: 4096;
+};
+export { TABLE_LIMITS, TableReader, type TableSource };

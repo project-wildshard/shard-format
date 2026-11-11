@@ -38,7 +38,7 @@ type FirstMessage = {
 } | {
     readonly kind: 'reload' | 'retry' | 'refuse';
 };
-/** FNV-1a over table bytes: `tableHash` (5.3). It refuses nothing. */
+/** FNV-1a over each table block's length and bytes: `tableHash` (5.3). */
 declare function tableHash(blocks: readonly Readonly<Uint8Array>[]): number;
 /** A v1 client's first message: bootstrap, then the hello record. */
 declare function encodeHello(hello: Hello): Uint8Array;

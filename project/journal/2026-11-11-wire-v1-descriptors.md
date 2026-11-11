@@ -75,3 +75,24 @@
   now computes each row's mask once, indexes arrays in the hot loop and
   frames a record in one allocation, and sits within noise of v0 here. WB2
   measures it properly.
+
+## WR3 Opus review (claude -p, after the account switch)
+
+- Two MUSTs fixed forward on top of 918ec19: a peer table may hold no
+  nested field of zero bits (an empty struct field let a few bits expand
+  into millions of allocations), so decode work is linear in body bits;
+  and a throwing event or body encode resets the shared writer, so no bits
+  leak into the next message.
+- SHOULDs folded in before `wire-v1.0.0`: the first message skips unknown
+  records around its one hello; hello carries the whole `cmds` and `act`
+  record bodies, envelopes included, so a later minor can add an envelope
+  field or raise the bundle cap; shared defaults are frozen; a cold field
+  id 0 or a known id with another wire type refuses; `tableHash` length-
+  prefixes each block; the table limits (depth 8, counts 255, nodes 4096,
+  64 KiB messages) are in the lock; body encodes reuse one writer and build
+  a record in one allocation. New tests: zero-bit nests, writer reset, the
+  64 KiB cap, a trailing byte, a narrow union, text bounds, and a seeded
+  fuzz over every example (only WireDecodeError escapes).
+- Left for later rows, noted in the plan: pitch and `ads` quantisation
+  derived from the v1 codecs (WR5), receiver bounds on projection (WR6),
+  an LRU cap on the server's per-table decoder cache (WR5).

@@ -150,8 +150,13 @@ function checkLeaf(where, node) {
 function checkFields(where, fields) {
     const problems = [...checkSpace(where, fields)];
     for (const field of fields) {
+        const at = `${where}.${field.name}`;
         // oxlint-disable-next-line no-use-before-define -- the grammar is recursive
-        problems.push(...checkNode(`${where}.${field.name}`, field.node));
+        problems.push(...checkNode(at, field.node));
+        // A field of no bits lets a few body bits expand into unbounded work.
+        if (minBits(field.node) < ONE) {
+            problems.push(`${at}: a field takes no bits`);
+        }
     }
     return problems;
 }

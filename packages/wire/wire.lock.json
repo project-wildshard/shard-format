@@ -3,6 +3,12 @@
   "wireMajor": 1,
   "wireMinor": 0,
   "maxRowFields": 32,
+  "tableLimits": {
+    "maxDepth": 8,
+    "maxCount": 255,
+    "maxNodes": 4096,
+    "maxMessageBytes": 65536
+  },
   "v0SchemaHash": 3494901458,
   "messages": [
     {

@@ -1,11 +1,12 @@
 import { bitSink, bitSource } from './bits.js';
 import { asStruct, compileDecoder, compileEncoder } from './codec.js';
-import { readRecords, writeRecord } from './framing.js';
-import { WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, } from './records.js';
+import { readRecords, recordBytes } from './framing.js';
+import { WIRE_MESSAGES, WIRE_RECORDS } from './records.js';
 import { decodeTable } from './table-read.js';
 import { encodeTable } from './tables.js';
 import { WireDecodeError } from './wire-error.js';
 const ONE = 1;
+const SHARED = bitSink();
 const NONE = 0;
 /** The `cmds`, `act` and `events` message tags. */
 const TAG_CMDS = 2;
@@ -25,11 +26,24 @@ const entry = (id, name, node) => ({
     name,
     node,
 });
+function localBody(tag) {
+    const record = WIRE_RECORDS.find((item) => item.id === tag);
+    if (record === undefined) {
+        throw new RangeError(`No record ${String(tag)}`);
+    }
+    return record.fields;
+}
+/** A record's local body, as one struct node. */
+function localBodyNode(tag) {
+    return struct(localBody(tag));
+}
 /** The client's tables (hello): its command struct and its act union. */
 function clientTables() {
+    // The whole record bodies travel, envelopes included, so a later minor
+    // may add an envelope field or raise the bundle cap without a major.
     return {
-        commandTable: encodeTable([entry(ONE, 'command', WIRE_COMMAND)]),
-        actTable: encodeTable([entry(ONE, 'act', WIRE_ACTS)]),
+        commandTable: encodeTable([entry(ONE, 'cmds', localBodyNode(TAG_CMDS))]),
+        actTable: encodeTable([entry(ONE, 'act', localBodyNode(TAG_ACT))]),
     };
 }
 /** The one node a single-entry table holds, of the kind `local` is. */
@@ -43,41 +57,27 @@ function onlyNode(table, local) {
     }
     return first.node;
 }
-function localBody(tag) {
-    const record = WIRE_RECORDS.find((item) => item.id === tag);
-    if (record === undefined) {
-        throw new RangeError(`No record ${String(tag)}`);
-    }
-    return record.fields;
-}
-/** `cmds` carries an array of commands: the peer's command in that array. */
-function peerNode(local, peer) {
-    return local.kind === 'array' ? { ...local, node: peer } : peer;
-}
-/** A record body codec whose `slot` field is the peer's node from a table. */
-function bodyCodec(tag, slot, peer) {
-    const local = localBody(tag);
-    const sender = local.map((field) => field.name === slot
-        ? { ...field, node: peerNode(field.node, peer) }
-        : field);
+/** A record body codec: encode in the local layout, decode the peer's. */
+function bodyCodec(tag, peer) {
+    const local = localBodyNode(tag);
     return {
-        encode: compileEncoder(struct(local)),
-        decode: compileDecoder(struct(sender), struct(local)),
+        encode: compileEncoder(local),
+        decode: compileDecoder(peer, local),
     };
 }
 /** The server's `cmds` codec for one client's command table. */
 function commandsCodec(commandTable) {
-    return bodyCodec(TAG_CMDS, 'commands', onlyNode(commandTable, WIRE_COMMAND));
+    return bodyCodec(TAG_CMDS, onlyNode(commandTable, localBodyNode(TAG_CMDS)));
 }
 /** The server's `act` codec for one client's act table. */
 function actCodec(actTable) {
-    return bodyCodec(TAG_ACT, 'act', onlyNode(actTable, WIRE_ACTS));
+    return bodyCodec(TAG_ACT, onlyNode(actTable, localBodyNode(TAG_ACT)));
 }
 /** The client's own `cmds` and `act` codecs: its layout both ways. */
 function localCodecs() {
     return {
-        commands: bodyCodec(TAG_CMDS, 'commands', WIRE_COMMAND),
-        act: bodyCodec(TAG_ACT, 'act', WIRE_ACTS),
+        commands: bodyCodec(TAG_CMDS, localBodyNode(TAG_CMDS)),
+        act: bodyCodec(TAG_ACT, localBodyNode(TAG_ACT)),
     };
 }
 /** Refuse a singleton record seen twice in one message. */
@@ -119,10 +119,13 @@ function decodeBody(codec, span) {
 }
 /** A message holding one record, encoded by a codec. */
 function encodeBody(codec, tag, value) {
-    const writer = bitSink();
-    codec.encode(writer, value);
-    const out = [];
-    writeRecord(out, tag, writer.take());
-    return Uint8Array.from(out);
+    try {
+        codec.encode(SHARED, value);
+    }
+    catch (error) {
+        SHARED.take();
+        throw error;
+    }
+    return recordBytes(tag, SHARED.take());
 }
 export { actCodec, entry, struct, clientTables, commandsCodec, decodeBody, encodeBody, localCodecs, readMessage, TAG_ACT, TAG_CMDS, TAG_EVENTS, TICK_BITS, TICK_BYTES, };

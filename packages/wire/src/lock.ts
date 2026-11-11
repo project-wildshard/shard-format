@@ -1,5 +1,6 @@
 import { WIRE_CLASSES } from './classes.ts'
 import { WIRE_EVENTS } from './events.ts'
+import { MAX_MESSAGE_BYTES } from './framing.ts'
 import { WIRE_MAJOR, WIRE_MINOR } from './major.ts'
 import {
   HELLO,
@@ -10,6 +11,7 @@ import {
   WIRE_RECORDS,
 } from './records.ts'
 import { RIDE_LAWS } from './rides.ts'
+import { TABLE_LIMITS } from './table-reader.ts'
 import { v0SchemaHash } from './v0.ts'
 
 import type {
@@ -239,6 +241,7 @@ function wireLock(): Json {
     wireMajor: WIRE_MAJOR,
     wireMinor: WIRE_MINOR,
     maxRowFields: MAX_ROW_FIELDS,
+    tableLimits: { ...TABLE_LIMITS, maxMessageBytes: MAX_MESSAGE_BYTES },
     v0SchemaHash: v0SchemaHash(WIRE_CLASSES),
     messages: WIRE_MESSAGES.map((message: WireMessage): Json =>
       lockMessage(message),

@@ -93,7 +93,9 @@ test('an unknown record between two known ones is skipped', (): void => {
 })
 
 test('an unknown command field is skipped and every later bit holds', (): void => {
-  const table = encodeTable([{ id: 1, name: 'command', node: NEWER_COMMAND }])
+  const table = encodeTable([
+    { id: 1, name: 'cmds', node: cmdsOf(NEWER_COMMAND) },
+  ])
   const sent = { ...COMMAND, grapple: 77 }
   const bytes = encodeWith(cmdsOf(NEWER_COMMAND), 2, {
     ackFrame: 1,
@@ -106,11 +108,11 @@ test('an unknown command field is skipped and every later bit holds', (): void =
 })
 
 test('an unknown act arm is read and skipped', (): void => {
-  const table = encodeTable([{ id: 1, name: 'act', node: NEWER_ACTS }])
   const body = struct([
     { id: 1, name: 'seq', node: U16 },
     { id: 2, name: 'act', node: NEWER_ACTS },
   ])
+  const table = encodeTable([{ id: 1, name: 'act', node: body }])
   const dance = { arm: 'dance', fields: { move: 'spin' } }
   const bytes = encodeWith(body, 3, { seq: 4, act: dance })
   assert.deepEqual(decodeBody(actCodec(table), onlyRecord(bytes)), {
@@ -126,7 +128,7 @@ test('a command field the sender lacks reads its default', (): void => {
         field.name !== 'launcher' && field.name !== 'viewTick',
     ),
   )
-  const table = encodeTable([{ id: 1, name: 'command', node: older }])
+  const table = encodeTable([{ id: 1, name: 'cmds', node: cmdsOf(older) }])
   const { viewTick, launcher, ...sent } = COMMAND
   assert.deepEqual([viewTick, launcher], [2, undefined])
   const bytes = encodeWith(cmdsOf(older), 2, { ackFrame: 0, commands: [sent] })

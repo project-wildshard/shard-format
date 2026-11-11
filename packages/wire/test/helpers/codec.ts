@@ -11,7 +11,7 @@ function onlyRecord(bytes: Readonly<Uint8Array>): Span {
   const [record] = readMessage(bytes).records
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- a message may hold none
   if (record === undefined) {
-    throw new Error('The message holds no known record')
+    throw new WireDecodeError('The message holds no known record')
   }
   return { bytes, start: record.start, end: record.end }
 }

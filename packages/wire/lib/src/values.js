@@ -1,12 +1,14 @@
 const ZERO = 0;
-/** Every field of a struct at its default. */
+/** The shared empty list a missing array reads as, frozen. */
+const EMPTY = Object.freeze([]);
+/** Every field of a struct at its default, frozen: decodes share it. */
 function structDefaults(fields) {
     const out = {};
     for (const field of fields) {
         // oxlint-disable-next-line no-use-before-define -- the grammar is recursive
         out[field.name] = defaultValue(field.node);
     }
-    return out;
+    return Object.freeze(out);
 }
 /** What a receiver reads for a field its sender's table lacks. */
 function defaultValue(node) {
@@ -46,7 +48,7 @@ function defaultValue(node) {
 /** A nesting node's default: empty, at defaults, the default arm, or absent. */
 function nestedDefault(node) {
     if (node.kind === 'array') {
-        return [];
+        return EMPTY;
     }
     if (node.kind === 'struct') {
         return structDefaults(node.fields);

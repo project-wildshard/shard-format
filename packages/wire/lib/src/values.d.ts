@@ -10,7 +10,7 @@ interface WireArmValue {
     readonly arm: string;
     readonly fields: WireStruct;
 }
-/** Every field of a struct at its default. */
+/** Every field of a struct at its default, frozen: decodes share it. */
 declare function structDefaults(fields: readonly WireField[]): WireStruct;
 /** What a receiver reads for a field its sender's table lacks. */
 declare function defaultValue(node: WireNode): WireValue;

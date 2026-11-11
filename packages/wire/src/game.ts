@@ -1,12 +1,7 @@
 import { bitSink, bitSource } from './bits.ts'
 import { asStruct, compileDecoder, compileEncoder } from './codec.ts'
-import { readRecords, writeRecord } from './framing.ts'
-import {
-  WIRE_ACTS,
-  WIRE_COMMAND,
-  WIRE_MESSAGES,
-  WIRE_RECORDS,
-} from './records.ts'
+import { readRecords, recordBytes } from './framing.ts'
+import { WIRE_MESSAGES, WIRE_RECORDS } from './records.ts'
 import { decodeTable } from './table-read.ts'
 import { encodeTable } from './tables.ts'
 import { WireDecodeError } from './wire-error.ts'
@@ -38,6 +33,7 @@ interface ReadMessage {
 }
 
 const ONE = 1
+const SHARED = bitSink()
 const NONE = 0
 /** The `cmds`, `act` and `events` message tags. */
 const TAG_CMDS = 2
@@ -65,14 +61,31 @@ const entry = (id: number, name: string, node: WireNode): WireField => ({
   node,
 })
 
+function localBody(tag: number): readonly WireField[] {
+  const record = WIRE_RECORDS.find(
+    (item: WireRecord): boolean => item.id === tag,
+  )
+  if (record === undefined) {
+    throw new RangeError(`No record ${String(tag)}`)
+  }
+  return record.fields
+}
+
+/** A record's local body, as one struct node. */
+function localBodyNode(tag: number): WireNode {
+  return struct(localBody(tag))
+}
+
 /** The client's tables (hello): its command struct and its act union. */
 function clientTables(): {
   readonly commandTable: Uint8Array
   readonly actTable: Uint8Array
 } {
+  // The whole record bodies travel, envelopes included, so a later minor
+  // may add an envelope field or raise the bundle cap without a major.
   return {
-    commandTable: encodeTable([entry(ONE, 'command', WIRE_COMMAND)]),
-    actTable: encodeTable([entry(ONE, 'act', WIRE_ACTS)]),
+    commandTable: encodeTable([entry(ONE, 'cmds', localBodyNode(TAG_CMDS))]),
+    actTable: encodeTable([entry(ONE, 'act', localBodyNode(TAG_ACT))]),
   }
 }
 
@@ -90,43 +103,23 @@ function onlyNode(table: Readonly<Uint8Array>, local: WireNode): WireNode {
   return first.node
 }
 
-function localBody(tag: number): readonly WireField[] {
-  const record = WIRE_RECORDS.find(
-    (item: WireRecord): boolean => item.id === tag,
-  )
-  if (record === undefined) {
-    throw new RangeError(`No record ${String(tag)}`)
-  }
-  return record.fields
-}
-
-/** `cmds` carries an array of commands: the peer's command in that array. */
-function peerNode(local: WireNode, peer: WireNode): WireNode {
-  return local.kind === 'array' ? { ...local, node: peer } : peer
-}
-
-/** A record body codec whose `slot` field is the peer's node from a table. */
-function bodyCodec(tag: number, slot: string, peer: WireNode): BodyCodec {
-  const local = localBody(tag)
-  const sender = local.map((field: WireField): WireField =>
-    field.name === slot
-      ? { ...field, node: peerNode(field.node, peer) }
-      : field,
-  )
+/** A record body codec: encode in the local layout, decode the peer's. */
+function bodyCodec(tag: number, peer: WireNode): BodyCodec {
+  const local = localBodyNode(tag)
   return {
-    encode: compileEncoder(struct(local)),
-    decode: compileDecoder(struct(sender), struct(local)),
+    encode: compileEncoder(local),
+    decode: compileDecoder(peer, local),
   }
 }
 
 /** The server's `cmds` codec for one client's command table. */
 function commandsCodec(commandTable: Readonly<Uint8Array>): BodyCodec {
-  return bodyCodec(TAG_CMDS, 'commands', onlyNode(commandTable, WIRE_COMMAND))
+  return bodyCodec(TAG_CMDS, onlyNode(commandTable, localBodyNode(TAG_CMDS)))
 }
 
 /** The server's `act` codec for one client's act table. */
 function actCodec(actTable: Readonly<Uint8Array>): BodyCodec {
-  return bodyCodec(TAG_ACT, 'act', onlyNode(actTable, WIRE_ACTS))
+  return bodyCodec(TAG_ACT, onlyNode(actTable, localBodyNode(TAG_ACT)))
 }
 
 /** The client's own `cmds` and `act` codecs: its layout both ways. */
@@ -135,8 +128,8 @@ function localCodecs(): {
   readonly act: BodyCodec
 } {
   return {
-    commands: bodyCodec(TAG_CMDS, 'commands', WIRE_COMMAND),
-    act: bodyCodec(TAG_ACT, 'act', WIRE_ACTS),
+    commands: bodyCodec(TAG_CMDS, localBodyNode(TAG_CMDS)),
+    act: bodyCodec(TAG_ACT, localBodyNode(TAG_ACT)),
   }
 }
 
@@ -188,11 +181,13 @@ function encodeBody(
   tag: number,
   value: WireStruct,
 ): Uint8Array {
-  const writer = bitSink()
-  codec.encode(writer, value)
-  const out: number[] = []
-  writeRecord(out, tag, writer.take())
-  return Uint8Array.from(out)
+  try {
+    codec.encode(SHARED, value)
+  } catch (error) {
+    SHARED.take()
+    throw error
+  }
+  return recordBytes(tag, SHARED.take())
 }
 
 export {

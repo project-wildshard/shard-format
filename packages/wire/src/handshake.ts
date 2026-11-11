@@ -68,11 +68,13 @@ const MAX_TEXT_BYTES = 255
 const FNV_OFFSET = 2_166_136_261
 const FNV_PRIME = 16_777_619
 
-/** FNV-1a over table bytes: `tableHash` (5.3). It refuses nothing. */
+/** FNV-1a over each table block's length and bytes: `tableHash` (5.3). */
 function tableHash(blocks: readonly Readonly<Uint8Array>[]): number {
   let hash = FNV_OFFSET
   for (const block of blocks) {
-    for (const byte of block) {
+    const head: number[] = []
+    writeUvarint(head, block.length)
+    for (const byte of [...head, ...block]) {
       // oxlint-disable-next-line no-bitwise -- FNV-1a is xor and 32-bit multiply
       hash = Math.imul(hash ^ byte, FNV_PRIME) >>> ZERO
     }
@@ -155,9 +157,12 @@ function helloSpan(
   bytes: Readonly<Uint8Array>,
   start: number,
 ): Span | undefined {
-  const records = readRecords(bytes, start, bytes.length)
-  const [record] = records
-  return records.length === ONE && record?.tag === HELLO_TAG
+  // Exactly one hello; any other record is a later minor's, skipped (5.1).
+  const hellos = readRecords(bytes, start, bytes.length).filter(
+    (record: { readonly tag: number }): boolean => record.tag === HELLO_TAG,
+  )
+  const [record] = hellos
+  return hellos.length === ONE && record !== undefined
     ? { bytes, start: record.start, end: record.end }
     : undefined
 }
