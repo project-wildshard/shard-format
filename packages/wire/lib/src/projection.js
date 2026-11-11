@@ -2,6 +2,8 @@ import { classColumns } from './columns.js';
 import { WireDecodeError } from './wire-error.js';
 import { wordCodec } from './words.js';
 const MISSING = -1;
+const ZERO = 0;
+const ONE = 1;
 const RIDE_WORD_BITS = 32;
 const same = (word) => word;
 /** Two nodes are the same when every bound is: key order does not matter. */
@@ -78,10 +80,14 @@ function projectClasses(sender, local) {
 }
 /** A sender row (or owner block) in the receiver's layout. */
 function projectRow(slotsOf, raw) {
-    const out = new Float64Array(slotsOf.length);
-    for (const [index, slot] of slotsOf.entries()) {
-        const word = raw[slot.from];
-        out[index] = word === undefined ? slot.fallback : slot.convert(word);
+    const count = slotsOf.length;
+    const out = new Float64Array(count);
+    for (let index = ZERO; index < count; index += ONE) {
+        const slot = slotsOf[index];
+        if (slot !== undefined) {
+            const word = raw[slot.from];
+            out[index] = word === undefined ? slot.fallback : slot.convert(word);
+        }
     }
     return out;
 }

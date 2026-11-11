@@ -25,4 +25,4 @@ declare function encodePacketInput(input: DeepRead<PacketInput>, shared: () => B
 /** Actual common prefix dispatch stays inside every timed receiver operation. */
 declare function decodePacketValue(bytes: Readonly<Uint8Array>): unknown;
 declare function readPacketInput(bytes: Readonly<Uint8Array>): PacketInput;
-export { encodePacketInput, decodePacketValue, readPacketInput };
+export { encodePacketInput, decodePacketValue, readPacketInput, type PacketInput, };

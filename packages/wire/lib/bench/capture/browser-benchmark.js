@@ -1,6 +1,8 @@
 import { prepareTraffic } from './benchmark-data.js';
 import { POLICY } from './benchmark-stats.js';
 import { measureTraffic, benchmarkSink } from './benchmark.js';
+import { readSessionArchive } from './session-archive.js';
+import { prepareV1Traffic } from './v1-traffic.js';
 const held = {};
 const NAMES = new Set(['walking', 'fight', 'ride', 'dense']);
 async function get(name, file) {
@@ -12,13 +14,17 @@ async function get(name, file) {
     }
     return new Uint8Array(await response.arrayBuffer());
 }
-async function prepare(name) {
+async function prepare(name, codec = 'v0') {
     if (!NAMES.has(name)) {
         throw new Error('Unknown benchmark recording');
     }
     delete held.traffic;
     const header = JSON.parse(new TextDecoder().decode(await get(name, 'manifest.json')));
-    held.traffic = await prepareTraffic(header, async (file) => await get(name, file));
+    const read = async (file) => await get(name, file);
+    held.traffic =
+        codec === 'v1'
+            ? prepareV1Traffic(await readSessionArchive(header, read))
+            : await prepareTraffic(header, read);
 }
 function measure() {
     const { traffic } = held;

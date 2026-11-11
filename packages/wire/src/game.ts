@@ -1,6 +1,6 @@
 import { bitSink, bitSource } from './bits.ts'
 import { asStruct, compileDecoder, compileEncoder } from './codec.ts'
-import { readRecords, recordBytes } from './framing.ts'
+import { readRecords } from './framing.ts'
 import { WIRE_MESSAGES, WIRE_RECORDS } from './records.ts'
 import { decodeTable } from './table-read.ts'
 import { encodeTable } from './tables.ts'
@@ -180,14 +180,14 @@ function encodeBody(
   codec: BodyCodec,
   tag: number,
   value: WireStruct,
-): Uint8Array {
+): Uint8Array<ArrayBuffer> {
   try {
     codec.encode(SHARED, value)
   } catch (error) {
     SHARED.take()
     throw error
   }
-  return recordBytes(tag, SHARED.take())
+  return SHARED.takeRecord(tag)
 }
 
 export {
@@ -198,6 +198,7 @@ export {
   commandsCodec,
   decodeBody,
   encodeBody,
+  localBodyNode,
   localCodecs,
   readMessage,
   TAG_ACT,

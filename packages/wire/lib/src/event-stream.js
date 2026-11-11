@@ -1,7 +1,7 @@
 import { bitSink, bitSource } from './bits.js';
 import { asStruct, compileDecoder, compileEncoder } from './codec.js';
 import { WIRE_EVENTS } from './events.js';
-import { readRecords, recordBytes, writeRecord } from './framing.js';
+import { nestedRecord, readRecords } from './framing.js';
 import { entry, struct, TAG_EVENTS, TICK_BITS, TICK_BYTES } from './game.js';
 import { decodeTable } from './table-read.js';
 import { encodeTable } from './tables.js';
@@ -23,7 +23,7 @@ for (const record of WIRE_EVENTS) {
 function eventTables() {
     return encodeTable(WIRE_EVENTS.map((record) => entry(record.id, record.name, struct(record.fields))));
 }
-function writeEvent(out, event, columns) {
+function eventBody(event, columns) {
     const local = LOCAL.get(event.event);
     if (local === undefined) {
         throw new RangeError(`Undeclared event ${event.event}`);
@@ -40,16 +40,14 @@ function writeEvent(out, event, columns) {
         SHARED.take();
         throw error;
     }
-    writeRecord(out, local.record.id, SHARED.take());
+    return [local.record.id, SHARED.take()];
 }
 /** One `events` message: the tick, then each event as its own record. */
 function encodeEvents(tick, events, columns = NO_COLUMNS) {
     SHARED.write(tick, TICK_BITS);
-    const body = [...SHARED.take()];
-    for (const event of events) {
-        writeEvent(body, event, columns);
-    }
-    return recordBytes(TAG_EVENTS, Uint8Array.from(body));
+    const head = SHARED.take();
+    const parts = events.map((event) => eventBody(event, columns));
+    return nestedRecord(TAG_EVENTS, head, parts);
 }
 /** The peer's events this receiver knows, by tag. */
 function peerEvents(tables) {

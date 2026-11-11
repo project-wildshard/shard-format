@@ -1,7 +1,7 @@
-import { readUvarint, writeUvarint } from './framing.ts'
+import { putUvarint, readUvarint, uvarintLength } from './framing.ts'
 import { WireDecodeError } from './wire-error.ts'
 
-import type { ByteSink, Span } from './bit-io.ts'
+import type { Span } from './bit-io.ts'
 import type { ColdField, ColdRecord, ColdWireType } from './grammar.ts'
 
 // WIRE-STABILITY 5.1: hello and welcome are cold records with protobuf-style
@@ -31,25 +31,46 @@ const FIXED_SIZE: Readonly<Partial<Record<ColdWireType, number>>> = {
   fixed64: 8,
 }
 
-function writeFixed(out: ByteSink, value: number, size: number): void {
-  let rest = value
-  for (let index = ZERO; index < size; index += ONE) {
-    out.push(rest % BYTE_SPAN)
-    rest = Math.floor(rest / BYTE_SPAN)
-  }
+/** One present value: its key, its value, its fixed size if any. */
+interface ColdPart {
+  readonly key: number
+  readonly value: ColdValue
+  readonly size: number | undefined
 }
 
-function writeValue(out: ByteSink, field: ColdField, value: ColdValue): void {
-  writeUvarint(out, field.id * TYPE_SPAN + WIRE_TYPES.indexOf(field.wire))
-  const size = FIXED_SIZE[field.wire]
+/** The bytes one part takes, key included. */
+function partLength(part: ColdPart): number {
+  const { key, value, size } = part
   if (typeof value !== 'number') {
-    writeUvarint(out, value.length)
-    out.push(...value)
-  } else if (size === undefined) {
-    writeUvarint(out, value)
-  } else {
-    writeFixed(out, value, size)
+    return uvarintLength(key) + uvarintLength(value.length) + value.length
   }
+  return uvarintLength(key) + (size ?? uvarintLength(value))
+}
+
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it writes into `out`
+function putFixed(out: Uint8Array, at: number, part: ColdPart): number {
+  let rest = Number(part.value)
+  const end = at + (part.size ?? ZERO)
+  for (let index = at; index < end; index += ONE) {
+    out[index] = rest % BYTE_SPAN
+    rest = Math.floor(rest / BYTE_SPAN)
+  }
+  return end
+}
+
+/** Write one part into `out` at `at`; the offset after it. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it writes into `out`
+function putPart(out: Uint8Array, at: number, part: ColdPart): number {
+  const next = putUvarint(out, at, part.key)
+  const { value, size } = part
+  if (typeof value !== 'number') {
+    const start = putUvarint(out, next, value.length)
+    out.set(value, start)
+    return start + value.length
+  }
+  return size === undefined
+    ? putUvarint(out, next, value)
+    : putFixed(out, next, part)
 }
 
 const isList = (
@@ -63,15 +84,28 @@ function listOf(value: ColdValues[string]): readonly ColdValue[] {
   return isList(value) ? value : [value]
 }
 
-/** A cold record body: each present field, in declared order. */
-function encodeCold(record: ColdRecord, values: ColdValues): Uint8Array {
-  const out: number[] = []
-  for (const field of record.fields) {
-    for (const item of listOf(values[field.name])) {
-      writeValue(out, field, item)
-    }
+/** A cold record body: each present field, in declared order, in one allocation. */
+function encodeCold(
+  record: ColdRecord,
+  values: ColdValues,
+): Uint8Array<ArrayBuffer> {
+  const parts = record.fields.flatMap((field: ColdField): ColdPart[] =>
+    listOf(values[field.name]).map((value: ColdValue): ColdPart => ({
+      key: field.id * TYPE_SPAN + WIRE_TYPES.indexOf(field.wire),
+      value,
+      size: FIXED_SIZE[field.wire],
+    })),
+  )
+  let length = ZERO
+  for (const part of parts) {
+    length += partLength(part)
   }
-  return Uint8Array.from(out)
+  const out = new Uint8Array(length)
+  let at = ZERO
+  for (const part of parts) {
+    at = putPart(out, at, part)
+  }
+  return out
 }
 
 function readFixed(span: Span, size: number): number {

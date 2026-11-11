@@ -41,11 +41,11 @@ type FirstMessage = {
 /** FNV-1a over each table block's length and bytes: `tableHash` (5.3). */
 declare function tableHash(blocks: readonly Readonly<Uint8Array>[]): number;
 /** A v1 client's first message: bootstrap, then the hello record. */
-declare function encodeHello(hello: Hello): Uint8Array;
+declare function encodeHello(hello: Hello): Uint8Array<ArrayBuffer>;
 /** Read a client's first message: the bootstrap bytes before any record. */
 declare function decodeFirstMessage(bytes: Readonly<Uint8Array>): FirstMessage;
 /** The welcome record, with its tables unless `tables` is absent. */
-declare function encodeWelcome(welcome: Welcome): Uint8Array;
+declare function encodeWelcome(welcome: Welcome): Uint8Array<ArrayBuffer>;
 /** Read a welcome record's body. */
 declare function decodeWelcome(span: Span): Welcome;
 export { decodeFirstMessage, decodeWelcome, encodeHello, encodeWelcome, tableHash, type FirstMessage, type Hello, type ServerTables, type Welcome, };

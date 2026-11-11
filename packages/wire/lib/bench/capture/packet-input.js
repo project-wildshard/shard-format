@@ -101,4 +101,4 @@ function readPacketInput(bytes) {
         }
     }
 }
-export { encodePacketInput, decodePacketValue, readPacketInput };
+export { encodePacketInput, decodePacketValue, readPacketInput, };

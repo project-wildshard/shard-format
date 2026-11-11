@@ -1,5 +1,5 @@
 import { bitSink, bitSource } from './bits.ts'
-import { readRecords, recordBytes } from './framing.ts'
+import { readRecords } from './framing.ts'
 import { decodeSnapshot } from './snapshot-decode.ts'
 import { encodeSnapshot } from './snapshot-encode.ts'
 import { WireDecodeError } from './wire-error.ts'
@@ -15,9 +15,14 @@ const ZERO = 0
 const SHARED = bitSink()
 
 /** One client's frame message. */
-function encodeFrame(input: SnapshotInput): Uint8Array {
-  encodeSnapshot(SHARED, input)
-  return recordBytes(TAG_FRAME, SHARED.take())
+function encodeFrame(input: SnapshotInput): Uint8Array<ArrayBuffer> {
+  try {
+    encodeSnapshot(SHARED, input)
+  } catch (error) {
+    SHARED.take()
+    throw error
+  }
+  return SHARED.takeRecord(TAG_FRAME)
 }
 
 /** A frame record's body, raw, or undefined when it cannot apply yet. */

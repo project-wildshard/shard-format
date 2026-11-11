@@ -1,3 +1,5 @@
+import { countBits, indexBits } from './bounds.js';
+import { generateStructEncoder } from './encode-gen.js';
 import { fixedCodec } from './fixed.js';
 import { asArm, asList, asNumber, asStruct } from './values.js';
 const ZERO = 0;
@@ -9,14 +11,6 @@ const REF_TOP = 65_535;
 const BYTE = 8;
 const utf8 = new TextEncoder();
 const clamp = (value, low, high) => Math.min(Math.max(value, low), high);
-/** Bits for a count of 0 to `maxCount`. */
-function countBits(maxCount) {
-    return Math.max(ONE, Math.ceil(Math.log2(maxCount + ONE)));
-}
-/** Bits for an index into `size` values. */
-function indexBits(size) {
-    return Math.max(ONE, Math.ceil(Math.log2(size)));
-}
 function uintEncoder(bits) {
     const top = TWO ** bits - ONE;
     return (writer, value) => {
@@ -107,15 +101,21 @@ function arrayEncoder(inner, maxCount) {
     };
 }
 function structEncoder(fields) {
-    const parts = [];
-    for (const field of fields) {
-        // oxlint-disable-next-line no-use-before-define -- the grammar is recursive
-        parts.push([field.name, compileEncoder(field.node)]);
-    }
+    // oxlint-disable-next-line no-use-before-define -- the grammar is recursive
+    return generateStructEncoder(fields, compileEncoder) ?? loopEncoder(fields);
+}
+/** The closure form, where a page refuses generated code (a CSP). */
+function loopEncoder(fields) {
+    // Parallel arrays and an index loop: this runs per field per message (WB2).
+    const names = fields.map((field) => field.name);
+    const encoders = fields.map(
+    // oxlint-disable-next-line no-use-before-define -- the grammar is recursive
+    (field) => compileEncoder(field.node));
+    const count = names.length;
     return (writer, value) => {
         const struct = asStruct(value);
-        for (const [name, encode] of parts) {
-            encode(writer, struct[name]);
+        for (let index = ZERO; index < count; index += ONE) {
+            encoders[index]?.(writer, struct[names[index] ?? '']);
         }
     };
 }
@@ -199,4 +199,5 @@ function nestedEncoder(node) {
     }
     throw new RangeError('Unknown wire node');
 }
-export { compileEncoder, countBits, indexBits };
+export { countBits, indexBits } from './bounds.js';
+export { compileEncoder };

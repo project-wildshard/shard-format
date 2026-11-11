@@ -3,10 +3,12 @@ import { WireDecodeError } from './wire-error.js';
 const ZERO = 0;
 const ONE = 1;
 function readOwner(reader, columns) {
-    const owner = new Float64Array(columns.owner.length);
-    for (const [index, column] of columns.owner.entries()) {
-        owner[index] =
-            column.bits === DOUBLE_BITS ? reader.readF64() : reader.read(column.bits);
+    // Index loops here and in `readWords`: `entries()` allocates per column (WB2).
+    const count = columns.owner.length;
+    const owner = new Float64Array(count);
+    for (let index = ZERO; index < count; index += ONE) {
+        const bits = columns.owner[index]?.bits ?? ZERO;
+        owner[index] = bits === DOUBLE_BITS ? reader.readF64() : reader.read(bits);
     }
     return owner;
 }
@@ -32,10 +34,10 @@ function readWords(reading, columns, handle) {
     if (previous === undefined && mask !== fullMask(fields)) {
         throw new WireDecodeError('A delta row has no baseline');
     }
-    const row = Uint32Array.from(previous ?? new Uint32Array(fields));
-    for (const [index, column] of columns.row.entries()) {
+    const row = previous === undefined ? new Uint32Array(fields) : new Uint32Array(previous);
+    for (let index = ZERO; index < fields; index += ONE) {
         if (bitSet(mask, index)) {
-            row[index] = reading.reader.read(column.bits);
+            row[index] = reading.reader.read(columns.row[index]?.bits ?? ZERO);
         }
     }
     return row;

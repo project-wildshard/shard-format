@@ -2,7 +2,7 @@ import type { Span } from './bit-io.ts';
 import type { RawFrame, SnapshotInput, SnapshotTable } from './snapshot.ts';
 declare const TAG_FRAME = 5;
 /** One client's frame message. */
-declare function encodeFrame(input: SnapshotInput): Uint8Array;
+declare function encodeFrame(input: SnapshotInput): Uint8Array<ArrayBuffer>;
 /** A frame record's body, raw, or undefined when it cannot apply yet. */
 declare function decodeFrame(span: Span, table: SnapshotTable): RawFrame | undefined;
 /** A frame message's one frame record, decoded raw, or undefined when it cannot apply yet. */

@@ -26,12 +26,20 @@ declare function writeUvarint(out: ByteSink, value: number): void;
 declare function readUvarint(bytes: Readonly<Uint8Array>, at: number, end: number): Read;
 /** Append one record: tag, length, body. */
 declare function writeRecord(out: ByteSink, tag: number, body: Readonly<Uint8Array>): void;
+/** The bytes a uvarint of `value` takes. */
+declare function uvarintLength(value: number): number;
+/** Write a uvarint into `out` at `at`; the offset after it. */
+declare function putUvarint(out: Uint8Array, at: number, value: number): number;
+/** A nested record: its tag, and its body. */
+type NestedPart = readonly [number, Readonly<Uint8Array>];
+/** One record, `tag` then `prefix` and nested records, in one allocation (a hot path). */
+declare function nestedRecord(tag: number, prefix: Readonly<Uint8Array>, parts: readonly NestedPart[]): Uint8Array<ArrayBuffer>;
 /** One record as its own message, built in one allocation (a hot path). */
-declare function recordBytes(tag: number, body: Readonly<Uint8Array>): Uint8Array;
+declare function recordBytes(tag: number, body: Readonly<Uint8Array>): Uint8Array<ArrayBuffer>;
 /** Every record in `bytes[start, end)`, in order; a bad frame refuses all. */
 declare function readRecords(bytes: Readonly<Uint8Array>, start: number, end: number): readonly WireRecordSpan[];
 /** Check the two bootstrap bytes before any record parsing. */
 declare function readBootstrap(bytes: Readonly<Uint8Array>, major: number): Bootstrap;
 /** The bootstrap bytes a v1 client writes first. */
 declare function bootstrapBytes(major: number): readonly number[];
-export { bootstrapBytes, MAX_MESSAGE_BYTES, readBootstrap, readRecords, readUvarint, recordBytes, UINT32_LIMIT, writeRecord, writeUvarint, type Bootstrap, type WireRecordSpan, };
+export { bootstrapBytes, MAX_MESSAGE_BYTES, readBootstrap, readRecords, nestedRecord, putUvarint, readUvarint, recordBytes, UINT32_LIMIT, uvarintLength, writeRecord, writeUvarint, type Bootstrap, type WireRecordSpan, };

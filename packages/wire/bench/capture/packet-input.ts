@@ -146,4 +146,9 @@ function readPacketInput(bytes: Readonly<Uint8Array>): PacketInput {
     }
   }
 }
-export { encodePacketInput, decodePacketValue, readPacketInput }
+export {
+  encodePacketInput,
+  decodePacketValue,
+  readPacketInput,
+  type PacketInput,
+}

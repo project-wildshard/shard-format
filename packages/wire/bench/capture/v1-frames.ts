@@ -45,14 +45,18 @@ const COLUMNS: ReadonlyMap<string, ClassColumns> = new Map(
   ),
 )
 
-/** The v1 columns of a class, by its v0 class's name. */
-function columnsOf(cls: Readonly<NetClass<never>>): ClassColumns {
-  const columns = COLUMNS.get(cls.cls)
+/** The v1 columns of a class, by its name. */
+function columnsNamed(name: string): ClassColumns {
+  const columns = COLUMNS.get(name)
   if (columns === undefined) {
-    throw new Error(`No v1 class ${cls.cls}`)
+    throw new Error(`No v1 class ${name}`)
   }
   return columns
 }
+
+/** The v1 columns of a class, by its v0 class's name. */
+const columnsOf = (cls: Readonly<NetClass<never>>): ClassColumns =>
+  columnsNamed(cls.cls)
 
 function baselineOf(input: Readonly<FrameInput>): SnapshotInput['baseline'] {
   const { baseline } = input
@@ -107,12 +111,22 @@ function rawBase(base: Readonly<DecodedFrame> | null): RawFrame | undefined {
   }
 }
 
+/** A decoded frame as its receiver holds it, for the per-field-tag count. */
+interface FrameSeen {
+  readonly raw: RawFrame | undefined
+  readonly base: RawFrame | undefined
+  readonly owner: ClassColumns
+  readonly classOf: (handle: number) => ClassColumns | undefined
+}
+
 /** A captured frame's v1 encode and decode, compiled once; decode by a receiver on the same tables. */
 function frameCodec(record: Readonly<CapturedFrame>): {
   readonly input: FrameInput
   readonly bytes: Uint8Array
-  readonly encode: () => Uint8Array
+  readonly encode: () => Uint8Array<ArrayBuffer>
   readonly decode: () => RawFrame | undefined
+  /** The receiver's view once decoded: its frame, baseline and tables. */
+  readonly seen: FrameSeen
 } {
   const input = inputOf(record)
   const base = rawBase(receiverBase(record))
@@ -124,10 +138,12 @@ function frameCodec(record: Readonly<CapturedFrame>): {
     rideLaw: (id: number): RideLaw | undefined => LAWS.get(id),
     baseline: (): RawFrame | undefined => base,
   }
+  const raw = decodeFrameMessage(bytes, table)
   return {
     input,
     bytes,
-    encode: (): Uint8Array => encodeFrame(v1),
+    seen: { raw, base, owner: v1.ownerClass, classOf: v1.classOf },
+    encode: (): Uint8Array<ArrayBuffer> => encodeFrame(v1),
     decode: (): RawFrame | undefined => decodeFrameMessage(bytes, table),
   }
 }
@@ -141,4 +157,12 @@ function replay(record: Readonly<CapturedFrame>): {
   return { input: codec.input, raw: codec.decode() }
 }
 
-export { columnsOf, frameCodec, rawBase, replay, snapshotInput }
+export {
+  columnsNamed,
+  columnsOf,
+  frameCodec,
+  rawBase,
+  replay,
+  snapshotInput,
+  type FrameSeen,
+}

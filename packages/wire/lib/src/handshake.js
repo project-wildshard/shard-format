@@ -1,5 +1,5 @@
 import { decodeCold, encodeCold } from './cold.js';
-import { bootstrapBytes, readBootstrap, readRecords, readUvarint, writeRecord, writeUvarint, } from './framing.js';
+import { bootstrapBytes, readBootstrap, readRecords, readUvarint, recordBytes, writeUvarint, } from './framing.js';
 import { WIRE_MAJOR } from './major.js';
 import { HELLO, WELCOME } from './records.js';
 import { WireDecodeError } from './wire-error.js';
@@ -74,9 +74,12 @@ function encodeHello(hello) {
         commandTable: hello.commandTable,
         actTable: hello.actTable,
     });
-    const out = [...bootstrapBytes(WIRE_MAJOR)];
-    writeRecord(out, HELLO_TAG, body);
-    return Uint8Array.from(out);
+    const boot = bootstrapBytes(WIRE_MAJOR);
+    const record = recordBytes(HELLO_TAG, body);
+    const out = new Uint8Array(boot.length + record.length);
+    out.set(boot);
+    out.set(record, boot.length);
+    return out;
 }
 function helloOf(values) {
     return {
@@ -134,9 +137,7 @@ function encodeWelcome(welcome) {
         tableHash: welcome.tableHash,
         ...welcome.tables,
     };
-    const out = [];
-    writeRecord(out, WELCOME_TAG, encodeCold(WELCOME, values));
-    return Uint8Array.from(out);
+    return recordBytes(WELCOME_TAG, encodeCold(WELCOME, values));
 }
 /** All three table blocks, or none: a travel welcome holds none. */
 function tablesOf(values) {

@@ -1,4 +1,4 @@
-import { countBits, indexBits } from './encode.ts'
+import { countBits, indexBits } from './bounds.ts'
 import { fixedCodec } from './fixed.ts'
 import { defaultValue, isStruct, structDefaults } from './values.ts'
 import { WireDecodeError } from './wire-error.ts'
@@ -153,19 +153,42 @@ function fieldParts(
   return parts
 }
 
+/** The receiver's fields the sender lacks, at their defaults. */
+function missingDefaults(
+  sender: readonly WireField[],
+  receiver: readonly WireField[] | undefined,
+): readonly (readonly [string, WireValue])[] {
+  const sent = new Set(sender.map((field: WireField): number => field.id))
+  const defaults = structDefaults(receiver ?? [])
+  return (receiver ?? [])
+    .filter((field: WireField): boolean => !sent.has(field.id))
+    .map((field: WireField): readonly [string, WireValue] => [
+      field.name,
+      defaults[field.name],
+    ])
+}
+
 function structDecoder(
   sender: readonly WireField[],
   receiver: readonly WireField[] | undefined,
 ): Decode {
+  // Parallel arrays and an index loop: this runs per field per message (WB2).
   const parts = fieldParts(sender, receiver)
-  const defaults = structDefaults(receiver ?? [])
+  const names = parts.map((part): string | undefined => part[ZERO])
+  const decoders = parts.map((part): Decode => part[ONE])
+  const missing = missingDefaults(sender, receiver)
+  const count = parts.length
   return (reader: BitSource): WireValue => {
-    const out: Record<string, WireValue> = { ...defaults }
-    for (const [name, decode] of parts) {
-      const value = decode(reader)
+    const out: Record<string, WireValue> = {}
+    for (let index = ZERO; index < count; index += ONE) {
+      const value = decoders[index]?.(reader)
+      const name = names[index]
       if (name !== undefined) {
         out[name] = value
       }
+    }
+    for (const [name, value] of missing) {
+      out[name] = value
     }
     return out
   }

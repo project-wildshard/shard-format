@@ -1,13 +1,13 @@
 import { bitSink, bitSource } from './bits.ts'
 import { asStruct, compileDecoder, compileEncoder } from './codec.ts'
 import { WIRE_EVENTS } from './events.ts'
-import { readRecords, recordBytes, writeRecord } from './framing.ts'
+import { nestedRecord, readRecords } from './framing.ts'
 import { entry, struct, TAG_EVENTS, TICK_BITS, TICK_BYTES } from './game.ts'
 import { decodeTable } from './table-read.ts'
 import { encodeTable } from './tables.ts'
 import { WireDecodeError } from './wire-error.ts'
 
-import type { BitSink, BitSource, ByteSink, Span } from './bit-io.ts'
+import type { BitSink, BitSource, Span } from './bit-io.ts'
 import type { Decode, Encode, WireStruct } from './codec.ts'
 import type { WireEvent } from './game.ts'
 import type { WireField, WireRecord } from './grammar.ts'
@@ -62,11 +62,10 @@ function eventTables(): Uint8Array {
   )
 }
 
-function writeEvent(
-  out: ByteSink,
+function eventBody(
   event: WireEvent,
   columns: SpawnColumns,
-): void {
+): readonly [number, Uint8Array] {
   const local = LOCAL.get(event.event)
   if (local === undefined) {
     throw new RangeError(`Undeclared event ${event.event}`)
@@ -82,7 +81,7 @@ function writeEvent(
     SHARED.take()
     throw error
   }
-  writeRecord(out, local.record.id, SHARED.take())
+  return [local.record.id, SHARED.take()]
 }
 
 /** One `events` message: the tick, then each event as its own record. */
@@ -90,13 +89,13 @@ function encodeEvents(
   tick: number,
   events: readonly WireEvent[],
   columns: SpawnColumns = NO_COLUMNS,
-): Uint8Array {
+): Uint8Array<ArrayBuffer> {
   SHARED.write(tick, TICK_BITS)
-  const body: number[] = [...SHARED.take()]
-  for (const event of events) {
-    writeEvent(body, event, columns)
-  }
-  return recordBytes(TAG_EVENTS, Uint8Array.from(body))
+  const head = SHARED.take()
+  const parts = events.map((event: WireEvent): readonly [number, Uint8Array] =>
+    eventBody(event, columns),
+  )
+  return nestedRecord(TAG_EVENTS, head, parts)
 }
 
 /** The peer's events this receiver knows, by tag. */

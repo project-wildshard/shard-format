@@ -4,7 +4,7 @@ import {
   readBootstrap,
   readRecords,
   readUvarint,
-  writeRecord,
+  recordBytes,
   writeUvarint,
 } from './framing.ts'
 import { WIRE_MAJOR } from './major.ts'
@@ -123,7 +123,7 @@ const bytesOf = (value: ColdValues[string]): Readonly<Uint8Array> =>
   value instanceof Uint8Array ? value : new Uint8Array(ZERO)
 
 /** A v1 client's first message: bootstrap, then the hello record. */
-function encodeHello(hello: Hello): Uint8Array {
+function encodeHello(hello: Hello): Uint8Array<ArrayBuffer> {
   const body = encodeCold(HELLO, {
     minor: hello.minor,
     build: utf8Out.encode(hello.build),
@@ -134,9 +134,12 @@ function encodeHello(hello: Hello): Uint8Array {
     commandTable: hello.commandTable,
     actTable: hello.actTable,
   })
-  const out = [...bootstrapBytes(WIRE_MAJOR)]
-  writeRecord(out, HELLO_TAG, body)
-  return Uint8Array.from(out)
+  const boot = bootstrapBytes(WIRE_MAJOR)
+  const record = recordBytes(HELLO_TAG, body)
+  const out = new Uint8Array(boot.length + record.length)
+  out.set(boot)
+  out.set(record, boot.length)
+  return out
 }
 
 function helloOf(values: ColdValues): Hello {
@@ -187,7 +190,7 @@ function decodeFirstMessage(bytes: Readonly<Uint8Array>): FirstMessage {
 }
 
 /** The welcome record, with its tables unless `tables` is absent. */
-function encodeWelcome(welcome: Welcome): Uint8Array {
+function encodeWelcome(welcome: Welcome): Uint8Array<ArrayBuffer> {
   const values: Record<string, ColdValue> = {
     minor: welcome.minor,
     build: utf8Out.encode(welcome.build),
@@ -202,9 +205,7 @@ function encodeWelcome(welcome: Welcome): Uint8Array {
     tableHash: welcome.tableHash,
     ...welcome.tables,
   }
-  const out: number[] = []
-  writeRecord(out, WELCOME_TAG, encodeCold(WELCOME, values))
-  return Uint8Array.from(out)
+  return recordBytes(WELCOME_TAG, encodeCold(WELCOME, values))
 }
 
 /** All three table blocks, or none: a travel welcome holds none. */

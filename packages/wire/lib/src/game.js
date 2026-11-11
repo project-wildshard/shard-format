@@ -1,6 +1,6 @@
 import { bitSink, bitSource } from './bits.js';
 import { asStruct, compileDecoder, compileEncoder } from './codec.js';
-import { readRecords, recordBytes } from './framing.js';
+import { readRecords } from './framing.js';
 import { WIRE_MESSAGES, WIRE_RECORDS } from './records.js';
 import { decodeTable } from './table-read.js';
 import { encodeTable } from './tables.js';
@@ -126,6 +126,6 @@ function encodeBody(codec, tag, value) {
         SHARED.take();
         throw error;
     }
-    return recordBytes(tag, SHARED.take());
+    return SHARED.takeRecord(tag);
 }
-export { actCodec, entry, struct, clientTables, commandsCodec, decodeBody, encodeBody, localCodecs, readMessage, TAG_ACT, TAG_CMDS, TAG_EVENTS, TICK_BITS, TICK_BYTES, };
+export { actCodec, entry, struct, clientTables, commandsCodec, decodeBody, encodeBody, localBodyNode, localCodecs, readMessage, TAG_ACT, TAG_CMDS, TAG_EVENTS, TICK_BITS, TICK_BYTES, };

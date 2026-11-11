@@ -1,4 +1,4 @@
-import { indexBits } from './encode.js';
+import { indexBits } from './bounds.js';
 const ONE = 1;
 const WORD = 32;
 const DOUBLE = 64;

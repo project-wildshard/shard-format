@@ -28,13 +28,16 @@ function rowMask(frame, at, base) {
     return mask;
 }
 function writeOwner(writer, columns, owner) {
-    for (const [index, column] of columns.entries()) {
+    // An index loop: `entries()` allocates per column, and this runs per frame (WB2).
+    const count = columns.length;
+    for (let index = ZERO; index < count; index += ONE) {
+        const bits = columns[index]?.bits ?? ZERO;
         const value = owner[index] ?? ZERO;
-        if (column.bits === DOUBLE_BITS) {
+        if (bits === DOUBLE_BITS) {
             writer.writeF64(value);
         }
         else {
-            writer.write(value, column.bits);
+            writer.write(value, bits);
         }
     }
 }

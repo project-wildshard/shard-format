@@ -22,24 +22,27 @@ class BitReader {
     get remaining() {
         return this.stop - this.bit;
     }
+    // oxlint-disable-next-line max-statements -- the hot path, inlined for WB2's decode budget
     read(bits) {
-        if (bits > this.remaining) {
+        let { bit } = this;
+        if (bits > this.stop - bit) {
             throw new WireDecodeError('A record body ends early');
         }
+        const { bytes } = this;
         let value = ZERO;
-        for (let left = bits; left > ZERO;) {
-            const take = Math.min(BYTE - (this.bit & LOW_BITS), left);
-            value = value * (ONE << take) + this.chunk(take);
+        let left = bits;
+        while (left > ZERO) {
+            const room = BYTE - (bit & LOW_BITS);
+            const take = room < left ? room : left;
+            const byte = bytes[bit >>> SHIFT_BYTE] ?? ZERO;
+            value =
+                value * (ONE << take) +
+                    ((byte >>> (room - take)) & ((ONE << take) - ONE));
+            bit += take;
             left -= take;
         }
+        this.bit = bit;
         return value;
-    }
-    /** The next `take` bits, all within one byte. */
-    chunk(take) {
-        const room = BYTE - (this.bit & LOW_BITS);
-        const byte = this.bytes[this.bit >>> SHIFT_BYTE] ?? ZERO;
-        this.bit += take;
-        return (byte >>> (room - take)) & ((ONE << take) - ONE);
     }
     readF32() {
         scratch.setUint32(ZERO, this.read(WORD));

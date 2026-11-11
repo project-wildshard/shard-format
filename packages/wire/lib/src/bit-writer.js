@@ -1,3 +1,5 @@
+/* oxlint-disable no-bitwise -- a bit packer shifts and masks by definition */
+import { putUvarint, uvarintLength } from './framing.js';
 const BYTE = 8;
 const LOW_BITS = 7;
 const SHIFT_BYTE = 3;
@@ -13,15 +15,27 @@ const scratch = new DataView(new ArrayBuffer(F64_BYTES));
 class BitWriter {
     bytes = new Uint8Array(INITIAL_BYTES);
     bit = ZERO;
+    // oxlint-disable-next-line max-statements -- the hot path, inlined for WB2's encode budget
     write(value, bits) {
         const end = this.bit + bits;
         if (end > this.bytes.length * BYTE) {
             this.grow(end);
         }
         const word = value >>> ZERO;
-        for (let left = bits; left > ZERO;) {
-            left -= this.put(word, left);
+        const { bytes } = this;
+        let { bit } = this;
+        let left = bits;
+        while (left > ZERO) {
+            const room = BYTE - (bit & LOW_BITS);
+            const take = room < left ? room : left;
+            const at = bit >>> SHIFT_BYTE;
+            bytes[at] =
+                (bytes[at] ?? ZERO) |
+                    (((word >>> (left - take)) & ((ONE << take) - ONE)) << (room - take));
+            bit += take;
+            left -= take;
         }
+        this.bit = bit;
     }
     writeF32(value) {
         scratch.setFloat32(ZERO, value);
@@ -39,15 +53,15 @@ class BitWriter {
         this.bit = ZERO;
         return out;
     }
-    /** Write the next chunk of `word`'s low `left` bits; the bits taken. */
-    put(word, left) {
-        const room = BYTE - (this.bit & LOW_BITS);
-        const take = Math.min(room, left);
-        const at = this.bit >>> SHIFT_BYTE;
-        const chunk = (word >>> (left - take)) & ((ONE << take) - ONE);
-        this.bytes[at] = (this.bytes[at] ?? ZERO) | (chunk << (room - take));
-        this.bit += take;
-        return take;
+    takeRecord(tag) {
+        const length = Math.ceil(this.bit / BYTE);
+        const head = uvarintLength(tag) + uvarintLength(length);
+        const out = new Uint8Array(head + length);
+        putUvarint(out, putUvarint(out, ZERO, tag), length);
+        out.set(this.bytes.subarray(ZERO, length), head);
+        this.bytes.fill(ZERO, ZERO, length);
+        this.bit = ZERO;
+        return out;
     }
     grow(bits) {
         const size = Math.max(this.bytes.length * GROWTH, Math.ceil(bits / BYTE));

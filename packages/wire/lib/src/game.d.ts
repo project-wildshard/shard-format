@@ -26,6 +26,8 @@ declare const TICK_BYTES = 4;
 declare const struct: (fields: readonly WireField[]) => WireNode;
 /** One top-level table entry. */
 declare const entry: (id: number, name: string, node: WireNode) => WireField;
+/** A record's local body, as one struct node. */
+declare function localBodyNode(tag: number): WireNode;
 /** The client's tables (hello): its command struct and its act union. */
 declare function clientTables(): {
     readonly commandTable: Uint8Array;
@@ -45,5 +47,5 @@ declare function readMessage(bytes: Readonly<Uint8Array>): ReadMessage;
 /** One record body through a codec, under the body's end rule. */
 declare function decodeBody(codec: BodyCodec, span: Span): WireStruct;
 /** A message holding one record, encoded by a codec. */
-declare function encodeBody(codec: BodyCodec, tag: number, value: WireStruct): Uint8Array;
-export { actCodec, entry, struct, clientTables, commandsCodec, decodeBody, encodeBody, localCodecs, readMessage, TAG_ACT, TAG_CMDS, TAG_EVENTS, TICK_BITS, TICK_BYTES, type BodyCodec, type WireEvent, };
+declare function encodeBody(codec: BodyCodec, tag: number, value: WireStruct): Uint8Array<ArrayBuffer>;
+export { actCodec, entry, struct, clientTables, commandsCodec, decodeBody, encodeBody, localBodyNode, localCodecs, readMessage, TAG_ACT, TAG_CMDS, TAG_EVENTS, TICK_BITS, TICK_BYTES, type BodyCodec, type WireEvent, };

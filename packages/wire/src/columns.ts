@@ -1,4 +1,4 @@
-import { indexBits } from './encode.ts'
+import { indexBits } from './bounds.ts'
 
 import type { WireClass, WireClassField, WireNode } from './grammar.ts'
 

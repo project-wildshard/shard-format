@@ -8,6 +8,8 @@ interface BitSink {
     readonly writeF64: (value: number) => void;
     /** Detach the body, padded to a whole byte with zero bits. */
     readonly take: () => Uint8Array<ArrayBuffer>;
+    /** Detach the body as one framed record, `tag` and length first (WB2). */
+    readonly takeRecord: (tag: number) => Uint8Array<ArrayBuffer>;
 }
 /** Where a decoder reads one record body; every overrun throws. */
 interface BitSource {

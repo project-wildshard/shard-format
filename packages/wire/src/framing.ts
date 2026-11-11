@@ -116,15 +116,71 @@ function readRecord(
   return { tag: tag.value, start: length.next, end: stop }
 }
 
-/** One record as its own message, built in one allocation (a hot path). */
-function recordBytes(tag: number, body: Readonly<Uint8Array>): Uint8Array {
-  const head: number[] = []
-  writeUvarint(head, tag)
-  writeUvarint(head, body.length)
-  const out = new Uint8Array(head.length + body.length)
-  out.set(head)
-  out.set(body, head.length)
+/** The bytes a uvarint of `value` takes. */
+function uvarintLength(value: number): number {
+  let length = ONE
+  for (let rest = value; rest >= CONTINUE; rest = Math.floor(rest / CONTINUE)) {
+    length += ONE
+  }
+  return length
+}
+
+/** Write a uvarint into `out` at `at`; the offset after it. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it writes into `out`
+function putUvarint(out: Uint8Array, at: number, value: number): number {
+  let next = at
+  let rest = value
+  while (rest >= CONTINUE) {
+    out[next] = (rest % CONTINUE) + CONTINUE
+    rest = Math.floor(rest / CONTINUE)
+    next += ONE
+  }
+  out[next] = rest
+  return next + ONE
+}
+
+/** A nested record: its tag, and its body. */
+type NestedPart = readonly [number, Readonly<Uint8Array>]
+
+/** The bytes `prefix` and the nested records take, framed. */
+function nestedLength(
+  prefix: Readonly<Uint8Array>,
+  parts: readonly NestedPart[],
+): number {
+  let { length } = prefix
+  for (const [inner, body] of parts) {
+    length += uvarintLength(inner) + uvarintLength(body.length) + body.length
+  }
+  return length
+}
+
+/** One record, `tag` then `prefix` and nested records, in one allocation (a hot path). */
+function nestedRecord(
+  tag: number,
+  prefix: Readonly<Uint8Array>,
+  parts: readonly NestedPart[],
+): Uint8Array<ArrayBuffer> {
+  const length = nestedLength(prefix, parts)
+  const out = new Uint8Array(
+    uvarintLength(tag) + uvarintLength(length) + length,
+  )
+  const start = putUvarint(out, putUvarint(out, ZERO, tag), length)
+  out.set(prefix, start)
+  let at = start + prefix.length
+  for (const [inner, body] of parts) {
+    at = putUvarint(out, putUvarint(out, at, inner), body.length)
+    out.set(body, at)
+    at += body.length
+  }
   return out
+}
+
+/** One record as its own message, built in one allocation (a hot path). */
+function recordBytes(
+  tag: number,
+  body: Readonly<Uint8Array>,
+): Uint8Array<ArrayBuffer> {
+  return nestedRecord(tag, body, [])
 }
 
 /** Every record in `bytes[start, end)`, in order; a bad frame refuses all. */
@@ -170,9 +226,12 @@ export {
   MAX_MESSAGE_BYTES,
   readBootstrap,
   readRecords,
+  nestedRecord,
+  putUvarint,
   readUvarint,
   recordBytes,
   UINT32_LIMIT,
+  uvarintLength,
   writeRecord,
   writeUvarint,
   type Bootstrap,

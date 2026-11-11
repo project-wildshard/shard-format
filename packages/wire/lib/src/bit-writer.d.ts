@@ -7,8 +7,7 @@ declare class BitWriter implements BitSink {
     writeF32(value: number): void;
     writeF64(value: number): void;
     take(): Uint8Array<ArrayBuffer>;
-    /** Write the next chunk of `word`'s low `left` bits; the bits taken. */
-    private put;
+    takeRecord(tag: number): Uint8Array<ArrayBuffer>;
     private grow;
 }
 export { BitWriter };

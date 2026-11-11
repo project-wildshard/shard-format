@@ -115,3 +115,27 @@
 - Moved to WR5 (plan updated): the predictor and interpolator reading the
   projection, a recorded correction through a skewed table in engine, and
   the door refusing a missing capability.
+
+## WB2: the v1 codec's hot paths, and the gate harness (opus-wire)
+
+- First WB2 numbers had v1 encode at 1.3 to 1.9 times v0 on commands and
+  1.2 to 1.5 on the whole mix. The causes were per-field closure calls,
+  `entries()` loops on the owner block, two allocations per record and
+  `number[]` spreads in the cold records. Fixed: a struct's encoder is now
+  generated as one straight-line function from the local descriptors
+  (`encode-gen.ts`), arrays inline. Every name and bound enters the source
+  as a JSON literal, a peer's table is never compiled this way, and under
+  a CSP that refuses `Function` the closure loop stands in.
+  `test/encode-gen.test.ts` proves both paths write the same bits for
+  every record, refusals included. The bit writer and reader are inlined.
+  A record is framed in one allocation (`takeRecord`, `nestedRecord`), and
+  cold records are sized then written once. A thrown frame encode now
+  resets the shared writer, as `encodeBody` already did.
+- The v1 bytes are unchanged: every 5.1 example and the v0 bit-identity
+  proofs still pass.
+- Harness: `browser-benchmark.ts` prepares v0 or v1 traffic. The bridge
+  that says WS3's captured packets the v1 way is split by record family
+  (`v1-*.ts`), and `tagged-bytes.ts` counts the per-field-tag shape (5.6)
+  for the record. `src/scripts/wire/wb2.mjs` replays all four recordings
+  in Node and in Chromium at 4x, v0 and v1 interleaved with the order
+  swapped each run, and judges each recording against the 5.7 gate.

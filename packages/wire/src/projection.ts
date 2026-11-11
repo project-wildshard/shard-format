@@ -31,6 +31,8 @@ interface ClassProjection {
 }
 
 const MISSING = -1
+const ZERO = 0
+const ONE = 1
 const RIDE_WORD_BITS = 32
 const same = (word: number): number => word
 
@@ -144,10 +146,14 @@ function projectRow(
   slotsOf: readonly Slot[],
   raw: ArrayLike<number>,
 ): Float64Array {
-  const out = new Float64Array(slotsOf.length)
-  for (const [index, slot] of slotsOf.entries()) {
-    const word = raw[slot.from]
-    out[index] = word === undefined ? slot.fallback : slot.convert(word)
+  const count = slotsOf.length
+  const out = new Float64Array(count)
+  for (let index = ZERO; index < count; index += ONE) {
+    const slot = slotsOf[index]
+    if (slot !== undefined) {
+      const word = raw[slot.from]
+      out[index] = word === undefined ? slot.fallback : slot.convert(word)
+    }
   }
   return out
 }

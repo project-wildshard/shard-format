@@ -19,14 +19,16 @@ const COLUMNS = new Map(WIRE_CLASSES.map((entry) => [
     entry.name,
     classColumns(entry),
 ]));
-/** The v1 columns of a class, by its v0 class's name. */
-function columnsOf(cls) {
-    const columns = COLUMNS.get(cls.cls);
+/** The v1 columns of a class, by its name. */
+function columnsNamed(name) {
+    const columns = COLUMNS.get(name);
     if (columns === undefined) {
-        throw new Error(`No v1 class ${cls.cls}`);
+        throw new Error(`No v1 class ${name}`);
     }
     return columns;
 }
+/** The v1 columns of a class, by its v0 class's name. */
+const columnsOf = (cls) => columnsNamed(cls.cls);
 function baselineOf(input) {
     const { baseline } = input;
     if (baseline === null) {
@@ -87,9 +89,11 @@ function frameCodec(record) {
         rideLaw: (id) => LAWS.get(id),
         baseline: () => base,
     };
+    const raw = decodeFrameMessage(bytes, table);
     return {
         input,
         bytes,
+        seen: { raw, base, owner: v1.ownerClass, classOf: v1.classOf },
         encode: () => encodeFrame(v1),
         decode: () => decodeFrameMessage(bytes, table),
     };
@@ -99,4 +103,4 @@ function replay(record) {
     const codec = frameCodec(record);
     return { input: codec.input, raw: codec.decode() };
 }
-export { columnsOf, frameCodec, rawBase, replay, snapshotInput };
+export { columnsNamed, columnsOf, frameCodec, rawBase, replay, snapshotInput, };

@@ -7,7 +7,9 @@ interface Task {
     readonly bytes: number;
     readonly delivered: boolean;
     readonly payload: {
-        readonly frame: PreparedFrame;
+        readonly frame: Pick<PreparedFrame, 'bytes' | 'encode'> & {
+            readonly decode: () => unknown;
+        };
     } | {
         readonly packet: PreparedPacket;
     };

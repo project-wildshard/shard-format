@@ -7,8 +7,6 @@ declare class BitReader implements BitSource {
     constructor(bytes: Readonly<Uint8Array>, start: number, end: number);
     get remaining(): number;
     read(bits: number): number;
-    /** The next `take` bits, all within one byte. */
-    private chunk;
     readF32(): number;
     readF64(): number;
     end(): void;

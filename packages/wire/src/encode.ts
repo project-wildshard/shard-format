@@ -1,3 +1,5 @@
+import { countBits, indexBits } from './bounds.ts'
+import { generateStructEncoder } from './encode-gen.ts'
 import { fixedCodec } from './fixed.ts'
 import { asArm, asList, asNumber, asStruct } from './values.ts'
 
@@ -24,16 +26,6 @@ const utf8 = new TextEncoder()
 
 const clamp = (value: number, low: number, high: number): number =>
   Math.min(Math.max(value, low), high)
-
-/** Bits for a count of 0 to `maxCount`. */
-function countBits(maxCount: number): number {
-  return Math.max(ONE, Math.ceil(Math.log2(maxCount + ONE)))
-}
-
-/** Bits for an index into `size` values. */
-function indexBits(size: number): number {
-  return Math.max(ONE, Math.ceil(Math.log2(size)))
-}
 
 function uintEncoder(bits: number): Encode {
   const top = TWO ** bits - ONE
@@ -136,15 +128,23 @@ function arrayEncoder(inner: Encode, maxCount: number): Encode {
 }
 
 function structEncoder(fields: readonly WireField[]): Encode {
-  const parts: (readonly [string, Encode])[] = []
-  for (const field of fields) {
+  // oxlint-disable-next-line no-use-before-define -- the grammar is recursive
+  return generateStructEncoder(fields, compileEncoder) ?? loopEncoder(fields)
+}
+
+/** The closure form, where a page refuses generated code (a CSP). */
+function loopEncoder(fields: readonly WireField[]): Encode {
+  // Parallel arrays and an index loop: this runs per field per message (WB2).
+  const names = fields.map((field: WireField): string => field.name)
+  const encoders = fields.map(
     // oxlint-disable-next-line no-use-before-define -- the grammar is recursive
-    parts.push([field.name, compileEncoder(field.node)])
-  }
+    (field: WireField): Encode => compileEncoder(field.node),
+  )
+  const count = names.length
   return (writer: BitSink, value: WireValue): void => {
     const struct = asStruct(value)
-    for (const [name, encode] of parts) {
-      encode(writer, struct[name])
+    for (let index = ZERO; index < count; index += ONE) {
+      encoders[index]?.(writer, struct[names[index] ?? ''])
     }
   }
 }
@@ -234,4 +234,5 @@ function nestedEncoder(node: WireNode): Encode {
   throw new RangeError('Unknown wire node')
 }
 
-export { compileEncoder, countBits, indexBits, type Encode }
+export { countBits, indexBits } from './bounds.ts'
+export { compileEncoder, type Encode }

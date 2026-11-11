@@ -1,4 +1,4 @@
-import { readUvarint, writeUvarint } from './framing.js';
+import { putUvarint, readUvarint, uvarintLength } from './framing.js';
 import { WireDecodeError } from './wire-error.js';
 const WIRE_TYPES = [
     'uvarint',
@@ -14,26 +14,37 @@ const FIXED_SIZE = {
     fixed32: 4,
     fixed64: 8,
 };
-function writeFixed(out, value, size) {
-    let rest = value;
-    for (let index = ZERO; index < size; index += ONE) {
-        out.push(rest % BYTE_SPAN);
+/** The bytes one part takes, key included. */
+function partLength(part) {
+    const { key, value, size } = part;
+    if (typeof value !== 'number') {
+        return uvarintLength(key) + uvarintLength(value.length) + value.length;
+    }
+    return uvarintLength(key) + (size ?? uvarintLength(value));
+}
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it writes into `out`
+function putFixed(out, at, part) {
+    let rest = Number(part.value);
+    const end = at + (part.size ?? ZERO);
+    for (let index = at; index < end; index += ONE) {
+        out[index] = rest % BYTE_SPAN;
         rest = Math.floor(rest / BYTE_SPAN);
     }
+    return end;
 }
-function writeValue(out, field, value) {
-    writeUvarint(out, field.id * TYPE_SPAN + WIRE_TYPES.indexOf(field.wire));
-    const size = FIXED_SIZE[field.wire];
+/** Write one part into `out` at `at`; the offset after it. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it writes into `out`
+function putPart(out, at, part) {
+    const next = putUvarint(out, at, part.key);
+    const { value, size } = part;
     if (typeof value !== 'number') {
-        writeUvarint(out, value.length);
-        out.push(...value);
+        const start = putUvarint(out, next, value.length);
+        out.set(value, start);
+        return start + value.length;
     }
-    else if (size === undefined) {
-        writeUvarint(out, value);
-    }
-    else {
-        writeFixed(out, value, size);
-    }
+    return size === undefined
+        ? putUvarint(out, next, value)
+        : putFixed(out, next, part);
 }
 const isList = (value) => Array.isArray(value);
 function listOf(value) {
@@ -42,15 +53,23 @@ function listOf(value) {
     }
     return isList(value) ? value : [value];
 }
-/** A cold record body: each present field, in declared order. */
+/** A cold record body: each present field, in declared order, in one allocation. */
 function encodeCold(record, values) {
-    const out = [];
-    for (const field of record.fields) {
-        for (const item of listOf(values[field.name])) {
-            writeValue(out, field, item);
-        }
+    const parts = record.fields.flatMap((field) => listOf(values[field.name]).map((value) => ({
+        key: field.id * TYPE_SPAN + WIRE_TYPES.indexOf(field.wire),
+        value,
+        size: FIXED_SIZE[field.wire],
+    })));
+    let length = ZERO;
+    for (const part of parts) {
+        length += partLength(part);
     }
-    return Uint8Array.from(out);
+    const out = new Uint8Array(length);
+    let at = ZERO;
+    for (const part of parts) {
+        at = putPart(out, at, part);
+    }
+    return out;
 }
 function readFixed(span, size) {
     if (span.start + size > span.end) {

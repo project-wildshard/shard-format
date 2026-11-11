@@ -1,4 +1,6 @@
 /* oxlint-disable no-bitwise -- a bit packer shifts and masks by definition */
+import { putUvarint, uvarintLength } from './framing.ts'
+
 import type { BitSink } from './bit-io.ts'
 
 const BYTE = 8
@@ -19,15 +21,27 @@ class BitWriter implements BitSink {
   private bytes: Uint8Array<ArrayBuffer> = new Uint8Array(INITIAL_BYTES)
   private bit = ZERO
 
+  // oxlint-disable-next-line max-statements -- the hot path, inlined for WB2's encode budget
   public write(value: number, bits: number): void {
     const end = this.bit + bits
     if (end > this.bytes.length * BYTE) {
       this.grow(end)
     }
     const word = value >>> ZERO
-    for (let left = bits; left > ZERO;) {
-      left -= this.put(word, left)
+    const { bytes } = this
+    let { bit } = this
+    let left = bits
+    while (left > ZERO) {
+      const room = BYTE - (bit & LOW_BITS)
+      const take = room < left ? room : left
+      const at = bit >>> SHIFT_BYTE
+      bytes[at] =
+        (bytes[at] ?? ZERO) |
+        (((word >>> (left - take)) & ((ONE << take) - ONE)) << (room - take))
+      bit += take
+      left -= take
     }
+    this.bit = bit
   }
 
   public writeF32(value: number): void {
@@ -49,15 +63,15 @@ class BitWriter implements BitSink {
     return out
   }
 
-  /** Write the next chunk of `word`'s low `left` bits; the bits taken. */
-  private put(word: number, left: number): number {
-    const room = BYTE - (this.bit & LOW_BITS)
-    const take = Math.min(room, left)
-    const at = this.bit >>> SHIFT_BYTE
-    const chunk = (word >>> (left - take)) & ((ONE << take) - ONE)
-    this.bytes[at] = (this.bytes[at] ?? ZERO) | (chunk << (room - take))
-    this.bit += take
-    return take
+  public takeRecord(tag: number): Uint8Array<ArrayBuffer> {
+    const length = Math.ceil(this.bit / BYTE)
+    const head = uvarintLength(tag) + uvarintLength(length)
+    const out = new Uint8Array(head + length)
+    putUvarint(out, putUvarint(out, ZERO, tag), length)
+    out.set(this.bytes.subarray(ZERO, length), head)
+    this.bytes.fill(ZERO, ZERO, length)
+    this.bit = ZERO
+    return out
   }
 
   private grow(bits: number): void {

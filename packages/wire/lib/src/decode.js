@@ -1,4 +1,4 @@
-import { countBits, indexBits } from './encode.js';
+import { countBits, indexBits } from './bounds.js';
 import { fixedCodec } from './fixed.js';
 import { defaultValue, isStruct, structDefaults } from './values.js';
 import { WireDecodeError } from './wire-error.js';
@@ -119,16 +119,35 @@ function fieldParts(sender, receiver) {
     }
     return parts;
 }
-function structDecoder(sender, receiver) {
-    const parts = fieldParts(sender, receiver);
+/** The receiver's fields the sender lacks, at their defaults. */
+function missingDefaults(sender, receiver) {
+    const sent = new Set(sender.map((field) => field.id));
     const defaults = structDefaults(receiver ?? []);
+    return (receiver ?? [])
+        .filter((field) => !sent.has(field.id))
+        .map((field) => [
+        field.name,
+        defaults[field.name],
+    ]);
+}
+function structDecoder(sender, receiver) {
+    // Parallel arrays and an index loop: this runs per field per message (WB2).
+    const parts = fieldParts(sender, receiver);
+    const names = parts.map((part) => part[ZERO]);
+    const decoders = parts.map((part) => part[ONE]);
+    const missing = missingDefaults(sender, receiver);
+    const count = parts.length;
     return (reader) => {
-        const out = { ...defaults };
-        for (const [name, decode] of parts) {
-            const value = decode(reader);
+        const out = {};
+        for (let index = ZERO; index < count; index += ONE) {
+            const value = decoders[index]?.(reader);
+            const name = names[index];
             if (name !== undefined) {
                 out[name] = value;
             }
+        }
+        for (const [name, value] of missing) {
+            out[name] = value;
         }
         return out;
     };
