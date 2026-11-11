@@ -70,6 +70,18 @@ function checkDependency(installed: string, consumer: string): void {
   assert.ok(dependency.startsWith(`${consumer}${path.sep}`), dependency)
 }
 
+const IMPORT_CHECKS = [
+  "import assert from 'node:assert/strict'; import { WIRE_PACKAGE_VERSION } from '@wildshard/wire/version'; assert.equal(WIRE_PACKAGE_VERSION, '0.0.0')",
+  "import assert from 'node:assert/strict'; import { quantiseCommand } from '@wildshard/wire/command'; import { STEER_AXIS_CODEC } from '@wildshard/wire/fixed'; const value=0.5/127; const steer={keyX:value,keyY:0,stickX:0,stickY:0}; assert.equal(quantiseCommand({steer,yaw:0,pitch:0}).steer.keyX, STEER_AXIS_CODEC.decode(STEER_AXIS_CODEC.encode(value)))",
+  "import assert from 'node:assert/strict'; import { NetActSchema } from '@wildshard/wire/netCommand'; import { PLAYER } from '@wildshard/wire/classes'; import { v0SchemaHash } from '@wildshard/wire/v0'; assert.equal(PLAYER.id, 1); assert.equal(NetActSchema.type, 'variant'); assert.equal(v0SchemaHash([PLAYER]) > 0, true)",
+]
+
+function checkImports(consumer: string): void {
+  for (const script of IMPORT_CHECKS) {
+    checked(process.execPath, ['--input-type=module', '-e', script], consumer)
+  }
+}
+
 function install(dir: string): {
   readonly consumer: string
   readonly installed: string
@@ -87,24 +99,7 @@ function install(dir: string): {
   checked('pnpm', [...options, '--no-frozen-lockfile'], consumer)
   checked('pnpm', [...options, '--frozen-lockfile'], consumer)
   checkDependency(installed, consumer)
-  checked(
-    process.execPath,
-    [
-      '--input-type=module',
-      '-e',
-      "import assert from 'node:assert/strict'; import { WIRE_PACKAGE_VERSION } from '@wildshard/wire/version'; assert.equal(WIRE_PACKAGE_VERSION, '0.0.0')",
-    ],
-    consumer,
-  )
-  checked(
-    process.execPath,
-    [
-      '--input-type=module',
-      '-e',
-      "import assert from 'node:assert/strict'; import { quantiseCommand } from '@wildshard/wire/command'; import { STEER_AXIS_CODEC } from '@wildshard/wire/fixed'; const value=0.5/127; const steer={keyX:value,keyY:0,stickX:0,stickY:0}; assert.equal(quantiseCommand({steer,yaw:0,pitch:0}).steer.keyX, STEER_AXIS_CODEC.decode(STEER_AXIS_CODEC.encode(value)))",
-    ],
-    consumer,
-  )
+  checkImports(consumer)
   return { consumer, installed }
 }
 
@@ -116,17 +111,27 @@ function checkRefusals(bin: string, consumer: string): void {
   }
 }
 
-function checkInstalledBaseline(installed: string, consumer: string): void {
+function checkTamperedLock(
+  installed: string,
+  consumer: string,
+  [name, ...args]: readonly string[],
+): void {
   const bin = path.join(installed, 'bin.mjs')
-  checked(process.execPath, [bin, 'check', '--baseline'], consumer)
-  const lock = path.join(installed, 'wire.lock.json')
+  checked(process.execPath, [bin, ...args], consumer)
+  const lock = path.join(installed, name ?? '')
   const original = readFileSync(lock, 'utf8')
   writeFileSync(lock, `${original} `)
-  assert.equal(
-    run(process.execPath, [bin, 'check', '--baseline'], consumer).status,
-    1,
-  )
+  assert.equal(run(process.execPath, [bin, ...args], consumer).status, 1)
   writeFileSync(lock, original)
+}
+
+function checkInstalledBaseline(installed: string, consumer: string): void {
+  checkTamperedLock(installed, consumer, [
+    'wire.v0.lock.json',
+    'check',
+    '--baseline',
+  ])
+  checkTamperedLock(installed, consumer, ['wire.lock.json', 'check'])
 }
 
 function checkFrozenRefusal(installed: string, consumer: string): void {
@@ -143,10 +148,10 @@ function checkFrozenRefusal(installed: string, consumer: string): void {
   writeFileSync(source, original)
 }
 
-function checkEmptyCommand(bin: string, consumer: string): void {
+function checkWireCommand(bin: string, consumer: string): void {
   const check = run(process.execPath, [bin, 'check'], consumer)
   assert.equal(check.status, 0, check.stderr)
-  assert.match(check.stdout, /scaffold only/u)
+  assert.match(check.stdout, /lock current; .* 1 added \(player\.name #54\)/u)
 }
 
 test('the packed package imports and checks inside a real consumer node_modules', (): void => {
@@ -154,7 +159,7 @@ test('the packed package imports and checks inside a real consumer node_modules'
   try {
     const { consumer, installed } = install(dir)
     const bin = path.join(installed, 'bin.mjs')
-    checkEmptyCommand(bin, consumer)
+    checkWireCommand(bin, consumer)
     checkRefusals(bin, consumer)
     checkInstalledBaseline(installed, consumer)
     checkFrozenRefusal(installed, consumer)

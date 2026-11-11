@@ -144,11 +144,11 @@ async function checkBaseline(): Promise<void> {
     throw new Error('Frozen schema hash differs from engine cfd6681')
   }
   const recorded = await readFile(
-    new URL('../../wire.lock.json', import.meta.url),
+    new URL('../../wire.v0.lock.json', import.meta.url),
     'utf8',
   )
   if (baselineLockText() !== recorded) {
-    throw new Error('wire.lock.json differs from the frozen v0 baseline')
+    throw new Error('wire.v0.lock.json differs from the frozen v0 baseline')
   }
 }
 

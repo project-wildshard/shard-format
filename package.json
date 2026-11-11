@@ -11,6 +11,7 @@
     "src/format/*.ts",
     "!src/format/*.test.ts",
     "src/format/memoryGates.json",
+    "packages/wire/src/net-command.ts",
     "src/cli/*.ts",
     "src/cli/*.mjs",
     "!src/cli/*.test.ts",

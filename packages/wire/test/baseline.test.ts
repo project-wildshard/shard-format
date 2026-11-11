@@ -16,6 +16,6 @@ test('the lock regenerates byte for byte with the actual engine schema hash', ()
   assert.deepEqual(V0_DESCRIPTIONS, TABLES.descriptions)
   assert.equal(
     baselineLockText(),
-    readFileSync(new URL('../wire.lock.json', import.meta.url), 'utf8'),
+    readFileSync(new URL('../wire.v0.lock.json', import.meta.url), 'utf8'),
   )
 })

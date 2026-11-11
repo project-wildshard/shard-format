@@ -10,7 +10,15 @@
   "exports": {
     "./version": "./src/version.mjs",
     "./fixed": "./lib/src/fixed.js",
-    "./command": "./lib/src/command.js"
+    "./command": "./lib/src/command.js",
+    "./grammar": "./lib/src/grammar.js",
+    "./classes": "./lib/src/classes.js",
+    "./records": "./lib/src/records.js",
+    "./netCommand": "./lib/src/net-command.js",
+    "./lock": "./lib/src/lock.js",
+    "./v0": "./lib/src/v0.js",
+    "./v0Field": "./lib/src/v0-field.js",
+    "./events": "./lib/src/events.js"
   },
   "files": [
     "bin.mjs",
@@ -20,13 +28,15 @@
     "frozen/v0/*.ts",
     "lib/**",
     "wire.lock.json",
+    "wire.v0.lock.json",
     "fixtures/*.json"
   ],
   "scripts": {
-    "check": "pnpm build && git diff --exit-code -- lib && test -z \"$(git ls-files --others --exclude-standard -- lib)\" && node --check bin.mjs && node --check src/version.mjs && tsc -p tsconfig.json && tsc -p tsconfig.build.json --noEmit && oxfmt -c ../../src/.oxfmtrc.json --check bin.mjs src test cli bench/capture && node bin.mjs check --baseline",
+    "check": "pnpm build && git diff --exit-code -- lib && test -z \"$(git ls-files --others --exclude-standard -- lib)\" && node --check bin.mjs && node --check src/version.mjs && tsc -p tsconfig.json && tsc -p tsconfig.build.json --noEmit && oxfmt -c ../../src/.oxfmtrc.json --check bin.mjs src test cli bench/capture && node bin.mjs check --baseline && node bin.mjs check",
     "test": "node --test 'test/*.test.ts'",
     "build": "tsc -p tsconfig.build.json",
-    "bench": "node --expose-gc ../../src/scripts/wire/benchmark.mjs"
+    "bench": "node --expose-gc ../../src/scripts/wire/benchmark.mjs",
+    "lock": "pnpm build && node bin.mjs lock"
   },
   "dependencies": {
     "valibot": "1.5.0"
