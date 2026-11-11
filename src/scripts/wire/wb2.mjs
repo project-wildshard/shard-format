@@ -13,9 +13,8 @@ import {build} from 'vite';
 import {chromium} from 'playwright';
 import {KEYCHAIN_ARGS} from '../../../scripts/chromium-keychain.mjs';
 import {POLICY} from '../../../packages/wire/lib/bench/capture/benchmark-stats.js';
-import {prepareTraffic,trafficBytes} from '../../../packages/wire/lib/bench/capture/benchmark-data.js';
+import {prepareTraffic,recording,trafficBytes} from '../../../packages/wire/lib/bench/capture/benchmark-data.js';
 import {measureTraffic,benchmarkSink} from '../../../packages/wire/lib/bench/capture/benchmark.js';
-import {readSessionArchive} from '../../../packages/wire/lib/bench/capture/session-archive.js';
 import {prepareV1Traffic} from '../../../packages/wire/lib/bench/capture/v1-traffic.js';
 
 const root=fileURLToPath(new URL('../../../',import.meta.url));
@@ -40,7 +39,7 @@ const ratio=(a,b)=>b===0?(a===0?1:Infinity):a/b;
 /** Bytes: v0, v1 tables, v1 per-field tags. Deterministic, so once, in Node. */
 async function bytes(){
   for(const name of names){
-    const session=await readSessionArchive(manifests[name],reader(name));
+    const session=await recording(manifests[name],reader(name));
     const shapes={v0:trafficBytes(await prepareTraffic(manifests[name],reader(name))),tables:trafficBytes(prepareV1Traffic(session)),tags:trafficBytes(prepareV1Traffic(session,'tags'))};
     const view=b=>({frameMean:b.frameBytes.mean,frameP95:b.frameBytes.p95,up:b.steadyBytes.up,down:b.steadyBytes.down,handshakeUp:b.handshakeBytes.up,handshakeDown:b.handshakeBytes.down,welcomeMax:b.streams['down:welcome']?.maxBytes??0});
     const row=Object.fromEntries(Object.entries(shapes).map(([shape,b])=>[shape,view(b)]));
@@ -59,7 +58,7 @@ const orderFor=run=>run%2===0?['v0','v1']:['v1','v0'];
 async function native(){
   report.profiles.node={runtime:process.version,platform:process.platform,arch:process.arch,runs:[]};
   for(let run=0;run<POLICY.runs;run++)for(const name of names)for(const codec of orderFor(run)){
-    let traffic=codec==='v1'?prepareV1Traffic(await readSessionArchive(manifests[name],reader(name))):await prepareTraffic(manifests[name],reader(name));
+    let traffic=codec==='v1'?prepareV1Traffic(await recording(manifests[name],reader(name))):await prepareTraffic(manifests[name],reader(name));
     global.gc();const result=measureTraffic(traffic);record('node',name,run,codec,result);
     traffic=undefined;benchmarkSink.value=undefined;global.gc();
   }

@@ -100,4 +100,4 @@ function trafficBytes(traffic) {
     }
     return book.reading(traffic);
 }
-export { prepareTraffic, trafficBytes, DOWN_CAPACITY, UP_CAPACITY, };
+export { prepareTraffic, recording, trafficBytes, DOWN_CAPACITY, UP_CAPACITY, };

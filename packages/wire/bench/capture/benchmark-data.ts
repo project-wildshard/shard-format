@@ -143,6 +143,7 @@ function trafficBytes(traffic: PreparedTraffic): BytesReading {
 }
 export {
   prepareTraffic,
+  recording,
   trafficBytes,
   DOWN_CAPACITY,
   UP_CAPACITY,

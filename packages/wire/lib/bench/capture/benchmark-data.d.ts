@@ -1,6 +1,7 @@
 import type { BytesReading } from './benchmark-stats.ts';
 import type { PreparedPacket } from './packet-replay.ts';
 import type { PreparedFrame } from './prepared-frame.ts';
+import type { CapturedSession } from './session-data.ts';
 interface Task {
     readonly stream: string;
     readonly direction: 'up' | 'down';
@@ -22,7 +23,8 @@ interface PreparedTraffic {
 }
 declare const DOWN_CAPACITY = 4096;
 declare const UP_CAPACITY = 1024;
+declare function recording(header: unknown, read: (file: string) => Promise<Readonly<Uint8Array>>): Promise<CapturedSession>;
 /** Mandatory complete byte equality before any timing consumer receives tasks. */
 declare function prepareTraffic(header: unknown, read: (file: string) => Promise<Readonly<Uint8Array>>): Promise<PreparedTraffic>;
 declare function trafficBytes(traffic: PreparedTraffic): BytesReading;
-export { prepareTraffic, trafficBytes, DOWN_CAPACITY, UP_CAPACITY, type Task, type PreparedTraffic, };
+export { prepareTraffic, recording, trafficBytes, DOWN_CAPACITY, UP_CAPACITY, type Task, type PreparedTraffic, };

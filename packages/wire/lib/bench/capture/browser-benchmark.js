@@ -1,7 +1,6 @@
-import { prepareTraffic } from './benchmark-data.js';
+import { prepareTraffic, recording } from './benchmark-data.js';
 import { POLICY } from './benchmark-stats.js';
 import { measureTraffic, benchmarkSink } from './benchmark.js';
-import { readSessionArchive } from './session-archive.js';
 import { prepareV1Traffic } from './v1-traffic.js';
 const held = {};
 const NAMES = new Set(['walking', 'fight', 'ride', 'dense']);
@@ -23,7 +22,7 @@ async function prepare(name, codec = 'v0') {
     const read = async (file) => await get(name, file);
     held.traffic =
         codec === 'v1'
-            ? prepareV1Traffic(await readSessionArchive(header, read))
+            ? prepareV1Traffic(await recording(header, read))
             : await prepareTraffic(header, read);
 }
 function measure() {

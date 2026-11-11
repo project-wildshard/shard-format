@@ -1,7 +1,6 @@
-import { prepareTraffic } from './benchmark-data.ts'
+import { prepareTraffic, recording } from './benchmark-data.ts'
 import { POLICY } from './benchmark-stats.ts'
 import { measureTraffic, benchmarkSink } from './benchmark.ts'
-import { readSessionArchive } from './session-archive.ts'
 import { prepareV1Traffic } from './v1-traffic.ts'
 
 import type { PreparedTraffic } from './benchmark-data.ts'
@@ -32,7 +31,7 @@ async function prepare(name: string, codec: Codec = 'v0'): Promise<void> {
     await get(name, file)
   held.traffic =
     codec === 'v1'
-      ? prepareV1Traffic(await readSessionArchive(header, read))
+      ? prepareV1Traffic(await recording(header, read))
       : await prepareTraffic(header, read)
 }
 function measure(): BenchmarkReading {
