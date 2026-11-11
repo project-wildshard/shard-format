@@ -229,4 +229,3 @@ const WIRE_RECORDS = [
     { id: 6, name: 'events', fields: [TICK], tail: 'records' },
 ];
 export { CLIMATE_OPS, HELLO, MAX_BUNDLE, WELCOME, WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, };
-export { RIDE_LAWS } from './rides.js';

@@ -3,7 +3,7 @@ import { WireDecodeError } from './wire-error.ts'
 import { wordCodec } from './words.ts'
 
 import type { ClassColumns, Column } from './columns.ts'
-import type { WireArm, WireClass, WireClassField } from './grammar.ts'
+import type { WireArm, WireClass, WireClassField, WireNode } from './grammar.ts'
 import type { WordCodec } from './words.ts'
 
 // WIRE-STABILITY 5.4: projection is separate from decoding. At welcome the
@@ -34,6 +34,16 @@ const MISSING = -1
 const RIDE_WORD_BITS = 32
 const same = (word: number): number => word
 
+/** Two nodes are the same when every bound is: key order does not matter. */
+function sameNode(left: WireNode, right: WireNode): boolean {
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)])
+  return [...keys].every(
+    (key: string): boolean =>
+      JSON.stringify(Reflect.get(left, key)) ===
+      JSON.stringify(Reflect.get(right, key)),
+  )
+}
+
 function slotFor(local: Column, sender: readonly Column[]): Slot {
   const from = sender.findIndex(
     (column: Column): boolean => column.id === local.id,
@@ -43,11 +53,14 @@ function slotFor(local: Column, sender: readonly Column[]): Slot {
   if (theirs === undefined) {
     return { from: MISSING, convert: same, fallback: mine.fallback }
   }
-  const match = JSON.stringify(theirs.node) === JSON.stringify(local.node)
+  // A retype is a new id: a column of another kind reads as missing.
+  if (theirs.node.kind !== local.node.kind) {
+    return { from: MISSING, convert: same, fallback: mine.fallback }
+  }
   const peer = wordCodec(theirs.node)
   return {
     from,
-    convert: match
+    convert: sameNode(theirs.node, local.node)
       ? same
       : (word: number): number => mine.toWord(peer.toValue(word)),
     fallback: mine.fallback,
@@ -64,9 +77,14 @@ const slots = (
 function checkRequired(local: WireClass, sender: WireClass): void {
   for (const field of local.fields) {
     const needed = field.required === true || field.predicted === true
+    // The same id, kind, audience and prediction: the field sits in the
+    // same block (row or owner) on both sides.
     const has = sender.fields.some(
       (entry: WireClassField): boolean =>
-        entry.id === field.id && entry.node.kind === field.node.kind,
+        entry.id === field.id &&
+        entry.node.kind === field.node.kind &&
+        (entry.send ?? 'all') === (field.send ?? 'all') &&
+        (entry.predicted === true) === (field.predicted === true),
     )
     if (needed && !has) {
       throw new WireDecodeError(
@@ -76,11 +94,31 @@ function checkRequired(local: WireClass, sender: WireClass): void {
   }
 }
 
+/** A receiver class with required fields must be in the sender's table. */
+function checkClasses(
+  sender: readonly WireClass[],
+  local: readonly WireClass[],
+): void {
+  for (const mine of local) {
+    const needs = mine.fields.some(
+      (field: WireClassField): boolean =>
+        field.required === true || field.predicted === true,
+    )
+    if (
+      needs &&
+      !sender.some((entry: WireClass): boolean => entry.id === mine.id)
+    ) {
+      throw new WireDecodeError(`The server lacks the ${mine.name} class`)
+    }
+  }
+}
+
 /** Every sender class this receiver knows, projected by id. */
 function projectClasses(
   sender: readonly WireClass[],
   local: readonly WireClass[],
 ): ReadonlyMap<number, ClassProjection> {
+  checkClasses(sender, local)
   const out = new Map<number, ClassProjection>()
   for (const theirs of sender) {
     const mine = local.find(
@@ -142,7 +180,10 @@ function projectRides(
     const mine = local.find((law: WireArm): boolean => law.id === theirs.id)
     if (mine !== undefined) {
       const words = slots(rideColumns(mine), rideColumns(theirs))
-      const seated = words.every((slot: Slot): boolean => slot.from !== MISSING)
+      // Seated only on an exact law: the same words, no more and no fewer.
+      const seated =
+        theirs.fields.length === mine.fields.length &&
+        words.every((slot: Slot): boolean => slot.from !== MISSING)
       out.set(theirs.id, { seated, words })
     }
   }

@@ -16,4 +16,6 @@ declare function validateDescriptors(set: DescriptorSet): readonly string[];
 declare function classProblems(wireClass: WireClass): readonly string[];
 /** Every ride law's words are f32s, so a frame carries them as v0 did. */
 declare function rideLawProblems(laws: readonly WireArm[]): readonly string[];
-export { classProblems, rideLawProblems, validateDescriptors, type DescriptorSet, };
+/** Everything wrong with the descriptors this package ships. */
+declare function validateWire(): readonly string[];
+export { classProblems, rideLawProblems, validateDescriptors, validateWire, type DescriptorSet, };

@@ -4,9 +4,9 @@ import { test } from 'node:test'
 
 import { receiverBase } from '../bench/capture/prepared-frame.ts'
 import { readSessionArchive } from '../bench/capture/session-archive.ts'
+import { columnsOf, replay } from '../bench/capture/v1-frames.ts'
 import { BitWriter as V0Writer } from '../frozen/v0/bits.ts'
 import { decodeFrame, encodeFrame } from '../frozen/v0/frame.ts'
-import { columnsOf, replay } from './helpers/snapshot.ts'
 
 import type { CapturedFrame } from '../bench/capture/frame-data.ts'
 import type { DecodedFrame } from '../frozen/v0/frame.ts'

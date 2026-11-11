@@ -40,6 +40,13 @@ function angleWords(bits) {
         fallback: ZERO,
     };
 }
+function fixedWords(divisor, offset) {
+    return {
+        toValue: (word) => (word + offset) / divisor,
+        toWord: (value) => Math.round(numeric(value) * divisor) - offset,
+        fallback: -offset,
+    };
+}
 function enumWords(values, fallback) {
     const index = new Map(values.map((word, at) => [
         word,
@@ -67,11 +74,13 @@ function wordCodec(node) {
         case 'f32': {
             return F32;
         }
+        case 'fixed': {
+            return fixedWords(node.divisor, node.offset);
+        }
         case 'uint':
         case 'bool':
         case 'ref':
-        case 'f64':
-        case 'fixed': {
+        case 'f64': {
             return IDENTITY;
         }
         case 'text':

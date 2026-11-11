@@ -35,7 +35,8 @@
     "./classTables": "./lib/src/class-tables.js",
     "./rides": "./lib/src/rides.js",
     "./columns": "./lib/src/columns.js",
-    "./spawnColumns": "./lib/src/spawn-columns.js"
+    "./spawnColumns": "./lib/src/spawn-columns.js",
+    "./rideTables": "./lib/src/ride-tables.js"
   },
   "files": [
     "bin.mjs",

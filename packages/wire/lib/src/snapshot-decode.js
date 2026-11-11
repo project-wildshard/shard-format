@@ -72,8 +72,13 @@ function readFreshness(reading) {
     }
 }
 /** The baseline a frame names: none, held, or missing (undefined). */
-function baseFor(table, tick) {
-    return tick === NO_BASELINE ? { rows: new Map() } : table.baseline(tick);
+function baseFor(table, tick, cell) {
+    if (tick === NO_BASELINE) {
+        return { rows: new Map() };
+    }
+    // After a travel a held frame of the same tick is another cell's: missing.
+    const base = table.baseline(tick);
+    return base?.cell === cell ? base : undefined;
 }
 /** Decode one frame body raw, or undefined when it cannot apply yet. */
 function decodeSnapshot(reader, table) {
@@ -85,7 +90,7 @@ function decodeSnapshot(reader, table) {
         owner: readOwner(reader, table.ownerClass),
         ride: readRide(reader, table),
     };
-    const base = baseFor(table, header.baselineTick);
+    const base = baseFor(table, header.baselineTick, header.cell);
     if (base === undefined) {
         return undefined;
     }

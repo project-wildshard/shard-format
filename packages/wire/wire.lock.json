@@ -3674,7 +3674,7 @@
           "since": 0,
           "send": "all",
           "predicted": false,
-          "required": false
+          "required": true
         },
         {
           "id": 2,
@@ -3686,7 +3686,7 @@
           "since": 0,
           "send": "all",
           "predicted": false,
-          "required": false
+          "required": true
         },
         {
           "id": 3,
@@ -3698,7 +3698,7 @@
           "since": 0,
           "send": "all",
           "predicted": false,
-          "required": false
+          "required": true
         },
         {
           "id": 4,

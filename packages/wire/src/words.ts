@@ -64,6 +64,15 @@ function angleWords(bits: number): WordCodec {
   }
 }
 
+function fixedWords(divisor: number, offset: number): WordCodec {
+  return {
+    toValue: (word: number): number => (word + offset) / divisor,
+    toWord: (value: number | string): number =>
+      Math.round(numeric(value) * divisor) - offset,
+    fallback: -offset,
+  }
+}
+
 function enumWords(values: readonly string[], fallback: string): WordCodec {
   const index = new Map(
     values.map((word: string, at: number): readonly [string, number] => [
@@ -95,11 +104,13 @@ function wordCodec(node: WireNode): WordCodec {
     case 'f32': {
       return F32
     }
+    case 'fixed': {
+      return fixedWords(node.divisor, node.offset)
+    }
     case 'uint':
     case 'bool':
     case 'ref':
-    case 'f64':
-    case 'fixed': {
+    case 'f64': {
       return IDENTITY
     }
     case 'text':

@@ -1,7 +1,8 @@
 import { bitSink, bitSource } from './bits.ts'
-import { recordBytes } from './framing.ts'
+import { readRecords, recordBytes } from './framing.ts'
 import { decodeSnapshot } from './snapshot-decode.ts'
 import { encodeSnapshot } from './snapshot-encode.ts'
+import { WireDecodeError } from './wire-error.ts'
 
 import type { Span } from './bit-io.ts'
 import type { RawFrame, SnapshotInput, SnapshotTable } from './snapshot.ts'
@@ -10,6 +11,7 @@ import type { RawFrame, SnapshotInput, SnapshotTable } from './snapshot.ts'
 // body is one client's snapshot, under the body's end rule.
 
 const TAG_FRAME = 5
+const ZERO = 0
 const SHARED = bitSink()
 
 /** One client's frame message. */
@@ -21,6 +23,18 @@ function encodeFrame(input: SnapshotInput): Uint8Array {
 /** A frame record's body, raw, or undefined when it cannot apply yet. */
 function decodeFrame(span: Span, table: SnapshotTable): RawFrame | undefined {
   return decodeSnapshot(bitSource(span), table)
+}
+
+/** A frame message's one frame record, decoded raw, or undefined when it cannot apply yet. */
+function decodeFrameMessage(
+  bytes: Readonly<Uint8Array>,
+  table: SnapshotTable,
+): RawFrame | undefined {
+  const [frame] = readRecords(bytes, ZERO, bytes.length)
+  if (frame?.tag !== TAG_FRAME) {
+    throw new WireDecodeError('A frame message holds no frame record')
+  }
+  return decodeFrame({ bytes, start: frame.start, end: frame.end }, table)
 }
 
 /** Which capabilities a welcome selects, and whether the client can play. */
@@ -44,6 +58,7 @@ function selectCapabilities(
 
 export {
   decodeFrame,
+  decodeFrameMessage,
   encodeFrame,
   selectCapabilities,
   TAG_FRAME,

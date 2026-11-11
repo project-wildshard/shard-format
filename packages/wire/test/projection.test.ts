@@ -3,10 +3,10 @@ import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 
 import { readSessionArchive } from '../bench/capture/session-archive.ts'
+import { replay } from '../bench/capture/v1-frames.ts'
 import { ANIMAL, PLAYER, WIRE_CLASSES } from '../src/classes.ts'
 import { projectClasses, projectRides, projectRow } from '../src/projection.ts'
 import { MOUNT, RIDE_LAWS } from '../src/rides.ts'
-import { replay } from './helpers/snapshot.ts'
 
 import type { WireClass, WireClassField } from '../src/grammar.ts'
 import type { RawFrame } from '../src/snapshot.ts'

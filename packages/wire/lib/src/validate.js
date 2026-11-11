@@ -1,5 +1,11 @@
+import { WIRE_CLASSES } from './classes.js';
+import { WIRE_EVENTS } from './events.js';
 import { MAX_ROW_FIELDS, rowFieldCount } from './lock.js';
 import { checkFields, checkNode, checkSpace } from './node-checks.js';
+import { HELLO, WELCOME, WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, } from './records.js';
+import { RIDE_LAWS } from './rides.js';
+/** A ride law's id travels in 8 bits. */
+const MAX_LAW_ID = 255;
 /** The node kinds a class field may be: a column word, or spawn text. */
 const CLASS_KINDS = new Set([
     'uint',
@@ -24,6 +30,12 @@ function checkClassField(where, field) {
             : []),
         ...(kind === 'f64' && !owned
             ? [`${at}: a double fits only the owner block`]
+            : []),
+        ...(field.predicted === true &&
+            field.send !== undefined &&
+            field.send !== 'all' &&
+            field.send !== 'owner'
+            ? [`${at}: a predicted field is the owner's`]
             : []),
     ];
 }
@@ -79,7 +91,23 @@ function rideLawProblems(laws) {
             ...law.fields
                 .filter((field) => field.node.kind !== 'f32')
                 .map((field) => `rideLaw.${law.name}.${field.name}: a ride word is an f32`),
+            ...(law.id > MAX_LAW_ID ? [`rideLaw.${law.name}: an id past 255`] : []),
         ]),
     ];
 }
-export { classProblems, rideLawProblems, validateDescriptors, };
+/** Everything wrong with the descriptors this package ships. */
+function validateWire() {
+    return [
+        ...rideLawProblems(RIDE_LAWS),
+        ...validateDescriptors({
+            messages: WIRE_MESSAGES,
+            cold: [HELLO, WELCOME],
+            records: WIRE_RECORDS,
+            events: WIRE_EVENTS,
+            acts: WIRE_ACTS,
+            command: WIRE_COMMAND,
+            classes: WIRE_CLASSES,
+        }),
+    ];
+}
+export { classProblems, rideLawProblems, validateDescriptors, validateWire, };

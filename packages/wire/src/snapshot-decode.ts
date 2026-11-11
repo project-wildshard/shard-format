@@ -119,8 +119,14 @@ function readFreshness(reading: Reading): void {
 function baseFor(
   table: SnapshotTable,
   tick: number,
+  cell: number,
 ): { readonly rows: ReadonlyMap<number, Readonly<Uint32Array>> } | undefined {
-  return tick === NO_BASELINE ? { rows: new Map() } : table.baseline(tick)
+  if (tick === NO_BASELINE) {
+    return { rows: new Map() }
+  }
+  // After a travel a held frame of the same tick is another cell's: missing.
+  const base = table.baseline(tick)
+  return base?.cell === cell ? base : undefined
 }
 
 /** Decode one frame body raw, or undefined when it cannot apply yet. */
@@ -136,7 +142,7 @@ function decodeSnapshot(
     owner: readOwner(reader, table.ownerClass),
     ride: readRide(reader, table),
   }
-  const base = baseFor(table, header.baselineTick)
+  const base = baseFor(table, header.baselineTick, header.cell)
   if (base === undefined) {
     return undefined
   }

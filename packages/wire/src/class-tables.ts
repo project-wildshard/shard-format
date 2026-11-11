@@ -1,4 +1,5 @@
 import { writeUvarint } from './framing.ts'
+import { checkSpace } from './node-checks.ts'
 import { readNode } from './table-read.ts'
 import { TableReader } from './table-reader.ts'
 import { writeNode } from './tables.ts'
@@ -101,6 +102,15 @@ function readClass(reader: TableSource): WireClass {
   return wireClass
 }
 
+/** Refuse class id 0 or a class id twice: a lookup would pick one. */
+function uniqueIds(classes: readonly WireClass[]): readonly WireClass[] {
+  const ids = checkSpace('classes', classes)
+  if (ids.length > ZERO) {
+    throw new WireDecodeError(`A class table is unsound: ${ids.join('; ')}`)
+  }
+  return classes
+}
+
 /** Read a server's class table block. */
 function decodeClassTables(bytes: Readonly<Uint8Array>): readonly WireClass[] {
   const reader = new TableReader(bytes, ZERO, bytes.length)
@@ -112,7 +122,7 @@ function decodeClassTables(bytes: Readonly<Uint8Array>): readonly WireClass[] {
   if (!reader.done) {
     throw new WireDecodeError('A class table has trailing bytes')
   }
-  return classes
+  return uniqueIds(classes)
 }
 
 export { decodeClassTables, encodeClassTables }

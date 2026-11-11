@@ -96,3 +96,22 @@
 - Left for later rows, noted in the plan: pitch and `ads` quantisation
   derived from the v1 codecs (WR5), receiver bounds on projection (WR6),
   an LRU cap on the server's per-table decoder cache (WR5).
+
+## WR4 Opus review (claude -p)
+
+- MUSTs fixed: ride laws now travel in the welcome (`ride-tables.ts`) and a
+  receiver reads a ride's words only by the sender's law, so a law that
+  gains a word never misaligns a mounted frame; a peer class table refuses
+  class id 0 or a repeated id; the owner-skew proof now skews the player
+  itself (a receiver without `led`, a sender with an extra owner field
+  before `px`) and compares px..vz bit for bit across the ride recording.
+- SHOULDs folded in: predicted fields must be `all` or `owner`; ride law
+  ids fit 8 bits; a required field must sit in the same block on both sides
+  and a missing class with required fields refuses; a retyped column reads
+  as missing and `fixed` columns convert; a rider is seated only on an
+  exact law; a baseline from another cell (after a travel) is missing;
+  script x, y, z are required. New tests pin every v1 body to v0's bits,
+  baseline loss and full-frame recovery, and travel.
+- Moved to WR5 (plan updated): the predictor and interpolator reading the
+  projection, a recorded correction through a skewed table in engine, and
+  the door refusing a missing capability.

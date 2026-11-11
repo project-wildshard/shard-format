@@ -128,9 +128,9 @@ const SCRIPT = {
   id: 4,
   name: 'script',
   fields: [
-    { id: 1, name: 'x', node: F32 },
-    { id: 2, name: 'y', node: F32 },
-    { id: 3, name: 'z', node: F32 },
+    { id: 1, name: 'x', node: F32, ...AT },
+    { id: 2, name: 'y', node: F32, ...AT },
+    { id: 3, name: 'z', node: F32, ...AT },
     { id: 4, name: 'pitch', node: ANGLE_16 },
     { id: 5, name: 'yaw', node: ANGLE_16 },
     { id: 6, name: 'roll', node: ANGLE_16 },

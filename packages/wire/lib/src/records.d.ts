@@ -1011,4 +1011,3 @@ declare const WIRE_RECORDS: readonly [{
     readonly tail: 'records';
 }];
 export { CLIMATE_OPS, HELLO, MAX_BUNDLE, WELCOME, WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, };
-export { RIDE_LAWS } from './rides.ts';

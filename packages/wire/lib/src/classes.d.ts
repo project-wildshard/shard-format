@@ -316,18 +316,21 @@ declare const SCRIPT: {
     readonly id: 4;
     readonly name: 'script';
     readonly fields: readonly [{
+        readonly required: true;
         readonly id: 1;
         readonly name: 'x';
         readonly node: {
             readonly kind: 'f32';
         };
     }, {
+        readonly required: true;
         readonly id: 2;
         readonly name: 'y';
         readonly node: {
             readonly kind: 'f32';
         };
     }, {
+        readonly required: true;
         readonly id: 3;
         readonly name: 'z';
         readonly node: {
@@ -1125,18 +1128,21 @@ declare const WIRE_CLASSES: readonly [{
     readonly id: 4;
     readonly name: 'script';
     readonly fields: readonly [{
+        readonly required: true;
         readonly id: 1;
         readonly name: 'x';
         readonly node: {
             readonly kind: 'f32';
         };
     }, {
+        readonly required: true;
         readonly id: 2;
         readonly name: 'y';
         readonly node: {
             readonly kind: 'f32';
         };
     }, {
+        readonly required: true;
         readonly id: 3;
         readonly name: 'z';
         readonly node: {

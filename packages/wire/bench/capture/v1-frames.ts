@@ -1,12 +1,14 @@
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- frozen v0's FrameInput, DecodedFrame and captured frames are mutable types */
-import { inputOf, receiverBase } from '../../bench/capture/prepared-frame.ts'
 import { WIRE_CLASSES } from '../../src/classes.ts'
 import { classColumns } from '../../src/columns.ts'
-import { decodeFrame, encodeFrame } from '../../src/frame-record.ts'
-import { readRecords } from '../../src/framing.ts'
-import { MOUNT } from '../../src/rides.ts'
+import { decodeFrameMessage, encodeFrame } from '../../src/frame-record.ts'
+import {
+  decodeRideLawTables,
+  encodeRideLawTables,
+} from '../../src/ride-tables.ts'
+import { MOUNT, RIDE_LAWS } from '../../src/rides.ts'
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- frozen v0's FrameInput, DecodedFrame and captured frames are mutable types */
+import { inputOf, receiverBase } from './prepared-frame.ts'
 
-import type { CapturedFrame } from '../../bench/capture/frame-data.ts'
 import type { DecodedFrame, FrameInput } from '../../frozen/v0/frame.ts'
 import type { NetClass } from '../../frozen/v0/schema.ts'
 import type { ClassColumns } from '../../src/columns.ts'
@@ -16,13 +18,22 @@ import type {
   RowSource,
   SnapshotInput,
 } from '../../src/snapshot.ts'
+import type { CapturedFrame } from './frame-data.ts'
 
 // Bridge WS3's real captured frames (frozen v0 inputs) into v1 snapshot
 // inputs, so the v1 codec replays real play: the same rows, owner blocks,
 // rides, baselines, `rowFrom` sources and `due` decisions.
 
 const NONE = 0
-const MOUNT_LAW: RideLaw = { id: MOUNT.id, words: MOUNT.fields.length }
+/** The ride laws a receiver learns from the welcome: decoded, never local. */
+const LAWS: ReadonlyMap<number, RideLaw> = new Map(
+  decodeRideLawTables(encodeRideLawTables(RIDE_LAWS)).map(
+    (law): readonly [number, RideLaw] => [
+      law.id,
+      { id: law.id, words: law.fields.length },
+    ],
+  ),
+)
 
 /** The v1 columns of every class, by name, compiled once. */
 const COLUMNS: ReadonlyMap<string, ClassColumns> = new Map(
@@ -96,31 +107,38 @@ function rawBase(base: Readonly<DecodedFrame> | null): RawFrame | undefined {
   }
 }
 
-/** One captured frame encoded and decoded by v1, as a receiver on the same tables. */
-function replay(record: Readonly<CapturedFrame>): {
+/** A captured frame's v1 encode and decode, compiled once; decode by a receiver on the same tables. */
+function frameCodec(record: Readonly<CapturedFrame>): {
   readonly input: FrameInput
-  readonly raw: RawFrame | undefined
+  readonly bytes: Uint8Array
+  readonly encode: () => Uint8Array
+  readonly decode: () => RawFrame | undefined
 } {
   const input = inputOf(record)
   const base = rawBase(receiverBase(record))
   const v1 = snapshotInput(input)
   const bytes = encodeFrame(v1)
-  const [frame] = readRecords(bytes, NONE, bytes.length)
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- a message may hold none
-  if (frame === undefined) {
-    throw new Error('A frame message holds no record')
+  const table = {
+    ownerClass: v1.ownerClass,
+    classOf: v1.classOf,
+    rideLaw: (id: number): RideLaw | undefined => LAWS.get(id),
+    baseline: (): RawFrame | undefined => base,
   }
-  const raw = decodeFrame(
-    { bytes, start: frame.start, end: frame.end },
-    {
-      ownerClass: v1.ownerClass,
-      classOf: v1.classOf,
-      rideLaw: (id: number): RideLaw | undefined =>
-        id === MOUNT_LAW.id ? MOUNT_LAW : undefined,
-      baseline: (): RawFrame | undefined => base,
-    },
-  )
-  return { input, raw }
+  return {
+    input,
+    bytes,
+    encode: (): Uint8Array => encodeFrame(v1),
+    decode: (): RawFrame | undefined => decodeFrameMessage(bytes, table),
+  }
 }
 
-export { columnsOf, replay, snapshotInput }
+/** One captured frame encoded and decoded by v1, as a receiver on the same tables. */
+function replay(record: Readonly<CapturedFrame>): {
+  readonly input: FrameInput
+  readonly raw: RawFrame | undefined
+} {
+  const codec = frameCodec(record)
+  return { input: codec.input, raw: codec.decode() }
+}
+
+export { columnsOf, frameCodec, rawBase, replay, snapshotInput }

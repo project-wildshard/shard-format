@@ -1,5 +1,16 @@
+import { WIRE_CLASSES } from './classes.ts'
+import { WIRE_EVENTS } from './events.ts'
 import { MAX_ROW_FIELDS, rowFieldCount } from './lock.ts'
 import { checkFields, checkNode, checkSpace } from './node-checks.ts'
+import {
+  HELLO,
+  WELCOME,
+  WIRE_ACTS,
+  WIRE_COMMAND,
+  WIRE_MESSAGES,
+  WIRE_RECORDS,
+} from './records.ts'
+import { RIDE_LAWS } from './rides.ts'
 
 import type {
   ColdRecord,
@@ -11,6 +22,9 @@ import type {
   WireRecord,
 } from './grammar.ts'
 import type { Identified } from './node-checks.ts'
+
+/** A ride law's id travels in 8 bits. */
+const MAX_LAW_ID = 255
 
 // WIRE-STABILITY 5.2: ids are positive, unique within their space, and every
 // node is bounded with a typed default. WR6 adds the release-diff rules.
@@ -54,6 +68,12 @@ function checkClassField(
       : []),
     ...(kind === 'f64' && !owned
       ? [`${at}: a double fits only the owner block`]
+      : []),
+    ...(field.predicted === true &&
+    field.send !== undefined &&
+    field.send !== 'all' &&
+    field.send !== 'owner'
+      ? [`${at}: a predicted field is the owner's`]
       : []),
   ]
 }
@@ -141,7 +161,24 @@ function rideLawProblems(laws: readonly WireArm[]): readonly string[] {
           (field: WireField): string =>
             `rideLaw.${law.name}.${field.name}: a ride word is an f32`,
         ),
+      ...(law.id > MAX_LAW_ID ? [`rideLaw.${law.name}: an id past 255`] : []),
     ]),
+  ]
+}
+
+/** Everything wrong with the descriptors this package ships. */
+function validateWire(): readonly string[] {
+  return [
+    ...rideLawProblems(RIDE_LAWS),
+    ...validateDescriptors({
+      messages: WIRE_MESSAGES,
+      cold: [HELLO, WELCOME],
+      records: WIRE_RECORDS,
+      events: WIRE_EVENTS,
+      acts: WIRE_ACTS,
+      command: WIRE_COMMAND,
+      classes: WIRE_CLASSES,
+    }),
   ]
 }
 
@@ -149,5 +186,6 @@ export {
   classProblems,
   rideLawProblems,
   validateDescriptors,
+  validateWire,
   type DescriptorSet,
 }
