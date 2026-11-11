@@ -44,7 +44,12 @@ function bytesText(bytes) {
     return btoa(text);
 }
 function textBytes(text) {
-    return Uint8Array.from(atob(text), (letter) => letter.codePointAt(ZERO) ?? ZERO);
+    const decoded = atob(text);
+    const bytes = new Uint8Array(decoded.length);
+    for (let index = ZERO; index < decoded.length; index += ONE) {
+        bytes[index] = decoded.charCodeAt(index);
+    }
+    return bytes;
 }
 function packWords(words) {
     const bytes = new Uint8Array(words.length * WORD_BYTES);

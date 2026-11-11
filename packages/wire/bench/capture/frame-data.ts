@@ -97,10 +97,12 @@ function bytesText(bytes: Readonly<Uint8Array>): string {
 }
 
 function textBytes(text: string): Uint8Array {
-  return Uint8Array.from(
-    atob(text),
-    (letter: string): number => letter.codePointAt(ZERO) ?? ZERO,
-  )
+  const decoded = atob(text)
+  const bytes = new Uint8Array(decoded.length)
+  for (let index = ZERO; index < decoded.length; index += ONE) {
+    bytes[index] = decoded.charCodeAt(index)
+  }
+  return bytes
 }
 
 function packWords(words: Readonly<ArrayLike<number>>): string {
