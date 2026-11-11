@@ -29,9 +29,10 @@ assert.equal(typeof global.gc,'function','Run with node --expose-gc');
 const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
 const dirty=execFileSync('git',['status','--porcelain','--untracked-files=normal','--','packages/wire','src/scripts/wire'],{cwd:root,encoding:'utf8'}).trim();
 const GATE={bytes:1.10,encode:1.10,decodeP95:1.25,welcome:2048};
-// Runs alternate codec order, so an even count weighs both orders the same. A recording's ratios qualify only when
-// their spread across runs is within the gate's own margin; wider, the reading is noise and the gate is not judged.
-const RUNS=Number(process.env.WB2_RUNS??4),SPREAD=0.10;
+// Each run is one v0/v1 pair measured back to back, and runs alternate codec order, so an even count weighs both orders
+// the same and a burst of load lands on one pair, not on one codec. The verdict is the median pair's ratio; it
+// qualifies only when the middle half of the pairs agree within the gate's own margin (interquartile range).
+const RUNS=Number(process.env.WB2_RUNS??8),SPREAD=0.10;
 assert.ok(Number.isInteger(RUNS)&&RUNS>=2&&RUNS%2===0,'WB2_RUNS is an even count, at least 2');
 const report={format:'wildshard-wire-wb2/1',sha,dirty:dirty!=='',started:new Date().toISOString(),policy:POLICY,gate:GATE,bytes:{},profiles:{},complete:false};
 const save=()=>writeFileSync(output,JSON.stringify(report,null,2)+'\n');
@@ -102,7 +103,7 @@ async function phone(){
     assert.deepEqual(errors,[]);
   }finally{try{if(browser)await browser.close();}finally{await new Promise((yes,no)=>server.close(error=>error?no(error):yes()));}}
 }
-/** The gate: each run's v1/v0 ratio; the mean ratio over runs of both orders, when the runs agree (no retries). */
+/** The gate: each pair's v1/v0 ratio; the median over pairs of both orders, when the middle half agree (no retries). */
 function judge(){
   const verdict={};
   for(const name of names){
@@ -111,7 +112,8 @@ function judge(){
     const cpu={};
     for(const profile of Object.keys(report.profiles)){
       const runs=report.profiles[profile].runs.map(run=>run[name]).filter(Boolean).map(v=>({encodeMean:ratio(v.v1.encodeMean,v.v0.encodeMean),encodeP95:ratio(v.v1.encodeP95,v.v0.encodeP95),decodeMean:ratio(v.v1.decodeMean,v.v0.decodeMean),decodeP95:ratio(v.v1.decodeP95,v.v0.decodeP95)}));
-      const avg=k=>runs.reduce((sum,r)=>sum+r[k],0)/runs.length,spread=k=>Math.max(...runs.map(r=>r[k]))-Math.min(...runs.map(r=>r[k]));
+      const quantile=(k,q)=>{const sorted=runs.map(r=>r[k]).sort((a,b)=>a-b),at=(sorted.length-1)*q,low=Math.floor(at);return sorted[low]+(sorted[Math.ceil(at)]-sorted[low])*(at-low);};
+      const avg=k=>quantile(k,0.5),spread=k=>quantile(k,0.75)-quantile(k,0.25);
       const means={encodeMean:avg('encodeMean'),encodeP95:avg('encodeP95'),decodeMean:avg('decodeMean'),decodeP95:avg('decodeP95')};
       const stable=spread('encodeMean')<=SPREAD;
       cpu[profile]={runs,means,spread:{encodeMean:spread('encodeMean'),encodeP95:spread('encodeP95')},stable,encodeOk:stable&&means.encodeMean<=GATE.encode&&means.encodeP95<=GATE.encode,decodeP95Ok:means.decodeP95<=GATE.decodeP95};

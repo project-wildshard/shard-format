@@ -13,6 +13,10 @@ const F64_BYTES = 8
 const SECOND_WORD = 4
 
 const scratch = new DataView(new ArrayBuffer(F64_BYTES))
+// A float32's bits through an aliased array, as v0 reads them: one element,
+// so byte order never enters, and cheaper than a DataView per ride word (WB2).
+const floats = new Float32Array(ONE)
+const floatBits = new Uint32Array(floats.buffer)
 
 /** Reads one body, `bytes[start, end)`; it never reads past it. */
 class BitReader implements BitSource {
@@ -54,8 +58,8 @@ class BitReader implements BitSource {
   }
 
   public readF32(): number {
-    scratch.setUint32(ZERO, this.read(WORD))
-    return scratch.getFloat32(ZERO)
+    floatBits[ZERO] = this.read(WORD)
+    return floats[ZERO] ?? ZERO
   }
 
   public readF64(): number {

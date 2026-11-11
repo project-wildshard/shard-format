@@ -15,6 +15,10 @@ const F64_BYTES = 8
 const SECOND_WORD = 4
 
 const scratch = new DataView(new ArrayBuffer(F64_BYTES))
+// A float32's bits through an aliased array, as v0 reads them: one element,
+// so byte order never enters, and cheaper than a DataView per ride word (WB2).
+const floats = new Float32Array(ONE)
+const floatBits = new Uint32Array(floats.buffer)
 
 /** Writes one body; `take` detaches it, padded to a byte, and resets. */
 class BitWriter implements BitSink {
@@ -45,8 +49,8 @@ class BitWriter implements BitSink {
   }
 
   public writeF32(value: number): void {
-    scratch.setFloat32(ZERO, value)
-    this.write(scratch.getUint32(ZERO), WORD)
+    floats[ZERO] = value
+    this.write(floatBits[ZERO] ?? ZERO, WORD)
   }
 
   public writeF64(value: number): void {

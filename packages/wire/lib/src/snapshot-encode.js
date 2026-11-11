@@ -1,9 +1,10 @@
-import { ascending, bitSet, CELL_BITS, COUNT_BITS, HANDLE_BITS, NO_BASELINE, rowMask, SEQ_BITS, TICK_BITS, writeOwner, writeRide, } from './snapshot.js';
+import { ascending, CELL_BITS, COUNT_BITS, HANDLE_BITS, NO_BASELINE, rowMask, SEQ_BITS, TICK_BITS, writeOwner, writeRide, } from './snapshot.js';
 // WIRE-STABILITY 5.4: the server encodes one client's frame body in its own
 // layout, as v0's `encodeFrame` did; the record framing goes around it. Each
 // row's mask is computed once; the hot loops index arrays directly (WB2).
 const ZERO = 0;
 const ONE = 1;
+const TWO = 2;
 /** The frame a handle's row is a delta against, or undefined for a whole row. */
 function baseOf(input, handle) {
     const { baseline } = input;
@@ -24,11 +25,10 @@ function sentOf(input, handle, columns) {
     if (base !== undefined && input.due?.(handle) === false) {
         return undefined;
     }
-    const fields = columns.row.length;
     const mask = rowMask(input.frame, at, {
         frame: base,
         at: base?.offset(handle),
-        fields,
+        fields: columns.row.length,
     });
     return mask === ZERO ? undefined : { handle, columns, at, mask };
 }
@@ -65,18 +65,22 @@ function plan(input) {
             left.push(handle);
         }
     }
-    return { changed, left: left.toSorted(ascending), gone: goneOf(input) };
+    // Sorted in place: `left` is this plan's own array.
+    // oxlint-disable-next-line unicorn/no-array-sort -- a local array, sorted in place to spare a copy per frame
+    return { changed, left: left.sort(ascending), gone: goneOf(input) };
 }
 function writeRow(writer, input, sent) {
     const { row } = sent.columns;
     writer.write(sent.handle, HANDLE_BITS);
     writer.write(ZERO, ONE);
     writer.write(sent.mask, row.length);
-    for (let index = ZERO; index < row.length; index += ONE) {
-        const column = row[index];
-        if (column !== undefined && bitSet(sent.mask, index)) {
-            writer.write(input.frame.data[sent.at + index] ?? ZERO, column.bits);
+    const { data } = input.frame;
+    let rest = sent.mask;
+    for (let index = ZERO; index < row.length && rest > ZERO; index += ONE) {
+        if (rest % TWO === ONE) {
+            writer.write(data[sent.at + index] ?? ZERO, row[index]?.bits ?? ZERO);
         }
+        rest = Math.floor(rest / TWO);
     }
 }
 function writeHeader(writer, input) {

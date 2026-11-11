@@ -19,11 +19,12 @@ function rowMask(frame, at, base) {
     if (base.frame === undefined || base.at === undefined) {
         return fullMask(base.fields);
     }
+    const offset = base.at - at;
+    const held = base.frame.data;
     let mask = ZERO;
-    for (let index = ZERO; index < base.fields; index += ONE) {
-        if (frame.data[at + index] !== base.frame.data[base.at + index]) {
-            mask += TWO ** index;
-        }
+    for (let bit = ONE, index = ZERO; index < base.fields; index += ONE) {
+        mask += frame.data[at + index] === held[offset + at + index] ? ZERO : bit;
+        bit *= TWO;
     }
     return mask;
 }

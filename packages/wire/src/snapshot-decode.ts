@@ -1,6 +1,5 @@
 import {
   ascending,
-  bitSet,
   CELL_BITS,
   COUNT_BITS,
   DOUBLE_BITS,
@@ -32,6 +31,7 @@ interface Reading {
 
 const ZERO = 0
 const ONE = 1
+const TWO = 2
 
 /** A column a compiled class must hold; a hole is a bug, never zero bits. */
 function columnAt(
@@ -75,6 +75,7 @@ function readRide(
 }
 
 /** A changed row's new words over its previous ones, if any. */
+// oxlint-disable-next-line max-statements -- the hot path, one loop for WB2's decode budget
 function readWords(
   reading: Reading,
   columns: ClassColumns,
@@ -88,10 +89,12 @@ function readWords(
   }
   const row =
     previous === undefined ? new Uint32Array(fields) : new Uint32Array(previous)
-  for (let index = ZERO; index < fields; index += ONE) {
-    if (bitSet(mask, index)) {
+  let rest = mask
+  for (let index = ZERO; rest > ZERO; index += ONE) {
+    if (rest % TWO === ONE) {
       row[index] = reading.reader.read(columnAt(columns.row, index).bits)
     }
+    rest = Math.floor(rest / TWO)
   }
   return row
 }

@@ -1,6 +1,5 @@
 import {
   ascending,
-  bitSet,
   CELL_BITS,
   COUNT_BITS,
   HANDLE_BITS,
@@ -22,6 +21,7 @@ import type { RowSource, SnapshotInput } from './snapshot.ts'
 
 const ZERO = 0
 const ONE = 1
+const TWO = 2
 
 /** A row to send: its handle, columns, offset and changed-field mask. */
 interface Sent {
@@ -62,11 +62,10 @@ function sentOf(
   if (base !== undefined && input.due?.(handle) === false) {
     return undefined
   }
-  const fields = columns.row.length
   const mask = rowMask(input.frame, at, {
     frame: base,
     at: base?.offset(handle),
-    fields,
+    fields: columns.row.length,
   })
   return mask === ZERO ? undefined : { handle, columns, at, mask }
 }
@@ -106,7 +105,9 @@ function plan(input: SnapshotInput): Plan {
       left.push(handle)
     }
   }
-  return { changed, left: left.toSorted(ascending), gone: goneOf(input) }
+  // Sorted in place: `left` is this plan's own array.
+  // oxlint-disable-next-line unicorn/no-array-sort -- a local array, sorted in place to spare a copy per frame
+  return { changed, left: left.sort(ascending), gone: goneOf(input) }
 }
 
 function writeRow(writer: BitSink, input: SnapshotInput, sent: Sent): void {
@@ -114,11 +115,13 @@ function writeRow(writer: BitSink, input: SnapshotInput, sent: Sent): void {
   writer.write(sent.handle, HANDLE_BITS)
   writer.write(ZERO, ONE)
   writer.write(sent.mask, row.length)
-  for (let index = ZERO; index < row.length; index += ONE) {
-    const column = row[index]
-    if (column !== undefined && bitSet(sent.mask, index)) {
-      writer.write(input.frame.data[sent.at + index] ?? ZERO, column.bits)
+  const { data } = input.frame
+  let rest = sent.mask
+  for (let index = ZERO; index < row.length && rest > ZERO; index += ONE) {
+    if (rest % TWO === ONE) {
+      writer.write(data[sent.at + index] ?? ZERO, row[index]?.bits ?? ZERO)
     }
+    rest = Math.floor(rest / TWO)
   }
 }
 

@@ -150,3 +150,9 @@
   failing exit on any failed gate. The tag-shape count drops scalar padding
   and counts every sent row against its baseline, gone rows and freshness.
   The NIT too: a hole in a column or slot list throws again.
+- Under load 50 to 90 the four-run WB2 was mostly unqualified. Ride frames
+  stayed about 10% over v0 in Chromium, so masks are now built by doubling
+  and read by halving instead of a power per field, a float32's bits go
+  through an aliased array as v0's do, and the plan sorts in place. The
+  harness now measures eight back-to-back v0/v1 pairs and judges the median
+  pair, qualified when the interquartile range is within 0.10.

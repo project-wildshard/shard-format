@@ -1,7 +1,8 @@
-import { ascending, bitSet, CELL_BITS, COUNT_BITS, DOUBLE_BITS, fullMask, HANDLE_BITS, LAW_BITS, NO_BASELINE, SEQ_BITS, TICK_BITS, } from './snapshot.js';
+import { ascending, CELL_BITS, COUNT_BITS, DOUBLE_BITS, fullMask, HANDLE_BITS, LAW_BITS, NO_BASELINE, SEQ_BITS, TICK_BITS, } from './snapshot.js';
 import { WireDecodeError } from './wire-error.js';
 const ZERO = 0;
 const ONE = 1;
+const TWO = 2;
 /** A column a compiled class must hold; a hole is a bug, never zero bits. */
 function columnAt(columns, index) {
     const column = columns[index];
@@ -35,6 +36,7 @@ function readRide(reader, table) {
     return { law: law.id, words };
 }
 /** A changed row's new words over its previous ones, if any. */
+// oxlint-disable-next-line max-statements -- the hot path, one loop for WB2's decode budget
 function readWords(reading, columns, handle) {
     const fields = columns.row.length;
     const mask = reading.reader.read(fields);
@@ -43,10 +45,12 @@ function readWords(reading, columns, handle) {
         throw new WireDecodeError('A delta row has no baseline');
     }
     const row = previous === undefined ? new Uint32Array(fields) : new Uint32Array(previous);
-    for (let index = ZERO; index < fields; index += ONE) {
-        if (bitSet(mask, index)) {
+    let rest = mask;
+    for (let index = ZERO; rest > ZERO; index += ONE) {
+        if (rest % TWO === ONE) {
             row[index] = reading.reader.read(columnAt(columns.row, index).bits);
         }
+        rest = Math.floor(rest / TWO);
     }
     return row;
 }
