@@ -179,3 +179,16 @@
   server load re-reads it on a quiet machine.
 
 WB2: PASS.
+
+## WR6: the release rules (opus-wire)
+
+- `wire check` now also holds the lock to the last `wire-vM.m.0` tag
+  (`cli/release.ts`, `cli/release-ref.ts`), or to `--against <ref>` until
+  `wire-v1.0.0` exists. A released id keeps its name, form and bounds (the
+  WR4 review's bound rule, nested fields included); a removal waits out its
+  deprecation window and its id stays reserved; a required field is never
+  removed; a duplicate or reserved id fails; additions need a minor above the
+  release's; a limit change needs a major; a patch tag leaves the lock
+  byte-identical. Ids added since the release are free. A copy installed
+  outside the shardfile checkout (engine's node_modules) skips the rules.
+  `test/release.test.ts` holds a fixture per rule.
