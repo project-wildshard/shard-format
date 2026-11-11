@@ -374,9 +374,10 @@
     "test:ci": "node --test 'src/ci/**/*.test.ts'",
     "test:format": "vitest run src/format --testTimeout=30000 --maxWorkers=2",
     "check:asks": "node src/scripts/asks.mjs check",
+    "check:agents": "node .githooks/agents-md.mjs lint",
     "md:wrap": "node src/scripts/md-wrap.mjs",
     "test:hooks": "node --test '.githooks/*.test.mjs'",
-    "check": "pnpm typecheck && pnpm lint && pnpm lint:format && pnpm format:check && pnpm test && pnpm test:format && pnpm check:asks && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs && pnpm check:wire",
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:format && pnpm format:check && pnpm test && pnpm test:format && pnpm check:asks && pnpm check:agents && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs && pnpm check:wire",
     "check:wire": "pnpm --dir packages/wire check && pnpm --dir packages/wire test",
     "bench": "pnpm --dir packages/wire bench"
   },
