@@ -60,7 +60,7 @@ which ended J81. Nothing edits format anywhere else.
 
 1. Change `src/format` here, with its tests. `pnpm check`, commit, push.
 2. Batch changes, then release:
-   `ASSISTED_BY=Claude-Code:<model> ../leftover/src/repo-kit/release.sh vX.Y.Z`.
+   `ASSISTED_BY=Claude-Code:<model> ../repo-kit/release.sh vX.Y.Z`.
 3. In singleplayer, set the tag in all four manifests (root, `src/game`,
    `src/sdk`, `src/commons`) and update `pnpm-lock.yaml` with pnpm
    10.34.9 or newer. An older pnpm can record the annotated tag's object
