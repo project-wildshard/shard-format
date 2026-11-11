@@ -208,3 +208,6 @@ WB2: PASS.
   `cli/release-entries.ts` (entries id by id) and `cli/release-grammar.ts`
   (versions and node kinds); the fixtures into `test/release.test.ts` and
   `test/release-history.test.ts`, sharing `test/helpers/release.ts`.
+- Reuse against earlier releases no longer filters problems by their text
+  (an entry named "reserved" could have hidden a rename); the reserved-list
+  rules run against the last release only.

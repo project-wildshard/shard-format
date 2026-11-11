@@ -119,12 +119,21 @@ function compareSpaces(
       compareEntries(diff, key, [mine, theirs])
     }
   }
-  for (const space of RESERVED) {
-    const lists = SPACE_NAMES.has(space)
-      ? ([entriesOf(old[space]), entriesOf(next[space])] as const)
-      : ([nodeEntries(old, space), nodeEntries(next, space)] as const)
-    diff.problems.push(...reservedProblems(space, locks, lists))
-  }
+}
+
+/** The reserved-list rules for every space that keeps one, against the last release only. */
+function reservedSpaces(
+  locks: readonly [ReleaseLock, ReleaseLock],
+): readonly string[] {
+  const [old, next] = locks
+  return RESERVED.flatMap(
+    (space: (typeof RESERVED)[number]): readonly string[] => {
+      const lists = SPACE_NAMES.has(space)
+        ? ([entriesOf(old[space]), entriesOf(next[space])] as const)
+        : ([nodeEntries(old, space), nodeEntries(next, space)] as const)
+      return reservedProblems(space, locks, lists)
+    },
+  )
 }
 
 /** Every release-rule problem with `next` against the last release `old`. */
@@ -142,7 +151,11 @@ function releaseProblems(
     added: NONE,
   }
   compareSpaces(diff, [old, next])
-  return [...diff.problems, ...versionProblems(old, next)]
+  return [
+    ...diff.problems,
+    ...reservedSpaces([old, next]),
+    ...versionProblems(old, next),
+  ]
 }
 
 /** Reuse against an earlier release: every id it held keeps its name and form (removals are the last release's business). */
@@ -157,10 +170,9 @@ function reuseProblems(
     clock: undefined,
     added: NONE,
   }
+  // Reserved lists are the last release's business; reuse is about names and forms.
   compareSpaces(diff, [earlier, next])
-  return diff.problems.filter(
-    (problem: string): boolean => !problem.includes('reserved'),
-  )
+  return diff.problems
 }
 
 /** A patch release (`wire-vM.m.p`, p > 0) leaves the lock byte-identical (5.5). */
