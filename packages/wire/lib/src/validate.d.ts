@@ -1,8 +1,5 @@
 import type { ColdRecord, WireClass, WireNode, WireRecord } from './grammar.ts';
-interface Identified {
-    readonly id: number;
-    readonly name: string;
-}
+import type { Identified } from './node-checks.ts';
 /** A descriptor set: everything one wire major declares. */
 interface DescriptorSet {
     readonly messages: readonly Identified[];

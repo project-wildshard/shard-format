@@ -1,5 +1,6 @@
 import { WIRE_CLASSES } from './classes.ts'
 import { WIRE_EVENTS } from './events.ts'
+import { WIRE_MAJOR, WIRE_MINOR } from './major.ts'
 import {
   HELLO,
   WELCOME,
@@ -27,10 +28,6 @@ import type {
 // descriptors, never edited by hand. It lists every id in every space, each
 // with `since`, and every field with its resolved default.
 
-/** The wire major these descriptors belong to. */
-const WIRE_MAJOR = 1
-/** The wire minor of the next release (`wire-v1.0.0`). */
-const WIRE_MINOR = 0
 const LOCK_VERSION = 1
 const JSON_INDENT = 2
 const ZERO = 0
@@ -275,8 +272,6 @@ export {
   MAX_ROW_FIELDS,
   nodeDefault,
   rowFieldCount,
-  WIRE_MAJOR,
-  WIRE_MINOR,
   wireLock,
   wireLockText,
   type Json,

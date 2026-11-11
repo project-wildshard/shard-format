@@ -1,14 +1,11 @@
 import { WIRE_CLASSES } from './classes.js';
 import { WIRE_EVENTS } from './events.js';
+import { WIRE_MAJOR, WIRE_MINOR } from './major.js';
 import { HELLO, WELCOME, WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, } from './records.js';
 import { v0SchemaHash } from './v0.js';
 // WIRE-STABILITY 5.2 and 7: `wire.lock.json` is generated from the
 // descriptors, never edited by hand. It lists every id in every space, each
 // with `since`, and every field with its resolved default.
-/** The wire major these descriptors belong to. */
-const WIRE_MAJOR = 1;
-/** The wire minor of the next release (`wire-v1.0.0`). */
-const WIRE_MINOR = 0;
 const LOCK_VERSION = 1;
 const JSON_INDENT = 2;
 const ZERO = 0;
@@ -218,4 +215,4 @@ function wireLock() {
 function wireLockText() {
     return `${JSON.stringify(wireLock(), undefined, JSON_INDENT)}\n`;
 }
-export { MAX_ROW_FIELDS, nodeDefault, rowFieldCount, WIRE_MAJOR, WIRE_MINOR, wireLock, wireLockText, };
+export { MAX_ROW_FIELDS, nodeDefault, rowFieldCount, wireLock, wireLockText, };

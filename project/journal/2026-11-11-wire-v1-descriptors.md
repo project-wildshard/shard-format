@@ -21,3 +21,33 @@
   a literal tuple, `./events` and `./v0Field` (frozen-free, for engine's
   bundle) are exported, and the attack's target field is named `targetId`
   as NetCommand names it.
+
+## WR3: the v1 record codec (opus-wire)
+
+- 5.1 framing (`framing.ts`): uvarint tag and length records, the 64 KiB cap,
+  minimal 5-byte uvarints, and the `W`, major bootstrap (a v0.1.x hello's
+  first byte 1 answers `reload`; a higher major `retry`).
+- 5.3 node codecs compiled once into closures (`encode.ts`, `decode.ts`):
+  decode by the sender's table, project by id onto the receiver's, so an
+  unknown field or arm is read and dropped and a missing one reads its
+  default; enum words map by string.
+- Tables travel as a closed binary form (`tables.ts`, `table-read.ts`),
+  bounded in depth, counts and size, and checked like local descriptors.
+  Cold hello and welcome (`cold.ts`, `handshake.ts`) use protobuf keys;
+  a travel welcome carries only `tableHash`.
+- `cmds`, `act` (`game.ts`) and `events` (`event-stream.ts`, nested records
+  so one unknown event is skipped) are tagged records. The 5.1 byte
+  examples are frozen in `fixtures/v1-examples.json`.
+- Nothing in engine uses it yet: that is WR5. Hello is about 310 bytes with
+  both client tables; the welcome's class tables arrive with WR4.
+- WR3 review (J206; Codex, as the Claude quota sits at 100%): seven MUSTs
+  folded in. A peer table's arrays hold 1 to 255 values of at least one bit,
+  so a body bounds its count; fixed divisors are integers of 1 or more;
+  quant bounds and steps are finite; any kind mismatch, nested ones too, is
+  read, skipped and read as the receiver's default; text keeps a leading
+  BOM; cold text keeps the 255-byte cap; an empty message and tag 0
+  refuse. SHOULDs too: a bad enum default index refuses, a missing union
+  reads its default arm, a welcome holds all three table blocks or none,
+  and events reuse one writer. Its eighth MUST, reconciling
+  `quantiseCommand`'s pitch with the v1 quant decoder, is for WR5, when
+  engine switches to v1; frozen v0 and its equality test stay as they are.

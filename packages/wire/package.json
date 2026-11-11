@@ -18,7 +18,17 @@
     "./lock": "./lib/src/lock.js",
     "./v0": "./lib/src/v0.js",
     "./v0Field": "./lib/src/v0-field.js",
-    "./events": "./lib/src/events.js"
+    "./events": "./lib/src/events.js",
+    "./codec": "./lib/src/codec.js",
+    "./game": "./lib/src/game.js",
+    "./eventStream": "./lib/src/event-stream.js",
+    "./handshake": "./lib/src/handshake.js",
+    "./framing": "./lib/src/framing.js",
+    "./bits": "./lib/src/bits.js",
+    "./major": "./lib/src/major.js",
+    "./tables": "./lib/src/tables.js",
+    "./tableRead": "./lib/src/table-read.js",
+    "./wireError": "./lib/src/wire-error.js"
   },
   "files": [
     "bin.mjs",
