@@ -144,4 +144,4 @@ function encodeTable(entries: readonly WireField[]): Uint8Array<ArrayBuffer> {
   return Uint8Array.from(out)
 }
 
-export { encodeTable, FIRST_CODE, KIND_CODES, unzigzag }
+export { encodeTable, FIRST_CODE, KIND_CODES, unzigzag, writeNode }

@@ -28,7 +28,14 @@
     "./major": "./lib/src/major.js",
     "./tables": "./lib/src/tables.js",
     "./tableRead": "./lib/src/table-read.js",
-    "./wireError": "./lib/src/wire-error.js"
+    "./wireError": "./lib/src/wire-error.js",
+    "./snapshot": "./lib/src/snapshot.js",
+    "./frameRecord": "./lib/src/frame-record.js",
+    "./projection": "./lib/src/projection.js",
+    "./classTables": "./lib/src/class-tables.js",
+    "./rides": "./lib/src/rides.js",
+    "./columns": "./lib/src/columns.js",
+    "./spawnColumns": "./lib/src/spawn-columns.js"
   },
   "files": [
     "bin.mjs",

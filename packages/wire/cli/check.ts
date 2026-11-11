@@ -13,6 +13,7 @@ import { WIRE_EVENTS } from '../src/events.ts'
 import { wireLockText } from '../src/lock.ts'
 import {
   HELLO,
+  RIDE_LAWS,
   WELCOME,
   WIRE_ACTS,
   WIRE_COMMAND,
@@ -21,7 +22,7 @@ import {
 } from '../src/records.ts'
 import { v0Field } from '../src/v0-field.ts'
 import { v0Description } from '../src/v0.ts'
-import { validateDescriptors } from '../src/validate.ts'
+import { rideLawProblems, validateDescriptors } from '../src/validate.ts'
 import {
   classifyTokens,
   renderCommandField,
@@ -265,15 +266,18 @@ function classifyAgainstBaseline(baseline: BaselineLock): Classification {
 
 /** Every reason `wire check` fails, plus what it classified. */
 function checkWire(committedLock: string, baseline: unknown): Classification {
-  const problems = validateDescriptors({
-    messages: WIRE_MESSAGES,
-    cold: [HELLO, WELCOME],
-    records: WIRE_RECORDS,
-    events: WIRE_EVENTS,
-    acts: WIRE_ACTS,
-    command: WIRE_COMMAND,
-    classes: WIRE_CLASSES,
-  })
+  const problems = [
+    ...rideLawProblems(RIDE_LAWS),
+    ...validateDescriptors({
+      messages: WIRE_MESSAGES,
+      cold: [HELLO, WELCOME],
+      records: WIRE_RECORDS,
+      events: WIRE_EVENTS,
+      acts: WIRE_ACTS,
+      command: WIRE_COMMAND,
+      classes: WIRE_CLASSES,
+    }),
+  ]
   const stale =
     wireLockText() === committedLock
       ? []

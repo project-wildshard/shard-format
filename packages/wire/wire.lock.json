@@ -3777,7 +3777,357 @@
     }
   ],
   "capabilities": [],
-  "rideLaws": [],
+  "rideLaws": [
+    {
+      "id": 1,
+      "name": "mount",
+      "fields": [
+        {
+          "id": 1,
+          "name": "feetX",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 2,
+          "name": "feetY",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 3,
+          "name": "feetZ",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 4,
+          "name": "grounded",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 5,
+          "name": "heading",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 6,
+          "name": "speed",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 7,
+          "name": "yawRate",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 8,
+          "name": "vy",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 9,
+          "name": "steed",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 10,
+          "name": "winded",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 11,
+          "name": "breaking",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 12,
+          "name": "wUp",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 13,
+          "name": "cruise",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 14,
+          "name": "gallopWas",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 15,
+          "name": "jumpWas",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 16,
+          "name": "jumpQueued",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 17,
+          "name": "tapQueued",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 18,
+          "name": "clock",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 19,
+          "name": "lastPhase",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 20,
+          "name": "strideHz",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 21,
+          "name": "sectorWas",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 22,
+          "name": "skidT",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 23,
+          "name": "panicT",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 24,
+          "name": "panicRear",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 25,
+          "name": "panicYaw",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 26,
+          "name": "spurFlash",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 27,
+          "name": "spurStreak",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 28,
+          "name": "spurLatchT",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 29,
+          "name": "spurGood",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 30,
+          "name": "spurLastTap",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 31,
+          "name": "onDeck",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 32,
+          "name": "swimming",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 33,
+          "name": "airT",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 34,
+          "name": "blockedT",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 35,
+          "name": "shoveX",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 36,
+          "name": "shoveZ",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 37,
+          "name": "jostleCd",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 38,
+          "name": "gait",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        }
+      ],
+      "since": 0
+    }
+  ],
   "reserved": {
     "messages": [],
     "events": [],

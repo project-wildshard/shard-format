@@ -104,4 +104,4 @@ function decodeTable(bytes, start, end) {
     }
     return entries;
 }
-export { decodeTable };
+export { decodeTable, readNode };

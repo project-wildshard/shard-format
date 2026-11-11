@@ -2,6 +2,7 @@ import { WIRE_CLASSES } from './classes.js';
 import { WIRE_EVENTS } from './events.js';
 import { WIRE_MAJOR, WIRE_MINOR } from './major.js';
 import { HELLO, WELCOME, WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, } from './records.js';
+import { RIDE_LAWS } from './rides.js';
 import { v0SchemaHash } from './v0.js';
 // WIRE-STABILITY 5.2 and 7: `wire.lock.json` is generated from the
 // descriptors, never edited by hand. It lists every id in every space, each
@@ -200,7 +201,7 @@ function wireLock() {
         command: lockNode(WIRE_COMMAND),
         classes: WIRE_CLASSES.map((wireClass) => lockClass(wireClass)),
         capabilities: [],
-        rideLaws: [],
+        rideLaws: RIDE_LAWS.map((law) => lockArm(law)),
         reserved: {
             messages: [],
             events: [],

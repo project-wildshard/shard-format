@@ -1,0 +1,50 @@
+/** The baseline tick of a full frame. */
+const NO_BASELINE = 4_294_967_295;
+const ZERO = 0;
+const ONE = 1;
+const TWO = 2;
+const TICK_BITS = 32;
+const CELL_BITS = 16;
+const SEQ_BITS = 16;
+const HANDLE_BITS = 16;
+const COUNT_BITS = 16;
+const LAW_BITS = 8;
+const DOUBLE_BITS = 64;
+const MAX_MASK_BITS = 32;
+const fullMask = (fields) => fields >= MAX_MASK_BITS ? NO_BASELINE : TWO ** fields - ONE;
+const ascending = (left, right) => left - right;
+const bitSet = (mask, index) => Math.floor(mask / TWO ** index) % TWO === ONE;
+/** A row's changed-field mask against its baseline row, if any. */
+function rowMask(frame, at, base) {
+    if (base.frame === undefined || base.at === undefined) {
+        return fullMask(base.fields);
+    }
+    let mask = ZERO;
+    for (let index = ZERO; index < base.fields; index += ONE) {
+        if (frame.data[at + index] !== base.frame.data[base.at + index]) {
+            mask += TWO ** index;
+        }
+    }
+    return mask;
+}
+function writeOwner(writer, columns, owner) {
+    for (const [index, column] of columns.entries()) {
+        const value = owner[index] ?? ZERO;
+        if (column.bits === DOUBLE_BITS) {
+            writer.writeF64(value);
+        }
+        else {
+            writer.write(value, column.bits);
+        }
+    }
+}
+function writeRide(writer, ride) {
+    writer.write(ride === undefined ? ZERO : ONE, ONE);
+    if (ride !== undefined) {
+        writer.write(ride.law, LAW_BITS);
+        for (const word of ride.words) {
+            writer.writeF32(word);
+        }
+    }
+}
+export { ascending, bitSet, CELL_BITS, COUNT_BITS, DOUBLE_BITS, fullMask, HANDLE_BITS, LAW_BITS, NO_BASELINE, rowMask, SEQ_BITS, TICK_BITS, writeOwner, writeRide, };

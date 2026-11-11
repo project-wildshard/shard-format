@@ -129,4 +129,4 @@ function decodeTable(
   return entries
 }
 
-export { decodeTable }
+export { decodeTable, readNode }

@@ -1,4 +1,4 @@
-import type { ColdRecord, WireClass, WireNode, WireRecord } from './grammar.ts';
+import type { ColdRecord, WireArm, WireClass, WireNode, WireRecord } from './grammar.ts';
 import type { Identified } from './node-checks.ts';
 /** A descriptor set: everything one wire major declares. */
 interface DescriptorSet {
@@ -12,4 +12,8 @@ interface DescriptorSet {
 }
 /** Everything wrong with a descriptor set; empty when it is sound. */
 declare function validateDescriptors(set: DescriptorSet): readonly string[];
-export { validateDescriptors, type DescriptorSet };
+/** Everything wrong with one class, as a peer's class table must be checked. */
+declare function classProblems(wireClass: WireClass): readonly string[];
+/** Every ride law's words are f32s, so a frame carries them as v0 did. */
+declare function rideLawProblems(laws: readonly WireArm[]): readonly string[];
+export { classProblems, rideLawProblems, validateDescriptors, type DescriptorSet, };

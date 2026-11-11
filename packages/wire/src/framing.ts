@@ -116,6 +116,17 @@ function readRecord(
   return { tag: tag.value, start: length.next, end: stop }
 }
 
+/** One record as its own message, built in one allocation (a hot path). */
+function recordBytes(tag: number, body: Readonly<Uint8Array>): Uint8Array {
+  const head: number[] = []
+  writeUvarint(head, tag)
+  writeUvarint(head, body.length)
+  const out = new Uint8Array(head.length + body.length)
+  out.set(head)
+  out.set(body, head.length)
+  return out
+}
+
 /** Every record in `bytes[start, end)`, in order; a bad frame refuses all. */
 function readRecords(
   bytes: Readonly<Uint8Array>,
@@ -160,6 +171,7 @@ export {
   readBootstrap,
   readRecords,
   readUvarint,
+  recordBytes,
   UINT32_LIMIT,
   writeRecord,
   writeUvarint,

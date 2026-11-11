@@ -1,9 +1,31 @@
 import { MAX_ROW_FIELDS, rowFieldCount } from './lock.js';
 import { checkFields, checkNode, checkSpace } from './node-checks.js';
+/** The node kinds a class field may be: a column word, or spawn text. */
+const CLASS_KINDS = new Set([
+    'uint',
+    'bool',
+    'f32',
+    'f64',
+    'quant',
+    'fixed',
+    'angle',
+    'enum',
+    'ref',
+    'text',
+]);
 function checkClassField(where, field) {
-    return field.node.kind === 'text' && field.send !== 'initial'
-        ? [`${where}.${field.name}: text is initial-only`]
-        : [];
+    const at = `${where}.${field.name}`;
+    const { kind } = field.node;
+    const owned = field.predicted === true || field.send === 'owner';
+    return [
+        ...(CLASS_KINDS.has(kind) ? [] : [`${at}: a ${kind} is not a column`]),
+        ...(kind === 'text' && field.send !== 'initial'
+            ? [`${at}: text is initial-only`]
+            : []),
+        ...(kind === 'f64' && !owned
+            ? [`${at}: a double fits only the owner block`]
+            : []),
+    ];
 }
 function checkClass(wireClass) {
     const where = `class.${wireClass.name}`;
@@ -44,4 +66,20 @@ function validateDescriptors(set) {
         ...set.classes.flatMap((wireClass) => checkClass(wireClass)),
     ];
 }
-export { validateDescriptors };
+/** Everything wrong with one class, as a peer's class table must be checked. */
+function classProblems(wireClass) {
+    return checkClass(wireClass);
+}
+/** Every ride law's words are f32s, so a frame carries them as v0 did. */
+function rideLawProblems(laws) {
+    return [
+        ...checkSpace('rideLaws', laws),
+        ...laws.flatMap((law) => [
+            ...checkFields(`rideLaw.${law.name}`, law.fields),
+            ...law.fields
+                .filter((field) => field.node.kind !== 'f32')
+                .map((field) => `rideLaw.${law.name}.${field.name}: a ride word is an f32`),
+        ]),
+    ];
+}
+export { classProblems, rideLawProblems, validateDescriptors, };

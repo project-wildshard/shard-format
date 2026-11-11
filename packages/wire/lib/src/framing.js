@@ -73,6 +73,16 @@ function readRecord(bytes, at, end) {
     }
     return { tag: tag.value, start: length.next, end: stop };
 }
+/** One record as its own message, built in one allocation (a hot path). */
+function recordBytes(tag, body) {
+    const head = [];
+    writeUvarint(head, tag);
+    writeUvarint(head, body.length);
+    const out = new Uint8Array(head.length + body.length);
+    out.set(head);
+    out.set(body, head.length);
+    return out;
+}
 /** Every record in `bytes[start, end)`, in order; a bad frame refuses all. */
 function readRecords(bytes, start, end) {
     if (end - start > MAX_MESSAGE_BYTES) {
@@ -104,4 +114,4 @@ function readBootstrap(bytes, major) {
 function bootstrapBytes(major) {
     return [BOOTSTRAP, major];
 }
-export { bootstrapBytes, MAX_MESSAGE_BYTES, readBootstrap, readRecords, readUvarint, UINT32_LIMIT, writeRecord, writeUvarint, };
+export { bootstrapBytes, MAX_MESSAGE_BYTES, readBootstrap, readRecords, readUvarint, recordBytes, UINT32_LIMIT, writeRecord, writeUvarint, };

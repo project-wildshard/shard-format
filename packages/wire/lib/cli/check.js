@@ -2,10 +2,10 @@ import { array, boolean, looseObject, number, object, parse, string, } from 'val
 import { WIRE_CLASSES } from '../src/classes.js';
 import { WIRE_EVENTS } from '../src/events.js';
 import { wireLockText } from '../src/lock.js';
-import { HELLO, WELCOME, WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, } from '../src/records.js';
+import { HELLO, RIDE_LAWS, WELCOME, WIRE_ACTS, WIRE_COMMAND, WIRE_MESSAGES, WIRE_RECORDS, } from '../src/records.js';
 import { v0Field } from '../src/v0-field.js';
 import { v0Description } from '../src/v0.js';
-import { validateDescriptors } from '../src/validate.js';
+import { rideLawProblems, validateDescriptors } from '../src/validate.js';
 import { classifyTokens, renderCommandField, renderField, splitForm, } from './forms.js';
 // `wire check` (WIRE-STABILITY 7, the WR2 part): the descriptors are sound,
 // the committed lock is what they generate, and against the WS2 v0 baseline
@@ -139,15 +139,18 @@ function classifyAgainstBaseline(baseline) {
 }
 /** Every reason `wire check` fails, plus what it classified. */
 function checkWire(committedLock, baseline) {
-    const problems = validateDescriptors({
-        messages: WIRE_MESSAGES,
-        cold: [HELLO, WELCOME],
-        records: WIRE_RECORDS,
-        events: WIRE_EVENTS,
-        acts: WIRE_ACTS,
-        command: WIRE_COMMAND,
-        classes: WIRE_CLASSES,
-    });
+    const problems = [
+        ...rideLawProblems(RIDE_LAWS),
+        ...validateDescriptors({
+            messages: WIRE_MESSAGES,
+            cold: [HELLO, WELCOME],
+            records: WIRE_RECORDS,
+            events: WIRE_EVENTS,
+            acts: WIRE_ACTS,
+            command: WIRE_COMMAND,
+            classes: WIRE_CLASSES,
+        }),
+    ];
     const stale = wireLockText() === committedLock
         ? []
         : ['wire.lock.json is stale: run `pnpm lock` and commit it'];

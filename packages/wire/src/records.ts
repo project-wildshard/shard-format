@@ -270,3 +270,4 @@ export {
   WIRE_MESSAGES,
   WIRE_RECORDS,
 }
+export { RIDE_LAWS } from './rides.ts'

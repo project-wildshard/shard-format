@@ -51,3 +51,27 @@
   and events reuse one writer. Its eighth MUST, reconciling
   `quantiseCommand`'s pitch with the v1 quant decoder, is for WR5, when
   engine switches to v1; frozen v0 and its equality test stay as they are.
+
+## WR4: snapshots, projection, rides (opus-wire)
+
+- `snapshot*.ts`: v1 frames keep v0's shape (owner block with f64 doubles,
+  masks as wide as the sender's row, freshness bits in handle order) but
+  read by the sender's class columns, so the receiver keeps every row raw,
+  of a class it knows or not. Replaying the WS3 walking, fight and ride
+  recordings through v1 decodes exactly what v0 decodes, frame by frame.
+- `projection.ts` maps the sender's classes and columns onto the receiver's
+  by id: a column it lacks is dropped, one the sender lacks reads its
+  default, a bounds change converts the word; a sender lacking a required
+  (position or predicted) field refuses before play. Rides get a law: the
+  mount's 38 f32 words, named from `MountedBody.captureRide`; a receiver
+  that can't read a law whole is never seated.
+- Class tables travel in the welcome (`class-tables.ts`), checked like local
+  classes (no doubles in a row, only column kinds); spawns read a class's
+  initial columns by the sender's table, known class or not.
+- Not yet: engine's predictor and interpolator read the projection when
+  engine switches to v1 at WR5.
+- A quick Node look before WB2: v1 frames are 0.5 to 0.9% larger than v0's
+  on walking, fight and ride. The first v1 encoder was 1.3 to 2x slower; it
+  now computes each row's mask once, indexes arrays in the hot loop and
+  frames a record in one allocation, and sits within noise of v0 here. WB2
+  measures it properly.

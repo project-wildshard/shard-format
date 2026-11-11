@@ -157,4 +157,4 @@ function prepareFrame(record) {
     assertDecodedFrame(record, decode());
     return { bytes, encode, decode };
 }
-export { prepareFrame };
+export { inputOf, prepareFrame, receiverBase };

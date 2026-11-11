@@ -9,6 +9,7 @@ import {
   WIRE_MESSAGES,
   WIRE_RECORDS,
 } from './records.ts'
+import { RIDE_LAWS } from './rides.ts'
 import { v0SchemaHash } from './v0.ts'
 
 import type {
@@ -251,7 +252,7 @@ function wireLock(): Json {
       lockClass(wireClass),
     ),
     capabilities: [],
-    rideLaws: [],
+    rideLaws: RIDE_LAWS.map((law: WireArm): Json => lockArm(law)),
     reserved: {
       messages: [],
       events: [],

@@ -122,4 +122,4 @@ function encodeTable(entries) {
     writeFields(out, entries);
     return Uint8Array.from(out);
 }
-export { encodeTable, FIRST_CODE, KIND_CODES, unzigzag };
+export { encodeTable, FIRST_CODE, KIND_CODES, unzigzag, writeNode };

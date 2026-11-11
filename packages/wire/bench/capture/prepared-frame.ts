@@ -211,4 +211,4 @@ function prepareFrame(record: CapturedFrame): PreparedFrame {
   return { bytes, encode, decode }
 }
 
-export { prepareFrame, type PreparedFrame }
+export { inputOf, prepareFrame, receiverBase, type PreparedFrame }
