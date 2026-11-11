@@ -29,6 +29,10 @@ assert.equal(typeof global.gc,'function','Run with node --expose-gc');
 const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
 const dirty=execFileSync('git',['status','--porcelain','--untracked-files=normal','--','packages/wire','src/scripts/wire'],{cwd:root,encoding:'utf8'}).trim();
 const GATE={bytes:1.10,encode:1.10,decodeP95:1.25,welcome:2048};
+// Runs alternate codec order, so an even count weighs both orders the same. A recording's ratios qualify only when
+// their spread across runs is within the gate's own margin; wider, the reading is noise and the gate is not judged.
+const RUNS=Number(process.env.WB2_RUNS??4),SPREAD=0.10;
+assert.ok(Number.isInteger(RUNS)&&RUNS>=2&&RUNS%2===0,'WB2_RUNS is an even count, at least 2');
 const report={format:'wildshard-wire-wb2/1',sha,dirty:dirty!=='',started:new Date().toISOString(),policy:POLICY,gate:GATE,bytes:{},profiles:{},complete:false};
 const save=()=>writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 const sourceFor=name=>new URL(`../../../packages/wire/bench/recordings/${name}/`,import.meta.url);
@@ -57,7 +61,7 @@ function record(profile,name,run,codec,result){
 const orderFor=run=>run%2===0?['v0','v1']:['v1','v0'];
 async function native(){
   report.profiles.node={runtime:process.version,platform:process.platform,arch:process.arch,runs:[]};
-  for(let run=0;run<POLICY.runs;run++)for(const name of names)for(const codec of orderFor(run)){
+  for(let run=0;run<RUNS;run++)for(const name of names)for(const codec of orderFor(run)){
     let traffic=codec==='v1'?prepareV1Traffic(await recording(manifests[name],reader(name))):await prepareTraffic(manifests[name],reader(name));
     global.gc();const result=measureTraffic(traffic);record('node',name,run,codec,result);
     traffic=undefined;benchmarkSink.value=undefined;global.gc();
@@ -88,7 +92,7 @@ async function phone(){
     assert.equal(await page.evaluate(()=>crossOriginIsolated),true);
     const cdp=await context.newCDPSession(page);
     report.profiles.chromium4x={runtime:browser.version(),throttle:4,isolated:true,runs:[]};
-    for(let run=0;run<POLICY.runs;run++)for(const name of names)for(const codec of orderFor(run)){
+    for(let run=0;run<RUNS;run++)for(const name of names)for(const codec of orderFor(run)){
       await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});
       await page.evaluate(()=>globalThis.wireBenchmark.release());await cdp.send('HeapProfiler.collectGarbage');
       await page.evaluate(async([name,codec])=>await globalThis.wireBenchmark.prepare(name,codec),[name,codec]);await cdp.send('HeapProfiler.collectGarbage');
@@ -98,7 +102,7 @@ async function phone(){
     assert.deepEqual(errors,[]);
   }finally{try{if(browser)await browser.close();}finally{await new Promise((yes,no)=>server.close(error=>error?no(error):yes()));}}
 }
-/** The gate: each run's v1/v0 ratio, judged on the mean ratio of the two runs (no retries). */
+/** The gate: each run's v1/v0 ratio; the mean ratio over runs of both orders, when the runs agree (no retries). */
 function judge(){
   const verdict={};
   for(const name of names){
@@ -107,8 +111,10 @@ function judge(){
     const cpu={};
     for(const profile of Object.keys(report.profiles)){
       const runs=report.profiles[profile].runs.map(run=>run[name]).filter(Boolean).map(v=>({encodeMean:ratio(v.v1.encodeMean,v.v0.encodeMean),encodeP95:ratio(v.v1.encodeP95,v.v0.encodeP95),decodeMean:ratio(v.v1.decodeMean,v.v0.decodeMean),decodeP95:ratio(v.v1.decodeP95,v.v0.decodeP95)}));
-      const best=k=>runs.reduce((sum,r)=>sum+r[k],0)/runs.length;
-      cpu[profile]={runs,encodeOk:best('encodeMean')<=GATE.encode&&best('encodeP95')<=GATE.encode,decodeP95Ok:best('decodeP95')<=GATE.decodeP95};
+      const avg=k=>runs.reduce((sum,r)=>sum+r[k],0)/runs.length,spread=k=>Math.max(...runs.map(r=>r[k]))-Math.min(...runs.map(r=>r[k]));
+      const means={encodeMean:avg('encodeMean'),encodeP95:avg('encodeP95'),decodeMean:avg('decodeMean'),decodeP95:avg('decodeP95')};
+      const stable=spread('encodeMean')<=SPREAD;
+      cpu[profile]={runs,means,spread:{encodeMean:spread('encodeMean'),encodeP95:spread('encodeP95')},stable,encodeOk:stable&&means.encodeMean<=GATE.encode&&means.encodeP95<=GATE.encode,decodeP95Ok:means.decodeP95<=GATE.decodeP95};
     }
     verdict[name]={bytesOk,cpu,gateOk:bytesOk&&(cpu.chromium4x?.encodeOk??false)};
   }
@@ -119,5 +125,7 @@ try{
   if(profiles.includes('node'))await native();
   if(profiles.includes('chromium4x'))await phone();
   report.verdict=judge();report.complete=true;report.finished=new Date().toISOString();save();
-  for(const [name,v] of Object.entries(report.verdict))console.info(`WB2 ${name}: bytes ${v.bytesOk?'PASS':'FAIL'}; ${Object.entries(v.cpu).map(([p,c])=>`${p} encode ${c.encodeOk?'PASS':'FAIL'} decode-p95 ${c.decodeP95Ok?'within 1.25':'over 1.25 (Opus decides)'}`).join('; ')}`);
+  for(const [name,v] of Object.entries(report.verdict))console.info(`WB2 ${name}: bytes ${v.bytesOk?'PASS':'FAIL'}; ${Object.entries(v.cpu).map(([p,c])=>`${p} encode x${c.means.encodeMean.toFixed(3)} mean x${c.means.encodeP95.toFixed(3)} p95 ${c.stable?(c.encodeOk?'PASS':'FAIL'):`UNQUALIFIED (spread ${c.spread.encodeMean.toFixed(3)})`} decode x${c.means.decodeMean.toFixed(3)} mean x${c.means.decodeP95.toFixed(3)} p95 ${c.decodeP95Ok?'within 1.25':'over 1.25 (Opus decides)'}`).join('; ')}`);
+  report.ok=Object.values(report.verdict).every(v=>v.gateOk);save();
+  if(!report.ok)process.exitCode=1;
 }catch(error){report.error=error instanceof Error?error.stack:String(error);save();throw error;}

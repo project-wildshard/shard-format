@@ -31,7 +31,11 @@ function writeOwner(writer, columns, owner) {
     // An index loop: `entries()` allocates per column, and this runs per frame (WB2).
     const count = columns.length;
     for (let index = ZERO; index < count; index += ONE) {
-        const bits = columns[index]?.bits ?? ZERO;
+        const column = columns[index];
+        if (column === undefined) {
+            throw new RangeError(`A class has no owner column ${String(index)}`);
+        }
+        const { bits } = column;
         const value = owner[index] ?? ZERO;
         if (bits === DOUBLE_BITS) {
             writer.writeF64(value);

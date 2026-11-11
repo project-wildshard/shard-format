@@ -1,5 +1,4 @@
-import { readRecords } from '../../src/framing.js';
-const NONE = 0;
+import { readMessage } from '../../src/game.js';
 /** Encode once, decode once (a bad replay throws here, outside timing). */
 function packetOf(stream, work) {
     const bytes = work.encode();
@@ -12,9 +11,9 @@ function packetOf(stream, work) {
         decode: () => work.decode(bytes),
     };
 }
-/** A one-record message's record body. */
+/** A one-record message's record body, through the receiver's message read. */
 function onlyRecord(bytes) {
-    const [record] = readRecords(bytes, NONE, bytes.length);
+    const [record] = readMessage(bytes).records;
     if (record === undefined) {
         throw new Error('A v1 message holds no record');
     }

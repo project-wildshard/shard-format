@@ -33,12 +33,24 @@ interface Reading {
 const ZERO = 0
 const ONE = 1
 
+/** A column a compiled class must hold; a hole is a bug, never zero bits. */
+function columnAt(
+  columns: ClassColumns['row'],
+  index: number,
+): ClassColumns['row'][number] {
+  const column = columns[index]
+  if (column === undefined) {
+    throw new RangeError(`A class has no column ${String(index)}`)
+  }
+  return column
+}
+
 function readOwner(reader: BitSource, columns: ClassColumns): Float64Array {
   // Index loops here and in `readWords`: `entries()` allocates per column (WB2).
   const count = columns.owner.length
   const owner = new Float64Array(count)
   for (let index = ZERO; index < count; index += ONE) {
-    const bits = columns.owner[index]?.bits ?? ZERO
+    const { bits } = columnAt(columns.owner, index)
     owner[index] = bits === DOUBLE_BITS ? reader.readF64() : reader.read(bits)
   }
   return owner
@@ -78,7 +90,7 @@ function readWords(
     previous === undefined ? new Uint32Array(fields) : new Uint32Array(previous)
   for (let index = ZERO; index < fields; index += ONE) {
     if (bitSet(mask, index)) {
-      row[index] = reading.reader.read(columns.row[index]?.bits ?? ZERO)
+      row[index] = reading.reader.read(columnAt(columns.row, index).bits)
     }
   }
   return row

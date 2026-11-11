@@ -84,10 +84,11 @@ function projectRow(slotsOf, raw) {
     const out = new Float64Array(count);
     for (let index = ZERO; index < count; index += ONE) {
         const slot = slotsOf[index];
-        if (slot !== undefined) {
-            const word = raw[slot.from];
-            out[index] = word === undefined ? slot.fallback : slot.convert(word);
+        if (slot === undefined) {
+            throw new RangeError(`A projection has no slot ${String(index)}`);
         }
+        const word = raw[slot.from];
+        out[index] = word === undefined ? slot.fallback : slot.convert(word);
     }
     return out;
 }

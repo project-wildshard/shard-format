@@ -1,4 +1,5 @@
 import { bitSink } from '../../src/bits.ts'
+import { columnBits } from '../../src/columns.ts'
 import { compileEncoder } from '../../src/encode.ts'
 import { asArm, asList, asStruct } from '../../src/values.ts'
 
@@ -18,6 +19,8 @@ import type { FrameSeen } from './v1-frames.ts'
 
 const ZERO = 0
 const ONE = 1
+const TWO = 2
+const BYTE = 8
 const CONTINUE = 128
 const BYTE_SPAN = 256
 const KEY_SHIFT = 8
@@ -54,10 +57,12 @@ function wordOf(node: WireNode, value: WireValue): number {
   const encode = ENCODERS.get(node) ?? compileEncoder(node)
   ENCODERS.set(node, encode)
   encode(SHARED, value)
-  return SHARED.take().reduce(
+  const bytes = SHARED.take()
+  const padded = bytes.reduce(
     (word: number, byte: number): number => word * BYTE_SPAN + byte,
     ZERO,
   )
+  return Math.floor(padded / TWO ** (bytes.length * BYTE - columnBits(node)))
 }
 
 /** A struct's fields, each present one with its key. */
@@ -149,10 +154,7 @@ function rowBytes(
   row: Readonly<Uint32Array>,
 ): number {
   const columns = seen.classOf(handle)?.row ?? []
-  const held =
-    seen.raw?.fresh.has(handle) === true
-      ? undefined
-      : seen.base?.rows.get(handle)
+  const held = seen.base?.rows.get(handle)
   const body = sum(
     columns.map((column: Column, at: number): number => {
       const word = row[at] ?? ZERO
@@ -183,7 +185,14 @@ function taggedFrameBytes(seen: FrameSeen, fallback: number): number {
     ([handle, row]: readonly [number, Readonly<Uint32Array>]): number =>
       rowBytes(seen, handle, row),
   )
-  return taggedRecord(sum(header) + sum(owner) + ride + sum(rows))
+  // A gone row is its handle and a key; freshness is one bit per held row.
+  const gone = [...(seen.base?.rows.keys() ?? [])]
+    .filter((handle: number): boolean => !raw.rows.has(handle))
+    .map((handle: number): number => varintBytes(handle) + ONE)
+  const freshness = delimited(Math.ceil(raw.rows.size / BYTE))
+  return taggedRecord(
+    sum(header) + sum(owner) + ride + sum(rows) + sum(gone) + freshness,
+  )
 }
 
 export { taggedFrameBytes, taggedRecord, taggedRecordBytes, varintBytes }

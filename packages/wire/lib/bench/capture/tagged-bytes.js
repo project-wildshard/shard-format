@@ -1,4 +1,5 @@
 import { bitSink } from '../../src/bits.js';
+import { columnBits } from '../../src/columns.js';
 import { compileEncoder } from '../../src/encode.js';
 import { asArm, asList, asStruct } from '../../src/values.js';
 // WB2's second shape (5.6): the same values with a protobuf key on every
@@ -11,6 +12,8 @@ import { asArm, asList, asStruct } from '../../src/values.js';
 // not counted, so events understate this shape a little.
 const ZERO = 0;
 const ONE = 1;
+const TWO = 2;
+const BYTE = 8;
 const CONTINUE = 128;
 const BYTE_SPAN = 256;
 const KEY_SHIFT = 8;
@@ -42,7 +45,9 @@ function wordOf(node, value) {
     const encode = ENCODERS.get(node) ?? compileEncoder(node);
     ENCODERS.set(node, encode);
     encode(SHARED, value);
-    return SHARED.take().reduce((word, byte) => word * BYTE_SPAN + byte, ZERO);
+    const bytes = SHARED.take();
+    const padded = bytes.reduce((word, byte) => word * BYTE_SPAN + byte, ZERO);
+    return Math.floor(padded / TWO ** (bytes.length * BYTE - columnBits(node)));
 }
 /** A struct's fields, each present one with its key. */
 function structBytes(fields, value) {
@@ -114,9 +119,7 @@ function taggedRecordBytes(fields, value) {
 /** One row's changed columns, keyed, after its handle and length. */
 function rowBytes(seen, handle, row) {
     const columns = seen.classOf(handle)?.row ?? [];
-    const held = seen.raw?.fresh.has(handle) === true
-        ? undefined
-        : seen.base?.rows.get(handle);
+    const held = seen.base?.rows.get(handle);
     const body = sum(columns.map((column, at) => {
         const word = row[at] ?? ZERO;
         return held?.[at] === word
@@ -135,6 +138,11 @@ function taggedFrameBytes(seen, fallback) {
     const owner = seen.owner.owner.map((column) => keyBytes(column.id) + (column.bits > WORD_BITS ? F64_BYTES : F32_BYTES));
     const ride = (raw.ride?.words.length ?? ZERO) * (ONE + F32_BYTES);
     const rows = [...raw.rows].map(([handle, row]) => rowBytes(seen, handle, row));
-    return taggedRecord(sum(header) + sum(owner) + ride + sum(rows));
+    // A gone row is its handle and a key; freshness is one bit per held row.
+    const gone = [...(seen.base?.rows.keys() ?? [])]
+        .filter((handle) => !raw.rows.has(handle))
+        .map((handle) => varintBytes(handle) + ONE);
+    const freshness = delimited(Math.ceil(raw.rows.size / BYTE));
+    return taggedRecord(sum(header) + sum(owner) + ride + sum(rows) + sum(gone) + freshness);
 }
 export { taggedFrameBytes, taggedRecord, taggedRecordBytes, varintBytes };

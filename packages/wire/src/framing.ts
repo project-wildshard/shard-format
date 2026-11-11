@@ -37,11 +37,16 @@ const BOOTSTRAP = 87
 const V0_HELLO = 1
 const BOOTSTRAP_BYTES = 2
 
-/** Append a uvarint's bytes. */
-function writeUvarint(out: ByteSink, value: number): void {
+/** Refuse what no uvarint holds: a fraction, a negative, NaN, 2^32 and up. */
+function checkUvarint(value: number): void {
   if (!Number.isInteger(value) || value < ZERO || value >= UINT32_LIMIT) {
     throw new RangeError(`A uvarint holds 0 to 2^32 - 1, not ${String(value)}`)
   }
+}
+
+/** Append a uvarint's bytes. */
+function writeUvarint(out: ByteSink, value: number): void {
+  checkUvarint(value)
   let rest = value
   while (rest >= CONTINUE) {
     out.push((rest % CONTINUE) + CONTINUE)
@@ -118,6 +123,7 @@ function readRecord(
 
 /** The bytes a uvarint of `value` takes. */
 function uvarintLength(value: number): number {
+  checkUvarint(value)
   let length = ONE
   for (let rest = value; rest >= CONTINUE; rest = Math.floor(rest / CONTINUE)) {
     length += ONE
@@ -128,6 +134,7 @@ function uvarintLength(value: number): number {
 /** Write a uvarint into `out` at `at`; the offset after it. */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it writes into `out`
 function putUvarint(out: Uint8Array, at: number, value: number): number {
+  checkUvarint(value)
   let next = at
   let rest = value
   while (rest >= CONTINUE) {

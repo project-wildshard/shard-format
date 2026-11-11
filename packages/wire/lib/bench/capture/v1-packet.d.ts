@@ -17,6 +17,6 @@ interface V1Work {
 }
 /** Encode once, decode once (a bad replay throws here, outside timing). */
 declare function packetOf(stream: string, work: V1Work): V1Packet;
-/** A one-record message's record body. */
+/** A one-record message's record body, through the receiver's message read. */
 declare function onlyRecord(bytes: Readonly<Uint8Array>): Span;
 export { onlyRecord, packetOf, type V1Packet, type V1Work };

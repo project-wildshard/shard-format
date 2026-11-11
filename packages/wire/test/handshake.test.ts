@@ -141,3 +141,19 @@ test('a welcome holding some but not all of its table blocks refuses', (): void 
     /some of its table blocks/u,
   )
 })
+
+test('a cold value no uvarint holds refuses before any byte is written', (): void => {
+  for (const ledger of [
+    -1,
+    0.5,
+    Number.NaN,
+    2 ** 32,
+    Number.POSITIVE_INFINITY,
+  ]) {
+    assert.throws(
+      (): Uint8Array => encodeHello({ ...HELLO, ledger }),
+      RangeError,
+    )
+  }
+  assert.equal(encodeHello({ ...HELLO, ledger: 2 ** 32 - 1 }).length > 0, true)
+})

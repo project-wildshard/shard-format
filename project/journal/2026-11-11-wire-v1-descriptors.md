@@ -139,3 +139,14 @@
   for the record. `src/scripts/wire/wb2.mjs` replays all four recordings
   in Node and in Chromium at 4x, v0 and v1 interleaved with the order
   swapped each run, and judges each recording against the 5.7 gate.
+- Codex review of the WB2 commit (J206), folded in. MUST: the one-allocation
+  uvarint writers had lost `writeUvarint`'s range check; a negative,
+  fractional, NaN or 2^32 value now refuses again (test in `handshake`).
+  MUST: the dense recording is a capture graph; fixed in `571b790`.
+  SHOULDs: v1 decode in the harness goes through `readMessage` (dispatch and
+  singleton checks, as v0's goes through its own); runs default to four, in
+  alternating order, and a recording whose encode ratio spreads more than
+  0.10 across runs is reported unqualified rather than judged, with a
+  failing exit on any failed gate. The tag-shape count drops scalar padding
+  and counts every sent row against its baseline, gone rows and freshness.
+  The NIT too: a hole in a column or slot list throws again.
