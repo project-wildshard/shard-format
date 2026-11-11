@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { realpath } from 'node:fs/promises';
 import path from 'node:path';
-import { text } from 'node:stream/consumers';
+import { text as readAll } from 'node:stream/consumers';
 import { isReleaseLock, patchProblems, releaseProblems } from './release.js';
 // Where `wire check` finds the released lock: `--against <ref>` (a scratch
 // tag until `wire-v1.0.0` exists, WR6), else the newest `wire-vM.m.0` tag.
@@ -14,10 +14,11 @@ const OK = 0;
 /** Run git in `cwd`; its stdout, trimmed. A failing git throws. */
 async function git(cwd, args) {
     const child = spawn('git', args, { cwd, stdio: ['ignore', 'pipe', 'ignore'] });
-    const [stdout, [code]] = await Promise.all([
-        text(child.stdout),
+    const [stdout, closed] = await Promise.all([
+        readAll(child.stdout),
         once(child, 'close'),
     ]);
+    const code = closed.at(NONE);
     if (code !== OK) {
         throw new Error(`git ${args.join(' ')} failed`);
     }
