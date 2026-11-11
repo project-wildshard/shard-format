@@ -156,3 +156,26 @@
   through an aliased array as v0's do, and the plan sorts in place. The
   harness now measures eight back-to-back v0/v1 pairs and judges the median
   pair, qualified when the interquartile range is within 0.10.
+
+## WB2 result (opus-wire; Opus decided, J206 one-shot)
+
+- `packages/wire/bench/results/wb2-2026-11-11.json`, at a51f56f: eight
+  back-to-back v0/v1 pairs per recording, median pair, qualified when the
+  encode-ratio IQR is within 0.10. The top-level `ok` is judged on Chromium
+  4x only; Node is reported as the quick check.
+- Bytes: every tables-shape ratio within 1.0153; welcome 1329-1332 B. The
+  per-field-tag shape costs 1.4-2.0x, a lower bound (its events omit spawn
+  columns), so tables were right.
+- Chromium 4x encode medians: walking 1.043, fight 0.958, ride 1.021, dense
+  0.660. The Chromium p95s of 1.000 on walking, fight and ride sit at the
+  isolated clock's floor (about 5 us), not a measured ratio: no encode pair's
+  v1 p95 landed in a higher tick than v0's. Node, whose clock resolves single
+  calls, reads encode p95 medians 0.867, 0.861, 1.075, 0.662.
+- Opus signs off v1 decode for WR5: Chromium 4x decode p95 sits at the clock
+  floor, Node p95 is <= 1.19x on every recording, and the 1.29x walking mean
+  is accepted, to be re-read with a resolvable p95 on a real phone in WR9.
+- Carried: WR9 measures p95 on per-tick batches (walking and ride closest to
+  the line); Node ride encode read 1.14x, so the first row that measures
+  server load re-reads it on a quiet machine.
+
+WB2: PASS.

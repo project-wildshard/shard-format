@@ -1,0 +1,735 @@
+{
+  "format": "wildshard-wire-wb2-summary/1",
+  "sha": "a51f56fbe54197b879fa309a1b1946df7384d576",
+  "started": "2026-11-11T17:43:57.291Z",
+  "finished": "2026-11-11T18:16:15.199Z",
+  "policy": {
+    "clockPairs": 1024,
+    "warmPasses": 16,
+    "meanPasses": 32,
+    "samplePasses": 32,
+    "minimumOperations": 4096,
+    "runs": 2,
+    "maximumDifferencePercent": 3
+  },
+  "gate": {
+    "bytes": 1.1,
+    "encode": 1.1,
+    "decodeP95": 1.25,
+    "welcome": 2048
+  },
+  "ok": true,
+  "method": "8 back-to-back v0/v1 pairs per recording and profile, codec order alternating; verdict on the median pair, qualified when the interquartile range of encode-mean ratios is <= 0.10; bytes deterministic (Node). Gate profile: Chromium headless at 4x CPU throttle; Node is the quick check.",
+  "bytes": {
+    "walking": {
+      "v0": {
+        "frameMean": 233.22641509433961,
+        "frameP95": 251,
+        "up": 98265,
+        "down": 210949,
+        "handshakeUp": 39,
+        "handshakeDown": 28,
+        "welcomeMax": 28
+      },
+      "tables": {
+        "frameMean": 235.22641509433961,
+        "frameP95": 253,
+        "up": 99764,
+        "down": 212766,
+        "handshakeUp": 344,
+        "handshakeDown": 1329,
+        "welcomeMax": 1329
+      },
+      "tags": {
+        "frameMean": 393.9167591564928,
+        "frameP95": 423,
+        "up": 197188,
+        "down": 355327,
+        "handshakeUp": 344,
+        "handshakeDown": 1329,
+        "welcomeMax": 1329
+      },
+      "tablesRatio": {
+        "frameMean": 1.008575357980746,
+        "frameP95": 1.0079681274900398,
+        "up": 1.015254668498448,
+        "down": 1.0086134563330473
+      },
+      "tagsRatio": {
+        "frameMean": 1.6889886121910944,
+        "frameP95": 1.6852589641434264,
+        "up": 2.006696178700453,
+        "down": 1.684421353028457
+      }
+    },
+    "fight": {
+      "v0": {
+        "frameMean": 309.9503311258278,
+        "frameP95": 1165,
+        "up": 29075,
+        "down": 97381,
+        "handshakeUp": 82,
+        "handshakeDown": 58,
+        "welcomeMax": 30
+      },
+      "tables": {
+        "frameMean": 311.9503311258278,
+        "frameP95": 1167,
+        "up": 29486,
+        "down": 98086,
+        "handshakeUp": 692,
+        "handshakeDown": 2660,
+        "welcomeMax": 1331
+      },
+      "tags": {
+        "frameMean": 491.23509933774835,
+        "frameP95": 1663,
+        "up": 55370,
+        "down": 151311,
+        "handshakeUp": 692,
+        "handshakeDown": 2660,
+        "welcomeMax": 1331
+      },
+      "tablesRatio": {
+        "frameMean": 1.0064526467603225,
+        "frameP95": 1.0017167381974248,
+        "up": 1.0141358555460018,
+        "down": 1.0072396052618067
+      },
+      "tagsRatio": {
+        "frameMean": 1.5848832861492443,
+        "frameP95": 1.4274678111587984,
+        "up": 1.9043852106620809,
+        "down": 1.5538041301691294
+      }
+    },
+    "ride": {
+      "v0": {
+        "frameMean": 392.58677685950414,
+        "frameP95": 882,
+        "up": 13487,
+        "down": 54154,
+        "handshakeUp": 38,
+        "handshakeDown": 28,
+        "welcomeMax": 28
+      },
+      "tables": {
+        "frameMean": 394.58677685950414,
+        "frameP95": 884,
+        "up": 13687,
+        "down": 54501,
+        "handshakeUp": 343,
+        "handshakeDown": 1329,
+        "welcomeMax": 1329
+      },
+      "tags": {
+        "frameMean": 575.7520661157025,
+        "frameP95": 1137,
+        "up": 27233,
+        "down": 76202,
+        "handshakeUp": 343,
+        "handshakeDown": 1329,
+        "welcomeMax": 1329
+      },
+      "tablesRatio": {
+        "frameMean": 1.0050944150895733,
+        "frameP95": 1.002267573696145,
+        "up": 1.0148290946837695,
+        "down": 1.006407652250988
+      },
+      "tagsRatio": {
+        "frameMean": 1.4665600067364166,
+        "frameP95": 1.2891156462585034,
+        "up": 2.0192036776154816,
+        "down": 1.407135207002253
+      }
+    },
+    "dense": {
+      "v0": {
+        "frameMean": 1180.5357142857142,
+        "frameP95": 2389,
+        "up": 379424,
+        "down": 3564612,
+        "handshakeUp": 1260,
+        "handshakeDown": 980,
+        "welcomeMax": 31
+      },
+      "tables": {
+        "frameMean": 1182.5357142857142,
+        "frameP95": 2391,
+        "up": 384800,
+        "down": 3574340,
+        "handshakeUp": 11020,
+        "handshakeDown": 42612,
+        "welcomeMax": 1332
+      },
+      "tags": {
+        "frameMean": 1810.2475961538462,
+        "frameP95": 4098,
+        "up": 759458,
+        "down": 5341693,
+        "handshakeUp": 11020,
+        "handshakeDown": 42612,
+        "welcomeMax": 1332
+      },
+      "tablesRatio": {
+        "frameMean": 1.0016941461201028,
+        "frameP95": 1.0008371703641692,
+        "up": 1.014168845407776,
+        "down": 1.0027290487716476
+      },
+      "tagsRatio": {
+        "frameMean": 1.5334119707247829,
+        "frameP95": 1.7153620761825032,
+        "up": 2.001607700092772,
+        "down": 1.498534202319916
+      }
+    }
+  },
+  "verdict": {
+    "walking": {
+      "bytesOk": true,
+      "gateOk": true,
+      "cpu": {
+        "node": {
+          "medians": {
+            "encodeMean": 0.9754226307060392,
+            "encodeP95": 0.8672609463724483,
+            "decodeMean": 1.237609971514925,
+            "decodeP95": 0.9364976509525684
+          },
+          "iqr": {
+            "encodeMean": 0.1943042568273875,
+            "encodeP95": 0.06300801752609342
+          },
+          "stable": false,
+          "encodeOk": false,
+          "decodeP95Ok": true,
+          "pairs": [
+            {
+              "encodeMean": 1.0792096844111954,
+              "encodeP95": 0.8888888888888888,
+              "decodeMean": 1.411678885351288,
+              "decodeP95": 1.018328605564359
+            },
+            {
+              "encodeMean": 1.0106728896436876,
+              "encodeP95": 0.8778666603585085,
+              "decodeMean": 1.161416394111407,
+              "decodeP95": 0.7185461318463057
+            },
+            {
+              "encodeMean": 0.928430206498639,
+              "encodeP95": 0.8614543758138206,
+              "decodeMean": 1.4135596628116625,
+              "decodeP95": 1.050425268228442
+            },
+            {
+              "encodeMean": 1.2509241925848293,
+              "encodeP95": 1.0350084902332737,
+              "decodeMean": 1.1498895885029239,
+              "decodeP95": 0.9486153875085465
+            },
+            {
+              "encodeMean": 0.9401723717683907,
+              "encodeP95": 0.824116745969575,
+              "decodeMean": 1.3138035489184428,
+              "decodeP95": 0.9243799143965904
+            },
+            {
+              "encodeMean": 0.7271730452133718,
+              "encodeP95": 0.7981065619513156,
+              "decodeMean": 1.0926989637699984,
+              "decodeP95": 0.9024262556180338
+            },
+            {
+              "encodeMean": 0.8445738589764626,
+              "encodeP95": 0.6840974922504849,
+              "decodeMean": 1.1559265043239786,
+              "decodeP95": 0.8226382957542034
+            },
+            {
+              "encodeMean": 1.169452452548344,
+              "encodeP95": 0.8730675169310762,
+              "decodeMean": 1.6528231557045685,
+              "decodeP95": 1.021450444530537
+            }
+          ]
+        },
+        "chromium4x": {
+          "medians": {
+            "encodeMean": 1.0427331416239825,
+            "encodeP95": 1,
+            "decodeMean": 1.2905671508911234,
+            "decodeP95": 1
+          },
+          "iqr": {
+            "encodeMean": 0.06368734458434155,
+            "encodeP95": 0
+          },
+          "stable": true,
+          "encodeOk": true,
+          "decodeP95Ok": true,
+          "pairs": [
+            {
+              "encodeMean": 1.071041573566713,
+              "encodeP95": 1,
+              "decodeMean": 1.1705068540236532,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.0353926222866745,
+              "encodeP95": 1,
+              "decodeMean": 1.463189170562957,
+              "decodeP95": 1.9999523173755485
+            },
+            {
+              "encodeMean": 1.020289949075555,
+              "encodeP95": 1,
+              "decodeMean": 1.2645488424075773,
+              "decodeP95": 1.9999523173755485
+            },
+            {
+              "encodeMean": 1.1043550341588273,
+              "encodeP95": 1,
+              "decodeMean": 1.382480881963719,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 0.9423550618765989,
+              "encodeP95": 0.5000119209403238,
+              "decodeMean": 1.2664625410099684,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.0018605292949345,
+              "encodeP95": 1,
+              "decodeMean": 1.313680135624016,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.2339272542693671,
+              "encodeP95": 1,
+              "decodeMean": 1.5423860393025226,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.0500736609612902,
+              "encodeP95": 1,
+              "decodeMean": 1.2674541661582306,
+              "decodeP95": 1
+            }
+          ]
+        }
+      }
+    },
+    "fight": {
+      "bytesOk": true,
+      "gateOk": true,
+      "cpu": {
+        "node": {
+          "medians": {
+            "encodeMean": 0.9265741787749495,
+            "encodeP95": 0.8609395543155787,
+            "decodeMean": 1.1134044578646196,
+            "decodeP95": 0.9073472266155146
+          },
+          "iqr": {
+            "encodeMean": 0.1119707616967659,
+            "encodeP95": 0.06136893020526124
+          },
+          "stable": false,
+          "encodeOk": false,
+          "decodeP95Ok": true,
+          "pairs": [
+            {
+              "encodeMean": 0.8442253208535881,
+              "encodeP95": 0.8909130572465408,
+              "decodeMean": 1.0963068647622618,
+              "decodeP95": 0.896294453404876
+            },
+            {
+              "encodeMean": 1.1593862468179088,
+              "encodeP95": 0.9056114209963142,
+              "decodeMean": 1.170006274390817,
+              "decodeP95": 0.7047853071611819
+            },
+            {
+              "encodeMean": 0.98572143624672,
+              "encodeP95": 0.7752460553862179,
+              "decodeMean": 1.093260424059455,
+              "decodeP95": 0.9183999998261532
+            },
+            {
+              "encodeMean": 0.9540083754806975,
+              "encodeP95": 0.8929811339613253,
+              "decodeMean": 1.2027209151014426,
+              "decodeP95": 1.0885726492438
+            },
+            {
+              "encodeMean": 0.8991399820692015,
+              "encodeP95": 0.8528788959066186,
+              "decodeMean": 1.310971636047726,
+              "decodeP95": 0.9429246452973378
+            },
+            {
+              "encodeMean": 0.8986787489729464,
+              "encodeP95": 0.8690002127245388,
+              "decodeMean": 1.1305020509669774,
+              "decodeP95": 0.9894750299596494
+            },
+            {
+              "encodeMean": 1.030980305819331,
+              "encodeP95": 0.8483328431645617,
+              "decodeMean": 1.0435915892107532,
+              "decodeP95": 0.7254588256537295
+            },
+            {
+              "encodeMean": 0.6540283162773616,
+              "encodeP95": 0.4983619055856923,
+              "decodeMean": 0.7577076967338527,
+              "decodeP95": 0.5647069085714683
+            }
+          ]
+        },
+        "chromium4x": {
+          "medians": {
+            "encodeMean": 0.9577998733923537,
+            "encodeP95": 1,
+            "decodeMean": 1.0642162299751035,
+            "decodeP95": 1
+          },
+          "iqr": {
+            "encodeMean": 0.09560082167196227,
+            "encodeP95": 0
+          },
+          "stable": true,
+          "encodeOk": true,
+          "decodeP95Ok": true,
+          "pairs": [
+            {
+              "encodeMean": 1.067936070408337,
+              "encodeP95": 0.6666719649044728,
+              "decodeMean": 1.179539190701913,
+              "decodeP95": 1.3333227370261465
+            },
+            {
+              "encodeMean": 0.9058629102076196,
+              "encodeP95": 1,
+              "decodeMean": 1.0218180427222636,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.017011869684214,
+              "encodeP95": 1,
+              "decodeMean": 0.9882588968059098,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 0.968127865436991,
+              "encodeP95": 1,
+              "decodeMean": 1.1086655651548771,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 0.8406165547115915,
+              "encodeP95": 1,
+              "decodeMean": 0.8307256020835014,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 0.9922858227558292,
+              "encodeP95": 1,
+              "decodeMean": 1.1231175404129237,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 0.893877320640994,
+              "encodeP95": 1,
+              "decodeMean": 1.0073212834250032,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 0.9474718813477164,
+              "encodeP95": 1,
+              "decodeMean": 1.106614417227943,
+              "decodeP95": 1
+            }
+          ]
+        }
+      }
+    },
+    "ride": {
+      "bytesOk": true,
+      "gateOk": true,
+      "cpu": {
+        "node": {
+          "medians": {
+            "encodeMean": 1.142181144480165,
+            "encodeP95": 1.0750292897013516,
+            "decodeMean": 1.2604385302799468,
+            "decodeP95": 1.1892463978588927
+          },
+          "iqr": {
+            "encodeMean": 0.08043408441323407,
+            "encodeP95": 0.08496620602130145
+          },
+          "stable": true,
+          "encodeOk": false,
+          "decodeP95Ok": true,
+          "pairs": [
+            {
+              "encodeMean": 4.667691001558451,
+              "encodeP95": 1.0185555561969177,
+              "decodeMean": 1.4937224487070089,
+              "decodeP95": 1.0777333354740817
+            },
+            {
+              "encodeMean": 1.1597266901429464,
+              "encodeP95": 1.1553429523970398,
+              "decodeMean": 1.3418655053292767,
+              "decodeP95": 1.2583999941047281
+            },
+            {
+              "encodeMean": 1.2168077299738118,
+              "encodeP95": 1.2352941197954386,
+              "decodeMean": 1.4132662912683644,
+              "decodeP95": 1.9226046521490154
+            },
+            {
+              "encodeMean": 0.9452607056976947,
+              "encodeP95": 0.9042828466029276,
+              "decodeMean": 1.096935724283869,
+              "decodeP95": 1.1343012723133623
+            },
+            {
+              "encodeMean": 1.145872796979908,
+              "encodeP95": 1.0460075232082127,
+              "decodeMean": 1.130237135239574,
+              "decodeP95": 1.1819173555836622
+            },
+            {
+              "encodeMean": 1.078918369954286,
+              "encodeP95": 1.0364931607178394,
+              "decodeMean": 1.1790115552306168,
+              "decodeP95": 1.3956621936360591
+            },
+            {
+              "encodeMean": 1.1384894919804218,
+              "encodeP95": 1.1041856366795342,
+              "decodeMean": 1.3730951044939688,
+              "decodeP95": 1.1965754401341233
+            },
+            {
+              "encodeMean": 1.098444364265143,
+              "encodeP95": 1.1040510561944903,
+              "decodeMean": 1.048910834969571,
+              "decodeP95": 0.8889333405707446
+            }
+          ]
+        },
+        "chromium4x": {
+          "medians": {
+            "encodeMean": 1.0213498025012884,
+            "encodeP95": 1,
+            "decodeMean": 1.2104440414585378,
+            "decodeP95": 1
+          },
+          "iqr": {
+            "encodeMean": 0.06931806496339332,
+            "encodeP95": 0
+          },
+          "stable": true,
+          "encodeOk": true,
+          "decodeP95Ok": true,
+          "pairs": [
+            {
+              "encodeMean": 0.927640251154658,
+              "encodeP95": 0.9999761586877742,
+              "decodeMean": 1.1123955670344676,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.0567272744159926,
+              "encodeP95": 1,
+              "decodeMean": 1.2343764014603171,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 0.9765959677624999,
+              "encodeP95": 1,
+              "decodeMean": 1.171145826420079,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.0704558497955021,
+              "encodeP95": 1,
+              "decodeMean": 1.1865116814567582,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.0223227906677579,
+              "encodeP95": 1,
+              "decodeMean": 1.1692354769872981,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 0.995589815142469,
+              "encodeP95": 1,
+              "decodeMean": 1.2375471082822163,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.0203768143348189,
+              "encodeP95": 1,
+              "decodeMean": 1.2651717166607328,
+              "decodeP95": 1
+            },
+            {
+              "encodeMean": 1.143161904471261,
+              "encodeP95": 1.0000238418806475,
+              "decodeMean": 1.3309994090898845,
+              "decodeP95": 1.4999880790596762
+            }
+          ]
+        }
+      }
+    },
+    "dense": {
+      "bytesOk": true,
+      "gateOk": true,
+      "cpu": {
+        "node": {
+          "medians": {
+            "encodeMean": 0.3762199609242911,
+            "encodeP95": 0.6617176060599663,
+            "decodeMean": 0.6753950112038594,
+            "decodeP95": 0.769762422676249
+          },
+          "iqr": {
+            "encodeMean": 0.6010923237740801,
+            "encodeP95": 0.0900346161893042
+          },
+          "stable": false,
+          "encodeOk": false,
+          "decodeP95Ok": true,
+          "pairs": [
+            {
+              "encodeMean": 0.13947328116706897,
+              "encodeP95": 0.5884911597727435,
+              "decodeMean": 0.15621159718297561,
+              "decodeP95": 0.6613677409304923
+            },
+            {
+              "encodeMean": 0.7710242031344894,
+              "encodeP95": 0.7905740609895491,
+              "decodeMean": 0.8139059142053936,
+              "decodeP95": 0.8390410950957764
+            },
+            {
+              "encodeMean": 0.7909066092872734,
+              "encodeP95": 0.8686135991086172,
+              "decodeMean": 0.8265975151217277,
+              "decodeP95": 0.7784323353554773
+            },
+            {
+              "encodeMean": 0.13697469270913792,
+              "encodeP95": 0.6183742928048881,
+              "decodeMean": 0.14611215162389177,
+              "decodeP95": 0.7669150249376249
+            },
+            {
+              "encodeMean": 0.15212761854046117,
+              "encodeP95": 0.7006212100534643,
+              "decodeMean": 0.1666432610881779,
+              "decodeP95": 0.7446010926188344
+            },
+            {
+              "encodeMean": 0.7430670762500945,
+              "encodeP95": 0.6792634337850468,
+              "decodeMean": 0.7536159647774178,
+              "decodeP95": 0.7726098204148729
+            },
+            {
+              "encodeMean": 0.5812407943889952,
+              "encodeP95": 0.6441717783348858,
+              "decodeMean": 0.8436838067026561,
+              "decodeP95": 1.0779642202777038
+            },
+            {
+              "encodeMean": 0.17119912745958693,
+              "encodeP95": 0.6379749778626124,
+              "decodeMean": 0.597174057630301,
+              "decodeP95": 0.7031342521959347
+            }
+          ]
+        },
+        "chromium4x": {
+          "medians": {
+            "encodeMean": 0.6595638854015802,
+            "encodeP95": 0.09782190926750607,
+            "decodeMean": 0.8304197535486402,
+            "decodeP95": 0.8807653100450284
+          },
+          "iqr": {
+            "encodeMean": 0.04864284756964998,
+            "encodeP95": 0.14931683157417963
+          },
+          "stable": true,
+          "encodeOk": true,
+          "decodeP95Ok": true,
+          "pairs": [
+            {
+              "encodeMean": 0.6423872745932114,
+              "encodeP95": 0.06756784621610266,
+              "decodeMean": 0.8368809644595536,
+              "decodeP95": 0.8803423610457328
+            },
+            {
+              "encodeMean": 0.7049588709901266,
+              "encodeP95": 0.1190480515528994,
+              "decodeMean": 1.0217242589693307,
+              "decodeP95": 0.9224136832494964
+            },
+            {
+              "encodeMean": 0.6910020253583464,
+              "encodeP95": 0.11627845083307921,
+              "decodeMean": 0.8759699624993064,
+              "decodeP95": 0.8425929523463039
+            },
+            {
+              "encodeMean": 0.6470020940644514,
+              "encodeP95": 0.07692335907520015,
+              "decodeMean": 0.7953821378541556,
+              "decodeP95": 0.8017237658450682
+            },
+            {
+              "encodeMean": 0.6589150084946163,
+              "encodeP95": 0.07936536770193293,
+              "decodeMean": 0.5674106046888729,
+              "decodeP95": 0.7787614129744479
+            },
+            {
+              "encodeMean": 0.6216954753462266,
+              "encodeP95": 0.0666669209798177,
+              "decodeMean": 0.7314425397542125,
+              "decodeP95": 0.8811882590443241
+            },
+            {
+              "encodeMean": 0.7834351298996854,
+              "encodeP95": 0.5624995809047539,
+              "decodeMean": 1.1219695641149938,
+              "decodeP95": 1.0442475299415728
+            },
+            {
+              "encodeMean": 0.6602127623085441,
+              "encodeP95": 0.5384610950797235,
+              "decodeMean": 0.8239585426377266,
+              "decodeP95": 0.9279998779296875
+            }
+          ]
+        }
+      }
+    }
+  }
+}
