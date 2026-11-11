@@ -9,7 +9,6 @@ const EVENTS_TAG = TAG_EVENTS
 /** The one known record in a message, as a span. */
 function onlyRecord(bytes: Readonly<Uint8Array>): Span {
   const [record] = readMessage(bytes).records
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- a message may hold none
   if (record === undefined) {
     throw new WireDecodeError('The message holds no known record')
   }

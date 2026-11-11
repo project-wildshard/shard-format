@@ -1,11 +1,22 @@
-// `wire check`'s release rules (WIRE-STABILITY 5.5 and 7, row WR6): the lock
-// now against the lock at the last `wire-vM.m.0` tag. Ids are append-only:
-// one never changes name, form or bounds once released, a removal waits for
-// its deprecation window and leaves its id reserved, a required field is
-// never removed in a minor, an addition needs a minor bump, and what ids
-// can't express (limits) needs a major. Unreleased ids are free.
+// `wire check`'s release rules (WIRE-STABILITY 5.5 and 7, row WR6), as Opus
+// reviewed them. The lock now against the lock at the last `wire-vM.m.0`
+// release reachable from HEAD, and against every earlier release for reuse:
+// - a released id keeps its name and form (bounds, default, send, predicted,
+//   required) for good, in any release, so a removed id never comes back
+//   meaning something else; an enum may only append values;
+// - a removal waits for its deprecation: one minor and 14 days after the
+//   minor that deprecated it; a required field leaves only in a major; a
+//   removed top-level id joins its space's `reserved` list, and a reserved id
+//   is never live;
+// - `since` never changes; `deprecated` may be added, never moved or dropped;
+// - any lock change needs a minor above the release's, and a new node kind,
+//   a new key on a kind, or a limit change needs a major; versions never fall.
+// Ids added since the release are free (release-scoped strictness).
+// The entry rules live in release-entries.ts and the version rules in
+// release-grammar.ts; this module walks a lock's spaces through them.
+import { compareEntries, compareLists, childrenOf, entriesOf, isRecord, } from './release-entries.js';
+import { versionProblems } from './release-grammar.js';
 const NONE = 0;
-const ONE = 1;
 /** The id spaces a lock holds, each a list of entries with ids. */
 const SPACES = [
     'messages',
@@ -18,126 +29,56 @@ const SPACES = [
 ];
 /** Single nodes whose children are compared id by id. */
 const NODES = ['acts', 'command'];
-/** What only a major may change: a peer can't read past them (5.5). */
-const MAJOR_KEYS = ['maxRowFields', 'tableLimits', 'v0SchemaHash'];
-/** Keys that describe an entry's children, compared child by child. */
-const NESTED = new Set(['fields', 'arms', 'node']);
-/** Keys a release may change on a released id: its history. */
-const HISTORY = new Set(['since', 'deprecated']);
-const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
-const isEntry = (value) => isRecord(value) &&
-    typeof value['id'] === 'number' &&
-    typeof value['name'] === 'string';
-/** A list's entries with ids; a non-list is empty. */
-function entriesOf(value) {
-    return Array.isArray(value)
-        ? value.filter((item) => isEntry(item))
-        : [];
-}
-/** An entry's own facts: everything but its children and its history. */
-function ownFacts(entry) {
-    const own = Object.entries(entry).filter(([key]) => !NESTED.has(key) && !HISTORY.has(key));
-    return JSON.stringify(Object.fromEntries(own));
-}
-/** The entries a struct or union holds (its fields, or its arms), and its node. */
-function childrenOf(entry) {
-    const { node, fields, arms } = entry;
-    return {
-        fields: entriesOf(fields ?? arms),
-        node: isRecord(node) ? node : undefined,
+/** Spaces whose removed ids must join the lock's `reserved` list. */
+const RESERVED = [
+    'messages',
+    'events',
+    'acts',
+    'classes',
+    'capabilities',
+    'rideLaws',
+];
+/** The id spaces as a set, to tell a space from a node. */
+const SPACE_NAMES = new Set(SPACES);
+/** A space's reserved ids: none live, the released ones kept, every removed top-level id added. */
+function reservedProblems(path, locks, lists) {
+    const listOf = (lock) => {
+        const reserved = isRecord(lock['reserved'])
+            ? lock['reserved'][path]
+            : undefined;
+        return new Set(Array.isArray(reserved) ? reserved : []);
     };
-}
-/** A released entry that left: allowed only after its window, never if required. */
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- a diff collects its problems
-function removed(diff, path, entry) {
-    const { deprecated, required } = entry;
-    if (required === true) {
-        diff.problems.push(`${path} is required and was removed (5.5)`);
-    }
-    else if (typeof deprecated !== 'number' || diff.minor < deprecated + ONE) {
-        diff.problems.push(`${path} was removed inside its deprecation window (5.5)`);
-    }
-}
-/** A list's entries by id; a duplicate is a problem. */
-function byId(
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- a diff collects its problems
-diff, path, after) {
-    const now = new Map(after.map((entry) => [
-        entry.id,
-        entry,
-    ]));
-    if (now.size < after.length) {
-        diff.problems.push(`${path} holds a duplicate id (5.2)`);
-    }
-    return now;
-}
-/** How many entries `after` adds to `before`. */
-const addedTo = (before, after) => {
-    const released = new Set(before.map((entry) => entry.id));
-    return after.filter((entry) => !released.has(entry.id))
-        .length;
-};
-/** Compare two lists of entries, id by id. */
-function compareLists(
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- a diff collects its problems
-diff, path, lists) {
+    const [oldLock, nextLock] = locks;
     const [before, after] = lists;
-    const now = byId(diff, path, after);
-    for (const old of before) {
-        const next = now.get(old.id);
-        const at = `${path}#${String(old.id)} ${old.name}`;
-        if (next === undefined) {
-            removed(diff, at, old);
-        }
-        else {
-            // oxlint-disable-next-line no-use-before-define -- entries nest
-            compareEntries(diff, at, [old, next]);
-        }
-    }
-    diff.added += addedTo(before, after);
+    const [was, is] = [listOf(oldLock), listOf(nextLock)];
+    const live = new Set(after.map((entry) => entry.id));
+    const removedIds = before
+        .map((entry) => entry.id)
+        .filter((id) => !live.has(id));
+    return [
+        ...[...is]
+            .filter((id) => typeof id === 'number' && live.has(id))
+            .map((id) => `${path}#${String(id)} is reserved and may not be used again (5.5)`),
+        ...[...was]
+            .filter((id) => !is.has(id))
+            .map((id) => `${path}#${String(id)} left the reserved list: reserved is for good (5.5)`),
+        ...removedIds
+            .filter((id) => !is.has(id))
+            .map((id) => `${path}#${String(id)} was removed without joining reserved (5.5)`),
+    ];
 }
-/** Why a released entry may not become its successor, if it may not. */
-function formProblem(path, old, next) {
-    const [was, is] = [old['name'], next['name']];
-    if (was !== is) {
-        return `${path} was renamed to ${String(is)}: a released id keeps its name (5.5)`;
-    }
-    return ownFacts(old) === ownFacts(next)
-        ? undefined
-        : `${path} changed form or bounds: a released id is retyped as a new id plus a deprecation (5.5)`;
-}
-/** Compare one released entry with its successor: same name and form; children recursively. */
-function compareEntries(
-// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- a diff collects its problems
-diff, path, pair) {
-    const [old, next] = pair;
-    const problem = formProblem(path, old, next);
-    if (problem !== undefined) {
-        diff.problems.push(problem);
-        return;
-    }
-    const [mine, theirs] = [childrenOf(old), childrenOf(next)];
-    compareLists(diff, path, [mine.fields, theirs.fields]);
-    if (mine.node !== undefined && theirs.node !== undefined) {
-        compareEntries(diff, `${path}.node`, [mine.node, theirs.node]);
-    }
-}
-/** A space's reserved ids, used again. */
-function reservedProblems(path, reserved, after) {
-    const held = new Set(Array.isArray(reserved) ? reserved : []);
-    return after
-        .filter((entry) => held.has(entry.id))
-        .map((entry) => `${path}#${String(entry.id)} is reserved and may not be used again (5.5)`);
-}
+/** The arms or fields a single node holds, for its reserved list. */
+const nodeEntries = (lock, key) => {
+    const node = lock[key];
+    return isRecord(node) ? childrenOf(node).fields : [];
+};
 /** Compare every id space and node of two locks. */
 function compareSpaces(
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- a diff collects its problems
 diff, locks) {
     const [old, next] = locks;
-    const reserved = isRecord(next['reserved']) ? next['reserved'] : {};
     for (const space of SPACES) {
         compareLists(diff, space, [entriesOf(old[space]), entriesOf(next[space])]);
-        diff.problems.push(...reservedProblems(space, reserved[space], entriesOf(next[space])));
     }
     for (const key of NODES) {
         const [mine, theirs] = [old[key], next[key]];
@@ -145,27 +86,37 @@ diff, locks) {
             compareEntries(diff, key, [mine, theirs]);
         }
     }
+    for (const space of RESERVED) {
+        const lists = SPACE_NAMES.has(space)
+            ? [entriesOf(old[space]), entriesOf(next[space])]
+            : [nodeEntries(old, space), nodeEntries(next, space)];
+        diff.problems.push(...reservedProblems(space, locks, lists));
+    }
 }
-/** The version rules: limits need a major; additions need a minor. */
-function versionProblems(old, next, added) {
-    const sameMajor = next.wireMajor === old.wireMajor;
-    const limits = MAJOR_KEYS.some((key) => JSON.stringify(old[key]) !== JSON.stringify(next[key]));
-    return [
-        ...(limits && sameMajor
-            ? ['a major-level change (limits) needs a WIRE_MAJOR bump (5.5)']
-            : []),
-        ...(added > NONE && sameMajor && next.wireMinor <= old.wireMinor
-            ? [
-                `${String(added)} addition(s) since the release need WIRE_MINOR above ${String(old.wireMinor)} (5.5)`,
-            ]
-            : []),
-    ];
-}
-/** Every release-rule problem with `next` against the released `old`. */
-function releaseProblems(old, next) {
-    const diff = { problems: [], minor: next.wireMinor, added: NONE };
+/** Every release-rule problem with `next` against the last release `old`. */
+function releaseProblems(old, next, clock) {
+    const major = next.wireMajor > old.wireMajor;
+    const diff = {
+        problems: [],
+        minor: next.wireMinor,
+        major,
+        clock,
+        added: NONE,
+    };
     compareSpaces(diff, [old, next]);
-    return [...diff.problems, ...versionProblems(old, next, diff.added)];
+    return [...diff.problems, ...versionProblems(old, next)];
+}
+/** Reuse against an earlier release: every id it held keeps its name and form (removals are the last release's business). */
+function reuseProblems(earlier, next) {
+    const diff = {
+        problems: [],
+        minor: next.wireMinor,
+        major: true,
+        clock: undefined,
+        added: NONE,
+    };
+    compareSpaces(diff, [earlier, next]);
+    return diff.problems.filter((problem) => !problem.includes('reserved'));
 }
 /** A patch release (`wire-vM.m.p`, p > 0) leaves the lock byte-identical (5.5). */
 function patchProblems(tag, released, current) {
@@ -178,4 +129,4 @@ function patchProblems(tag, released, current) {
 const isReleaseLock = (value) => isRecord(value) &&
     typeof value['wireMajor'] === 'number' &&
     typeof value['wireMinor'] === 'number';
-export { isReleaseLock, patchProblems, releaseProblems };
+export { isReleaseLock, patchProblems, releaseProblems, reuseProblems };

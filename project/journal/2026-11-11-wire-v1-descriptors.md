@@ -192,3 +192,19 @@ WB2: PASS.
   byte-identical. Ids added since the release are free. A copy installed
   outside the shardfile checkout (engine's node_modules) skips the rules.
   `test/release.test.ts` holds a fixture per rule.
+
+## WR6: rules after the Opus review (opus-wire)
+
+- Per the Opus review, the rules now say: every id-bearing removal reserves
+  its top-level id, and reuse is checked against every earlier release;
+  enums may append values (a minor) but not reorder; a major relaxes the
+  removal of required fields and windows; a new node kind or a new key on a
+  kind needs a major; the 14-day window reads release tag dates with HEAD's
+  commit date as now; any lock change needs a minor above the release's and
+  versions never fall; history (since, deprecated) is fixed; the last release
+  is the newest `wire-vM.m.0` reachable from HEAD, and a patch tag compares
+  with its own minor.
+- The rules split into `cli/release.ts` (spaces and reserved ids),
+  `cli/release-entries.ts` (entries id by id) and `cli/release-grammar.ts`
+  (versions and node kinds); the fixtures into `test/release.test.ts` and
+  `test/release-history.test.ts`, sharing `test/helpers/release.ts`.

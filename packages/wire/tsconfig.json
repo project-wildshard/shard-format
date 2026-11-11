@@ -8,6 +8,7 @@
     "bin.mjs",
     "src/*.mjs",
     "test/*.ts",
+    "test/helpers/*.ts",
     "cli/**/*.ts",
     "frozen/v0/*.ts",
     "src/*.ts",
