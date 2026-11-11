@@ -211,3 +211,19 @@ WB2: PASS.
 - Reuse against earlier releases no longer filters problems by their text
   (an entry named "reserved" could have hidden a rename); the reserved-list
   rules run against the last release only.
+
+## WR6: the cross-version harness (opus-wire)
+
+- `test/cross.test.ts` runs the codec at the last wire release beside
+  HEAD's, both ways: the released ref's compiled lib is extracted from git
+  under node_modules and loaded as the other side. No `wire-vM.m.0` exists
+  yet, so it compares with the scratch ref 669d1fc (WR4's last codec
+  commit); WIRE_CROSS_REF overrides. Each way: hello with the client's
+  tables, cmds and an act read through them, the welcome with the room's,
+  thirty frames with skew (an animal field and a class the client lacks), a
+  lost ack and a whole frame, px..vz exact, ride words, and events with a
+  spawn of the unknown class and a record no version knows.
+- Two negative tests stand for the reverts it must catch: a client keeping
+  projected rows as baselines (WR4) and one refusing unknown records (WR3)
+  both turn it red. It runs in under a second, in the package's tests, so
+  in pre-push and CI.
