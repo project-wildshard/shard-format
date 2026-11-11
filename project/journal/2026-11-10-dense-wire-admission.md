@@ -9,5 +9,5 @@ The local dense profile spent 2.33 s converting the binary string
 returned by atob to a byte array. Copy its code units directly.
 The 771 valid spellings and five malformed inputs in the local
 comparison match the old bytes and error class. The complete dense
-case went from 6.285 s to 3.693 s. All eight graph cases passed.
+case went from 6.285 s to 3.316 s. All eight graph cases passed.
 The frozen codec, recordings, hash and replay checks are unchanged.

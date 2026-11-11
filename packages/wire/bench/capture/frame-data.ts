@@ -100,7 +100,7 @@ function textBytes(text: string): Uint8Array {
   const decoded = atob(text)
   const bytes = new Uint8Array(decoded.length)
   for (let index = ZERO; index < decoded.length; index += ONE) {
-    bytes[index] = decoded.charCodeAt(index)
+    bytes[index] = decoded.codePointAt(index) ?? ZERO
   }
   return bytes
 }
