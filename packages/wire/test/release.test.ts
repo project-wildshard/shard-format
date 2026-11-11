@@ -21,7 +21,8 @@ interface MutableLock {
   [key: string]: unknown
 }
 const released = (): ReleaseLock => JSON.parse(wireLockText()) as ReleaseLock
-const copy = (): MutableLock => structuredClone(JSON.parse(wireLockText()) as MutableLock)
+const copy = (): MutableLock =>
+  structuredClone(JSON.parse(wireLockText()) as MutableLock)
 /** A field of `entry` by name; a fixture's target must exist. */
 const fieldNamed = (entry: Mutable, name: string): Mutable => {
   const found = (entry['fields'] as Mutable[]).find(
