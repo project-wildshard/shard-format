@@ -1,14 +1,17 @@
+// oxlint-disable import/max-dependencies, eslint/max-lines, eslint/max-statements, eslint/max-lines-per-function, typescript/prefer-readonly-parameter-types -- corpus mutations edit their own copies
 import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { brotliCompressSync, constants } from 'node:zlib'
 
-import { describe, expect, test } from 'vitest'
+import { beforeAll, describe, expect, test } from 'vitest'
 
 import { nodeStreamPorts } from './product-stream-node.ts'
 import { validateShardfileStream } from './product-stream.ts'
+import { prepareAssetDecoders } from './product.ts'
 import { validateShardfileProduct } from './productValidation.ts'
 import { indexTar, readTar, writeTar } from './tar.ts'
+import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { ProductFiles } from './productValidation.ts'
 
@@ -89,7 +92,7 @@ async function streamVerdict(
 ): Promise<string> {
   try {
     await validateShardfileStream(
-      chunked(stored, ODD_CHUNK),
+      (): AsyncIterable<Uint8Array> => chunked(stored, ODD_CHUNK),
       nodeStreamPorts({ brotli: encoded }),
     )
     return 'ok'
@@ -135,6 +138,91 @@ function first(files: Files, prefix: string, suffix: string): string {
     throw new Error('no such corpus file')
   }
   return found
+}
+
+type Json = Record<string, unknown>
+
+function parsed(bytes: Readonly<Uint8Array> | undefined): Json {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
+  return JSON.parse(new TextDecoder().decode(bytes)) as Json
+}
+
+/** The corpus with one section edited and `shard.json` relisting it (packs dropped, so the asset checks speak first). */
+function sectionEdited(
+  files: Files,
+  name: string,
+  change: (value: Json) => void,
+): Files {
+  const file = `sections/${name}.json`
+  const value = parsed(files.get(file))
+  change(value)
+  const bytes = validationSourceBytes(value)
+  const shard = parsed(files.get('shard.json'))
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
+  const rows = shard['sections'] as Json[]
+  const row = rows.find(
+    (candidate: Json): boolean => candidate['name'] === name,
+  )
+  if (row === undefined) {
+    throw new Error(`no section ${name}`)
+  }
+  row['hash'] = sha256(bytes)
+  row['bytes'] = bytes.length
+  delete shard['packs']
+  return new Map([
+    ...files,
+    [file, bytes],
+    ['shard.json', validationSourceBytes(shard)],
+  ])
+}
+
+/** The corpus with its first pack's first two members swapped (offsets kept contiguous): the rebuilt hash differs. */
+function packSwapped(files: Files): Files {
+  const shard = parsed(files.get('shard.json'))
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
+  const [pack] = shard['packs'] as {
+    entries: { hash: string; offset: number; bytes: number }[]
+  }[]
+  if (pack === undefined) {
+    throw new Error('no pack')
+  }
+  const [one, two, ...rest] = pack.entries
+  if (one === undefined || two === undefined) {
+    throw new Error('a short pack')
+  }
+  let offset = 0
+  const entries: { hash: string; offset: number; bytes: number }[] = []
+  for (const entry of [two, one, ...rest]) {
+    entries.push({ hash: entry.hash, offset, bytes: entry.bytes })
+    offset += entry.bytes
+  }
+  pack.entries = entries
+  return new Map([...files, ['shard.json', validationSourceBytes(shard)]])
+}
+
+function assetMutations(files: Files): readonly Mutation[] {
+  return [
+    ['a pack out of member order', (): Files => packSwapped(files)],
+    [
+      'a prop GLB whose material lost its binding',
+      (): Files =>
+        sectionEdited(files, 'world/props', (value: Json): void => {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
+          const props = value['props'] as { materials: Json }
+          delete props.materials['Clay']
+        }),
+    ],
+    [
+      'a semantic refusal, which waits for the inventory',
+      (): Files =>
+        sectionEdited(files, 'world/tiles', (value: Json): void => {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
+          for (const tile of value['tiles'] as Json[]) {
+            tile['drawBounds'] = { min: [0, 0, 0], max: [0.001, 0.001, 0.001] }
+          }
+        }),
+    ],
+  ]
 }
 
 function mutations(files: Files): readonly Mutation[] {
@@ -195,17 +283,23 @@ function brokenTars(tar: Readonly<Uint8Array>): readonly Uint8Array[] {
   return [padding, ending, tar.slice(0, -1024), tar.slice(0, 700)]
 }
 
+// The old validator needs the GLB decoder ready before it runs; the stream awaits it itself. Await it once here so no
+// test's order decides it (a cold worker refused a valid GLB, opus-k7b's push).
+beforeAll(async (): Promise<void> => {
+  await prepareAssetDecoders()
+})
+
 describe('validateShardfileStream on the corpus', (): void => {
   const files = corpusFiles()
 
-  test('passes the corpus with its index, stored hash and pending checks', async (): Promise<void> => {
+  test('passes the corpus complete, with its index and stored hash, as the old validator does', async (): Promise<void> => {
     const tar = writeTar(files)
     const stored = brotli(tar)
     const old = validateShardfileProduct(memoryFiles(readTar(tar)), {
       hash: sha256,
     })
     const result = await validateShardfileStream(
-      chunked(stored, ODD_CHUNK),
+      (): AsyncIterable<Uint8Array> => chunked(stored, ODD_CHUNK),
       nodeStreamPorts({ brotli: true }),
     )
     expect([result.hash, result.bytes, result.tarBytes]).toEqual([
@@ -215,12 +309,26 @@ describe('validateShardfileStream on the corpus', (): void => {
     ])
     expect([result.index, result.shard]).toEqual([old.index, old.shard])
     expect([...result.sections.keys()]).toEqual([...old.sections.keys()])
-    // The corpus lists 3 packs and carries none: their rebuilt hashes wait with the asset checks.
-    expect([result.complete, result.pending]).toEqual([
-      false,
-      ['packs', 'assets'],
+    // The corpus lists 3 packs and carries none: the second read rebuilds their hashes beside the asset checks.
+    expect([result.complete, result.pending, result.reads]).toEqual([
+      true,
+      [],
+      2,
     ])
   })
+
+  test.each(assetMutations(files))(
+    'refuses %s in the asset or pack checks with the old refusal',
+    async (_name: string, mutate: () => Files): Promise<void> => {
+      const tar = writeTar(mutate())
+      const old = verdict((): unknown =>
+        validateShardfileProduct(memoryFiles(readTar(tar)), { hash: sha256 }),
+      )
+      expect(old).not.toBe('ok')
+      expect(old).not.toMatch(/source hash|Output hash/u)
+      expect(await streamVerdict(brotli(tar), true)).toBe(old)
+    },
+  )
 
   test.each(mutations(files))(
     'refuses %s with the old refusal',
@@ -250,4 +358,25 @@ test('validateShardfileStream refuses a stored object whose Brotli is damaged', 
   const middle = Math.floor(stored.length / 2)
   stored[middle] = 255 - (stored[middle] ?? 0)
   expect(await streamVerdict(stored, true)).not.toBe('ok')
+})
+
+test('validateShardfileStream refuses a stored object that changed between its reads', async (): Promise<void> => {
+  const files = corpusFiles()
+  const tar = writeTar(files)
+  const changed = writeTar(
+    edited(files, first(files, 'blobs/', '.glb'), flipped(4000)),
+  )
+  let reads = 0
+  const verdictOf = await validateShardfileStream(
+    (): AsyncIterable<Uint8Array> => {
+      reads += 1
+      return chunked(reads === 1 ? tar : changed, ODD_CHUNK)
+    },
+    nodeStreamPorts({ brotli: false }),
+  ).then(
+    (): string => 'ok',
+    (error: unknown): string =>
+      error instanceof Error ? error.message : String(error),
+  )
+  expect(verdictOf).toBe('stream: the stored object changed between reads')
 })

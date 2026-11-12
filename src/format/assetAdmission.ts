@@ -32,7 +32,7 @@ import { validateNearPlaceholderAssets } from './nearPlaceholderAssets.ts';
 
 
 /** Check declared residency before immutable reads; exact parsed headers are checked again on admission. */
-export function preflightDeclaredCosts(source: Shardfile, memory?: MemoryAdmission): { commons: CommonsCosts; worst: ReturnType<typeof worstContentCost> } {
+function preflightDeclaredCosts(source: Shardfile, memory?: MemoryAdmission): { commons: CommonsCosts; worst: ReturnType<typeof worstContentCost> } {
   const commons = assertCommonsCosts(source.requires.commons, source.requires.commonsCosts);
   if (source.near !== undefined) nearPlaceholderCost(source.near, source);
   const files = new Map(source.files.map(file => [file.hash, file]));
@@ -67,8 +67,26 @@ export function preflightDeclaredCosts(source: Shardfile, memory?: MemoryAdmissi
   return { commons, worst };
 }
 
-/** Admit exact bytes, graph closure, script growth and worst-location residency before a runtime is allocated. */
-export function validateShardfileAssets(input: unknown, assets: ReadonlyMap<string, Uint8Array>, contentHash: (bytes: Uint8Array) => string, memory?: MemoryAdmission, textures?: TextureTranscodeSupport, scripts: ScriptAdmissionRows = []): Shardfile {
+/** One `validateShardfileAssets` run's state between its steps. The streaming validator (`product-stream-assets.ts`,
+ *  API-CLOUDFLARE AC6a2) runs `admitFileBytes` per file as its bytes stream past, then the rest in this order. */
+interface AssetAdmission {
+  readonly shard: Shardfile;
+  readonly files: Map<string, Shardfile['files'][number]>;
+  readonly contracts: ReturnType<typeof decisionModuleContracts>;
+  readonly declared: CommonsCosts;
+  readonly closure: (roots: readonly string[]) => Set<string>;
+  readonly sum: (roots: readonly string[], excluded?: ReadonlySet<string>) => { resident: number; compressed: number; triangles: number; draws: number };
+  commons: number;
+  readonly commonsCosts: Map<string, ReturnType<typeof assetCost>>;
+  readonly admissions: Map<string, ReturnType<typeof admitScriptContract>>;
+  readonly propMaterials: NonNullable<Shardfile['props']>['materials'] | undefined;
+  readonly propModels: Set<string>;
+  readonly scripts: ScriptAdmissionRows;
+}
+
+/** The checks before any byte is read: preflight, schema, decision modules, the graph and declared costs. */
+// oxlint-disable-next-line eslint/max-statements, typescript/prefer-readonly-parameter-types -- validateShardfileAssets' opening steps, moved whole (AC6a2)
+function assetAdmission(input: unknown, memory: MemoryAdmission | undefined, scripts: ScriptAdmissionRows): AssetAdmission {
   preflightShardfile(input);
   const s = parseShardfile(input), files = new Map(s.files.map((f) => [f.hash, f]));
   const contracts = decisionModuleContracts(scripts, s.files);
@@ -93,32 +111,45 @@ export function validateShardfileAssets(input: unknown, assets: ReadonlyMap<stri
     }
     return { resident, compressed, triangles, draws };
   };
-  let commons = 0;
   const commonsCosts = new Map<string, ReturnType<typeof assetCost>>(), admissions = new Map<string, ReturnType<typeof admitScriptContract>>();
   const propMaterials = s.props?.materials;
   const propModels = new Set([...s.props?.tiles ?? [], ...s.props?.panels ?? [], ...s.props?.models ?? []].map(row => row.file));
   if (s.props?.far !== undefined && s.props.far !== null) propModels.add(s.props.far);
-  for (const hash of s.requires.commons) {
-    const bytes = assets.get(`commons:${hash}`); if (bytes === undefined || bytes.length !== s.requires.commonsWire[hash] || contentHash(bytes) !== hash) throw new Error('unavailable commons asset or wire size mismatch');
+  return { shard: s, files, contracts, declared, closure, sum, commons: 0, commonsCosts, admissions, propMaterials, propModels, scripts };
+}
+
+/** The pinned commons: present, of their wire size and hash, and of their pinned costs. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- the run's own state, which it updates
+function admitCommonsBytes(state: AssetAdmission, assets: ReadonlyMap<string, Uint8Array>, contentHash: (bytes: Uint8Array) => string): void {
+  const { shard, declared, commonsCosts } = state;
+  for (const hash of shard.requires.commons) {
+    const bytes = assets.get(`commons:${hash}`); if (bytes === undefined || bytes.length !== shard.requires.commonsWire[hash] || contentHash(bytes) !== hash) throw new Error('unavailable commons asset or wire size mismatch');
     const cost = assetCost('commons', bytes), pinned = declared[hash];
     if (pinned === undefined || (['decoded', 'gpu', 'triangles', 'draws'] as const).some(key => cost[key] !== pinned[key])) throw new Error('commons cost declaration differs from actual bytes');
-    commons += cost.decoded + cost.gpu; commonsCosts.set(`commons:${hash}`, cost);
+    state.commons += cost.decoded + cost.gpu; commonsCosts.set(`commons:${hash}`, cost);
   }
-  for (const f of s.files) {
-    const bytes = assets.get(f.hash); if (bytes === undefined || bytes.length !== f.compressed || contentHash(bytes) !== f.hash) throw new Error('file hash or wire size mismatch');
+}
+
+/** One listed file's own bytes: hash, size, parsed costs, its script contract and its prop materials. `assets` is read
+ *  only for graph files (JSON). */
+// oxlint-disable-next-line eslint/max-params, eslint/max-statements, eslint/complexity, typescript/prefer-readonly-parameter-types -- validateShardfileAssets' per-file body, moved whole (AC6a2)
+function admitFileBytes(state: AssetAdmission, file: Shardfile['files'][number], bytes: Uint8Array | undefined, assets: ReadonlyMap<string, Uint8Array>, contentHash: (bytes: Uint8Array) => string): void {
+  const { shard, contracts, admissions, propMaterials, propModels } = state;
+  {
+    if (bytes === undefined || bytes.length !== file.compressed || contentHash(bytes) !== file.hash) throw new Error('file hash or wire size mismatch');
     // A legacy shardfile Wasm declaration is v0 unless an exact sim/scripts row declares v1.
-    const contract = contracts.get(f.hash) ?? { abi: 0 as const };
-    const actual = assetCost(f.kind, bytes, f.kind === 'wasm' ? contract : undefined);
-    if (f.kind === 'wasm') admissions.set(f.hash, admitScriptContract(bytes, contract));
-    const understated = (['decoded', 'gpu', 'triangles', 'draws'] as const).filter(key => actual[key] > f[key]);
-    if (understated.length > 0) throw new Error(`asset cost declaration understated: ${f.hash} (${f.kind}); ${understated.map(key => `${key} ${f[key]} < ${actual[key]}`).join(', ')}`);
-    if ((propMaterials !== undefined || s.props?.splat !== undefined) && propModels.has(f.hash)) {
-      checkTileMaterialNames(propMaterials, s.props?.splat, bytes);
+    const contract = contracts.get(file.hash) ?? { abi: 0 as const };
+    const actual = assetCost(file.kind, bytes, file.kind === 'wasm' ? contract : undefined);
+    if (file.kind === 'wasm') admissions.set(file.hash, admitScriptContract(bytes, contract));
+    const understated = (['decoded', 'gpu', 'triangles', 'draws'] as const).filter(key => actual[key] > file[key]);
+    if (understated.length > 0) throw new Error(`asset cost declaration understated: ${file.hash} (${file.kind}); ${understated.map(key => `${key} ${file[key]} < ${actual[key]}`).join(', ')}`);
+    if ((propMaterials !== undefined || shard.props?.splat !== undefined) && propModels.has(file.hash)) {
+      checkTileMaterialNames(propMaterials, shard.props?.splat, bytes);
       // Every GLB carries its own used slots; a dependency on another tile must not hide an uncharged texture.
       const used: PropMaterials = {};
       for (const name of glbMaterialNames(bytes)) {
-        if (name === s.props?.splat?.material) {
-          if (splatTextureRefs(s.props.splat).some(ref => !f.dependencies.includes(ref))) throw new Error('Splat terrain GLB must directly declare every layer dependency');
+        if (name === shard.props?.splat?.material) {
+          if (splatTextureRefs(shard.props.splat).some(ref => !file.dependencies.includes(ref))) throw new Error('Splat terrain GLB must directly declare every layer dependency');
           continue;
         }
         // a splat terrain beside family props (no props.materials): every other name draws with the family
@@ -126,9 +157,17 @@ export function validateShardfileAssets(input: unknown, assets: ReadonlyMap<stri
         const binding = propMaterials[name]; if (binding === undefined) throw new Error(`Missing admitted prop material ${name}`);
         used[name] = binding;
       }
-      validatePropMaterials(used, { look: s.look.materials, models: [f.hash], textures: s.props?.textures ?? [], files: s.files, graphFile: (hash) => assets.get(hash) });
+      validatePropMaterials(used, { look: shard.look.materials, models: [file.hash], textures: shard.props?.textures ?? [], files: shard.files, graphFile: (hash) => assets.get(hash) });
     }
   }
+}
+
+/** Every check after the listed files' own bytes: recordings, graph files, closures, budgets, scripts and the placed
+ *  assets (navigation, ground, entryways, collision, props, terrain, near and skins). */
+// oxlint-disable-next-line eslint/max-params, typescript/prefer-readonly-parameter-types -- validateShardfileAssets' signature
+function admitAfterFiles(state: AssetAdmission, assets: ReadonlyMap<string, Uint8Array>, memory?: MemoryAdmission, textures?: TextureTranscodeSupport): Shardfile {
+  // oxlint-disable-next-line eslint/id-length -- the old body's name for the shard, kept so it moved unchanged
+  const { shard: s, files, contracts, closure, sum, commons, commonsCosts, admissions, scripts } = state;
   for (const ref of new Set(Object.values(s.audio.recordings ?? {}))) {
     const bytes = assets.get(ref); if (bytes === undefined) throw new Error('Missing admitted audio recording');
     assetCost('audio', bytes); // Commons references also need actual supported audio bytes, never an opaque binary.
@@ -225,3 +264,16 @@ export function validateShardfileAssets(input: unknown, assets: ReadonlyMap<stri
   validateSkinAssets(s, assets);
   return s;
 }
+
+/** Admit exact bytes, graph closure, script growth and worst-location residency before a runtime is allocated. */
+function validateShardfileAssets(input: unknown, assets: ReadonlyMap<string, Uint8Array>, contentHash: (bytes: Uint8Array) => string, memory?: MemoryAdmission, textures?: TextureTranscodeSupport, scripts: ScriptAdmissionRows = []): Shardfile {
+  const state = assetAdmission(input, memory, scripts);
+  admitCommonsBytes(state, assets, contentHash);
+  for (const file of state.shard.files) {
+    admitFileBytes(state, file, assets.get(file.hash), assets, contentHash);
+  }
+  return admitAfterFiles(state, assets, memory, textures);
+}
+
+export type { AssetAdmission };
+export { admitAfterFiles, admitCommonsBytes, admitFileBytes, assetAdmission, preflightDeclaredCosts, validateShardfileAssets };

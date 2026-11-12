@@ -167,27 +167,36 @@ function replayInventory(replay: Readonly<Replay>, index: OutputIndex): void {
   }
 }
 
-/** The steps from the blobs to the inventory. Returns the checks it could not run. */
-function replayRows(
+/** The steps from the blobs to the KTX2 costs, before the packs. */
+function replayBeforePacks(
   replay: Readonly<Replay>,
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   index: OutputIndex,
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's row type, only read
   scripts: ScriptAdmissionRows,
-): string[] {
+): void {
   replayServerAndKtx2(replay, index, replayFiles(replay, index, scripts))
-  const packs = index.packs ?? []
-  // A carried pack is listed (its hash and size checked); its member check, and the rebuilt hash of a pack the
-  // tarball leaves out, need the members' bytes again: pending.
-  for (const pack of packs) {
+}
+
+/** `checkPacks` in pack order, from what the later reads found; then the cook, its mounts and the inventory. */
+function replayPacksToInventory(
+  replay: Readonly<Replay>,
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
+  index: OutputIndex,
+  packs: ReadonlyMap<string, string | undefined>,
+): void {
+  for (const pack of index.packs ?? []) {
     if (replay.members.has(pack.path)) {
       readListed(replay, pack)
+    }
+    const refusal = packs.get(pack.path)
+    if (refusal !== undefined) {
+      throw new Error(refusal)
     }
   }
   replayCook(replay, index)
   replayInventory(replay, index)
-  return packs.length > NONE ? ['packs'] : []
 }
 
 export type { KeptMember, Replay }
-export { listedBytes, replayRows }
+export { listedBytes, replayBeforePacks, replayPacksToInventory }

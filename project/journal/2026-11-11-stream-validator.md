@@ -27,3 +27,35 @@
 - Codex review: kept errors held their blobs through captured stacks
   (now kept as messages); the stream awaits the decoder itself; a JSON
   blob can still blow the heap while parsing, as in the old validator.
+
+## AC6a2: complete (opus-ac6a2)
+
+- `validateShardfileStream(open, ports)` now takes `open`, a function
+  that opens the stored object afresh, and returns `complete: true`.
+- `validateShardfileAssets` is split into `assetAdmission`,
+  `admitCommonsBytes`, `admitFileBytes` and `admitAfterFiles` (same
+  steps, same order; the old function composes them).
+- A second read runs `admitFileBytes` on each listed file as it
+  streams, keeps refusals as messages and throws the first in
+  `shard.files` order. It holds only the "placed" assets the later
+  checks read by hash (props, terrain, navigation, collision, near,
+  skins, sketches, recordings, commons). A later check reading any
+  other file is refused with a `stream:` message, never guessed.
+- Left-out packs are rebuilt in entry order, holding members that
+  stream early; packs are grouped so one read holds at most 16 MB,
+  each group taking another read. Carried packs are checked in the
+  second read.
+- Caps: kept files plus placed assets 48 MB; one pack 16 MB held.
+- Pins (local cache): 12 MB and 68 MB take 2 reads, 17 and 18 MB
+  held; 327 MB takes 4 reads, 36.6 MB held, 12 s wall in bare
+  workerd (2026-11-03, disk service) under a 32 MB V8 heap cap (24 MB
+  OOMs): about 69 MB at most.
+- Codex review: skin GLBs are named inside the skin JSON (placed keys
+  now follow JSON dependencies); held placed bytes and a lone pack were
+  uncapped (now capped, refused with `stream:`); the held count missed
+  earlier reads' bytes (fixed).
+- The corpus test awaits the GLB decoder in `beforeAll`: the old
+  validator needs it ready, and test order decided it (opus-k7b's
+  flaky push).
+- Still open: a JSON blob can blow the heap while it parses (millions
+  of tiny objects), as in the old validator.

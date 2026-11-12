@@ -35,7 +35,7 @@ function sha256(bytes: Readonly<Uint8Array>): string {
 describe.each(PIN_RUNS)('the %s pin', (_name: string, hash: string): void => {
   const file = path.join(PINS, `${hash}.tar`)
   test.skipIf(!existsSync(file))(
-    'streams to the old verdict holding under 64 MB of members',
+    'streams to the old verdict, complete, holding under 64 MB of members',
     async (): Promise<void> => {
       await prepareAssetDecoders()
       const files = readTar(readFileSync(file))
@@ -48,12 +48,13 @@ describe.each(PIN_RUNS)('the %s pin', (_name: string, hash: string): void => {
         { hash: sha256, readThrough: true },
       )
       const result = await validateShardfileStream(
-        createReadStream(file, { highWaterMark: CHUNK }),
+        (): AsyncIterable<Uint8Array> =>
+          createReadStream(file, { highWaterMark: CHUNK }),
         nodeStreamPorts({ brotli: false }),
       )
       expect(result.hash).toBe(hash)
       expect(result.shard).toEqual(old.shard)
-      expect(result.pending).toContain('assets')
+      expect([result.complete, result.pending]).toEqual([true, []])
       expect(result.heldBytes).toBeLessThan(64_000_000)
     },
     300_000,

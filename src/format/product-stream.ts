@@ -1,31 +1,41 @@
+// oxlint-disable eslint/max-statements, import/max-dependencies -- the old validator's steps in its order
 // API-CLOUDFLARE AC6a: `validateShardfileProduct` over a stream, for a host
 // with no disk and no synchronous reads (the API Worker: 128 MB, `node:zlib`,
-// no WebAssembly compiled from bytes). One pass over the stored object: its
-// SHA-256, its decoding (Brotli, a host port), a strict ustar walk and every
-// member's SHA-256 and size. Blobs are checked as they stream and only their
-// facts kept (product-stream-facts.ts); JSON, Wasm and every file outside
-// `blobs/`, `mounts/` and `packs/` are kept whole. When the walk ends, the old
+// no WebAssembly compiled from bytes). The first read of the stored object
+// takes its SHA-256, its decoding (Brotli, a host port), a strict ustar walk
+// and every member's SHA-256 and size. Blobs are checked as they stream and
+// only their facts kept (product-stream-facts.ts); JSON, Wasm and every file
+// outside `blobs/`, `mounts/` and `packs/` are kept whole. Then the old
 // validator's steps run in its order, so a refusal is the one it gives (its
 // message may differ only for a blob whose declared kind contradicts its path).
 //
-// NOT YET (AC6a's open half): `validateShardfileAssets`' byte checks (terrain
-// seams, navigation, collision, prop draw bounds, entryways, skins, graph
-// files, scripts and the per-file cost totals) and the pack member checks.
-// They read assets by hash in any order: 153 MB of blobs on the 327 MB pin,
-// over a Worker's 128 MB. Until they run the result says `complete: false`
-// and names them in `pending`, and a host must not take it for D1's check.
+// AC6a2: `validateShardfileAssets`' byte checks and the pack checks read
+// assets by hash in any order (153 MB of blobs on the 327 MB pin), so they
+// take a second read of the stored object (product-stream-assets.ts), and a
+// further read per group of left-out packs (product-stream-packs.ts). Hence
+// `open`: a host passes a function that opens the stored object afresh.
 
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
 import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
-import { admitDeclared } from './product-stream-admit.ts'
+import {
+  admitAssets,
+  admitBeforeAssets,
+  admitTail,
+} from './product-stream-admit.ts'
+import { assetPasses } from './product-stream-assets.ts'
 import { blobFacts } from './product-stream-facts.ts'
-import { listedBytes, replayRows } from './product-stream-rows.ts'
+import {
+  listedBytes,
+  replayBeforePacks,
+  replayPacksToInventory,
+} from './product-stream-rows.ts'
 import { walkTar } from './product-stream-tar.ts'
 import { prepareAssetDecoders } from './product.ts'
 import { readCanonicalJson } from './productValidation.ts'
 import { scriptAdmissionRows } from './scriptContract.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
+import type { StoredSource } from './product-stream-assets.ts'
 import type { KeptMember, Replay } from './product-stream-rows.ts'
 import type {
   StreamHasher,
@@ -58,12 +68,14 @@ interface StreamedProduct {
   readonly shard: Shardfile
   readonly sections: ReadonlyMap<string, unknown>
   readonly scripts: ScriptAdmissionRows
-  /** True only when every check `validateShardfileProduct` runs has run. */
+  /** True only when every check `validateShardfileProduct` runs has run: always, since AC6a2. */
   readonly complete: boolean
-  /** The checks still to run, by name, while `complete` is false. */
+  /** The checks still to run, by name, while `complete` is false: none, since AC6a2. */
   readonly pending: readonly string[]
-  /** The most member bytes held at once: everything kept, plus the blob in hand. */
+  /** The most member bytes held at once in any read: everything kept, plus the blob in hand. */
   readonly heldBytes: number
+  /** How many times the stored object was read. */
+  readonly reads: number
 }
 
 /** One pass's result, before the replay. */
@@ -73,6 +85,8 @@ interface Walked {
   readonly hash: string
   readonly bytes: number
   readonly heldBytes: number
+  /** The kept files' bytes once the walk ends. */
+  readonly keptBytes: number
 }
 
 /** The largest blob the walk holds to inspect (format's asset parsers stop at 25 MB). */
@@ -114,6 +128,7 @@ function collect(ports: StreamValidationPorts): Readonly<{
   walk: WalkPorts
   members: ReadonlyMap<string, KeptMember>
   peak: () => number
+  kept: () => number
 }> {
   const members = new Map<string, KeptMember>()
   let now = NONE
@@ -147,6 +162,7 @@ function collect(ports: StreamValidationPorts): Readonly<{
     walk: { hasher: ports.hasher, wants, member },
     members,
     peak: (): number => peak,
+    kept: (): number => now,
   }
 }
 
@@ -168,6 +184,7 @@ async function walkStored(
     hash: hasher.digest(),
     bytes: tap.bytes(),
     heldBytes: kept.peak(),
+    keptBytes: kept.kept(),
   }
 }
 
@@ -203,15 +220,15 @@ function readSections(
   return payloads
 }
 
-/** Stream-validate a stored shardfile object (see the file comment). Rejects with the refusal `validateShardfileProduct`
- *  would give first; resolves with `complete: false` while its asset checks are pending. */
+/** Stream-validate a stored shardfile object (see the file comment): `open` gives a fresh stream of it on each call.
+ *  Rejects with the refusal `validateShardfileProduct` would give first. */
 async function validateShardfileStream(
-  stored: AsyncIterable<Uint8Array>,
+  open: StoredSource,
   ports: StreamValidationPorts,
 ): Promise<StreamedProduct> {
   // GLB costs need the meshopt decoder before any blob streams (Codex review: a cold start refused valid GLBs).
   await prepareAssetDecoders()
-  const walked = await walkStored(stored, ports)
+  const walked = await walkStored(await open(), ports)
   const replay = {
     members: walked.members,
     listed: new Set(['validation.json']),
@@ -220,9 +237,20 @@ async function validateShardfileStream(
   const index = readIndex(replay)
   const sections = readSections(replay, index)
   const scripts = scriptAdmissionRows(sections)
-  const pending = [...replayRows(replay, index, scripts), 'assets']
-  const shard = admitDeclared(index, sections, ports.hash)
-  const { hash, bytes, tarBytes, heldBytes } = walked
+  replayBeforePacks(replay, index, scripts)
+  const before = admitBeforeAssets(index, sections, scripts)
+  const later = await assetPasses({
+    open,
+    ports,
+    members: walked.members,
+    keptBytes: walked.keptBytes,
+    index,
+    admission: before.admission,
+  })
+  replayPacksToInventory(replay, index, later.packs)
+  const shard = admitAssets(before, later, ports.hash)
+  admitTail(shard, { index, payloads: sections, hash: ports.hash })
+  const { hash, bytes, tarBytes } = walked
   return {
     hash,
     bytes,
@@ -231,11 +259,13 @@ async function validateShardfileStream(
     shard,
     sections,
     scripts,
-    complete: false,
-    pending,
-    heldBytes,
+    complete: true,
+    pending: [],
+    heldBytes: Math.max(walked.heldBytes, later.heldBytes),
+    reads: later.reads + NEXT,
   }
 }
 
+export type { StoredSource } from './product-stream-assets.ts'
 export type { StreamValidationPorts, StreamedProduct }
 export { STREAM_BLOB_CAP, STREAM_KEPT_CAP, validateShardfileStream }
