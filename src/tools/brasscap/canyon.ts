@@ -210,14 +210,15 @@ const SAND: readonly Hex[] = [0xf2a05f, 0xea9553, 0xf9ab68, 0xe58f4f]
  *  walls and the buttes by the gate) goes to `shell` as plain prisms and to `rock` as a faceted cliff (LF2-4); the
  *  background stays plain in `world`. Either way it draws `rand` the same, so nothing after it moves. */
 function mesa(
-  x: number,
-  z: number,
+  centreX: number,
+  centreZ: number,
   rx: number,
   rz: number,
   height: number,
   tiers: number,
   near = false,
 ): void {
+  const [x, z] = clearOfLanes(centreX, centreZ, Math.max(rx, rz) * 1.1)
   const stack: Tier[] = []
   let y = 0
   for (let t = 0; t < tiers; t++) {
@@ -239,12 +240,36 @@ function mesa(
   if (near) cliff(stack)
 }
 
-/** The canyon floor: a coarse faceted grid, flat on the walkway. */
+/** The four edge entry corridors (ENG-3b): engine's cook walks every 8 m entry lane flat at road height for 50 m
+ *  inward (`walkEdgeEntries`, to 199.6 m from centre), so the floor is 0 within 12 m of each midline from 192 m out,
+ *  one ground cell past the lane, and no mesa stands within 6 m of the midline from 195 m out. */
+const LANE_FLOOR = 12,
+  LANE_FLOOR_FROM = 192,
+  LANE_CLEAR = 6,
+  LANE_CLEAR_FROM = 195
+const inLane = (x: number, z: number): boolean =>
+  (Math.abs(x) <= LANE_FLOOR && Math.abs(z) >= LANE_FLOOR_FROM) ||
+  (Math.abs(z) <= LANE_FLOOR && Math.abs(x) >= LANE_FLOOR_FROM)
+/** A mesa's centre, moved sideways out of any entry corridor its footprint (`reach`) would cross; draws no `rand`. */
+function clearOfLanes(x: number, z: number, reach: number): [number, number] {
+  const out = (v: number): number => Math.sign(v || 1) * (LANE_CLEAR + reach)
+  const across =
+    Math.abs(z) + reach > LANE_CLEAR_FROM && Math.abs(x) - reach < LANE_CLEAR
+  const along =
+    Math.abs(x) + reach > LANE_CLEAR_FROM && Math.abs(z) - reach < LANE_CLEAR
+  return [across ? out(x) : x, along ? out(z) : z]
+}
+
+/** The canyon floor: a coarse faceted grid, flat on the walkway and in the edge entry corridors. */
 function ground(): void {
   const step = 12,
     half = 216
-  const h = (x: number, z: number): number =>
-    Math.abs(x) < 26 && z > -110 && z < 30 ? 0 : 0.6 + Math.abs(jitter(0.8))
+  const h = (x: number, z: number): number => {
+    // The jitter is drawn either way, so the corridors move no other vertex.
+    const y =
+      Math.abs(x) < 26 && z > -110 && z < 30 ? 0 : 0.6 + Math.abs(jitter(0.8))
+    return inLane(x, z) ? 0 : y
+  }
   const heights = new Map<string, number>()
   const at = (x: number, z: number): number => {
     const k = `${x},${z}`
