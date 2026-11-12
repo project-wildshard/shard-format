@@ -184,7 +184,13 @@ let world = new Geo(),
   rockWest = new Geo(),
   rockEast = new Geo(),
   /** LF2-4: the ground's dressing (ground.glb): patches, the path's edges, ruts, rocks and tufts; L0 tiles only. */
-  dress = new Geo()
+  dress = new Geo(),
+  /** LF2-6: the camps', the gate's, the cacti's and the water tower's detail (props.glb), drawn in the L0 tiles
+   *  only, and its lit parts (lantern glass, tent glow, flames). Their plain stand-ins go into `shell`. */
+  props = new Geo(),
+  propsGlow = new Geo(),
+  /** LF2-6: the plain camps' flames; the source canyon.glb's glow keeps them, the bake draws the detail's. */
+  plainGlow = new Geo()
 const BANDS: readonly Hex[] = [
   0xa94a35, 0xc4663f, 0xd98a52, 0xb9553a, 0xe2a466, 0x9c4130,
 ]
@@ -260,13 +266,17 @@ function ground(): void {
 }
 
 function cactus(x: number, z: number, h: number): void {
-  world.cylinder([x, 0, z], 0.32, h, 6, 0x5f8a4a, 0x6f9a55)
+  // LF2-6: the plain cactus is the far and L1 stand-in (`shell`); `saguaro` is its L0 detail, with the same arms.
+  shell.cylinder([x, 0, z], 0.32, h, 6, 0x5f8a4a, 0x6f9a55)
+  const arms: (readonly [number, number, number])[] = []
   const arm = (dx: number, y: number, up: number): void => {
-    world.box([x + dx / 2, y, z], [Math.abs(dx), 0.4, 0.4], 0x4c7a3c)
-    world.cylinder([x + dx, y, z], 0.22, up, 6, 0x5f8a4a, 0x6f9a55)
+    shell.box([x + dx / 2, y, z], [Math.abs(dx), 0.4, 0.4], 0x4c7a3c)
+    shell.cylinder([x + dx, y, z], 0.22, up, 6, 0x5f8a4a, 0x6f9a55)
+    arms.push([dx, y, up])
   }
   arm(0.9, h * 0.45, h * 0.35)
   if (rand() > 0.4) arm(-0.8, h * 0.6, h * 0.25)
+  saguaro(x, z, h, arms)
 }
 
 /** The trail's centre line at z (the path quads in `ground` run between its 4 m points). */
@@ -296,39 +306,47 @@ function boulder(x: number, z: number, r: number): void {
   }
 }
 
-/** A bandit camp: a canvas tent, crates, a fire ring and a flag on a tall pole. */
+/** A bandit camp: a canvas tent, crates, a fire ring and a flag on a tall pole. LF2-6: this plain camp is the far
+ *  and L1 stand-in (`shell`, its flame `plainGlow`); `campDetail` is what the L0 tiles draw. */
 function camp(x: number, y: number, z: number): void {
   const w = 1.6,
     l = 2.6
-  world.quad(
+  shell.quad(
     [x - w, y, z - l],
     [x - w, y, z + l],
     [x, y + 2.2, z + l],
     [x, y + 2.2, z - l],
     0xe8d7b0,
   )
-  world.quad(
+  shell.quad(
     [x, y + 2.2, z - l],
     [x, y + 2.2, z + l],
     [x + w, y, z + l],
     [x + w, y, z - l],
     0xd2bf96,
   )
-  world.tri([x - w, y, z + l], [x + w, y, z + l], [x, y + 2.2, z + l], 0xc7b28a)
-  world.tri([x + w, y, z - l], [x - w, y, z - l], [x, y + 2.2, z - l], 0xc7b28a)
-  world.box([x + 2.6, y, z + 1], [1, 1, 1], 0x8a5a36, 0.3, 0x9c6a40)
-  world.box([x + 2.4, y + 1, z + 1], [0.7, 0.7, 0.7], 0x7a4a2b, 0.7)
-  world.cylinder([x - 2.8, y, z + 2.5], 0.9, 0.2, 7, 0x6e6058)
-  glow.cylinder([x - 2.8, y + 0.2, z + 2.5], 0.35, 0.5, 5, 0xff8a2a, 0xffc04a)
-  world.cylinder([x + 1.8, y, z - 2], 0.06, 7, 5, 0x5e3a22)
-  world.quad(
+  shell.tri([x - w, y, z + l], [x + w, y, z + l], [x, y + 2.2, z + l], 0xc7b28a)
+  shell.tri([x + w, y, z - l], [x - w, y, z - l], [x, y + 2.2, z - l], 0xc7b28a)
+  shell.box([x + 2.6, y, z + 1], [1, 1, 1], 0x8a5a36, 0.3, 0x9c6a40)
+  shell.box([x + 2.4, y + 1, z + 1], [0.7, 0.7, 0.7], 0x7a4a2b, 0.7)
+  shell.cylinder([x - 2.8, y, z + 2.5], 0.9, 0.2, 7, 0x6e6058)
+  plainGlow.cylinder(
+    [x - 2.8, y + 0.2, z + 2.5],
+    0.35,
+    0.5,
+    5,
+    0xff8a2a,
+    0xffc04a,
+  )
+  shell.cylinder([x + 1.8, y, z - 2], 0.06, 7, 5, 0x5e3a22)
+  shell.quad(
     [x + 1.8, y + 6.2, z - 2],
     [x + 3.2, y + 6.45, z - 2],
     [x + 3.2, y + 6.95, z - 2],
     [x + 1.8, y + 6.9, z - 2],
     0xc93a2c,
   )
-  world.quad(
+  shell.quad(
     [x + 1.8, y + 6.9, z - 2],
     [x + 3.2, y + 6.95, z - 2],
     [x + 3.2, y + 6.45, z - 2],
@@ -342,29 +360,27 @@ function camp(x: number, y: number, z: number): void {
 function gate(): void {
   world.box([-4.5, 0, -62], [2.4, 7, 2.4], 0x9a6a4a, 0, 0x8a5c40)
   world.box([8.5, 0, -62], [2.4, 7, 2.4], 0x9a6a4a, 0, 0x8a5c40)
-  for (let x = -3; x < 7.2; x += 0.85)
-    door.box(
-      [x + 0.4, 0, -62],
-      [0.75, 5.2, 0.3],
-      x % 1.7 < 0.85 ? 0x7a4a2b : 0x6b4026,
-    )
-  door.box([2, 3.6, -61.7], [10.5, 0.35, 0.2], 0x5e3a22)
-  door.box([2, 1.2, -61.7], [10.5, 0.35, 0.2], 0x5e3a22)
-  world.box([2, 5.4, -61.9], [5, 1.3, 0.3], 0x5e3a22)
-  world.box([2, 5.55, -61.7], [4.4, 0.9, 0.1], 0xc9a26a)
+  gateDoors()
+  // LF2-6: the plain sign board is the far and L1 stand-in; `gateDetail` puts up the frame, the GATE sign, the
+  // lantern and the bell post in the L0 tiles.
+  shell.box([2, 5.4, -61.9], [5, 1.3, 0.3], 0x5e3a22)
+  shell.box([2, 5.55, -61.7], [4.4, 0.9, 0.1], 0xc9a26a)
+  gateDetail()
 }
 
+/** The water tower's plain stand-in (`shell`, LF2-6); `towerDetail` is what the L0 tiles draw. */
 function waterTower(x: number, z: number): void {
+  towerDetail(x, z)
   for (const [dx, dz] of [
     [-1.6, -1.6],
     [1.6, -1.6],
     [1.6, 1.6],
     [-1.6, 1.6],
   ] as const)
-    world.box([x + dx, 0, z + dz], [0.3, 7, 0.3], 0x4f3322)
-  world.box([x, 3, z], [3.6, 0.2, 3.6], 0x5e3a22)
-  world.cylinder([x, 7, z], 2.4, 3.6, 10, 0x8a5a36, 0x7a4a2b)
-  world.prism(
+    shell.box([x + dx, 0, z + dz], [0.3, 7, 0.3], 0x4f3322)
+  shell.box([x, 3, z], [3.6, 0.2, 3.6], 0x5e3a22)
+  shell.cylinder([x, 7, z], 2.4, 3.6, 10, 0x8a5a36, 0x7a4a2b)
+  shell.prism(
     Array.from({ length: 10 }, (_, i) => {
       const a = (-i / 10) * Math.PI * 2
       return [x + Math.cos(a) * 2.6, z + Math.sin(a) * 2.6] as const
@@ -374,7 +390,7 @@ function waterTower(x: number, z: number): void {
     0x7d8890,
     0x8b98a1,
   )
-  world.cylinder([x, 10.8, z], 1.2, 1.0, 10, 0x8b98a1, 0x9aa6ae)
+  shell.cylinder([x, 10.8, z], 1.2, 1.0, 10, 0x8b98a1, 0x9aa6ae)
 }
 
 /** The rail line's centre at distance t along it (the railway and the handcar on its siding share it). */
@@ -782,6 +798,23 @@ const LETTERS: Readonly<
     [2.6, 2.9, 2.6, 4.6],
     [0, 2.5, 2.2, 2.5],
   ],
+  G: [
+    [0.4, 5, 3, 5],
+    [0, 0.4, 0, 4.6],
+    [0.4, 0, 2.6, 0],
+    [3, 0.4, 3, 2.3],
+    [1.7, 2.3, 3, 2.3],
+  ],
+  T: [
+    [0, 5, 3, 5],
+    [1.5, 0, 1.5, 5],
+  ],
+  E: [
+    [0, 0, 0, 5],
+    [0, 5, 3, 5],
+    [0, 2.5, 2.3, 2.5],
+    [0, 0, 3, 0],
+  ],
 }
 
 /** Two tin shades, alternating rib to rib. */
@@ -974,44 +1007,46 @@ function depotWood(): void {
       g.box([x, 0.35, z], [0.07, 0.41, 0.07], 0x5a3420)
 }
 
-/** The porch's props: barrels, the wall lantern and the bell. */
-function depotProps(): void {
-  const D = DEPOT,
-    g = hero
-  // Barrels with iron hoops: two at the porch's north end, two by the depot's south wall.
-  const barrel = (x: number, y: number, z: number, s: number): void => {
+/** A barrel with two iron hoops, s times a 0.9 m barrel, standing at (x, y, z). */
+function barrel(g: Geo, x: number, y: number, z: number, s: number): void {
+  lathe(
+    g,
+    x,
+    z,
+    [
+      [0.29 * s, y],
+      [0.33 * s, y + 0.22 * s],
+      [0.345 * s, y + 0.45 * s],
+      [0.33 * s, y + 0.68 * s],
+      [0.29 * s, y + 0.9 * s],
+    ],
+    10,
+    [0x8a5a36, 0x9a6a40, 0x9a6a40, 0x8a5a36],
+  )
+  for (const at of [0.14, 0.72])
     lathe(
       g,
       x,
       z,
       [
-        [0.29 * s, y],
-        [0.33 * s, y + 0.22 * s],
-        [0.345 * s, y + 0.45 * s],
-        [0.33 * s, y + 0.68 * s],
-        [0.29 * s, y + 0.9 * s],
+        [0.335 * s + 0.012, y + at * s],
+        [0.345 * s + 0.012, y + (at + 0.06) * s],
       ],
       10,
-      [0x8a5a36, 0x9a6a40, 0x9a6a40, 0x8a5a36],
+      0x3f3a38,
+      false,
     )
-    for (const at of [0.14, 0.72])
-      lathe(
-        g,
-        x,
-        z,
-        [
-          [0.335 * s + 0.012, y + at * s],
-          [0.345 * s + 0.012, y + (at + 0.06) * s],
-        ],
-        10,
-        0x3f3a38,
-        false,
-      )
-  }
-  barrel(-0.25, 0.35, 6.45, 1)
-  barrel(-0.95, 0.35, 6.6, 0.9)
-  barrel(-5.1, 0, -3.45, 1)
-  barrel(-5.85, 0, -3.6, 0.95)
+}
+
+/** The porch's props: barrels, the wall lantern and the bell. */
+function depotProps(): void {
+  const D = DEPOT,
+    g = hero
+  // Barrels with iron hoops: two at the porch's north end, two by the depot's south wall.
+  barrel(g, -0.25, 0.35, 6.45, 1)
+  barrel(g, -0.95, 0.35, 6.6, 0.9)
+  barrel(g, -5.1, 0, -3.45, 1)
+  barrel(g, -5.85, 0, -3.6, 0.95)
   // The wall lantern by the door: an iron bracket, a base, a lit glass, four corner rods and a cap.
   const L: V3 = [-3.72, 1.98, -0.45]
   beam(g, [D.x1, 2.5, L[2]], [L[0], 2.5, L[2]], 0.04, 0x2f2a28)
@@ -1227,6 +1262,838 @@ function depotDetail(): void {
   depotRack()
   depotSign()
   depotHandcar()
+}
+
+/** LF2-6's own fixed-seed generator (the fire stones), so nothing BM-1, LF2-2 or LF2-4 placed moves. */
+let rc = lcg(2606)
+
+/** Toward the sun (LF2-3: azimuth 50, 16 degrees up, down the canyon and right of the gate), for a lit side. */
+const SUN: V3 = (() => {
+  const v = [0.74, 0.28, -0.62] as const,
+    l = Math.hypot(v[0], v[1], v[2])
+  return [v[0] / l, v[1] / l, v[2] / l] as const
+})()
+
+/** Appends `from`, turned `yaw` round the vertical as `Geo.box` turns (+z goes to (sin, cos)) and moved to
+ *  (x, y, z), to `to`. A turn keeps the winding, so faces still face out. */
+function place(
+  to: Geo,
+  from: Geo,
+  x: number,
+  y: number,
+  z: number,
+  yaw: number,
+): void {
+  const c = Math.cos(yaw),
+    s = Math.sin(yaw)
+  for (let i = 0; i < from.pos.length; i += 3) {
+    const px = from.pos[i]!,
+      pz = from.pos[i + 2]!,
+      nx = from.nor[i]!,
+      nz = from.nor[i + 2]!
+    to.pos.push(x + px * c + pz * s, y + from.pos[i + 1]!, z - px * s + pz * c)
+    to.nor.push(nx * c + nz * s, from.nor[i + 1]!, -nx * s + nz * c)
+  }
+  for (const v of from.col) to.col.push(v)
+}
+
+/** A thin sheet: the quad facing away from `centre` in `out`, and its back in `back`, so it reads from both sides. */
+function sheet(
+  g: Geo,
+  a: V3,
+  b: V3,
+  c: V3,
+  d: V3,
+  centre: V3,
+  out: Hex,
+  back: Hex,
+): void {
+  outQuad(g, a, b, c, d, centre, out)
+  const mid = [0, 1, 2].map(k => (a[k]! + c[k]!) / 2)
+  outQuad(
+    g,
+    a,
+    b,
+    c,
+    d,
+    [2 * mid[0]! - centre[0], 2 * mid[1]! - centre[1], 2 * mid[2]! - centre[2]],
+    back,
+  )
+}
+
+/** A hanging lantern with its base at (x, y, z): an iron base and cap, a lit glass in `lit`, four corner rods. */
+function lantern(g: Geo, lit: Geo, x: number, y: number, z: number): void {
+  g.box([x, y, z], [0.2, 0.05, 0.2], 0x3a3330)
+  outQuad(
+    g,
+    [x - 0.1, y, z - 0.1],
+    [x + 0.1, y, z - 0.1],
+    [x + 0.1, y, z + 0.1],
+    [x - 0.1, y, z + 0.1],
+    [x, y + 1, z],
+    0x2f2a28,
+  )
+  lit.box([x, y + 0.05, z], [0.15, 0.26, 0.15], 0xffc45a)
+  for (const dx of [-0.09, 0.09])
+    for (const dz of [-0.09, 0.09])
+      beam(
+        g,
+        [x + dx, y + 0.05, z + dz],
+        [x + dx, y + 0.31, z + dz],
+        0.022,
+        0x3a3330,
+      )
+  lathe(
+    g,
+    x,
+    z,
+    [
+      [0.14, y + 0.31],
+      [0.04, y + 0.41],
+    ],
+    4,
+    0x3a3330,
+  )
+}
+
+/** A small faceted stone: a five-sided base ring, a turned shoulder ring and an off-centre apex. */
+function pebble(
+  g: Geo,
+  x: number,
+  y: number,
+  z: number,
+  r: number,
+  h: number,
+  hex: Hex,
+): void {
+  const turn = rc() * Math.PI,
+    at = (k: number, rr: number, yy: number, off: number): V3 => {
+      const a = turn + ((k + off) / 5) * Math.PI * 2
+      return [x + Math.cos(a) * rr, yy, z + Math.sin(a) * rr]
+    }
+  const apex: V3 = [
+      x + (rc() - 0.5) * r * 0.4,
+      y + h,
+      z + (rc() - 0.5) * r * 0.4,
+    ],
+    centre: V3 = [x, y + h * 0.35, z]
+  for (let k = 0; k < 5; k++) {
+    outQuad(
+      g,
+      at(k, r, y - 0.02, 0),
+      at(k + 1, r, y - 0.02, 0),
+      at(k + 1, r * 0.72, y + h * 0.6, 0.5),
+      at(k, r * 0.72, y + h * 0.6, 0.5),
+      centre,
+      hex,
+    )
+    outTri(
+      g,
+      at(k, r * 0.72, y + h * 0.6, 0.5),
+      at(k + 1, r * 0.72, y + h * 0.6, 0.5),
+      apex,
+      centre,
+      mix(hex, 0xd8cfc0, 0.25),
+    )
+  }
+}
+
+/** A flame tongue: a five-sided spike from a base of radius r at (x, y, z), leaning (lx, lz) to its tip h up. */
+function tongue(
+  g: Geo,
+  x: number,
+  y: number,
+  z: number,
+  r: number,
+  h: number,
+  lx: number,
+  lz: number,
+  hex: Hex,
+): void {
+  const at = (k: number, rr: number, yy: number, f: number): V3 => {
+    const a = (k / 5) * Math.PI * 2
+    return [x + lx * f + Math.cos(a) * rr, yy, z + lz * f + Math.sin(a) * rr]
+  }
+  const tip: V3 = [x + lx, y + h, z + lz]
+  for (let k = 0; k < 5; k++) {
+    outQuad(
+      g,
+      at(k, r, y, 0),
+      at(k + 1, r, y, 0),
+      at(k + 1, r * 0.7, y + h * 0.4, 0.3),
+      at(k, r * 0.7, y + h * 0.4, 0.3),
+      [x + lx * 0.15, y + h * 0.2, z + lz * 0.15],
+      hex,
+    )
+    outTri(
+      g,
+      at(k, r * 0.7, y + h * 0.4, 0.3),
+      at(k + 1, r * 0.7, y + h * 0.4, 0.3),
+      tip,
+      [x + lx * 0.65, y + h * 0.7, z + lz * 0.65],
+      hex,
+    )
+  }
+}
+
+const STONES: readonly Hex[] = [0x8a7f74, 0x9d9184, 0x786c62, 0xa69a8a]
+
+/** A campfire: a ring of faceted stones, three crossed charred logs, glowing embers and a flame of tongues. */
+function campfire(x: number, y: number, z: number): void {
+  const g = props,
+    lit = propsGlow
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2 + rc() * 0.25,
+      r = 0.15 + rc() * 0.07
+    pebble(
+      g,
+      x + Math.cos(a) * 0.72,
+      y,
+      z + Math.sin(a) * 0.72,
+      r,
+      r * (0.9 + rc() * 0.5),
+      STONES[i % STONES.length]!,
+    )
+  }
+  for (const a of [0.3, 1.35, 2.4]) {
+    const dx = Math.cos(a) * 0.48,
+      dz = Math.sin(a) * 0.48
+    beam(
+      g,
+      [x - dx, y + 0.07, z - dz],
+      [x + dx, y + 0.13, z + dz],
+      0.1,
+      0x3a2a20,
+    )
+  }
+  // Embers: a low lit disc under the logs, facing up.
+  for (let k = 0; k < 6; k++) {
+    const a0 = (k / 6) * Math.PI * 2,
+      a1 = ((k + 1) / 6) * Math.PI * 2
+    outTri(
+      lit,
+      [x, y + 0.03, z],
+      [x + Math.cos(a0) * 0.42, y + 0.03, z + Math.sin(a0) * 0.42],
+      [x + Math.cos(a1) * 0.42, y + 0.03, z + Math.sin(a1) * 0.42],
+      [x, y - 1, z],
+      0xff6a1a,
+    )
+  }
+  // The flame: an orange core and yellow tongues licking out of it.
+  tongue(lit, x, y + 0.05, z, 0.27, 1.0, 0.02, -0.03, 0xff8424)
+  for (const [a, h] of [
+    [0.4, 0.7],
+    [2.5, 0.6],
+    [4.4, 0.78],
+  ] as const) {
+    const ox = Math.cos(a) * 0.17,
+      oz = Math.sin(a) * 0.17
+    tongue(lit, x + ox, y + 0.05, z + oz, 0.12, h, ox * 0.6, oz * 0.6, 0xffc23a)
+  }
+  tongue(lit, x, y + 0.05, z, 0.33, 0.42, 0, 0, 0xff6a1a)
+}
+
+/** An X-braced crate s m a side, its base at (x, y, z), turned `yaw`: a frame and an X on each side. */
+function crate(x: number, y: number, z: number, s: number, yaw: number): void {
+  const c = new Geo(),
+    face = new Geo(),
+    h = s / 2,
+    w = s * 0.09,
+    zf = h + w * 0.2,
+    lo = w / 2,
+    hi = s - w / 2,
+    e = h - w / 2
+  c.box([0, 0, 0], [s, s, s], 0x8a5a36, 0, 0x9c6a40)
+  beam(face, [-e, lo, zf], [e, lo, zf], w, 0x6b4026)
+  beam(face, [-e, hi, zf], [e, hi, zf], w, 0x6b4026)
+  beam(face, [-e, lo, zf], [-e, hi, zf], w, 0x6b4026)
+  beam(face, [e, lo, zf], [e, hi, zf], w, 0x6b4026)
+  beam(face, [-e, lo, zf], [e, hi, zf], w * 0.85, 0x7a4a2b)
+  beam(face, [e, lo, zf], [-e, hi, zf], w * 0.85, 0x7a4a2b)
+  for (let k = 0; k < 4; k++) place(c, face, 0, 0, 0, (k * Math.PI) / 2)
+  place(props, c, x, y, z, yaw)
+}
+
+const CANVAS: readonly Hex[] = [0xf0dfba, 0xe6d3aa, 0xf3e4c2]
+
+/** A ridge tent on (x, y, z), its door end turned `yaw` from +z: canvas slopes in panels with seams, a door with its
+ *  flaps tied back on a glow from inside, the ridge and back poles, and a lantern hung inside the door. Its
+ *  footprint is the plain tent's, give or take a tenth of a metre. */
+function tent(x: number, y: number, z: number, yaw: number): void {
+  const t = new Geo(),
+    lit = new Geo(),
+    w = 1.6,
+    l = 2.6,
+    h = 2.2,
+    dw = 0.55,
+    dh = 1.65
+  for (const side of [-1, 1])
+    for (let k = 0; k < 3; k++) {
+      const z0 = -l + (2 * l * k) / 3,
+        z1 = -l + (2 * l * (k + 1)) / 3,
+        hex = CANVAS[k]!
+      outQuad(
+        t,
+        [side * w, 0, z0],
+        [side * w, 0, z1],
+        [0, h, z1],
+        [0, h, z0],
+        [0, 0.7, (z0 + z1) / 2],
+        side < 0 ? hex : mix(hex, 0xb89a72, 0.25),
+      )
+    }
+  for (const side of [-1, 1]) {
+    for (const zs of [-l / 3, l / 3])
+      beam(t, [side * w, 0.02, zs], [0, h, zs], 0.035, 0xc4ad82)
+    beam(
+      t,
+      [side * w * 0.985, 0.07, -l],
+      [side * w * 0.985, 0.07, l],
+      0.09,
+      0xb59a6e,
+    )
+  }
+  outTri(t, [w, 0, -l], [-w, 0, -l], [0, h, -l], [0, 1, 0], 0xd9c69e)
+  outQuad(
+    t,
+    [-w, 0, l],
+    [-dw, 0, l],
+    [0, dh, l],
+    [0, h, l],
+    [0, 1, 0],
+    0xe2cfa6,
+  )
+  outQuad(t, [dw, 0, l], [w, 0, l], [0, h, l], [0, dh, l], [0, 1, 0], 0xe2cfa6)
+  // The flaps, rolled back either side of the door, and their ties.
+  for (const side of [-1, 1]) {
+    const a: V3 = [side * (dw + 0.02), 0.02, l + 0.05],
+      b: V3 = [side * 0.06, dh - 0.05, l + 0.05],
+      c: V3 = [side * (dw + 0.5), 0.42, l + 0.08]
+    t.tri(a, b, c, 0xd6c094)
+    t.tri(a, c, b, 0xc4a878)
+    beam(
+      t,
+      [side * 0.45, 0.62, l + 0.03],
+      [side * 0.62, 0.6, l + 0.09],
+      0.03,
+      0x8a6a3a,
+    )
+  }
+  // The glow inside, a little in from the door, wider than it so it fills the opening from the side.
+  outTri(
+    lit,
+    [-dw * 1.25, 0.01, l - 0.25],
+    [dw * 1.25, 0.01, l - 0.25],
+    [0, dh * 1.15, l - 0.25],
+    [0, 0.6, l - 1],
+    0xffb653,
+  )
+  // The ridge pole and the back pole; the door end has none, so nothing stands proud of the plain tent's
+  // footprint where the walks and the standoffs pass (a front pole and its lantern stopped camp 2's).
+  beam(t, [0, h + 0.03, -l - 0.15], [0, h + 0.03, l + 0.12], 0.08, 0x5e3a22)
+  beam(t, [0, 0, -l - 0.12], [0, h + 0.03, -l - 0.12], 0.075, 0x5e3a22)
+  // The lantern hangs from the ridge just inside the door, in front of the glow.
+  beam(t, [0, h - 0.04, l - 0.14], [0, 1.82, l - 0.14], 0.02, 0x2f2a28)
+  lantern(t, lit, 0, 1.41, l - 0.14)
+  place(props, t, x, y, z, yaw)
+  place(propsGlow, lit, x, y, z, yaw)
+}
+
+/** Each camp's tent door heading, its crates' x offset and its barrels (offsets from the empty, a scale), behind
+ *  the tent, off the walks and the lines of fire. Camp 3's tent turns its door down the slot to the gate, which
+ *  keeps it a metre off the walk in, and its crates step east to clear the turned tent. */
+const CAMP_DETAIL: readonly {
+  readonly door: number
+  readonly crates: number
+  readonly barrels: readonly (readonly [number, number, number])[]
+}[] = [
+  {
+    door: 0,
+    crates: 0,
+    barrels: [
+      [-4.4, 1.2, 1],
+      [-4.0, -0.2, 0.9],
+    ],
+  },
+  { door: 0, crates: 0, barrels: [] },
+  {
+    door: Math.atan2(-SIDE.u[0], -SIDE.u[1]),
+    crates: 1,
+    barrels: [[3.0, -0.4, 1]],
+  },
+]
+
+/** A camp's detail (LF2-6) on the plain camp's footprint: the tent (camp 3's turned to the gate), the fire, two
+ *  X-braced crates, the flag, barrels, and at camp 3 the wagon with its torn cover. */
+function campDetail(i: number, x: number, y: number, z: number): void {
+  const at = CAMP_DETAIL[i]!
+  tent(x, y, z, at.door)
+  campfire(x - 2.8, y, z + 2.5)
+  crate(x + 2.6 + at.crates, y, z + 1, 1, 0.3)
+  crate(x + 2.4 + at.crates, y + 1, z + 1, 0.7, 0.7)
+  props.cylinder([x + 1.8, y, z - 2], 0.06, 7, 5, 0x5e3a22)
+  sheet(
+    props,
+    [x + 1.8, y + 6.2, z - 2],
+    [x + 3.2, y + 6.45, z - 2],
+    [x + 3.2, y + 6.95, z - 2],
+    [x + 1.8, y + 6.9, z - 2],
+    [x + 2.5, y + 6.6, z - 3],
+    0xc93a2c,
+    0xb0302a,
+  )
+  for (const [dx, dz, s] of at.barrels) barrel(props, x + dx, y, z + dz, s)
+  if (i === 2) {
+    const { gate: g0, u } = SIDE,
+      n = [-u[1], u[0]] as const,
+      s = 24.2,
+      o = 2.2
+    wagon(
+      g0[0] + u[0] * s + n[0] * o,
+      g0[1] + u[1] * s + n[1] * o,
+      Math.atan2(-n[0], -n[1]),
+    )
+  }
+}
+
+/** The wagon at camp 3: a plank bed on four spoked-looking wheels, a tongue on the ground and a canvas cover on
+ *  hoops, torn through on one side with a flap hanging. Built along +z, its tongue forward. */
+function wagon(x: number, z: number, yaw: number): void {
+  const g = new Geo(),
+    wood = 0x7a4a2b,
+    dark = 0x5e3a22
+  g.box([0, 0.6, 0], [1.4, 0.16, 3.0], dark, 0, 0x8a5a36)
+  outQuad(
+    g,
+    [-0.7, 0.6, -1.5],
+    [0.7, 0.6, -1.5],
+    [0.7, 0.6, 1.5],
+    [-0.7, 0.6, 1.5],
+    [0, 2, 0],
+    dark,
+  )
+  for (const sx of [-1, 1]) g.box([sx * 0.66, 0.76, 0], [0.08, 0.36, 3.0], wood)
+  for (const sz of [-1, 1])
+    g.box([0, 0.76, sz * 1.46], [1.24, 0.36, 0.08], wood)
+  for (const sz of [-1, 1]) {
+    beam(g, [-0.86, 0.52, sz], [0.86, 0.52, sz], 0.08, dark)
+    for (const sx of [-1, 1]) {
+      const r = sz < 0 ? 0.52 : 0.44
+      wheel(g, [sx * 0.82, r, sz], r, 0.08, 12, 0x6b4026)
+      wheel(g, [sx * 0.88, r, sz], 0.11, 0.12, 6, 0x3a3330)
+    }
+  }
+  beam(g, [0, 0.5, 1.5], [0, 0.12, 2.9], 0.09, dark)
+  beam(g, [-0.45, 0.12, 2.85], [0.45, 0.12, 2.85], 0.07, dark)
+  // The cover: canvas on hoops over the bed, torn through on the left in the middle bay.
+  const R = 0.72,
+    cy = 0.94,
+    seg = 6,
+    hoops = [-1.35, -0.68, 0, 0.68, 1.35],
+    arc = (k: number, zz: number, rr = R): V3 => {
+      const a = Math.PI * (k / seg)
+      return [Math.cos(a) * rr, cy + Math.sin(a) * rr, zz]
+    }
+  for (const zh of [hoops[0]!, hoops.at(-1)!])
+    for (let k = 0; k < seg; k++)
+      beam(g, arc(k, zh, R + 0.02), arc(k + 1, zh, R + 0.02), 0.05, wood)
+  const torn = new Set(['2:4', '2:5', '1:5', '3:4'])
+  for (let b = 0; b + 1 < hoops.length; b++)
+    for (let k = 0; k < seg; k++) {
+      if (torn.has(`${b}:${k}`)) continue
+      const z0 = hoops[b]!,
+        z1 = hoops[b + 1]!
+      sheet(
+        g,
+        arc(k, z0),
+        arc(k + 1, z0),
+        arc(k + 1, z1),
+        arc(k, z1),
+        [0, cy, (z0 + z1) / 2],
+        (b + k) % 2 === 0 ? 0xeadab4 : 0xe0cca2,
+        0xa88c66,
+      )
+    }
+  // Torn edges: a flap hanging out of the hole and a ragged strip.
+  const h0 = arc(4, -0.68),
+    h1 = arc(4, 0)
+  g.tri(h0, h1, [h1[0] - 0.25, h1[1] - 0.55, -0.2], 0xe4d0a6)
+  g.tri(h0, [h1[0] - 0.25, h1[1] - 0.55, -0.2], h1, 0xa88c66)
+  const r0 = arc(5, 0.68),
+    r1 = arc(5, 1.35)
+  g.tri(r0, r1, [r0[0] - 0.12, r0[1] - 0.35, 1.05], 0xe0cca2)
+  g.tri(r0, [r0[0] - 0.12, r0[1] - 0.35, 1.05], r1, 0xa88c66)
+  place(props, g, x, 0, z, yaw)
+}
+
+const OLIVE_DARK = 0x4f6a2c,
+  OLIVE_LIT = 0xa8b552
+
+/** A ribbed cactus limb from a to b, r m round: a star ring of `ribs` ribs, each face shaded by how it faces the sun
+ *  (a lit side), with a domed cap at b when `cap`. */
+function ribbed(g: Geo, a: V3, b: V3, r: number, cap: boolean, ribs = 8): void {
+  const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+    len = Math.hypot(d[0]!, d[1]!, d[2]!),
+    f = d.map(v => v / len)
+  let s = Math.abs(f[1]!) > 0.9 ? [1, 0, 0] : [-f[2]!, 0, f[0]!]
+  const sl = Math.hypot(s[0]!, s[1]!, s[2]!)
+  s = s.map(v => v / sl)
+  const t = [
+    f[1]! * s[2]! - f[2]! * s[1]!,
+    f[2]! * s[0]! - f[0]! * s[2]!,
+    f[0]! * s[1]! - f[1]! * s[0]!,
+  ]
+  const n = ribs * 2,
+    dir = (k: number): number[] => {
+      const ang = (k / n) * Math.PI * 2
+      return [0, 1, 2].map(i => s[i]! * Math.cos(ang) + t[i]! * Math.sin(ang))
+    },
+    at = (p: V3, k: number, rr: number, up = 0): V3 => {
+      const q = dir(k),
+        rho = k % 2 === 0 ? rr : rr * 0.72
+      return [
+        p[0] + q[0]! * rho + f[0]! * up,
+        p[1] + q[1]! * rho + f[1]! * up,
+        p[2] + q[2]! * rho + f[2]! * up,
+      ]
+    },
+    shade = (k: number, lift = 0): Hex => {
+      const q = dir(k + 0.5),
+        lit = q[0]! * SUN[0] + q[1]! * SUN[1] + q[2]! * SUN[2] + lift
+      // Each rib's two flanks differ a little too, so the ribs read even on the shadow side.
+      return mix(
+        OLIVE_DARK,
+        OLIVE_LIT,
+        Math.max(
+          0.08,
+          Math.min(1, 0.5 + lit * 0.45 + (k % 2 === 0 ? 0.14 : -0.1)),
+        ),
+      )
+    }
+  const mid: V3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]
+  for (let k = 0; k < n; k++)
+    outQuad(
+      g,
+      at(a, k, r),
+      at(a, k + 1, r),
+      at(b, k + 1, r),
+      at(b, k, r),
+      mid,
+      shade(k),
+    )
+  if (!cap) return
+  const top: V3 = [
+      b[0] + f[0]! * r * 0.7,
+      b[1] + f[1]! * r * 0.7,
+      b[2] + f[2]! * r * 0.7,
+    ],
+    inner: V3 = [b[0] - f[0]! * r, b[1] - f[1]! * r, b[2] - f[2]! * r]
+  for (let k = 0; k < n; k++) {
+    outQuad(
+      g,
+      at(b, k, r),
+      at(b, k + 1, r),
+      at(b, k + 1, r * 0.62, r * 0.42),
+      at(b, k, r * 0.62, r * 0.42),
+      inner,
+      shade(k, 0.15),
+    )
+    outTri(
+      g,
+      at(b, k, r * 0.62, r * 0.42),
+      at(b, k + 1, r * 0.62, r * 0.42),
+      top,
+      inner,
+      shade(k, 0.3),
+    )
+  }
+}
+
+/** A faceted saguaro at (x, z), h m tall: a ribbed trunk and arms (dx, y, up) that run out level, bend and rise. */
+function saguaro(
+  x: number,
+  z: number,
+  h: number,
+  arms: readonly (readonly [number, number, number])[],
+): void {
+  const g = props,
+    r = 0.34
+  ribbed(g, [x, -0.05, z], [x, h - r * 0.6, z], r, true)
+  for (const [dx, y, up] of arms) {
+    const ra = 0.23,
+      sx = Math.sign(dx),
+      knee = x + dx - sx * ra * 0.9
+    ribbed(g, [x, y, z], [knee, y, z], ra, false)
+    ribbed(
+      g,
+      [knee - sx * ra * 0.6, y - ra * 0.25, z],
+      [x + dx, y + ra * 1.3, z],
+      ra,
+      false,
+    )
+    ribbed(
+      g,
+      [x + dx, y + ra * 0.6, z],
+      [x + dx, y + up - ra * 0.5, z],
+      ra,
+      true,
+    )
+  }
+}
+
+/** The gate's double plank doors (BM-4's `gate.door`, the panel field 101 hides and drops): two leaves of planks
+ *  with iron straps and rivets on the canyon side, pull rings at the meeting stiles, rails and a brace behind. */
+function gateDoors(): void {
+  const z = -62,
+    front = z + 0.11,
+    leaves = [
+      [-3.05, 2.02],
+      [2.08, 7.15],
+    ] as const
+  door.box([2.05, 0, z - 0.02], [0.2, 4.4, 0.16], 0x3f2618)
+  for (const [li, [x0, x1]] of leaves.entries()) {
+    const planks = 6,
+      pw = (x1 - x0) / planks
+    for (let k = 0; k < planks; k++)
+      door.box(
+        [x0 + pw * (k + 0.5), 0, z],
+        [pw - 0.035, k % 2 === li % 2 ? 4.6 : 4.48, 0.22],
+        [0x7a4a2b, 0x6b4026, 0x845232][(k + li) % 3]!,
+      )
+    for (const y of [0.85, 3.35]) {
+      door.box(
+        [(x0 + x1) / 2, y, front + 0.03],
+        [x1 - x0 - 0.12, 0.28, 0.06],
+        0x3a3330,
+      )
+      for (let k = 0; k < 4; k++)
+        door.box(
+          [x0 + 0.3 + ((x1 - x0 - 0.6) * k) / 3, y + 0.09, front + 0.08],
+          [0.09, 0.09, 0.05],
+          0x7a7068,
+        )
+    }
+    // The back: two rails and a brace from the hinge side's foot to the meeting side's top rail.
+    for (const y of [1.0, 3.2])
+      door.box(
+        [(x0 + x1) / 2, y, z - 0.16],
+        [x1 - x0 - 0.1, 0.3, 0.1],
+        0x5e3a22,
+      )
+    const hinge = li === 0 ? x0 + 0.2 : x1 - 0.2,
+      meet = li === 0 ? x1 - 0.2 : x0 + 0.2
+    beam(door, [hinge, 1.2, z - 0.16], [meet, 3.2, z - 0.16], 0.16, 0x5e3a22)
+    // A pull ring at the meeting stile.
+    const px = li === 0 ? x1 - 0.32 : x0 + 0.32
+    beam(
+      door,
+      [px, 2.05, front + 0.07],
+      [px, 2.45, front + 0.07],
+      0.05,
+      0x2f2a28,
+    )
+  }
+}
+
+/** The gate's frame (LF2-6, L0 detail): timber posts in front of the stone pillars, a crossbeam on knee braces
+ *  carrying the GATE sign and a hanging lantern, the right post as the lever post with its bell, and a saguaro. */
+function gateDetail(): void {
+  const g = props,
+    zf = -60.55,
+    beamY = 4.95
+  for (const x of [-3.6, 7.6]) {
+    g.box([x, 0, zf], [0.55, 6.25, 0.55], 0x6b4026, 0, 0x5e3a22)
+    g.box([x, 6.25, zf], [0.64, 0.1, 0.64], 0x4a2c1a)
+    for (const y of [beamY + 0.12, beamY + 0.3])
+      g.box([x, y, zf + 0.29], [0.1, 0.1, 0.04], 0x3a3330)
+  }
+  g.box([2, beamY, zf], [12.4, 0.42, 0.5], 0x7a4a2b, 0, 0x8a5a36)
+  beam(g, [-3.33, 3.7, zf], [-2.05, beamY, zf], 0.22, 0x6b4026)
+  beam(g, [7.33, 3.7, zf], [6.05, beamY, zf], 0.22, 0x6b4026)
+  // The GATE sign on the crossbeam, raised cream letters on a board facing the canyon (+z, read left to right).
+  const sy = beamY + 0.42,
+    bz = zf + 0.16
+  g.box([2, sy, bz], [2.3, 0.8, 0.1], 0x9a6a40)
+  for (const y0 of [sy - 0.03, sy + 0.76])
+    g.box([2, y0, bz + 0.05], [2.46, 0.08, 0.06], 0x5e3a22)
+  for (const x0 of [0.81, 3.19])
+    g.box([x0, sy, bz + 0.05], [0.08, 0.84, 0.06], 0x5e3a22)
+  const unit = 0.11,
+    pitch = 4.1,
+    word = 'GATE',
+    left = 2 - ((word.length * pitch - 1.1) * unit) / 2
+  for (const [i, ch] of word.split('').entries())
+    for (const [u0, v0, u1, v1] of LETTERS[ch]!) {
+      const len = Math.hypot(u1 - u0, v1 - v0),
+        du = ((u1 - u0) / len) * 0.35,
+        dv = ((v1 - v0) / len) * 0.35
+      const p = (u: number, v: number): V3 => [
+        left + (i * pitch + u) * unit,
+        sy + 0.13 + v * unit,
+        bz + 0.09,
+      ]
+      beam(g, p(u0 - du, v0 - dv), p(u1 + du, v1 + dv), 0.075, 0xf0dcae)
+    }
+  // The lantern hung under the crossbeam, right of centre.
+  beam(g, [4.2, beamY, zf + 0.1], [4.2, beamY - 0.3, zf + 0.1], 0.025, 0x2f2a28)
+  lantern(g, propsGlow, 4.2, beamY - 0.71, zf + 0.1)
+  // The right post is the lever post: the brass bell hangs on an iron bracket off the crossbeam above it, and the
+  // lever box with its red-gripped lever sits on its face (a post of its own stood in camp 3's and out of the
+  // gate's frame).
+  const px = 7.6,
+    bz0 = zf + 0.62,
+    by = beamY - 0.62
+  beam(
+    g,
+    [px, beamY + 0.12, zf + 0.25],
+    [px, beamY + 0.12, bz0],
+    0.06,
+    0x2f2a28,
+  )
+  beam(g, [px, beamY + 0.12, bz0], [px, by + 0.48, bz0], 0.03, 0x2f2a28)
+  lathe(
+    g,
+    px,
+    bz0,
+    [
+      [0.22, by],
+      [0.2, by + 0.05],
+      [0.15, by + 0.18],
+      [0.13, by + 0.36],
+      [0.07, by + 0.48],
+    ],
+    10,
+    [0xd8b040, 0xc9a227, 0xb8921e, 0xc9a227],
+  )
+  lathe(
+    g,
+    px,
+    bz0,
+    [
+      [0.045, by - 0.06],
+      [0.045, by + 0.02],
+    ],
+    6,
+    0x6b5a2a,
+  )
+  g.box([px, 0.85, zf + 0.34], [0.3, 0.42, 0.14], 0x3a3330)
+  beam(g, [px, 1.06, zf + 0.43], [px + 0.14, 1.48, zf + 0.55], 0.045, 0x2f2a28)
+  beam(
+    g,
+    [px + 0.14, 1.48, zf + 0.55],
+    [px + 0.19, 1.62, zf + 0.59],
+    0.07,
+    0xc93a2c,
+  )
+  saguaro(-3.0, -59.6, 3.6, [
+    [-0.9, 1.5, 1.2],
+    [0.7, 2.2, 0.9],
+  ])
+}
+
+/** The water tower's detail (LF2-6): legs leaning in on X-braces, a plank deck, a stave tank with three iron
+ *  hoops under a tin cone roof, a spout and a ladder. */
+function towerDetail(x: number, z: number): void {
+  const g = props,
+    leg = (sx: number, sz: number, y: number): V3 => {
+      const k = 1.75 - (0.35 * y) / 7
+      return [x + sx * k, y, z + sz * k]
+    },
+    corners = [
+      [-1, -1],
+      [1, -1],
+      [1, 1],
+      [-1, 1],
+    ] as const
+  for (const [sx, sz] of corners)
+    beam(g, leg(sx, sz, 0), leg(sx, sz, 7.05), 0.3, 0x4f3322)
+  for (let k = 0; k < 4; k++) {
+    const [ax, az] = corners[k]!,
+      [bx, bz] = corners[(k + 1) % 4]!
+    for (const [y0, y1] of [
+      [0.5, 3.4],
+      [3.6, 6.7],
+    ] as const) {
+      beam(g, leg(ax, az, y0), leg(bx, bz, y1), 0.12, 0x5e3a22)
+      beam(g, leg(bx, bz, y0), leg(ax, az, y1), 0.12, 0x5e3a22)
+    }
+    beam(g, leg(ax, az, 3.5), leg(bx, bz, 3.5), 0.14, 0x6b4026)
+  }
+  g.box([x, 7.05, z], [3.9, 0.18, 3.9], 0x6b4026, 0, 0x7a4a2b)
+  const R = 2.4,
+    staves = 18,
+    y0 = 7.23,
+    y1 = 10.6
+  for (let i = 0; i < staves; i++) {
+    const a0 = (-i / staves) * Math.PI * 2,
+      a1 = (-(i + 1) / staves) * Math.PI * 2
+    outQuad(
+      g,
+      [x + Math.cos(a0) * R, y0, z + Math.sin(a0) * R],
+      [x + Math.cos(a1) * R, y0, z + Math.sin(a1) * R],
+      [x + Math.cos(a1) * R, y1, z + Math.sin(a1) * R],
+      [x + Math.cos(a0) * R, y1, z + Math.sin(a0) * R],
+      [x, (y0 + y1) / 2, z],
+      [0x8a5a36, 0x9a6a40, 0x7e5030][i % 3]!,
+    )
+  }
+  for (const y of [7.6, 8.9, 10.2])
+    lathe(
+      g,
+      x,
+      z,
+      [
+        [R + 0.04, y],
+        [R + 0.04, y + 0.12],
+      ],
+      staves,
+      0x3f3a38,
+    )
+  lathe(
+    g,
+    x,
+    z,
+    [
+      [2.75, 10.55],
+      [2.75, 10.68],
+      [1.3, 11.55],
+      [0.14, 12.3],
+    ],
+    staves,
+    [0x8d93a6, 0x9aa0b2, 0x868ca0],
+  )
+  lathe(
+    g,
+    x,
+    z,
+    [
+      [0.08, 12.2],
+      [0.08, 12.6],
+      [0.15, 12.68],
+      [0.02, 12.82],
+    ],
+    6,
+    0x6b625a,
+  )
+  // The spout off the tank's west side, and a ladder up the west face to the deck.
+  beam(
+    g,
+    [x - R + 0.05, 9.4, z + 0.6],
+    [x - R - 0.85, 8.9, z + 0.6],
+    0.14,
+    0x6b6f78,
+  )
+  beam(
+    g,
+    [x - R - 0.85, 8.95, z + 0.6],
+    [x - R - 0.85, 8.1, z + 0.6],
+    0.12,
+    0x6b6f78,
+  )
+  for (const dz of [-0.25, 0.25])
+    beam(g, [x - 2.05, 0, z + dz], [x - 2.05, 7.2, z + dz], 0.07, 0x5e3a22)
+  for (let y = 0.4; y < 7; y += 0.45)
+    beam(g, [x - 2.05, y, z - 0.25], [x - 2.05, y, z + 0.25], 0.05, 0x6b4026)
 }
 
 /** A tall faceted rock: `tiers` banded tiers on a polygon `ru` by `rn` m along the axes `u` and its normal. */
@@ -1967,7 +2834,10 @@ function scene(): void {
   gate()
   waterTower(15, -20)
   railway()
-  for (const [, [x, y, z]] of CAMPS) camp(x, y, z)
+  for (const [i, [, [x, y, z]]] of CAMPS.entries()) {
+    camp(x, y, z)
+    campDetail(i, x, y, z)
+  }
   target(2.5, -10)
   target(-3.5, -14)
   // The canyon walls: left and right rows of banded mesas, and buttes beyond the gate.
@@ -2378,7 +3248,11 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
   rockWest = new Geo()
   rockEast = new Geo()
   dress = new Geo()
+  props = new Geo()
+  propsGlow = new Geo()
+  plainGlow = new Geo()
   rk = lcg(2404)
+  rc = lcg(2606)
   scene()
   if (bake) {
     depotDetail()
@@ -2398,7 +3272,11 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
     merge(detail, rockWest)
     merge(detail, rockEast)
     merge(detail, dress)
-  }
+    // LF2-6: the camps', gate's, cacti's and tower's detail joins the L0 detail, and its lit parts are an L0 detail
+    // node of their own (`dress.glow`), so the L1 tiles never draw a flame without its fire (Codex MUST); the plain
+    // stand-ins are in `shell` (the far stand-in and `coarse.mesas`), their flames left out of the bake.
+    merge(detail, props)
+  } else merge(glow, plainGlow)
   const meshes: MeshIn[] = [
     { name: 'canyon', g: bake ? world : solid, material: 0 },
     ...(bake ? [] : [{ name: 'sky', g: sky, material: 1 }]),
@@ -2408,6 +3286,7 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
       ? [
           { name: 'rack.rifle', g: rackRifle, material: 0 },
           { name: 'dress', g: detail, material: 0 },
+          { name: 'dress.glow', g: propsGlow, material: 1 },
           { name: 'coarse.mesas', g: shell, material: 0 },
         ]
       : []),
@@ -2491,6 +3370,37 @@ export function buildTerrain(part: TerrainPart): Buffer {
   )
 }
 
+/** The props detail GLB (LF2-6), in world coordinates beside canyon.glb: the camps (tents, fires, crates, barrels,
+ *  flags, camp 3's wagon), the gate's frame, sign, lantern and bell post, the saguaros and the water tower (`props`),
+ *  and their lit glass, tent glow and flames (`props.glow`). The bake input carries them in its `dress` and
+ *  `dress.glow` nodes, both drawn in the L0 tiles only; the plain camps, cacti, tower and sign stay in canyon.glb as the far and L1 stand-ins. */
+export function buildProps(): Buffer {
+  buildCanyon()
+  return glb(
+    [
+      { name: 'props', g: props, material: 0 },
+      { name: 'props.glow', g: propsGlow, material: 1 },
+    ],
+    [],
+    [MESA, GLOW],
+    true,
+    'shardfile src/tools/brasscap/canyon.ts (LF2-6)',
+    'brasscap-props',
+  )
+}
+
+/** The props detail, its lit parts and the plain camps' flames it replaces in the bake, for canyon.test.ts. */
+export function propsGeo(): { props: Geo; glow: Geo; plainGlow: Geo } {
+  buildCanyon({ bake: true })
+  return { props, glow: propsGlow, plainGlow }
+}
+
+/** The gate door panel's mesh (`gate.door`), for canyon.test.ts. */
+export function doorGeo(): Geo {
+  buildCanyon()
+  return door
+}
+
 /** The terrain detail's cliffs, ground dressing and the plain shell they stand in for, for canyon.test.ts. */
 export function terrainGeo(): { rock: Geo; dress: Geo; shell: Geo } {
   buildCanyon()
@@ -2527,7 +3437,7 @@ if (process.argv[1] === import.meta.filename) {
     file = buildCanyon({ bake })
   writeFileSync(out, file)
   process.stdout.write(
-    `${out}: ${file.length} bytes, ${(world.pos.length + shell.pos.length + sky.pos.length + glow.pos.length + door.pos.length + (bake ? rockWest.pos.length + rockEast.pos.length + dress.pos.length + rackRifle.pos.length : 0)) / 9} triangles\n`,
+    `${out}: ${file.length} bytes, ${(world.pos.length + shell.pos.length + sky.pos.length + glow.pos.length + door.pos.length + (bake ? rockWest.pos.length + rockEast.pos.length + dress.pos.length + rackRifle.pos.length + props.pos.length : 0)) / 9} triangles\n`,
   )
   // The level's source writes the depot's detail GLB beside it (LF2-5); the bake input carries it already.
   if (!bake) {
@@ -2536,6 +3446,12 @@ if (process.argv[1] === import.meta.filename) {
     writeFileSync(depotOut, depotFile)
     process.stdout.write(
       `${depotOut}: ${depotFile.length} bytes, ${(hero.pos.length + heroGlow.pos.length + rackRifle.pos.length) / 9} triangles\n`,
+    )
+    const propsOut = path.join(path.dirname(out), 'props.glb'),
+      propsFile = buildProps()
+    writeFileSync(propsOut, propsFile)
+    process.stdout.write(
+      `${propsOut}: ${propsFile.length} bytes, ${(props.pos.length + propsGlow.pos.length) / 9} triangles\n`,
     )
     for (const part of TERRAIN_PARTS) {
       const partOut = path.join(path.dirname(out), `${part}.glb`),

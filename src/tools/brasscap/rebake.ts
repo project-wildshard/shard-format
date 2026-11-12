@@ -262,9 +262,10 @@ const libraryCost = (
   ),
 })
 
-/** A drawn panel's GLB is a render-library blob (the rack's rifle, TE-ENG6): it joins or leaves
- *  `admission.library`, and the library budget moves by its cost. A library blob that only changes
- *  bytes, or one with dependencies, is still settled by hand. */
+/** A drawn panel's GLB is a render-library blob (the rack's rifle, TE-ENG6; the gate's doors): it joins or
+ *  leaves `admission.library`, and the library budget moves by its cost. A panel whose bytes change (LF2-6's
+ *  gate doors) is one leaving and one joining, so the budget moves by the difference. One with dependencies
+ *  is still settled by hand. */
 function settleLibrary({
   index,
   cookedLibrary,
@@ -282,10 +283,15 @@ function settleLibrary({
   if (
     [...libraryAdded, ...libraryGone].some(
       (row): boolean => row.dependencies.length > 0,
-    ) ||
-    (libraryAdded.length > 0 && libraryGone.length > 0)
+    )
   )
-    throw new Error('a render-library blob changed: settle its budget by hand')
+    throw new Error(
+      'a render-library blob with dependencies changed: settle its budget by hand',
+    )
+  for (const row of [...libraryGone, ...libraryAdded])
+    console.log(
+      `library ${libraryGone.includes(row) ? '-' : '+'} ${row.hash.slice(0, 12)} ${row.compressed} compressed, ${row.decoded + row.gpu} resident`,
+    )
   const costIn = libraryCost(libraryAdded),
     costOut = libraryCost(libraryGone)
   const gone = new Set(libraryGone.map((row): string => row.hash))

@@ -9,11 +9,14 @@ import {
   CAMPS,
   canyonWorld,
   depotGeo,
+  doorGeo,
   Geo,
   LEDGE,
   PIT,
   SIDE,
+  buildProps,
   buildTerrain,
+  propsGeo,
   ROUTES,
   TERRAIN_PARTS,
   terrainGeo,
@@ -152,10 +155,18 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
     // The rack's rifle is its own node in both, so the bake makes it a panel a take hides (TE-ENG6).
     assert.ok(triangles(depot, 'rack.rifle') > 0)
     assert.equal(triangles(bake, 'rack.rifle'), triangles(depot, 'rack.rifle'))
+    // LF2-6: the bake's glow leaves out the plain camps' flames; the props' lit parts are the L0-only `dress.glow`
+    // (the bake's `detail: 'dress'` prefix), so no L1 tile draws a flame without its fire (Codex MUST).
+    const props = buildProps(),
+      { plainGlow } = propsGeo()
     assert.equal(
       triangles(bake, 'glow'),
-      triangles(source, 'glow') + triangles(depot, 'depot.glow'),
+      triangles(source, 'glow') -
+        plainGlow.pos.length / 9 +
+        triangles(depot, 'depot.glow'),
     )
+    assert.ok(triangles(props, 'props.glow') > 0)
+    assert.equal(triangles(bake, 'dress.glow'), triangles(props, 'props.glow'))
     // The far stand-in is welded from the shell and the skirt alone: one index per source vertex (Codex SHOULD).
     const { json } = parse(bake),
       far = json.meshes[json.nodes.findIndex(n => n.name === 'far.canyon')]!
@@ -183,8 +194,59 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
     const { rock, dress } = terrainGeo()
     assert.equal(
       triangles(bake, 'dress'),
-      (rock.pos.length + dress.pos.length) / 9,
+      (rock.pos.length + dress.pos.length) / 9 +
+        triangles(buildProps(), 'props'),
     )
+  })
+
+  it('writes the props detail GLB the same every run, committed and under 1 MiB (LF2-6)', (): void => {
+    const first = buildProps()
+    assert.ok(first.equals(buildProps()), 'two runs differ')
+    assert.ok(
+      first.equals(committed('props')),
+      'corpus/sources/brasscap-mesa/props.glb is stale: run node src/tools/brasscap/canyon.ts',
+    )
+    assert.ok(first.length < MIB)
+    const names = parse(first).json.nodes.map(n => n.name)
+    assert.deepEqual(names, ['props', 'props.glow'])
+    assert.ok(triangles(first, 'props.glow') > 0)
+  })
+
+  it('keeps the props detail off the routes, but for the camps the routes end in (LF2-6)', (): void => {
+    // The detail collides in the L0 tiles. A route ends at each camp's empty, where the tent stands as it did.
+    const { props } = propsGeo()
+    for (let v = 0; v < props.pos.length; v += 3) {
+      const x = props.pos[v]!,
+        y = props.pos[v + 1]!,
+        z = props.pos[v + 2]!
+      const inCamp = CAMPS.some(
+        ([, c]) => Math.hypot(x - c[0], z - c[2]) < 4.5 && y - c[1] < 9,
+      )
+      if (!inCamp && y > 0.25 && y <= 2)
+        assert.ok(
+          toRoute(x, z) > 0.3,
+          `props ${y.toFixed(2)} m up at (${x.toFixed(1)}, ${z.toFixed(1)}) on a route`,
+        )
+    }
+  })
+
+  it('keeps the gate doors one panel in the gateway, between the pillars (LF2-6)', (): void => {
+    // BM-4's field 101 hides `gate.door` and drops its collider: every plank, strap and brace is in that node,
+    // between the pillars' inner faces (x -3.3 and 7.3), within half a metre of the gate line, under 5 m.
+    const g = doorGeo()
+    let minX = Infinity,
+      maxX = -Infinity
+    for (let v = 0; v < g.pos.length; v += 3) {
+      const x = g.pos[v]!,
+        y = g.pos[v + 1]!,
+        z = g.pos[v + 2]!
+      minX = Math.min(minX, x)
+      maxX = Math.max(maxX, x)
+      assert.ok(x > -3.3 && x < 7.3, `door at x ${x}`)
+      assert.ok(Math.abs(z + 62) < 0.5, `door at z ${z}`)
+      assert.ok(y >= 0 && y < 5, `door at y ${y}`)
+    }
+    assert.ok(minX < -3 && maxX > 7.1, 'the doors close the gateway')
   })
 
   it('keeps every cliff, scree and dressing face taller than a step off the routes a player walks (LF2-4)', (): void => {
@@ -428,5 +490,49 @@ describe('the Brasscap Mesa depot, porch and rack (LF2-5)', (): void => {
     // A ray from the porch at the rack empty's height meets the rifle or the board within a metre.
     const hit = cast(detail, [-2.2, 1.12, 0], [0, 0, -1], 2)
     assert.ok(hit < 1.2, `the rack is ${hit.toFixed(2)} m off`)
+  })
+})
+
+/** What collides in the L0 tiles besides the gate's panel: the canyon, the cliffs, the dressing and the props. */
+const fixed = (): Geo => {
+  const g = canyonWorld(),
+    { rock, dress } = terrainGeo(),
+    { props } = propsGeo()
+  for (const from of [rock, dress, props]) {
+    for (const v of from.pos) g.pos.push(v)
+    for (const v of from.nor) g.nor.push(v)
+    for (const v of from.col) g.col.push(v)
+  }
+  return g
+}
+
+describe('the Brasscap Mesa gate (LF2-6)', (): void => {
+  it('shuts the gateway with the door panel alone: no gap a player fits through (Codex MUST)', (): void => {
+    // Rays down the canyon across the gateway, at a player's knee, waist and head: the door stops them on the gate
+    // line. Plank seams are a few centimetres; no run of misses is wider than 0.3 m, under a player's width.
+    const door = doorGeo()
+    for (const y of [0.3, 1, 1.7]) {
+      let run = 0
+      for (let x = -3; x <= 7.05; x += 0.05) {
+        const hit = cast(door, [x, y, -55], [0, 0, -1], 8) < 7.5
+        run = hit ? 0 : run + 0.05
+        assert.ok(
+          run <= 0.3,
+          `the shut gate lets a ray through at x ${x.toFixed(2)}, y ${y}`,
+        )
+      }
+    }
+  })
+
+  it('leaves the gateway open once the door panel hides: nothing fixed stands in the walk (Codex MUST)', (): void => {
+    // Field 101 hides `gate.door` and drops its collider; then the walk down the gateway to the pit (x 2) is clear
+    // of every fixed L0 collider, from a step up to head height, either side of the walk line.
+    const g = fixed()
+    for (const x of [1, 2, 3])
+      for (const y of [0.4, 1, 1.7])
+        assert.ok(
+          cast(g, [x, y, -56], [0, 0, -1], 16) >= 16,
+          `something fixed blocks the open gateway at x ${x}, y ${y}`,
+        )
   })
 })
