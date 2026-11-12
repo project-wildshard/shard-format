@@ -40,8 +40,8 @@ interface Codec {
 /** The repo root: git archive from a subdirectory sees only that subdirectory. */
 const ROOT = fileURLToPath(new URL('../../../..', import.meta.url))
 const CACHE = new URL('../../node_modules/.wire-cross/', import.meta.url)
-/** The scratch ref until `wire-v1.0.0` exists (the plan's 7): WR4's last codec commit. */
-const SCRATCH = '669d1fc'
+/** The scratch ref until `wire-v1.0.0` exists (the plan's 7): WR4's last codec commit, in full as engine's wire-released pins it. */
+const SCRATCH = '669d1fca695a110e6a8cb059b43a0a5caee60226'
 const OK = 0
 const FIRST = 0
 
@@ -94,7 +94,9 @@ async function releasedRef(): Promise<string> {
 async function extract(ref: string): Promise<URL> {
   const sha = await run('git', ['rev-parse', '--short=12', ref])
   if (sha === undefined) {
-    throw new Error(`No such ref ${ref}`)
+    throw new Error(
+      `No such ref ${ref} (a shallow clone? CI checks out with fetch-depth: 0)`,
+    )
   }
   const into = new URL(`${sha}/`, CACHE)
   const done = await stat(new URL('lib/src/game.js', into)).then(

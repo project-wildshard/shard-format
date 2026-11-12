@@ -227,3 +227,16 @@ WB2: PASS.
   projected rows as baselines (WR4) and one refusing unknown records (WR3)
   both turn it red. It runs in under a second, in the package's tests, so
   in pre-push and CI.
+
+## CI red since dbb848e: the shallow checkout (opus-sfred)
+
+- Main CI's `check` and `wire` jobs failed on the three cross tests with
+  "No such ref 669d1fc" from `dbb848e` on. The ref was never lost: it is
+  on main. `actions/checkout` clones at depth 1, so `git rev-parse` and
+  `git archive` could not see any older commit, and `git describe` will
+  not see a `wire-v*` tag either once one exists. Pre-push passed because
+  local checkouts have full history.
+- Both jobs now check out with `fetch-depth: 0` (the repo is about 6 MB),
+  the scratch ref is the full SHA engine's `wire-released` pins, and the
+  error names the shallow clone as the likely cause. The check is as
+  strict as before.
