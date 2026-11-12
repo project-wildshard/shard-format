@@ -1,0 +1,169 @@
+{
+  "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Camp 3 (LF2-1, meta TEMPLATE-E2E-PLAN LF-T2). P: the side canyon mouth facing camp.3 (8, -50), the gate behind it. No side canyon until LF2-2, so P is the trail west of the camps at (-4, -40): 11 m or more from every camp 2 and camp 3 bandit (their aware radius is 9 m; a first try at 12 m short on the trail stood 5 m from bandit.camp-2.1). Camera 1 is the golden target t2-11-camp-3-fp-cleared.jpg (art/targets/brasscap/), shot at desktop 1400x933 like the target. Freeze: look.json pins dayOverride 0.4 (no time setting needed), clear weather, animals calmed; the Dust Wyrm has no brain and its arena is 14 m, and the bandits are aware at 9 m: every P stays outside both. Cameras filled in by views.mjs on round 0; every later round re-shoots exactly these.",
+  "query": "chunk=brasscap-mesa&mute=1&skipintro=1&nolock=1&sw=0",
+  "settings": {
+    "weather": "clear"
+  },
+  "fp": {
+    "viewport": [
+      1400,
+      933
+    ],
+    "dpr": 1,
+    "pitch": -0.06,
+    "query": "",
+    "tier": "desktop"
+  },
+  "god": {
+    "viewport": [
+      1600,
+      900
+    ],
+    "query": "",
+    "tier": "desktop",
+    "fovV": 72,
+    "topUp": 60,
+    "diagUp": 25,
+    "diagOut": 35,
+    "lookAhead": 12
+  },
+  "anchors": [
+    {
+      "id": "camp-3",
+      "name": "Brasscap Mesa Camp 3",
+      "P": {
+        "x": -4,
+        "z": -40
+      },
+      "faceTo": {
+        "x": 8,
+        "z": -50
+      },
+      "groundY": 0,
+      "cameras": [
+        {
+          "n": 1,
+          "id": "fp-front",
+          "mode": "fp",
+          "x": -4,
+          "z": -40,
+          "yaw": -0.876,
+          "pitch": -0.06
+        },
+        {
+          "n": 2,
+          "id": "fp-left",
+          "mode": "fp",
+          "x": -4,
+          "z": -40,
+          "yaw": 0.695,
+          "pitch": -0.06
+        },
+        {
+          "n": 3,
+          "id": "fp-right",
+          "mode": "fp",
+          "x": -4,
+          "z": -40,
+          "yaw": -2.447,
+          "pitch": -0.06
+        },
+        {
+          "n": 4,
+          "id": "fp-back",
+          "mode": "fp",
+          "x": -4,
+          "z": -40,
+          "yaw": 2.266,
+          "pitch": -0.06
+        },
+        {
+          "n": 5,
+          "id": "top",
+          "mode": "god",
+          "pos": [
+            -4,
+            60,
+            -40
+          ],
+          "look": [
+            -4,
+            0,
+            -40
+          ],
+          "fovV": 72,
+          "up": [
+            0.768,
+            0,
+            -0.64
+          ]
+        },
+        {
+          "n": 6,
+          "id": "diag-front",
+          "mode": "god",
+          "pos": [
+            -30.888,
+            25,
+            -17.594
+          ],
+          "look": [
+            5.219,
+            0,
+            -47.682
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 7,
+          "id": "diag-left",
+          "mode": "god",
+          "pos": [
+            -26.406,
+            25,
+            -66.888
+          ],
+          "look": [
+            -4,
+            0,
+            -40
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 8,
+          "id": "diag-right",
+          "mode": "god",
+          "pos": [
+            18.406,
+            25,
+            -13.112
+          ],
+          "look": [
+            -4,
+            0,
+            -40
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 9,
+          "id": "diag-back",
+          "mode": "god",
+          "pos": [
+            22.888,
+            25,
+            -62.406
+          ],
+          "look": [
+            -4,
+            0,
+            -40
+          ],
+          "fovV": 72
+        }
+      ]
+    }
+  ],
+  "target": "art/targets/brasscap/t2-11-camp-3-fp-cleared.jpg"
+}

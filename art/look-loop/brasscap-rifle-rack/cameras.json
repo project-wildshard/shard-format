@@ -1,0 +1,169 @@
+{
+  "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Rifle rack (LF2-1, meta TEMPLATE-E2E-PLAN LF-T2). P: 1.2 m in front of the rack empty (-2.2, 1.12, -0.92), facing the rack (it faces +z, toward spawn); pitch -0.35 so the rack at 1.1 m sits mid-frame. Camera 1 is the golden target t2-02-rifle-rack-fp-close.jpg (art/targets/brasscap/), shot at desktop 1400x933 like the target. Freeze: look.json pins dayOverride 0.4 (no time setting needed), clear weather, animals calmed; the Dust Wyrm has no brain and its arena is 14 m, and the bandits are aware at 9 m: every P stays outside both. Cameras filled in by views.mjs on round 0; every later round re-shoots exactly these.",
+  "query": "chunk=brasscap-mesa&mute=1&skipintro=1&nolock=1&sw=0",
+  "settings": {
+    "weather": "clear"
+  },
+  "fp": {
+    "viewport": [
+      1400,
+      933
+    ],
+    "dpr": 1,
+    "pitch": -0.35,
+    "query": "",
+    "tier": "desktop"
+  },
+  "god": {
+    "viewport": [
+      1600,
+      900
+    ],
+    "query": "",
+    "tier": "desktop",
+    "fovV": 72,
+    "topUp": 60,
+    "diagUp": 25,
+    "diagOut": 35,
+    "lookAhead": 12
+  },
+  "anchors": [
+    {
+      "id": "rifle-rack",
+      "name": "Brasscap Mesa Rifle rack",
+      "P": {
+        "x": -2.2,
+        "z": 0.28
+      },
+      "faceTo": {
+        "x": -2.2,
+        "z": -0.92
+      },
+      "groundY": 0,
+      "cameras": [
+        {
+          "n": 1,
+          "id": "fp-front",
+          "mode": "fp",
+          "x": -2.2,
+          "z": 0.28,
+          "yaw": 0,
+          "pitch": -0.35
+        },
+        {
+          "n": 2,
+          "id": "fp-left",
+          "mode": "fp",
+          "x": -2.2,
+          "z": 0.28,
+          "yaw": 1.571,
+          "pitch": -0.35
+        },
+        {
+          "n": 3,
+          "id": "fp-right",
+          "mode": "fp",
+          "x": -2.2,
+          "z": 0.28,
+          "yaw": -1.571,
+          "pitch": -0.35
+        },
+        {
+          "n": 4,
+          "id": "fp-back",
+          "mode": "fp",
+          "x": -2.2,
+          "z": 0.28,
+          "yaw": 3.142,
+          "pitch": -0.35
+        },
+        {
+          "n": 5,
+          "id": "top",
+          "mode": "god",
+          "pos": [
+            -2.2,
+            60,
+            0.28
+          ],
+          "look": [
+            -2.2,
+            0,
+            0.28
+          ],
+          "fovV": 72,
+          "up": [
+            0,
+            0,
+            -1
+          ]
+        },
+        {
+          "n": 6,
+          "id": "diag-front",
+          "mode": "god",
+          "pos": [
+            -2.2,
+            25,
+            35.28
+          ],
+          "look": [
+            -2.2,
+            0,
+            -11.72
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 7,
+          "id": "diag-left",
+          "mode": "god",
+          "pos": [
+            -37.2,
+            25,
+            0.28
+          ],
+          "look": [
+            -2.2,
+            0,
+            0.28
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 8,
+          "id": "diag-right",
+          "mode": "god",
+          "pos": [
+            32.8,
+            25,
+            0.28
+          ],
+          "look": [
+            -2.2,
+            0,
+            0.28
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 9,
+          "id": "diag-back",
+          "mode": "god",
+          "pos": [
+            -2.2,
+            25,
+            -34.72
+          ],
+          "look": [
+            -2.2,
+            0,
+            0.28
+          ],
+          "fovV": 72
+        }
+      ]
+    }
+  ],
+  "target": "art/targets/brasscap/t2-02-rifle-rack-fp-close.jpg"
+}

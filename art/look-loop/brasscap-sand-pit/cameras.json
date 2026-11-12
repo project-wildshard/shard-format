@@ -1,0 +1,169 @@
+{
+  "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Sand pit (LF2-1, meta TEMPLATE-E2E-PLAN LF-T2). P: the pit rim facing the wyrm empty (2, -100), 16 m out: outside the boss arena (14 m), so the fight never starts and the Dust Wyrm stays held under the sand. A first try at 12 m started the fight (boss bar up, the tell rising). Camera 1 is the golden target t2-14-dust-wyrm-fp-emerge.jpg (art/targets/brasscap/), shot at desktop 1400x933 like the target. Freeze: look.json pins dayOverride 0.4 (no time setting needed), clear weather, animals calmed; the Dust Wyrm has no brain and its arena is 14 m, and the bandits are aware at 9 m: every P stays outside both. Cameras filled in by views.mjs on round 0; every later round re-shoots exactly these.",
+  "query": "chunk=brasscap-mesa&mute=1&skipintro=1&nolock=1&sw=0",
+  "settings": {
+    "weather": "clear"
+  },
+  "fp": {
+    "viewport": [
+      1400,
+      933
+    ],
+    "dpr": 1,
+    "pitch": -0.06,
+    "query": "",
+    "tier": "desktop"
+  },
+  "god": {
+    "viewport": [
+      1600,
+      900
+    ],
+    "query": "",
+    "tier": "desktop",
+    "fovV": 72,
+    "topUp": 60,
+    "diagUp": 25,
+    "diagOut": 35,
+    "lookAhead": 12
+  },
+  "anchors": [
+    {
+      "id": "sand-pit",
+      "name": "Brasscap Mesa Sand pit",
+      "P": {
+        "x": 2,
+        "z": -84
+      },
+      "faceTo": {
+        "x": 2,
+        "z": -100
+      },
+      "groundY": 0,
+      "cameras": [
+        {
+          "n": 1,
+          "id": "fp-front",
+          "mode": "fp",
+          "x": 2,
+          "z": -84,
+          "yaw": 0,
+          "pitch": -0.06
+        },
+        {
+          "n": 2,
+          "id": "fp-left",
+          "mode": "fp",
+          "x": 2,
+          "z": -84,
+          "yaw": 1.571,
+          "pitch": -0.06
+        },
+        {
+          "n": 3,
+          "id": "fp-right",
+          "mode": "fp",
+          "x": 2,
+          "z": -84,
+          "yaw": -1.571,
+          "pitch": -0.06
+        },
+        {
+          "n": 4,
+          "id": "fp-back",
+          "mode": "fp",
+          "x": 2,
+          "z": -84,
+          "yaw": 3.142,
+          "pitch": -0.06
+        },
+        {
+          "n": 5,
+          "id": "top",
+          "mode": "god",
+          "pos": [
+            2,
+            60,
+            -84
+          ],
+          "look": [
+            2,
+            0,
+            -84
+          ],
+          "fovV": 72,
+          "up": [
+            0,
+            0,
+            -1
+          ]
+        },
+        {
+          "n": 6,
+          "id": "diag-front",
+          "mode": "god",
+          "pos": [
+            2,
+            25,
+            -49
+          ],
+          "look": [
+            2,
+            0,
+            -96
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 7,
+          "id": "diag-left",
+          "mode": "god",
+          "pos": [
+            -33,
+            25,
+            -84
+          ],
+          "look": [
+            2,
+            0,
+            -84
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 8,
+          "id": "diag-right",
+          "mode": "god",
+          "pos": [
+            37,
+            25,
+            -84
+          ],
+          "look": [
+            2,
+            0,
+            -84
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 9,
+          "id": "diag-back",
+          "mode": "god",
+          "pos": [
+            2,
+            25,
+            -119
+          ],
+          "look": [
+            2,
+            0,
+            -84
+          ],
+          "fovV": 72
+        }
+      ]
+    }
+  ],
+  "target": "art/targets/brasscap/t2-14-dust-wyrm-fp-emerge.jpg"
+}

@@ -266,3 +266,29 @@ lever-only subset of Pine's native assembly in rows.
   low sun, the dead body ragdolls over and draws white, and the burst
   never reaches a player who stays out of the ring, so the Wyrm does no
   harm to a rifle at range.
+
+## LF2-1: the one-command re-bake (opus-lf21)
+
+- `node src/tools/brasscap/rebake.ts` is the whole author re-bake.
+  It runs `canyon.ts --bake`, writes a throwaway project into the
+  sibling sharddev checkout's `tmp/brasscap-rebake/` (BM-4's
+  declaration: `emptyShardfile` with this corpus's identity, `look`,
+  `state`, `sim` and `hooks`, the gate's `gate.as` as `script:gate`,
+  the GLB's `world` row), cooks it with `wildshard build <project>
+  <out> --product-only`, and compares the cooked `world/tiles`,
+  `world/collision`, `world/props` and `sim/sim` sections and every
+  blob they name with `corpus/brasscap-mesa/`. A difference exits 1.
+- `--write` copies the differing sections and blobs in, then prints
+  what it does not do (Codex review, MUST): settle `shard.json` (the
+  changed hashes in `files` and the admission lists, stale blobs
+  dropped, the sim budget), `node src/cli/bin.mjs pack
+  corpus/brasscap-mesa`, and copy the tarball's settled `shard.json`,
+  `validation.json` and sections back, as BM-4 did. The first real
+  re-bake (LF2-2) owns automating that. `--sharddev <path>` picks the
+  checkout (default `../sharddev`); `--keep` keeps the work folder.
+  Nothing tracked in sharddev is written.
+- Check on the unchanged GLB: 234 of 234 files byte-equal (4
+  sections, 230 blobs), about 5 s, on sharddev `f1852d6` with
+  opus-fmtpin's format `f32eae4` installed, and again on sharddev
+  `21b915e` (that pin, committed). The sharddev checkout's format
+  version is part of the bake: re-run the check after a pin bump.

@@ -1,0 +1,169 @@
+{
+  "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Gate (LF2-1, meta TEMPLATE-E2E-PLAN LF-T2). P: centred on the gate (2, -62), 8.5 m out, not the anchor table's 6 m: at 6 m the 13 m gate filled the frame. Camp 3 stands within the bandits' 9 m aware radius of every frontal P (bandit.camp-3.2 at (4, -51.8)); an oblique P at (-6, -57) to dodge them saw the gate edge-on. So this P is not frozen for the bandits: they come from behind the camera. LF2-2 moves camp 3 into its side canyon, which frees it. Camera 1 is the golden target t2-12-gate-fp-closed.jpg (art/targets/brasscap/), shot at desktop 1400x933 like the target. Freeze: look.json pins dayOverride 0.4 (no time setting needed), clear weather, animals calmed; the Dust Wyrm has no brain and its arena is 14 m, and the bandits are aware at 9 m: P stays outside the arena, but not outside camp 3's reach (below). Cameras filled in by views.mjs on round 0; every later round re-shoots exactly these.",
+  "query": "chunk=brasscap-mesa&mute=1&skipintro=1&nolock=1&sw=0",
+  "settings": {
+    "weather": "clear"
+  },
+  "fp": {
+    "viewport": [
+      1400,
+      933
+    ],
+    "dpr": 1,
+    "pitch": -0.06,
+    "query": "",
+    "tier": "desktop"
+  },
+  "god": {
+    "viewport": [
+      1600,
+      900
+    ],
+    "query": "",
+    "tier": "desktop",
+    "fovV": 72,
+    "topUp": 60,
+    "diagUp": 25,
+    "diagOut": 35,
+    "lookAhead": 12
+  },
+  "anchors": [
+    {
+      "id": "gate",
+      "name": "Brasscap Mesa Gate",
+      "P": {
+        "x": 2,
+        "z": -53.5
+      },
+      "faceTo": {
+        "x": 2,
+        "z": -62
+      },
+      "groundY": 0,
+      "cameras": [
+        {
+          "n": 1,
+          "id": "fp-front",
+          "mode": "fp",
+          "x": 2,
+          "z": -53.5,
+          "yaw": 0,
+          "pitch": -0.06
+        },
+        {
+          "n": 2,
+          "id": "fp-left",
+          "mode": "fp",
+          "x": 2,
+          "z": -53.5,
+          "yaw": 1.571,
+          "pitch": -0.06
+        },
+        {
+          "n": 3,
+          "id": "fp-right",
+          "mode": "fp",
+          "x": 2,
+          "z": -53.5,
+          "yaw": -1.571,
+          "pitch": -0.06
+        },
+        {
+          "n": 4,
+          "id": "fp-back",
+          "mode": "fp",
+          "x": 2,
+          "z": -53.5,
+          "yaw": 3.142,
+          "pitch": -0.06
+        },
+        {
+          "n": 5,
+          "id": "top",
+          "mode": "god",
+          "pos": [
+            2,
+            60,
+            -53.5
+          ],
+          "look": [
+            2,
+            0,
+            -53.5
+          ],
+          "fovV": 72,
+          "up": [
+            0,
+            0,
+            -1
+          ]
+        },
+        {
+          "n": 6,
+          "id": "diag-front",
+          "mode": "god",
+          "pos": [
+            2,
+            25,
+            -18.5
+          ],
+          "look": [
+            2,
+            0,
+            -65.5
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 7,
+          "id": "diag-left",
+          "mode": "god",
+          "pos": [
+            -33,
+            25,
+            -53.5
+          ],
+          "look": [
+            2,
+            0,
+            -53.5
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 8,
+          "id": "diag-right",
+          "mode": "god",
+          "pos": [
+            37,
+            25,
+            -53.5
+          ],
+          "look": [
+            2,
+            0,
+            -53.5
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 9,
+          "id": "diag-back",
+          "mode": "god",
+          "pos": [
+            2,
+            25,
+            -88.5
+          ],
+          "look": [
+            2,
+            0,
+            -53.5
+          ],
+          "fovV": 72
+        }
+      ]
+    }
+  ],
+  "target": "art/targets/brasscap/t2-12-gate-fp-closed.jpg"
+}

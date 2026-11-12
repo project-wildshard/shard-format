@@ -1,0 +1,169 @@
+{
+  "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Depot porch (LF2-1, meta TEMPLATE-E2E-PLAN LF-T2). P: spawn (-1.6, 0.35, 2.6) looking down the canyon (-z). Camera 1 is the golden target t2-01-depot-porch-fp-front.jpg (art/targets/brasscap/), shot at desktop 1400x933 like the target. Freeze: look.json pins dayOverride 0.4 (no time setting needed), clear weather, animals calmed; the Dust Wyrm has no brain and its arena is 14 m, and the bandits are aware at 9 m: every P stays outside both. Cameras filled in by views.mjs on round 0; every later round re-shoots exactly these.",
+  "query": "chunk=brasscap-mesa&mute=1&skipintro=1&nolock=1&sw=0",
+  "settings": {
+    "weather": "clear"
+  },
+  "fp": {
+    "viewport": [
+      1400,
+      933
+    ],
+    "dpr": 1,
+    "pitch": -0.06,
+    "query": "",
+    "tier": "desktop"
+  },
+  "god": {
+    "viewport": [
+      1600,
+      900
+    ],
+    "query": "",
+    "tier": "desktop",
+    "fovV": 72,
+    "topUp": 60,
+    "diagUp": 25,
+    "diagOut": 35,
+    "lookAhead": 12
+  },
+  "anchors": [
+    {
+      "id": "depot-porch",
+      "name": "Brasscap Mesa Depot porch",
+      "P": {
+        "x": -1.6,
+        "z": 2.6
+      },
+      "faceTo": {
+        "x": -1.6,
+        "z": -20
+      },
+      "groundY": 0,
+      "cameras": [
+        {
+          "n": 1,
+          "id": "fp-front",
+          "mode": "fp",
+          "x": -1.6,
+          "z": 2.6,
+          "yaw": 0,
+          "pitch": -0.06
+        },
+        {
+          "n": 2,
+          "id": "fp-left",
+          "mode": "fp",
+          "x": -1.6,
+          "z": 2.6,
+          "yaw": 1.571,
+          "pitch": -0.06
+        },
+        {
+          "n": 3,
+          "id": "fp-right",
+          "mode": "fp",
+          "x": -1.6,
+          "z": 2.6,
+          "yaw": -1.571,
+          "pitch": -0.06
+        },
+        {
+          "n": 4,
+          "id": "fp-back",
+          "mode": "fp",
+          "x": -1.6,
+          "z": 2.6,
+          "yaw": 3.142,
+          "pitch": -0.06
+        },
+        {
+          "n": 5,
+          "id": "top",
+          "mode": "god",
+          "pos": [
+            -1.6,
+            60,
+            2.6
+          ],
+          "look": [
+            -1.6,
+            0,
+            2.6
+          ],
+          "fovV": 72,
+          "up": [
+            0,
+            0,
+            -1
+          ]
+        },
+        {
+          "n": 6,
+          "id": "diag-front",
+          "mode": "god",
+          "pos": [
+            -1.6,
+            25,
+            37.6
+          ],
+          "look": [
+            -1.6,
+            0,
+            -9.4
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 7,
+          "id": "diag-left",
+          "mode": "god",
+          "pos": [
+            -36.6,
+            25,
+            2.6
+          ],
+          "look": [
+            -1.6,
+            0,
+            2.6
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 8,
+          "id": "diag-right",
+          "mode": "god",
+          "pos": [
+            33.4,
+            25,
+            2.6
+          ],
+          "look": [
+            -1.6,
+            0,
+            2.6
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 9,
+          "id": "diag-back",
+          "mode": "god",
+          "pos": [
+            -1.6,
+            25,
+            -32.4
+          ],
+          "look": [
+            -1.6,
+            0,
+            2.6
+          ],
+          "fovV": 72
+        }
+      ]
+    }
+  ],
+  "target": "art/targets/brasscap/t2-01-depot-porch-fp-front.jpg"
+}
