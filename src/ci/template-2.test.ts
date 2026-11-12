@@ -31,6 +31,11 @@ const EDITED = 'Open or close the door'
 const CODE = /\.(?:ts|tsx|js|mjs|cjs|py)$/u
 const OTHER_REPOS = /@wildshard\/(?:sharddev|engine)|\bthree@/u
 const SOURCE_HASH = /source (?<hash>[\da-f]{64})$/mu
+// TEMPLATE-E2E S2-4: download time is smoke time. 3 MB packed, decimal, and
+// no file over the 1 MiB blob cap the commit hooks hold (.githooks/lib.mjs
+// MAX_BYTES, which has no types to import).
+const PACKED_CAP = 3_000_000
+const BLOB_CAP = 1024 * 1024
 const TIME = 1_000_000_000
 
 function pack(folder: string, name: string): string {
@@ -94,6 +99,35 @@ test('a system tar reads a pack, and that folder is the shard', (): void => {
 
   assert.equal(read.status, 0)
   assert.equal(sourceOf(unpacked), sourceOf(TEMPLATE_2))
+})
+
+interface FileSize {
+  readonly name: string
+  readonly bytes: number
+}
+
+/** A tarball's largest file. */
+function largestFile(tar: string): FileSize {
+  let largest: FileSize = { name: 'none', bytes: 0 }
+  for (const [name, data] of readTar(readFileSync(tar))) {
+    if (data.byteLength > largest.bytes) {
+      largest = { name, bytes: data.byteLength }
+    }
+  }
+  return largest
+}
+
+test('Template 2 stays small: under 3 MB packed, no file over 1 MiB', (ctx): void => {
+  const tar = pack(TEMPLATE_2, 'size')
+  const packed = statSync(tar).size
+  const largest = largestFile(tar)
+  ctx.diagnostic(
+    `Template 2 packed: ${String(packed)} bytes of ${String(PACKED_CAP)}; largest file ${largest.name} at ${String(largest.bytes)} bytes of ${String(BLOB_CAP)}`,
+  )
+
+  assert.ok(packed < PACKED_CAP, `packed ${String(packed)} bytes`)
+  assert.ok(largest.bytes > 0, 'the tarball holds files')
+  assert.ok(largest.bytes <= BLOB_CAP, largest.name)
 })
 
 /** Rewrites the UI section by hand, in a layout format would never write. */
