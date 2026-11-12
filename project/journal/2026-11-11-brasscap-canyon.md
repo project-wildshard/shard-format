@@ -60,3 +60,30 @@ lever-only subset of Pine's native assembly in rows.
 - Its discovery row is hidden, order 9, like Template 1's. It ships in
   `files`, so engine's `pins.ts install --from-format brasscap-mesa`
   reads it. `src/ci/brasscap-mesa.test.ts` holds the shape.
+
+## BM-3: the lever-action, asset half (opus-bm3)
+
+- `src/tools/brasscap/rifle.ts` writes
+  `corpus/sources/brasscap-mesa/rifle.glb` (28 KB, 312 triangles),
+  BM-1's way: flat-shaded vertex colours, walnut stock and fore-end,
+  a brass receiver and lever loop, a blued octagonal barrel over the
+  magazine tube. It lies along -Z, the origin at the receiver, with
+  empties `muzzle` (the barrel's tip), `grip` and `fore`. Two
+  primitives: matte, and brass (metallic 0.25). `rifle.test.ts`
+  holds it to the committed bytes, the budget, the muzzle at the
+  front, and unit normals that agree with each triangle's winding.
+  Three.js shot: `progress/t2-04-rifle-model.jpg`.
+- Not in the product yet, and BM-3 is blocked on engine. The plan's
+  "reachable from data" finding holds only on the server. On the
+  client, `held.ranged-page` (engine
+  `src/client/game/loadout/rangedPage.ts`) is Pine's whole page: it
+  needs a forest page, a bow, a crossbow launcher, elites, roaming
+  combat and the trophy compendium, so no lever-only subset exists.
+  And the native `cycle` item hits only native population bodies
+  (`bodyAlong`), not a declared shard's actors. The declared kit
+  (`SERVER_KIT_FAMILIES`: `kit.melee`, `kit.lantern`) has no ranged
+  family. Meta TEMPLATE-E2E-PLAN row TE-ENG2 specs the engine change:
+  a `kit.lever` family on the declared path.
+- The rack: BM-1's canyon already bakes a static rifle on the rack
+  at the `rack` empty. A pickup needs that rifle hidden once taken, so
+  BM-3 will move it out of the baked tiles into a target panel.
