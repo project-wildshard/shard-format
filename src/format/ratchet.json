@@ -4022,7 +4022,7 @@
    "typescript(prefer-readonly-parameter-types)": 55,
    "typescript(strict-boolean-expressions)": 4,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 10,
+   "unicorn(max-nested-calls)": 5,
    "unicorn(no-nested-ternary)": 1,
    "unicorn(no-null)": 11,
    "unicorn(prefer-single-call)": 10

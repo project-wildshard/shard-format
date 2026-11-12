@@ -221,6 +221,7 @@
     "./postGraphDocument": "./src/format/postGraphDocument.ts",
     "./postGraphLook": "./src/format/postGraphLook.ts",
     "./postStack": "./src/format/postStack.ts",
+    "./look-light": "./src/format/look-light.ts",
     "./practiceCourseRows": "./src/format/practiceCourseRows.ts",
     "./preflight": "./src/format/preflight.ts",
     "./presentation": "./src/format/presentation.ts",
