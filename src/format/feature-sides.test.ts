@@ -253,6 +253,14 @@ describe('both validators', (): void => {
 // Full validation of each pinned product is `shardfile validate`'s job; this reads only their client/plan.
 describe('pinned products in engine out/', (): void => {
   const products = pinnedProducts()
+  // CI has no engine out/, and a suite of zero tests is an error in vitest:
+  // this one says why the per-product checks below don't run.
+  test.skipIf(products.length > 0)(
+    'no pinned products in engine out/ to check',
+    (): void => {
+      expect(products).toEqual([])
+    },
+  )
   test.skipIf(products.length === 0).each(products)(
     '%s declares a side for every kind',
     (_name: string, root: string): void => {
