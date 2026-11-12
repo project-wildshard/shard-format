@@ -1,0 +1,169 @@
+{
+  "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Camp 2, the ledge dome (LF2-2, meta TEMPLATE-E2E-PLAN LF-T2). P: the ledge top where its stair arrives (the `ledge` empty, 6 m up), looking back up the canyon toward the depot. Camera 1 is the golden target t2-09-camp-2-fp-fight.jpg (art/targets/brasscap/), a fight shot, so this P is not frozen for the bandits: camp 2's stand 6 to 11 m away and rush it; LF2-8 shoots the fight from play. Freeze otherwise as the other zones: look.json pins dayOverride 0.4, clear weather, animals calmed, the Wyrm held. Cameras filled in by views.mjs; every later round re-shoots exactly these. groundY is set to the ledge top (6 m) by hand: views.mjs reads ground from the heightfield, which has no ledge, so its god cameras would look at the floor under it. Its FP cameras stand the player through the same pose, so until a pose stands on colliders, the ledge FP shots come from play (LF2-8).",
+  "query": "chunk=brasscap-mesa&mute=1&skipintro=1&nolock=1&sw=0",
+  "settings": {
+    "weather": "clear"
+  },
+  "fp": {
+    "viewport": [
+      1400,
+      933
+    ],
+    "dpr": 1,
+    "pitch": -0.06,
+    "query": "",
+    "tier": "desktop"
+  },
+  "god": {
+    "viewport": [
+      1600,
+      900
+    ],
+    "query": "",
+    "tier": "desktop",
+    "fovV": 72,
+    "topUp": 60,
+    "diagUp": 25,
+    "diagOut": 35,
+    "lookAhead": 12
+  },
+  "anchors": [
+    {
+      "id": "camp-2-ledge",
+      "name": "Brasscap Mesa Camp 2 (on the ledge)",
+      "P": {
+        "x": 16.9,
+        "z": -28.6
+      },
+      "faceTo": {
+        "x": 0,
+        "z": 2
+      },
+      "groundY": 6,
+      "cameras": [
+        {
+          "n": 1,
+          "id": "fp-front",
+          "mode": "fp",
+          "x": 16.9,
+          "z": -28.6,
+          "yaw": 2.637,
+          "pitch": -0.06
+        },
+        {
+          "n": 2,
+          "id": "fp-left",
+          "mode": "fp",
+          "x": 16.9,
+          "z": -28.6,
+          "yaw": 4.208,
+          "pitch": -0.06
+        },
+        {
+          "n": 3,
+          "id": "fp-right",
+          "mode": "fp",
+          "x": 16.9,
+          "z": -28.6,
+          "yaw": 1.066,
+          "pitch": -0.06
+        },
+        {
+          "n": 4,
+          "id": "fp-back",
+          "mode": "fp",
+          "x": 16.9,
+          "z": -28.6,
+          "yaw": 5.779,
+          "pitch": -0.06
+        },
+        {
+          "n": 5,
+          "id": "top",
+          "mode": "god",
+          "pos": [
+            16.9,
+            66,
+            -28.6
+          ],
+          "look": [
+            16.9,
+            6,
+            -28.6
+          ],
+          "fovV": 72,
+          "up": [
+            -0.483,
+            0,
+            0.875
+          ]
+        },
+        {
+          "n": 6,
+          "id": "diag-front",
+          "mode": "god",
+          "pos": [
+            33.821,
+            31,
+            -59.238
+          ],
+          "look": [
+            11.099,
+            6,
+            -18.096
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 7,
+          "id": "diag-left",
+          "mode": "god",
+          "pos": [
+            47.538,
+            31,
+            -11.679
+          ],
+          "look": [
+            16.9,
+            6,
+            -28.6
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 8,
+          "id": "diag-right",
+          "mode": "god",
+          "pos": [
+            -13.738,
+            31,
+            -45.521
+          ],
+          "look": [
+            16.9,
+            6,
+            -28.6
+          ],
+          "fovV": 72
+        },
+        {
+          "n": 9,
+          "id": "diag-back",
+          "mode": "god",
+          "pos": [
+            -0.021,
+            31,
+            2.038
+          ],
+          "look": [
+            16.9,
+            6,
+            -28.6
+          ],
+          "fovV": 72
+        }
+      ]
+    }
+  ],
+  "target": "art/targets/brasscap/t2-08-camp-2-fp-ledge.jpg"
+}

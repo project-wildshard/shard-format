@@ -1,5 +1,5 @@
 {
-  "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Camp 2 (below the ledge) (LF2-1, meta TEMPLATE-E2E-PLAN LF-T2). P: dome A: 16 m short of camp.2 (13, -40) on the canyon floor, facing it, outside the bandits' 9 m aware radius (12 m let them rush the camera in a first try). The 6 m ledge comes with LF2-2; the ledge dome (t2-09) gets its own file then. Camera 1 is the golden target t2-08-camp-2-fp-ledge.jpg (art/targets/brasscap/), shot at desktop 1400x933 like the target. Freeze: look.json pins dayOverride 0.4 (no time setting needed), clear weather, animals calmed; the Dust Wyrm has no brain and its arena is 14 m, and the bandits are aware at 9 m: every P stays outside both. Cameras filled in by views.mjs on round 0; every later round re-shoots exactly these.",
+  "about": "Brasscap Mesa (shardfile corpus/brasscap-mesa) look loop, zone Camp 2 (below the ledge) (LF2-1, meta TEMPLATE-E2E-PLAN LF-T2). P: dome A, on the trail 18 m west of camp.2 (13.5, 6, -34) on its 6 m ledge (LF2-2), looking up at the ledge's west face, the barricade and the ladder; 14 m or more from every camp 2 bandit, which stand on the ledge out of sight. LF2-2 moved P from (6.4, -25.4), where the ledge's stair now runs. Camera 1 is the golden target t2-08-camp-2-fp-ledge.jpg (art/targets/brasscap/), shot at desktop 1400x933 like the target. The ledge dome (t2-09) is ../brasscap-camp-2-ledge/. Freeze: look.json pins dayOverride 0.4 (no time setting needed), clear weather, animals calmed; the Dust Wyrm has no brain and its arena is 14 m, and the bandits are aware at 9 m: every P stays outside both. Cameras filled in by views.mjs; every later round re-shoots exactly these.",
   "query": "chunk=brasscap-mesa&mute=1&skipintro=1&nolock=1&sw=0",
   "settings": {
     "weather": "clear"
@@ -32,12 +32,12 @@
       "id": "camp-2",
       "name": "Brasscap Mesa Camp 2 (below the ledge)",
       "P": {
-        "x": 6.4,
-        "z": -25.4
+        "x": -4.5,
+        "z": -33
       },
       "faceTo": {
-        "x": 13,
-        "z": -40
+        "x": 13.5,
+        "z": -34
       },
       "groundY": 0,
       "cameras": [
@@ -45,36 +45,36 @@
           "n": 1,
           "id": "fp-front",
           "mode": "fp",
-          "x": 6.4,
-          "z": -25.4,
-          "yaw": -0.425,
+          "x": -4.5,
+          "z": -33,
+          "yaw": -1.515,
           "pitch": -0.06
         },
         {
           "n": 2,
           "id": "fp-left",
           "mode": "fp",
-          "x": 6.4,
-          "z": -25.4,
-          "yaw": 1.146,
+          "x": -4.5,
+          "z": -33,
+          "yaw": 0.055,
           "pitch": -0.06
         },
         {
           "n": 3,
           "id": "fp-right",
           "mode": "fp",
-          "x": 6.4,
-          "z": -25.4,
-          "yaw": -1.995,
+          "x": -4.5,
+          "z": -33,
+          "yaw": -3.086,
           "pitch": -0.06
         },
         {
           "n": 4,
           "id": "fp-back",
           "mode": "fp",
-          "x": 6.4,
-          "z": -25.4,
-          "yaw": 2.717,
+          "x": -4.5,
+          "z": -33,
+          "yaw": 1.626,
           "pitch": -0.06
         },
         {
@@ -82,20 +82,20 @@
           "id": "top",
           "mode": "god",
           "pos": [
-            6.4,
+            -4.5,
             60,
-            -25.4
+            -33
           ],
           "look": [
-            6.4,
+            -4.5,
             0,
-            -25.4
+            -33
           ],
           "fovV": 72,
           "up": [
-            0.412,
+            0.998,
             0,
-            -0.911
+            -0.055
           ]
         },
         {
@@ -103,14 +103,14 @@
           "id": "diag-front",
           "mode": "god",
           "pos": [
-            -8.017,
+            -39.446,
             25,
-            6.493
+            -31.059
           ],
           "look": [
-            11.343,
+            7.482,
             0,
-            -36.335
+            -33.666
           ],
           "fovV": 72
         },
@@ -119,14 +119,14 @@
           "id": "diag-left",
           "mode": "god",
           "pos": [
-            -25.493,
+            -6.441,
             25,
-            -39.817
+            -67.946
           ],
           "look": [
-            6.4,
+            -4.5,
             0,
-            -25.4
+            -33
           ],
           "fovV": 72
         },
@@ -135,14 +135,14 @@
           "id": "diag-right",
           "mode": "god",
           "pos": [
-            38.293,
+            -2.559,
             25,
-            -10.983
+            1.946
           ],
           "look": [
-            6.4,
+            -4.5,
             0,
-            -25.4
+            -33
           ],
           "fovV": 72
         },
@@ -151,14 +151,14 @@
           "id": "diag-back",
           "mode": "god",
           "pos": [
-            20.817,
+            30.446,
             25,
-            -57.293
+            -34.941
           ],
           "look": [
-            6.4,
+            -4.5,
             0,
-            -25.4
+            -33
           ],
           "fovV": 72
         }

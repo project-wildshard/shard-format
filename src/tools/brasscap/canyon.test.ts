@@ -1,9 +1,17 @@
-/* oxlint-disable eslint/max-lines-per-function, unicorn/number-literal-case, typescript/no-non-null-assertion, eslint/curly, eslint/id-length, eslint/sort-vars, typescript/explicit-function-return-type, typescript/prefer-readonly-parameter-types, typescript/no-unsafe-type-assertion -- A byte-level check of a generated GLB: indexed reads into typed arrays, like the generator it tests. */
+/* oxlint-disable eslint/max-lines-per-function, unicorn/number-literal-case, typescript/no-non-null-assertion, eslint/curly, eslint/id-length, eslint/sort-vars, typescript/explicit-function-return-type, typescript/prefer-readonly-parameter-types, typescript/no-unsafe-type-assertion, eslint/max-statements, eslint/max-params, eslint/no-continue -- A byte-level check of a generated GLB: indexed reads into typed arrays, like the generator it tests. */
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
 
-import { buildCanyon, Geo } from './canyon.ts'
+import {
+  buildCanyon,
+  CAMPS,
+  canyonWorld,
+  Geo,
+  LEDGE,
+  PIT,
+  SIDE,
+} from './canyon.ts'
 
 const COMMITTED = new URL(
   '../../../corpus/sources/brasscap-mesa/canyon.glb',
@@ -74,6 +82,8 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
       'camp.1',
       'camp.2',
       'camp.3',
+      'ledge',
+      'signpost',
       'gate',
       'wyrm',
     ])
@@ -127,5 +137,135 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
       1,
       `side normal ${x},${z}`,
     )
+  })
+})
+
+type P3 = readonly [number, number, number]
+
+/** The distance along `dir` from `from` to the nearest world triangle within `far` (Moller-Trumbore). */
+function cast(
+  g: Geo,
+  from: P3,
+  dir: P3,
+  far = Infinity,
+  front = false,
+): number {
+  let best = far
+  for (let i = 0; i < g.pos.length; i += 9) {
+    const a = [g.pos[i]!, g.pos[i + 1]!, g.pos[i + 2]!],
+      e1 = [
+        g.pos[i + 3]! - a[0]!,
+        g.pos[i + 4]! - a[1]!,
+        g.pos[i + 5]! - a[2]!,
+      ],
+      e2 = [g.pos[i + 6]! - a[0]!, g.pos[i + 7]! - a[1]!, g.pos[i + 8]! - a[2]!]
+    const p = [
+      dir[1] * e2[2]! - dir[2] * e2[1]!,
+      dir[2] * e2[0]! - dir[0] * e2[2]!,
+      dir[0] * e2[1]! - dir[1] * e2[0]!,
+    ]
+    const det = e1[0]! * p[0]! + e1[1]! * p[1]! + e1[2]! * p[2]!
+    if (Math.abs(det) < 1e-9) continue
+    // A front-face cast sees only faces turned toward the ray (their normal e1 x e2 against it).
+    const facing =
+      dir[0] * (e1[1]! * e2[2]! - e1[2]! * e2[1]!) +
+      dir[1] * (e1[2]! * e2[0]! - e1[0]! * e2[2]!) +
+      dir[2] * (e1[0]! * e2[1]! - e1[1]! * e2[0]!)
+    if (front && facing >= 0) continue
+    const t = [from[0] - a[0]!, from[1] - a[1]!, from[2] - a[2]!]
+    const u = (t[0]! * p[0]! + t[1]! * p[1]! + t[2]! * p[2]!) / det
+    if (u < 0 || u > 1) continue
+    const q = [
+      t[1]! * e1[2]! - t[2]! * e1[1]!,
+      t[2]! * e1[0]! - t[0]! * e1[2]!,
+      t[0]! * e1[1]! - t[1]! * e1[0]!,
+    ]
+    const v = (dir[0] * q[0]! + dir[1] * q[1]! + dir[2] * q[2]!) / det
+    if (v < 0 || u + v > 1) continue
+    const d = (e2[0]! * q[0]! + e2[1]! * q[1]! + e2[2]! * q[2]!) / det
+    if (d > 1e-4 && d < best) best = d
+  }
+  return best
+}
+
+/** The floor under (x, z): the highest up-facing world surface below 40 m. */
+const floorAt = (g: Geo, x: number, z: number): number =>
+  40 - cast(g, [x, 40, z], [0, -1, 0], Infinity, true)
+
+const camp = (name: string): P3 =>
+  CAMPS.find(([id]): boolean => id === name)![1]
+const GATE_Z = -62
+const PLAYER_STEP = 0.3
+
+describe('the Brasscap Mesa layout (LF2-2)', (): void => {
+  const world = canyonWorld()
+
+  it('stands camp 2 on a 6 m ledge, its empty on the flat top', (): void => {
+    const [x, y, z] = camp('camp.2')
+    assert.equal(y, LEDGE.top)
+    // The camp's props stand on the top; this spot off its centre is bare ledge.
+    assert.ok(Math.abs(floorAt(world, x - 1.9, z + 1.5 - 4) - LEDGE.top) < 0.01)
+    assert.ok(floorAt(world, LEDGE.x0 - 3, z) < 0.1, 'the canyon floor below')
+  })
+
+  it('climbs to the ledge top by steps a player can take', (): void => {
+    const [zs, zn] = LEDGE.stairZ,
+      z = (zs + zn) / 2,
+      end = LEDGE.stairX + LEDGE.steps * LEDGE.run
+    let last = floorAt(world, LEDGE.stairX - 0.6, z)
+    for (let x = LEDGE.stairX - 0.5; x < end; x += 0.1) {
+      const y = floorAt(world, x, z)
+      assert.ok(
+        Math.abs(y - last) <= PLAYER_STEP,
+        `a ${(y - last).toFixed(2)} m step at x ${x.toFixed(1)}`,
+      )
+      last = y
+    }
+    assert.ok(Math.abs(last - LEDGE.top) < 0.01, 'the stair ends at the top')
+    // North of the last step, the ledge top is level ground.
+    for (let zz = zn - 0.05; zz > zn - 3; zz -= 0.1)
+      assert.ok(
+        Math.abs(floorAt(world, end - 0.3, zz) - LEDGE.top) < PLAYER_STEP,
+        `at z ${zz.toFixed(1)}`,
+      )
+  })
+
+  it('keeps camp 3 before the gate, in a side canyon that looks at it', (): void => {
+    const [x, , z] = camp('camp.3')
+    assert.ok(z > GATE_Z + 6, 'camp 3 is before the gate')
+    // Eye to the gate: nothing solid between, past the camp's props and the gate's frame.
+    const from: P3 = [x, 1.6, z],
+      to: P3 = [SIDE.gate[0], 2.5, SIDE.gate[1] + 0.4]
+    const d = [to[0] - from[0], to[1] - from[1], to[2] - from[2]],
+      len = Math.hypot(d[0]!, d[1]!, d[2]!)
+    const dir: P3 = [d[0]! / len, d[1]! / len, d[2]! / len],
+      start: P3 = [
+        from[0] + dir[0] * 4,
+        from[1] + dir[1] * 4,
+        from[2] + dir[2] * 4,
+      ]
+    assert.equal(cast(world, start, dir, len - 5), len - 5, 'a clear sightline')
+    // Rock walls either side of the slot, within 7 m.
+    for (const side of [1, -1]) {
+      const across: P3 = [-SIDE.u[1] * side, 0, SIDE.u[0] * side]
+      assert.ok(cast(world, [x, 3, z], across, 7) < 7, `a wall on side ${side}`)
+    }
+  })
+
+  it('rings the sand pit with tall rock, open only toward the gate', (): void => {
+    const [cx, cz] = PIT.at
+    for (let deg = 0; deg < 360; deg += 5) {
+      const a = (deg * Math.PI) / 180,
+        dir: P3 = [Math.sin(a), 0, Math.cos(a)],
+        mouth = deg <= PIT.mouth - 2 || deg >= 360 - PIT.mouth + 2,
+        wall = deg >= PIT.mouth + 12 && deg <= 360 - PIT.mouth - 12
+      const low = cast(world, [cx, 2, cz], dir, 24),
+        high = cast(world, [cx, 12, cz], dir, 24)
+      if (wall) {
+        assert.ok(low < 20 && high < 20, `rock at ${deg} degrees`)
+        assert.ok(low > PIT.floor - 0.5, `the floor is clear at ${deg} degrees`)
+      }
+      if (mouth) assert.equal(low, 24, `the mouth is open at ${deg} degrees`)
+    }
   })
 })

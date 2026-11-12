@@ -292,3 +292,83 @@ lever-only subset of Pine's native assembly in rows.
   opus-fmtpin's format `f32eae4` installed, and again on sharddev
   `21b915e` (that pin, committed). The sharddev checkout's format
   version is part of the bake: re-run the check after a pin bump.
+
+## LF2-2: the layout, form first (opus-lf22)
+
+- `canyon.ts` lays the level out to the targets, on its own generator
+  (`lcg(2202)`), so BM-1's mesas, cacti and boulders stay where they
+  were. All of it is data next to `CAMPS`:
+  - **Camp 2's ledge** (`LEDGE`): a two-tier stepped mesa east of the
+    trail, x 5 to 18.5, z -27 to -41, flat on top at 6 m (the tier
+    band at 3.2 m, the west face set back 0.8 m). A plank barricade
+    runs along its west lip, a ladder leans on its west face (dressing,
+    not climbable), and a stair of 24 rock steps (0.25 m rise, under
+    the player's 0.3 m autostep; 0.55 m run) climbs its south flank to
+    the top. Camp 2 stands on it at (13.5, 6, -34), bandits at y 6.
+  - **Camp 3's side canyon** (`SIDE`): a slot whose axis runs from the
+    gate along (0.8, 0.6), rock walls 6.2 m either side of it from 9.5
+    to 25 m out, closed by three rocks at the far end. Camp 3 stands
+    deep in it at (18.4, 0, -50.5), its bandits between the mouth and
+    the tent, so the camp looks straight back down the slot at the
+    gate; still 11.5 m before the gate. A first cut put the camp 16 m
+    out: its tent filled the slot and a bandit behind it could not be
+    shot from the mouth.
+  - **The sand pit** (`PIT`): a pale sand floor 10.5 m round the `wyrm`
+    empty with two darker rings, ringed by twelve two-tier rocks
+    (16 to 22 m tall) 14.5 m out, open 14 degrees either side of the
+    gate. BM-5's spawn, 14 m arena, respawn and sand-ring anchors are
+    unchanged.
+  - **The signpost** (`SIGNPOST`, empty `signpost`) at (0.8, -20.5):
+    two arrow boards, GATE down the canyon and CAMPS toward the ledge,
+    and a paler branch from it to the stair's foot. New empty `ledge`
+    at the stair's top.
+- To stay under the 1 MiB hook (the GLB is 1,007,060 bytes, 11,944
+  triangles), the rail line now ends in the gate's right butte (it ran
+  on to z -136 behind the pit) and the fence stops before the ledge.
+- Rows moved with the camps: camp 2 and 3's bandit spawns and their
+  quest markers. The look-loop anchors for camp 2 (below the ledge, 10
+  m from its face) and camp 3 (the slot's mouth) moved; the ledge dome
+  is `art/look-loop/brasscap-camp-2-ledge/`.
+- `canyon.test.ts` adds the layout checks, on the world mesh with a
+  front-face ray cast: camp 2's empty is on the 6 m top, the stair
+  never steps more than 0.3 m and ends level with the top, camp 3 is
+  before the gate with a clear sightline to it and a wall on each
+  side, and the pit is rock all round at 2 m and 12 m but its mouth.
+- **The re-bake settles itself.** `rebake.ts --write` now works on a
+  staged copy of the corpus: the cooked files in, the changed blobs'
+  `files` rows and critical entries, their pack members (gone ones
+  out, new ones into the pack sharing most members with the cooked
+  pack that holds them, offsets and sizes recomputed), the sim budget
+  and server memory moved by the critical blobs' change, then
+  `shardfile pack` and its settled `shard.json`, `validation.json` and
+  sections; only then is the stage copied over the corpus and stale
+  blobs dropped. A failure leaves the corpus untouched (Codex MUST).
+  A changed render-library blob still stops it: settle that by hand.
+  Ran three times in this lane; each left `rebake.ts` (check) at 234
+  of 234 byte-equal and `shardfile validate` ok.
+- Caps after the re-bake: L0 tiles at most 3,210 triangles and 4
+  draws (caps 40,000 and 8), L1 at most 4,340 and 2 (10,000 and 2),
+  far 7,478 triangles in 898,428 bytes (8,000 and 1 MB), sim budget
+  340,674 compressed. The far stand-in is now near its cap: LF2-4's
+  mesa work has little far room.
+- **Proof** in a local engine preview (engine `3be630ff` worktree, this
+  corpus over the format dependency, `pins.ts install --from-format
+  brasscap-mesa`, a one-shard catalogue listing Brasscap), headless
+  Chromium with `--use-mock-keychain --password-store=basic`. One
+  scripted run (`~/.cache/wildshard/plan-artifacts/template-e2e-v3/
+  lf22-play.mjs`, walks through `walkLeg` with an `inside` box so no
+  step is a teleport): E takes the rack's rifle; walks reach camp 1,
+  the ledge top by the stair (y 6.02) and camp 2, back down, and into
+  camp 3 through the slot's mouth; the nine bandits fall to 22 rounds
+  (BM-4's run took 12: the ledge's tent and camp 3's slot make the
+  script walk round to a clear line); each step completes, the gate
+  panel goes hidden and not solid, and the walk goes through the gate
+  into the pit. The Dust Wyrm's fight starts at the mouth; 16 rounds,
+  8 landing in the gullet windows and 8 missing outside them, beat it
+  (BM-5's shape). No console error. TOP views before and after:
+  `progress/t2-08-layout-{before,after}.jpg`.
+- Two harness traps for the next lane: `probe.pose` and a `walkLeg`
+  without `inside` stand the player on the heightfield, which has no
+  ledge, so on the ledge they drop it into the rock; aim by setting
+  `player.yaw` and `pitch` instead. The ledge dome's FP cameras have
+  the same problem through views.mjs.

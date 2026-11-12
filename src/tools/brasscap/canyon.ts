@@ -121,13 +121,50 @@ export class Geo {
 }
 
 /** The three bandit camps (BM-4), as data: the tents and the `camp.N` empties both read this, so a
- *  layout pass (LF2-2: camp 2 onto a ledge, camp 3 into a side canyon) moves them in one place. Camp 3
- *  stands before the gate, 12 m short of it, since clearing it is what opens the gate. */
+ *  layout pass moves them in one place. LF2-2: camp 2 stands on the 6 m ledge (`LEDGE`), camp 3 in the
+ *  side canyon that opens on the gate (`SIDE`), still before the gate, since clearing it opens the gate. */
 export const CAMPS: readonly (readonly [string, V3])[] = [
   ['camp.1', [-14, 0, -28]],
-  ['camp.2', [13, 0, -40]],
-  ['camp.3', [8, 0, -50]],
+  ['camp.2', [13.5, 6, -34]],
+  ['camp.3', [18.4, 0, -50.5]],
 ]
+
+/** Camp 2's stepped mesa (LF2-2): two tiers to a flat top at `top` m, the west face to the trail, and a
+ *  walkable stair of `steps` rock steps (`rise` m each, under the 0.3 m player step) along its south flank. */
+export const LEDGE = {
+  x0: 5,
+  x1: 18.5,
+  z0: -27,
+  z1: -41,
+  top: 6,
+  step: 3.2,
+  setback: 0.8,
+  stairX: 4,
+  stairZ: [-24.6, -27] as const,
+  steps: 24,
+  rise: 0.25,
+  run: 0.55,
+} as const
+
+/** Camp 3's side canyon (LF2-2): a slot whose axis runs from the gate along `u`, walls `half` m either side,
+ *  from `from` to `to` m out, closed at the far end, so the camp looks straight back at the gate. */
+export const SIDE = {
+  gate: [2, -62] as const,
+  u: [0.8, 0.6] as const,
+  half: 6.2,
+  from: 9.5,
+  to: 25,
+} as const
+
+/** The Dust Wyrm's sand pit past the gate (LF2-2): a sand floor `floor` m round the `wyrm` empty (BM-5's
+ *  14 m arena and sand ring stay as they are), ringed by tall rocks `ring` m out. The one gap, the mouth,
+ *  faces the gate: open `mouth` degrees either side of it; each rock spans about 21 degrees of the ring. */
+export const PIT = {
+  at: [2, -100] as const,
+  floor: 10.5,
+  ring: 14.5,
+  mouth: 14,
+} as const
 
 let world = new Geo(),
   sky = new Geo(),
@@ -285,42 +322,42 @@ function boulder(x: number, z: number, r: number): void {
 }
 
 /** A bandit camp: a canvas tent, crates, a fire ring and a flag on a tall pole. */
-function camp(x: number, z: number): void {
+function camp(x: number, y: number, z: number): void {
   const w = 1.6,
     l = 2.6
   world.quad(
-    [x - w, 0, z - l],
-    [x - w, 0, z + l],
-    [x, 2.2, z + l],
-    [x, 2.2, z - l],
+    [x - w, y, z - l],
+    [x - w, y, z + l],
+    [x, y + 2.2, z + l],
+    [x, y + 2.2, z - l],
     0xe8d7b0,
   )
   world.quad(
-    [x, 2.2, z - l],
-    [x, 2.2, z + l],
-    [x + w, 0, z + l],
-    [x + w, 0, z - l],
+    [x, y + 2.2, z - l],
+    [x, y + 2.2, z + l],
+    [x + w, y, z + l],
+    [x + w, y, z - l],
     0xd2bf96,
   )
-  world.tri([x - w, 0, z + l], [x + w, 0, z + l], [x, 2.2, z + l], 0xc7b28a)
-  world.tri([x + w, 0, z - l], [x - w, 0, z - l], [x, 2.2, z - l], 0xc7b28a)
-  world.box([x + 2.6, 0, z + 1], [1, 1, 1], 0x8a5a36, 0.3, 0x9c6a40)
-  world.box([x + 2.4, 1, z + 1], [0.7, 0.7, 0.7], 0x7a4a2b, 0.7)
-  world.cylinder([x - 2.8, 0, z + 2.5], 0.9, 0.2, 7, 0x6e6058)
-  glow.cylinder([x - 2.8, 0.2, z + 2.5], 0.35, 0.5, 5, 0xff8a2a, 0xffc04a)
-  world.cylinder([x + 1.8, 0, z - 2], 0.06, 7, 5, 0x5e3a22)
+  world.tri([x - w, y, z + l], [x + w, y, z + l], [x, y + 2.2, z + l], 0xc7b28a)
+  world.tri([x + w, y, z - l], [x - w, y, z - l], [x, y + 2.2, z - l], 0xc7b28a)
+  world.box([x + 2.6, y, z + 1], [1, 1, 1], 0x8a5a36, 0.3, 0x9c6a40)
+  world.box([x + 2.4, y + 1, z + 1], [0.7, 0.7, 0.7], 0x7a4a2b, 0.7)
+  world.cylinder([x - 2.8, y, z + 2.5], 0.9, 0.2, 7, 0x6e6058)
+  glow.cylinder([x - 2.8, y + 0.2, z + 2.5], 0.35, 0.5, 5, 0xff8a2a, 0xffc04a)
+  world.cylinder([x + 1.8, y, z - 2], 0.06, 7, 5, 0x5e3a22)
   world.quad(
-    [x + 1.8, 6.2, z - 2],
-    [x + 3.2, 6.45, z - 2],
-    [x + 3.2, 6.95, z - 2],
-    [x + 1.8, 6.9, z - 2],
+    [x + 1.8, y + 6.2, z - 2],
+    [x + 3.2, y + 6.45, z - 2],
+    [x + 3.2, y + 6.95, z - 2],
+    [x + 1.8, y + 6.9, z - 2],
     0xc93a2c,
   )
   world.quad(
-    [x + 1.8, 6.9, z - 2],
-    [x + 3.2, 6.95, z - 2],
-    [x + 3.2, 6.45, z - 2],
-    [x + 1.8, 6.2, z - 2],
+    [x + 1.8, y + 6.9, z - 2],
+    [x + 3.2, y + 6.95, z - 2],
+    [x + 3.2, y + 6.45, z - 2],
+    [x + 1.8, y + 6.2, z - 2],
     0xc93a2c,
   )
 }
@@ -365,20 +402,20 @@ function waterTower(x: number, z: number): void {
   world.cylinder([x, 10.8, z], 1.2, 1.0, 10, 0x8b98a1, 0x9aa6ae)
 }
 
-/** A rail line curving off down the canyon, with a fence beside it. */
+/** A rail line curving off down the canyon into the gate's right butte, with a fence beside it. */
 function railway(): void {
   const path = (t: number): [number, number] => [
     9 + t * 0.12 + Math.sin(t * 0.02) * 6,
     14 - t,
   ]
-  for (let t = 0; t < 150; t += 1.6) {
+  for (let t = 0; t < 78; t += 1.6) {
     const [x, z] = path(t),
       [x2, z2] = path(t + 1)
     const yaw = Math.atan2(x2 - x, -(z2 - z))
     world.box([x, 0, z], [2.4, 0.12, 0.35], 0x6b4a34, -yaw) // across the track
   }
   for (const off of [-0.7, 0.7]) {
-    for (let t = 0; t < 150; t += 4) {
+    for (let t = 0; t < 78; t += 4) {
       const [x, z] = path(t),
         [x2, z2] = path(t + 4)
       world.quad(
@@ -390,7 +427,8 @@ function railway(): void {
       )
     }
   }
-  for (let t = 0; t < 70; t += 3) {
+  // The fence stops short of camp 2's ledge (LF2-2), which stands where it ran on.
+  for (let t = 0; t < 40; t += 3) {
     const [x, z] = path(t),
       [, z2] = path(t + 3)
     world.box([x - 2.6, 0, z], [0.18, 1.2, 0.18], 0x6b4026)
@@ -419,13 +457,392 @@ function target(x: number, z: number): void {
   plate(x, 1.55, z + 0.16, 0.12, 0xe8e1d0)
 }
 
+/** A second fixed-seed generator for the LF2-2 layout, so adding it leaves BM-1's mesas, cacti and
+ *  boulders exactly where they were (they draw from `rand`). */
+function lcg(start: number): () => number {
+  let state = start
+  return (): number => {
+    state = (state * 1664525 + 1013904223) >>> 0
+    return state / 4294967296
+  }
+}
+
+/** A ring (x, z) wound the way `prism` wants it (clockwise in x, z, so the top cap faces up). */
+function wound(
+  ring: readonly (readonly [number, number])[],
+): (readonly [number, number])[] {
+  let area = 0
+  for (let i = 0; i < ring.length; i++) {
+    const p = ring[i]!,
+      q = ring[(i + 1) % ring.length]!
+    area += p[0] * q[1] - q[0] * p[1]
+  }
+  return area > 0 ? ring.toReversed() : [...ring]
+}
+
+/** A quad turned to face away from `centre`, so a solid's faces all face out. */
+function outQuad(
+  g: Geo,
+  a: V3,
+  b: V3,
+  c: V3,
+  d: V3,
+  centre: V3,
+  hex: Hex,
+): void {
+  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+    w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
+  const n = [
+    u[1]! * w[2]! - u[2]! * w[1]!,
+    u[2]! * w[0]! - u[0]! * w[2]!,
+    u[0]! * w[1]! - u[1]! * w[0]!,
+  ]
+  const out = [0, 1, 2].map(k => (a[k]! + c[k]!) / 2 - centre[k]!)
+  if (n[0]! * out[0]! + n[1]! * out[1]! + n[2]! * out[2]! >= 0)
+    g.quad(a, b, c, d, hex)
+  else g.quad(a, d, c, b, hex)
+}
+
+/** A square beam from `a` to `b`, `w` m thick: a ladder rail, a rung, a barricade rail. */
+function beam(g: Geo, a: V3, b: V3, w: number, hex: Hex): void {
+  const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]
+  const len = Math.hypot(d[0]!, d[1]!, d[2]!)
+  const f = d.map(v => v / len)
+  // One side across the beam, level where it can be; the other completes the frame.
+  let s = [f[2]!, 0, -f[0]!]
+  if (Math.hypot(s[0]!, s[2]!) < 1e-6) s = [1, 0, 0]
+  const sl = Math.hypot(s[0]!, s[1]!, s[2]!)
+  s = s.map(v => (v / sl) * (w / 2))
+  const t = [
+    f[1]! * s[2]! - f[2]! * s[1]!,
+    f[2]! * s[0]! - f[0]! * s[2]!,
+    f[0]! * s[1]! - f[1]! * s[0]!,
+  ]
+  const corner = (p: V3, i: number, j: number): V3 => [
+    p[0] + s[0]! * i + t[0]! * j,
+    p[1] + s[1]! * i + t[1]! * j,
+    p[2] + s[2]! * i + t[2]! * j,
+  ]
+  const centre: V3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]
+  const ring = [
+    [1, 1],
+    [-1, 1],
+    [-1, -1],
+    [1, -1],
+  ] as const
+  for (let k = 0; k < 4; k++) {
+    const [i0, j0] = ring[k]!,
+      [i1, j1] = ring[(k + 1) % 4]!
+    outQuad(
+      g,
+      corner(a, i0, j0),
+      corner(a, i1, j1),
+      corner(b, i1, j1),
+      corner(b, i0, j0),
+      centre,
+      hex,
+    )
+  }
+  for (const p of [a, b])
+    outQuad(
+      g,
+      corner(p, 1, 1),
+      corner(p, -1, 1),
+      corner(p, -1, -1),
+      corner(p, 1, -1),
+      centre,
+      hex,
+    )
+}
+
+/** A tall faceted rock: `tiers` banded tiers on a polygon `ru` by `rn` m along the axes `u` and its normal. */
+function crag(
+  rnd: () => number,
+  x: number,
+  z: number,
+  ru: number,
+  rn: number,
+  height: number,
+  tiers: number,
+  u: readonly [number, number] = [1, 0],
+): void {
+  const n = [-u[1], u[0]] as const
+  let y = 0
+  for (let t = 0; t < tiers; t++) {
+    const shrink = 1 - t * 0.12,
+      sides = 6 + Math.floor(rnd() * 2),
+      h = (height / tiers) * (0.85 + rnd() * 0.3)
+    const ring = Array.from({ length: sides }, (_, i) => {
+      const a = (-i / sides) * Math.PI * 2,
+        pu = Math.cos(a) * ru * shrink * (0.85 + rnd() * 0.25),
+        pn = Math.sin(a) * rn * shrink * (0.85 + rnd() * 0.25)
+      return [x + pu * u[0] + pn * n[0], z + pu * u[1] + pn * n[1]] as const
+    })
+    world.prism(
+      wound(ring),
+      y,
+      y + h,
+      BANDS[(t * 2 + Math.floor(rnd() * 2)) % BANDS.length]!,
+      0xc9794a,
+    )
+    y += h
+  }
+}
+
+/** Camp 2's ledge (LF2-2): a two-tier stepped mesa, flat on top at 6 m, a plank barricade along its
+ *  lip, a ladder up its west face (dressing), and a walkable stair of rock steps up its south flank. */
+function ledge(rnd: () => number): void {
+  const L = LEDGE
+  // The west and north faces get facets; the south (stair) and east sides stay straight.
+  const tier = (west: number, north: number): (readonly [number, number])[] => {
+    const ring: (readonly [number, number])[] = [
+      [L.x1, L.z0],
+      [west, L.z0],
+    ]
+    for (let k = 1; k < 4; k++)
+      ring.push([west - 0.15 - rnd() * 0.35, L.z0 + ((north - L.z0) * k) / 4])
+    ring.push([west, north])
+    for (let k = 1; k < 4; k++)
+      ring.push([west + ((L.x1 - west) * k) / 4, north - 0.15 - rnd() * 0.35])
+    ring.push([L.x1, north])
+    return wound(ring)
+  }
+  world.prism(tier(L.x0, L.z1), 0, L.step, 0xb9553a, 0xc9794a)
+  world.prism(
+    tier(L.x0 + L.setback, L.z1 + L.setback),
+    L.step,
+    L.top,
+    0xd98a52,
+    0xc98a5a,
+  )
+  // The stair: one stepped block, `rise` up per `run` east, each step its tread, riser and outer side
+  // (the inner side shows only off the ledge's face).
+  const [zs, zn] = L.stairZ
+  for (let i = 1; i <= L.steps; i++) {
+    const x0 = L.stairX + (i - 1) * L.run,
+      x1 = x0 + L.run,
+      y0 = (i - 1) * L.rise,
+      y1 = i * L.rise,
+      hex = i % 2 === 0 ? 0xa86a52 : 0x9a5a44,
+      mid: V3 = [(x0 + x1) / 2, y1 / 2, (zs + zn) / 2]
+    outQuad(
+      world,
+      [x0, y1, zs],
+      [x1, y1, zs],
+      [x1, y1, zn],
+      [x0, y1, zn],
+      [mid[0], y0, mid[2]],
+      0xc08a62,
+    )
+    outQuad(
+      world,
+      [x0, y0, zs],
+      [x0, y1, zs],
+      [x0, y1, zn],
+      [x0, y0, zn],
+      mid,
+      hex,
+    )
+    outQuad(
+      world,
+      [x0, 0, zs],
+      [x1, 0, zs],
+      [x1, y1, zs],
+      [x0, y1, zs],
+      mid,
+      hex,
+    )
+    if (x0 < L.x0)
+      outQuad(
+        world,
+        [x0, 0, zn],
+        [x1, 0, zn],
+        [x1, y1, zn],
+        [x0, y1, zn],
+        mid,
+        hex,
+      )
+  }
+  const end = L.stairX + L.steps * L.run,
+    high = L.steps * L.rise
+  outQuad(
+    world,
+    [end, 0, zs],
+    [end, high, zs],
+    [end, high, zn],
+    [end, 0, zn],
+    [end - 1, high / 2, (zs + zn) / 2],
+    0x9a5a44,
+  )
+  // The barricade: planks along the west lip, open at the south end where the stair arrives.
+  const lip = L.x0 + L.setback + 0.45,
+    y = L.top,
+    south = L.z0 - 1.2,
+    north = L.z1 + L.setback + 0.6
+  for (let z = south, k = 0; z > north; z -= 0.75, k++)
+    world.box(
+      [lip, y, z - 0.36],
+      [0.12, 1.05 + rnd() * 0.25, 0.69],
+      k % 2 === 0 ? 0x7a4a2b : 0x6b4026,
+    )
+  for (const h of [0.35, 0.85])
+    beam(
+      world,
+      [lip + 0.12, y + h, south + 0.1],
+      [lip + 0.12, y + h, north - 0.1],
+      0.12,
+      0x5e3a22,
+    )
+  // The ladder: dressing on the west face's south end, leaning on both tiers.
+  const lz = L.z0 - 2.5,
+    foot = L.x0 - 1.1,
+    head = L.x0 + L.setback - 0.06
+  for (const dz of [-0.28, 0.28])
+    beam(
+      world,
+      [foot, 0, lz + dz],
+      [head, L.top + 0.3, lz + dz],
+      0.09,
+      0x6b4026,
+    )
+  for (let yr = 0.4; yr < L.top; yr += 0.55) {
+    const xr = foot + ((head - foot) * yr) / (L.top + 0.3)
+    beam(
+      world,
+      [xr + 0.05, yr, lz - 0.3],
+      [xr + 0.05, yr, lz + 0.3],
+      0.06,
+      0x7a4a2b,
+    )
+  }
+}
+
+/** Camp 3's side canyon (LF2-2): two walls of tall rocks along the axis from the gate and a cap at the
+ *  far end, so the slot opens only toward the gate and the camp inside looks straight down it. */
+function sideCanyon(rnd: () => number): void {
+  const { gate, u, half, from, to } = SIDE,
+    n = [-u[1], u[0]] as const
+  const at = (s: number, o: number): [number, number] => [
+    gate[0] + u[0] * s + n[0] * o,
+    gate[1] + u[1] * s + n[1] * o,
+  ]
+  for (let k = 0; k <= 3; k++) {
+    const s = from + ((to - from) * k) / 3
+    for (const side of [1, -1]) {
+      const [x, z] = at(s, side * half)
+      if (side === 1 || k > 0) crag(rnd, x, z, 3, 1.7, 9 + rnd() * 4, 2, u)
+    }
+  }
+  for (const o of [-4, 0, 4]) {
+    const [x, z] = at(to + 1.6, o)
+    crag(rnd, x, z, 1.8, 2.6, 10 + rnd() * 3, 2, u)
+  }
+}
+
+/** The sand pit (LF2-2): a pale sand floor with darker rings round the `wyrm` empty, ringed by tall
+ *  faceted rocks with one gap, the mouth, toward the gate. */
+function sandPit(rnd: () => number): void {
+  const [cx, cz] = PIT.at,
+    sides = 20
+  const disc = (r0: number, r1: number, y: number, hex: Hex): void => {
+    const p = (r: number, a: number): V3 => [
+      cx + Math.cos(a) * r,
+      y,
+      cz + Math.sin(a) * r,
+    ]
+    for (let i = 0; i < sides; i++) {
+      const a0 = (-i / sides) * Math.PI * 2,
+        a1 = (-(i + 1) / sides) * Math.PI * 2
+      if (r0 === 0) world.tri([cx, y, cz], p(r1, a0), p(r1, a1), hex)
+      else world.quad(p(r0, a0), p(r1, a0), p(r1, a1), p(r0, a1), hex)
+    }
+  }
+  disc(0, PIT.floor, 0.03, 0xe6b07a)
+  disc(3.2, 3.9, 0.035, 0xd29462)
+  disc(6.6, 7.4, 0.035, 0xd29462)
+  // The ring: angle 0 points at the gate (+z); the mouth is the gap either side of it.
+  const first = ((PIT.mouth + 21) * Math.PI) / 180,
+    count = 12
+  for (let k = 0; k < count; k++) {
+    const a = first + ((Math.PI * 2 - 2 * first) * k) / (count - 1)
+    crag(
+      rnd,
+      cx + Math.sin(a) * PIT.ring,
+      cz + Math.cos(a) * PIT.ring,
+      5.2,
+      3.6,
+      16 + rnd() * 6,
+      2,
+      [Math.cos(a), -Math.sin(a)],
+    )
+  }
+}
+
+/** The signpost's foot, on the trail's east edge where the branch to the ledge's stair leaves it. */
+export const SIGNPOST = [0.8, -20.5] as const
+
+/** The CAMPS / GATE signpost at the fork (LF2-2), and the paler branch from it to the ledge's stair. */
+function signpost(): void {
+  const [x, z] = SIGNPOST
+  world.box([x, 0, z], [0.16, 2.6, 0.16], 0x5e3a22)
+  // Arrow boards: a footprint with a point, raised to a board's height.
+  const arrow = (y: number, dir: readonly [number, number], hex: Hex): void => {
+    const p = [-dir[1], dir[0]] as const,
+      len = 1.3,
+      t = 0.05
+    const pt = (a: number, b: number): readonly [number, number] => [
+      x + dir[0] * a + p[0] * b,
+      z + dir[1] * a + p[1] * b,
+    ]
+    world.prism(
+      wound([
+        pt(0.05, -t),
+        pt(len - 0.25, -t),
+        pt(len, 0),
+        pt(len - 0.25, t),
+        pt(0.05, t),
+      ]),
+      y,
+      y + 0.3,
+      hex,
+      0x6b4026,
+    )
+  }
+  arrow(2, [0, -1], 0xc9a26a) // GATE, down the canyon
+  arrow(1.55, [0.8, -0.6], 0xb88e58) // CAMPS, toward the ledge
+  // The branch: a strip from the post to the stair's foot, its sides across the branch, facing up.
+  const sx = LEDGE.stairX - 0.6,
+    sz = (LEDGE.stairZ[0] + LEDGE.stairZ[1]) / 2,
+    len = Math.hypot(sx - x, sz - z),
+    px = -(sz - z) / len,
+    pz = (sx - x) / len
+  outQuad(
+    world,
+    [x - px * 0.5, 0.021, z - pz * 0.5],
+    [x + px * 0.5, 0.021, z + pz * 0.5],
+    [sx + px * 1.1, 0.021, sz + pz * 1.1],
+    [sx - px * 1.1, 0.021, sz - pz * 1.1],
+    [(x + sx) / 2, -1, (z + sz) / 2],
+    0xe8b886,
+  )
+}
+
+/** LF2-2's layout pass: the ledge, the side canyon, the sand pit and the signpost, on their own generator. */
+function layout(): void {
+  const rnd = lcg(2202)
+  ledge(rnd)
+  sideCanyon(rnd)
+  sandPit(rnd)
+  signpost()
+}
+
 function scene(): void {
   ground()
   depot()
   gate()
   waterTower(15, -20)
   railway()
-  for (const [, [x, , z]] of CAMPS) camp(x, z)
+  for (const [, [x, y, z]] of CAMPS) camp(x, y, z)
   target(2.5, -10)
   target(-3.5, -14)
   // The canyon walls: left and right rows of banded mesas, and buttes beyond the gate.
@@ -482,6 +899,7 @@ function scene(): void {
     cactus(x, z, h)
   for (let i = 0; i < 18; i++)
     boulder(jitter(22), -8 - rand() * 70, 0.3 + rand() * 0.6)
+  layout()
 }
 
 /** The sunset dome: turquoise zenith to a gold horizon, pink clouds and a low sun behind the gate. */
@@ -785,6 +1203,15 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
     ['target.1', [2.5, 1.55, -9.88]],
     ['target.2', [-3.5, 1.55, -13.88]],
     ...CAMPS,
+    [
+      'ledge',
+      [
+        LEDGE.stairX + LEDGE.steps * LEDGE.run - 0.3,
+        LEDGE.top,
+        (LEDGE.stairZ[0] + LEDGE.stairZ[1]) / 2,
+      ],
+    ],
+    ['signpost', [SIGNPOST[0], 0, SIGNPOST[1]]],
     ['gate', [2, 0, -62]],
     ['wyrm', [2, 0, -100]],
   ]
@@ -824,6 +1251,12 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
   bh.writeUInt32LE(bin.length, 0)
   bh.writeUInt32LE(0x004e4942, 4)
   return Buffer.concat([header, jh, text, bh, bin])
+}
+
+/** The level's world mesh (everything solid but the gate door), for the layout checks in canyon.test.ts. */
+export function canyonWorld(): Geo {
+  buildCanyon()
+  return world
 }
 
 if (process.argv[1] === import.meta.filename) {

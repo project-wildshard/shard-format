@@ -1,4 +1,4 @@
-/* oxlint-disable node/no-sync, eslint/no-magic-numbers, typescript/prefer-readonly-parameter-types, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, eslint/no-console, eslint/curly, unicorn/no-process-exit, unicorn/import-style, unicorn/max-nested-calls, oxc/no-map-spread -- Author-side bake driver: shells out to a sibling sharddev checkout, never shipped or imported. */
+/* oxlint-disable node/no-sync, eslint/no-magic-numbers, typescript/prefer-readonly-parameter-types, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, eslint/no-console, eslint/curly, unicorn/no-process-exit, unicorn/import-style, unicorn/max-nested-calls, oxc/no-map-spread, eslint/max-statements, eslint/max-lines, eslint/max-lines-per-function -- Author-side bake driver: shells out to a sibling sharddev checkout, never shipped or imported. */
 // Brasscap Mesa (Template 2): the one-command author re-bake (LF2-1 in meta
 // TEMPLATE-E2E-PLAN). It turns canyon.ts's bake input into the canyon's cooked
 // sections in corpus/brasscap-mesa/, through a sibling sharddev checkout, as
@@ -11,18 +11,22 @@
 //   4. the cooked world/tiles, world/collision, world/props and sim/sim
 //      sections and every blob they name are compared with (--check, the
 //      default) or copied into (--write) corpus/brasscap-mesa/.
-// --write copies the cooked files only and prints the manual steps that settle
-// shard.json (files, admission lists, budget, pack), as BM-4 ran them. Nothing is written to sharddev's
+// --write settles a staged copy of the corpus (LF2-2): the cooked files in,
+// the changed blobs' rows, critical entries and pack members, the sim budget,
+// then `shardfile pack` and its settled files; only then is the stage copied
+// over corpus/brasscap-mesa/. Nothing is written to sharddev's
 // tracked files; the work folder is removed unless --keep.
 //   node src/tools/brasscap/rebake.ts [--check | --write] [--sharddev <path>] [--keep]
 import { execFileSync } from 'node:child_process'
 import {
   copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs'
 import { join, resolve } from 'node:path'
@@ -153,6 +157,19 @@ for (const path of COOKED) {
     if (blob !== undefined) files.push(blob)
   }
 }
+/** The hashes the cooked sections name, in `root`. */
+const named = (root: string): Set<string> =>
+  new Set(
+    COOKED.flatMap(
+      (path): string[] =>
+        readFileSync(join(root, 'sections', path), 'utf8').match(HASH) ?? [],
+    ),
+  )
+const before = named(CORPUS)
+// --write works on a staged copy of the corpus and publishes it only once the settle and pack pass, so a
+// failure leaves corpus/brasscap-mesa/ as it was and a retry sees the same differences (Codex MUST).
+const stage = join(work, 'stage')
+if (write) cpSync(CORPUS, stage, { recursive: true })
 let same = 0
 const differ: string[] = []
 for (const file of files) {
@@ -162,22 +179,190 @@ for (const file of files) {
   if (equal) same += 1
   else differ.push(file)
   if (write && !equal) {
-    mkdirSync(resolve(target, '..'), { recursive: true })
-    writeFileSync(target, built)
+    const staged = join(stage, file)
+    mkdirSync(resolve(staged, '..'), { recursive: true })
+    writeFileSync(staged, built)
   }
 }
 for (const file of differ) console.log(`${write ? 'wrote' : 'DIFFERS'} ${file}`)
 console.log(
   `brasscap re-bake: ${same} of ${files.length} files byte-equal (${COOKED.length} sections, ${files.length - COOKED.length} blobs)`,
 )
-if (!keep) rmSync(work, { recursive: true, force: true })
-if (write && differ.length > 0)
-  console.log(
-    [
-      'Copied the sections and blobs only; shard.json is not settled (BM-4 journal):',
-      '  1. swap the changed blob hashes in shard.json files and admission lists, drop blobs no section names;',
-      '  2. take the cooked sim budget from the work folder (run with --keep);',
-      "  3. node src/cli/bin.mjs pack corpus/brasscap-mesa, then copy the tarball's shard.json, validation.json and sections back.",
-    ].join('\n'),
+interface FileRow {
+  hash: string
+  path: string
+  critical: boolean
+  compressed: number
+  decoded: number
+}
+interface PackRow {
+  bytes: number
+  entries: { hash: string; bytes: number; offset: number }[]
+}
+interface Index {
+  files: FileRow[]
+  packs: PackRow[]
+  admission: {
+    critical: string[]
+    library: string[]
+    budgets: { sim: { compressed: number; resident: number } }
+    serverBudget: { memory: number }
+  }
+}
+
+/** The critical rows' total `key`: the sim budget counts critical blobs. */
+const criticalSum = (rows: FileRow[], key: 'compressed' | 'decoded'): number =>
+  rows
+    .filter((row): boolean => row.critical)
+    .reduce((total, row): number => total + row[key], 0)
+
+/** Settles shard.json after a --write (LF2-2): the changed blobs' rows swap in `files` and the critical
+ *  list, blobs no section names any more are dropped, the sim budget and server memory move by the
+ *  critical blobs' change (the budget is their sum, plus fixed headroom), and `shardfile pack` measures
+ *  the rest; its shard.json, validation.json and canonical sections are copied back. */
+function settle(after: Set<string>): void {
+  const cooked = JSON.parse(
+      readFileSync(join(out, 'shard.json'), 'utf8'),
+    ) as Index,
+    indexPath = join(stage, 'shard.json')
+  const index = JSON.parse(readFileSync(indexPath, 'utf8')) as Index
+  const authored = readdirSync(join(stage, 'sections'), {
+    recursive: true,
+  })
+    .map(String)
+    .filter(
+      (file): boolean =>
+        file.endsWith('.json') &&
+        !COOKED.some((path): boolean => path === file),
+    )
+    .map((file): string => readFileSync(join(stage, 'sections', file), 'utf8'))
+    .join('\n')
+  const gone = new Set(
+    [...before].filter(
+      (hash): boolean => !after.has(hash) && !authored.includes(hash),
+    ),
   )
+  const listed = new Set(index.files.map((row): string => row.hash))
+  const goneRows = index.files.filter((row): boolean => gone.has(row.hash))
+  const added = cooked.files.filter(
+    (row): boolean => after.has(row.hash) && !listed.has(row.hash),
+  )
+  const library = new Set([
+    ...index.admission.library,
+    ...cooked.admission.library,
+  ])
+  if ([...goneRows, ...added].some((row): boolean => library.has(row.hash)))
+    throw new Error('a render-library blob changed: settle its budget by hand')
+  const compressed =
+      criticalSum(added, 'compressed') - criticalSum(goneRows, 'compressed'),
+    decoded = criticalSum(added, 'decoded') - criticalSum(goneRows, 'decoded')
+  index.files = [
+    ...index.files.filter((row): boolean => !gone.has(row.hash)),
+    ...added,
+  ].toSorted((left, right): number => (left.hash < right.hash ? -1 : 1))
+  index.admission.critical = [
+    ...index.admission.critical.filter((hash): boolean => !gone.has(hash)),
+    ...added
+      .filter((row): boolean => row.critical)
+      .map((row): string => row.hash),
+  ].toSorted()
+  // Packs list their members: gone blobs leave every pack, and each new blob joins the pack that shares
+  // the most members with the cooked pack holding it, at the cooked size.
+  const cookedBytes = new Map(
+    cooked.packs.flatMap((pack): [string, number][] =>
+      pack.entries.map((entry): [string, number] => [entry.hash, entry.bytes]),
+    ),
+  )
+  for (const pack of index.packs)
+    pack.entries = pack.entries.filter(
+      (entry): boolean => !gone.has(entry.hash),
+    )
+  for (const row of added) {
+    const home = cooked.packs.find((pack): boolean =>
+      pack.entries.some((entry): boolean => entry.hash === row.hash),
+    )
+    const members = new Set(home?.entries.map((entry): string => entry.hash))
+    let most = -1,
+      target: PackRow | undefined = undefined
+    for (const pack of index.packs) {
+      const overlap = pack.entries.filter((entry): boolean =>
+        members.has(entry.hash),
+      ).length
+      if (overlap > most) {
+        target = pack
+        most = overlap
+      }
+    }
+    if (home === undefined || target === undefined)
+      throw new Error(`no cooked pack holds ${row.hash}`)
+    target.entries.push({
+      hash: row.hash,
+      bytes: cookedBytes.get(row.hash) ?? row.compressed,
+      offset: 0,
+    })
+  }
+  // Offsets run on from 0 and a pack's size is its members' (format outputIndex I5); pack hashes it.
+  for (const pack of index.packs) {
+    let end = 0
+    for (const entry of pack.entries) {
+      entry.offset = end
+      end += entry.bytes
+    }
+    pack.bytes = end
+  }
+  index.admission.budgets.sim.compressed += compressed
+  index.admission.budgets.sim.resident += decoded
+  index.admission.serverBudget.memory += decoded
+  writeFileSync(indexPath, `${JSON.stringify(index)}\n`)
+  for (const row of goneRows) rmSync(join(stage, row.path), { force: true })
+  const tar = join(work, 'brasscap-mesa.tar'),
+    unpacked = join(work, 'unpacked')
+  execFileSync(
+    process.execPath,
+    [join(REPO, 'src/cli/bin.mjs'), 'pack', stage, '--out', tar],
+    { stdio: 'inherit' },
+  )
+  mkdirSync(unpacked, { recursive: true })
+  execFileSync('tar', ['-xf', tar, '-C', unpacked])
+  const root = readdirSync(unpacked).includes('shard.json')
+    ? unpacked
+    : join(unpacked, readdirSync(unpacked)[0] ?? '')
+  for (const file of ['shard.json', 'validation.json'])
+    copyFileSync(join(root, file), join(stage, file))
+  for (const file of readdirSync(join(root, 'sections'), { recursive: true }))
+    if (String(file).endsWith('.json'))
+      copyFileSync(
+        join(root, 'sections', String(file)),
+        join(stage, 'sections', String(file)),
+      )
+  console.log(
+    `settled shard.json: ${added.length} blobs in, ${goneRows.length} out, sim budget ${compressed >= 0 ? '+' : ''}${compressed} compressed, ${decoded >= 0 ? '+' : ''}${decoded} resident; packed and copied back`,
+  )
+}
+
+/** Copies the settled stage over the corpus: changed files in, blobs the stage dropped out. */
+function publish(): void {
+  for (const file of readdirSync(stage, { recursive: true }).map(String)) {
+    const from = join(stage, file),
+      to = join(CORPUS, file)
+    if (
+      !statSync(from).isDirectory() &&
+      (!existsSync(to) || !readFileSync(from).equals(readFileSync(to)))
+    ) {
+      mkdirSync(resolve(to, '..'), { recursive: true })
+      copyFileSync(from, to)
+    }
+  }
+  for (const file of readdirSync(join(CORPUS, 'blobs'), {
+    recursive: true,
+  }).map(String))
+    if (!existsSync(join(stage, 'blobs', file)))
+      rmSync(join(CORPUS, 'blobs', file), { force: true })
+}
+
+if (write && differ.length > 0) {
+  settle(named(out))
+  publish()
+}
+if (!keep) rmSync(work, { recursive: true, force: true })
 if (!write && differ.length > 0) process.exit(1)
