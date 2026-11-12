@@ -1,12 +1,14 @@
-/* oxlint-disable eslint/max-lines-per-function, unicorn/number-literal-case, typescript/no-non-null-assertion, eslint/curly, eslint/id-length, eslint/sort-vars, typescript/explicit-function-return-type, typescript/prefer-readonly-parameter-types, typescript/no-unsafe-type-assertion, eslint/max-statements, eslint/max-params, eslint/no-continue -- A byte-level check of a generated GLB: indexed reads into typed arrays, like the generator it tests. */
+/* oxlint-disable eslint/max-lines-per-function, unicorn/number-literal-case, typescript/no-non-null-assertion, eslint/curly, eslint/id-length, eslint/sort-vars, typescript/explicit-function-return-type, typescript/prefer-readonly-parameter-types, typescript/no-unsafe-type-assertion, eslint/max-statements, eslint/max-params, eslint/no-continue, eslint/max-lines -- A byte-level check of a generated GLB: indexed reads into typed arrays, like the generator it tests. */
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
 
 import {
   buildCanyon,
+  buildDepot,
   CAMPS,
   canyonWorld,
+  depotGeo,
   Geo,
   LEDGE,
   PIT,
@@ -15,6 +17,10 @@ import {
 
 const COMMITTED = new URL(
   '../../../corpus/sources/brasscap-mesa/canyon.glb',
+  import.meta.url,
+)
+const DEPOT = new URL(
+  '../../../corpus/sources/brasscap-mesa/depot.glb',
   import.meta.url,
 )
 const MIB = 1_048_576
@@ -56,6 +62,13 @@ function parse(file: Buffer): { json: Gltf; bin: Buffer } {
   }
 }
 
+/** The triangle count of the mesh on the node `name` (flat-shaded: three vertices a triangle). */
+function triangles(file: Buffer, name: string): number {
+  const { json } = parse(file),
+    mesh = json.meshes[json.nodes.findIndex(n => n.name === name)]!
+  return json.accessors[mesh.primitives[0]!.attributes.NORMAL]!.count / 3
+}
+
 describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
   it('writes the same bytes every run, and the committed GLB is its output', (): void => {
     const first = buildCanyon()
@@ -69,6 +82,42 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
 
   it('stays under 1 MiB', (): void => {
     assert.ok(buildCanyon().length < MIB)
+  })
+
+  it('writes the depot detail GLB the same every run, committed and under 1 MiB (LF2-5)', (): void => {
+    const first = buildDepot()
+
+    assert.ok(first.equals(buildDepot()), 'two runs differ')
+    assert.ok(
+      first.equals(readFileSync(DEPOT)),
+      'corpus/sources/brasscap-mesa/depot.glb is stale: run node src/tools/brasscap/canyon.ts',
+    )
+    assert.ok(first.length < MIB)
+    const names = parse(first).json.nodes.map(n => n.name)
+    assert.deepEqual(names, ['depot', 'depot.glow'])
+  })
+
+  it('folds the depot detail into the bake input, not into its far stand-in (LF2-5)', (): void => {
+    const bake = buildCanyon({ bake: true }),
+      source = buildCanyon(),
+      depot = buildDepot()
+    // The bake's canyon adds the skirt's 8 triangles and the depot's detail to the source's canyon.
+    assert.equal(
+      triangles(bake, 'canyon'),
+      triangles(source, 'canyon') + 8 + triangles(depot, 'depot'),
+    )
+    assert.equal(
+      triangles(bake, 'glow'),
+      triangles(source, 'glow') + triangles(depot, 'depot.glow'),
+    )
+    // The far stand-in is welded from the shell and the skirt alone: one index per source vertex (Codex SHOULD).
+    const { json } = parse(bake),
+      far = json.meshes[json.nodes.findIndex(n => n.name === 'far.canyon')]!
+        .primitives[0] as unknown as { readonly indices: number }
+    assert.equal(
+      json.accessors[far.indices]!.count / 3,
+      triangles(source, 'canyon') + 8,
+    )
   })
 
   it('names the empties the product rows point at', (): void => {
@@ -99,26 +148,25 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
   })
 
   it('has only unit normals, so no triangle is degenerate', (): void => {
-    const { json, bin } = parse(buildCanyon())
-
-    for (const mesh of json.meshes) {
-      const accessor = json.accessors[mesh.primitives[0]!.attributes.NORMAL]!
-      assert.equal(accessor.componentType, FLOAT)
-      const view = json.bufferViews[accessor.bufferView]!,
-        normals = new Float32Array(
-          bin.buffer.slice(
-            bin.byteOffset + view.byteOffset,
-            bin.byteOffset + view.byteOffset + accessor.count * 12,
-          ),
-        )
-      for (let i = 0; i < normals.length; i += 3)
-        assert.ok(
-          Math.abs(
-            Math.hypot(normals[i]!, normals[i + 1]!, normals[i + 2]!) - 1,
-          ) < UNIT_SLACK,
-          `normal ${i / 3} is not unit`,
-        )
-    }
+    for (const { json, bin } of [parse(buildCanyon()), parse(buildDepot())])
+      for (const mesh of json.meshes) {
+        const accessor = json.accessors[mesh.primitives[0]!.attributes.NORMAL]!
+        assert.equal(accessor.componentType, FLOAT)
+        const view = json.bufferViews[accessor.bufferView]!,
+          normals = new Float32Array(
+            bin.buffer.slice(
+              bin.byteOffset + view.byteOffset,
+              bin.byteOffset + view.byteOffset + accessor.count * 12,
+            ),
+          )
+        for (let i = 0; i < normals.length; i += 3)
+          assert.ok(
+            Math.abs(
+              Math.hypot(normals[i]!, normals[i + 1]!, normals[i + 2]!) - 1,
+            ) < UNIT_SLACK,
+            `normal ${i / 3} is not unit`,
+          )
+      }
   })
 
   it('faces box tops up and sides out, so single-sided faces are not culled', (): void => {
@@ -267,5 +315,26 @@ describe('the Brasscap Mesa layout (LF2-2)', (): void => {
       }
       if (mouth) assert.equal(low, 24, `the mouth is open at ${deg} degrees`)
     }
+  })
+})
+
+describe('the Brasscap Mesa depot, porch and rack (LF2-5)', (): void => {
+  const detail = depotGeo()
+
+  it('leaves the walk off the porch clear, east of the posts', (): void => {
+    // The play script (lf22-play.mjs) stands the player at (1.2, 1.5) and walks to (1.5, -4): no detail stands there.
+    for (let i = 0; i < detail.pos.length; i += 3) {
+      const [x, y, z] = [detail.pos[i]!, detail.pos[i + 1]!, detail.pos[i + 2]!]
+      assert.ok(
+        !(x > 0.75 && x < 2.2 && z > -5 && z < 2 && y > 0.1 && y < 2.5),
+        `a vertex at ${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}`,
+      )
+    }
+  })
+
+  it('rests the rifle on the rack board, under the rack empty', (): void => {
+    // A ray from the porch at the rack empty's height meets the rifle or the board within a metre.
+    const hit = cast(detail, [-2.2, 1.12, 0], [0, 0, -1], 2)
+    assert.ok(hit < 1.2, `the rack is ${hit.toFixed(2)} m off`)
   })
 })

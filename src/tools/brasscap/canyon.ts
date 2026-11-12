@@ -1,13 +1,14 @@
-/* oxlint-disable eslint/no-magic-numbers, eslint/id-length, unicorn/numeric-separators-style, unicorn/number-literal-case, typescript/no-non-null-assertion, eslint/capitalized-comments, eslint/no-inline-comments, eslint/no-bitwise, eslint/sort-vars, eslint/no-plusplus, eslint/curly, typescript/explicit-function-return-type, eslint/max-params, typescript/explicit-member-accessibility, eslint/max-statements, unicorn/no-zero-fractions, unicorn/consistent-function-scoping, unicorn/max-nested-calls, typescript/prefer-readonly-parameter-types, eslint/max-lines-per-function, typescript/no-confusing-void-expression, node/no-sync, eslint/no-shadow, eslint/max-lines, import/exports-last, import/group-exports -- Author-side level data, a stand-in for a Blender export: coordinates and colours, never shipped or imported. */
+/* oxlint-disable eslint/no-magic-numbers, eslint/id-length, unicorn/numeric-separators-style, unicorn/number-literal-case, typescript/no-non-null-assertion, eslint/capitalized-comments, eslint/no-inline-comments, eslint/no-bitwise, eslint/sort-vars, eslint/no-plusplus, eslint/curly, typescript/explicit-function-return-type, eslint/max-params, typescript/explicit-member-accessibility, eslint/max-statements, unicorn/no-zero-fractions, unicorn/consistent-function-scoping, unicorn/max-nested-calls, typescript/prefer-readonly-parameter-types, eslint/max-lines-per-function, node/no-sync, eslint/no-shadow, eslint/max-lines, import/exports-last, import/group-exports -- Author-side level data, a stand-in for a Blender export: coordinates and colours, never shipped or imported. */
 // Brasscap Mesa (Template 2) level blockout, BM-1 in meta TEMPLATE-E2E-PLAN.
 // An author-side stand-in for the Blender export: it writes a flat-shaded,
 // vertex-coloured low-poly canyon and its sunset sky dome as one GLB. It is
 // never part of the template's runtime; the GLB it writes is the raw asset.
 // The output is deterministic: a fixed-seed generator, so the same source
 // writes the same bytes (canyon.test.ts holds the committed GLB to that).
-//   node src/tools/brasscap/canyon.ts [out.glb]          the level, with its sky
+//   node src/tools/brasscap/canyon.ts [out.glb]          the level, with its sky, and depot.glb beside it
 //   node src/tools/brasscap/canyon.ts --bake <out.glb>   the bake input (BM-4)
 import { writeFileSync } from 'node:fs'
+import path from 'node:path'
 
 type V3 = readonly [number, number, number]
 type Hex = number
@@ -169,7 +170,9 @@ export const PIT = {
 let world = new Geo(),
   sky = new Geo(),
   glow = new Geo(),
-  door = new Geo()
+  door = new Geo(),
+  hero = new Geo(),
+  heroGlow = new Geo()
 const BANDS: readonly Hex[] = [
   0xa94a35, 0xc4663f, 0xd98a52, 0xb9553a, 0xe2a466, 0x9c4130,
 ]
@@ -241,57 +244,6 @@ function ground(): void {
       0xe8b886,
     )
   }
-}
-
-/** The depot: a red plank shack with a tin roof and the porch the player spawns on. */
-function depot(): void {
-  world.box([-6, 0, 2], [6, 0.4, 10], 0x7a4a2b) // footing
-  world.box([-6.5, 0.4, 2], [5, 3.6, 9], 0xa8402f, 0, 0x8a3326) // walls
-  for (let z = -1.5; z <= 5.5; z += 3.5) {
-    world.box([-3.97, 1.15, z], [0.08, 1.7, 1.7], 0x6b4026) // window frame
-    glow.box([-3.9, 1.3, z], [0.04, 1.4, 1.4], 0xffa94d) // lit window
-  }
-  world.box([-1.5, 0, 2], [4, 0.35, 10], 0x8a5a36, 0, 0x9c6a40) // porch deck
-  for (const z of [-3.3, 7.3])
-    world.box([0.5, 0.35, z], [0.25, 3.3, 0.25], 0x6b4026) // porch posts
-  // Tin roof, two sloped slabs.
-  const roof = (
-    y0: number,
-    y1: number,
-    x0: number,
-    x1: number,
-    hex: Hex,
-  ): void =>
-    world.quad(
-      [x0, y0, 7.5],
-      [x1, y1, 7.5],
-      [x1, y1, -3.5],
-      [x0, y0, -3.5],
-      hex,
-    )
-  roof(4.1, 3.75, -9.4, 0.8, 0x8b98a1)
-  // The underside, wound the other way, so the roof shows from the porch.
-  world.quad(
-    [-9.4, 3.65, -3.5],
-    [0.8, 3.6, -3.5],
-    [0.8, 3.6, 7.5],
-    [-9.4, 3.65, 7.5],
-    0x6f7a82,
-  )
-  world.box([-6.5, 4.0, 2], [5.4, 0.9, 9.4], 0x8a3326, 0, 0x8b98a1)
-  // The rifle rack at the porch's front: two A-frame legs and a bar, the lever-action resting on it.
-  for (const x of [-3.2, -1.2])
-    world.box([x, 0.35, -0.8], [0.16, 1.25, 0.5], 0x8a5a36, 0, 0x9c6a40)
-  world.box([-2.2, 0.75, -0.95], [2.2, 0.1, 0.35], 0x7a4a2b) // shelf
-  world.box([-2.2, 1.5, -0.95], [2.2, 0.12, 0.12], 0x7a4a2b) // top bar
-  world.box([-2.2, 0.9, -1.05], [2.0, 0.55, 0.06], 0x6b4026) // back board
-  world.box([-2.75, 1.08, -0.92], [0.7, 0.16, 0.07], 0x5a3420, 0, 0x6b4026) // stock
-  world.box([-2.3, 1.12, -0.92], [0.32, 0.14, 0.08], 0xc9a227, 0, 0xe0b830) // brass receiver
-  world.box([-2.35, 1.0, -0.92], [0.14, 0.1, 0.06], 0xc9a227) // the lever loop
-  world.box([-1.65, 1.17, -0.92], [1.0, 0.05, 0.05], 0x2f3338) // barrel
-  world.box([-1.85, 1.1, -0.92], [0.6, 0.06, 0.07], 0x5a3420) // fore-end
-  world.cylinder([-1.2, 0.35, 4.6], 0.45, 1.0, 8, 0x7a4a2b, 0x6b4026) // barrel by the rack
-  world.cylinder([-1.2, 0.95, 3.1], 0.12, 0.6, 6, 0xc9a227) // the bell's stand-in
 }
 
 function cactus(x: number, z: number, h: number): void {
@@ -402,12 +354,15 @@ function waterTower(x: number, z: number): void {
   world.cylinder([x, 10.8, z], 1.2, 1.0, 10, 0x8b98a1, 0x9aa6ae)
 }
 
+/** The rail line's centre at distance t along it (the railway and the handcar on its siding share it). */
+const railPath = (t: number): [number, number] => [
+  9 + t * 0.12 + Math.sin(t * 0.02) * 6,
+  14 - t,
+]
+
 /** A rail line curving off down the canyon into the gate's right butte, with a fence beside it. */
 function railway(): void {
-  const path = (t: number): [number, number] => [
-    9 + t * 0.12 + Math.sin(t * 0.02) * 6,
-    14 - t,
-  ]
+  const path = railPath
   for (let t = 0; t < 78; t += 1.6) {
     const [x, z] = path(t),
       [x2, z2] = path(t + 1)
@@ -553,6 +508,700 @@ function beam(g: Geo, a: V3, b: V3, w: number, hex: Hex): void {
       centre,
       hex,
     )
+}
+
+/** The depot's shell (LF2-5): footing, red plank walls under a gable roof, the porch deck, posts and a shed
+ *  roof over the porch. Only the shell is in the world mesh, so the far stand-in (welded from it) keeps
+ *  the depot's bulk; every detail is `depotDetail`'s, in the depot's own GLB. */
+const DEPOT = {
+  /** The walls' x and z extent, and their top. */
+  x0: -9,
+  x1: -4,
+  z0: -2.5,
+  z1: 6.5,
+  wallTop: 4.15,
+  /** The gable roof: its ridge over the walls' middle, the fall per metre out, the eaves. */
+  ridgeX: -6.5,
+  ridgeY: 5.7,
+  pitch: 0.62,
+  eaveW: -9.4,
+  eaveE: -3.95,
+  roofZ: [-2.95, 6.95] as const,
+  /** The porch's shed roof: from the wall (x, y) down to the front edge (x, y), along `porchZ`. */
+  porchIn: [-3.95, 3.98] as const,
+  porchOut: [0.95, 3.52] as const,
+  porchZ: [-3.6, 7.6] as const,
+  /** The porch posts' x and z, and the header beam's underside. */
+  postX: 0.55,
+  posts: [-3.3, 2.1, 7.3] as const,
+  header: 3.15,
+} as const
+
+/** The facade's lit windows: centre z and width (the first narrower, so the bell's bracket clears it). */
+const WINDOWS: readonly (readonly [number, number])[] = [
+  [-1.9, 0.9],
+  [2, 1.4],
+  [5.5, 1.4],
+]
+
+/** The gable roof's height at x. */
+const gableY = (x: number): number =>
+  DEPOT.ridgeY - DEPOT.pitch * Math.abs(x - DEPOT.ridgeX)
+/** The porch roof's top at x (its underside is 0.07 m lower). */
+const porchY = (x: number): number => {
+  const [x0, y0] = DEPOT.porchIn,
+    [x1, y1] = DEPOT.porchOut
+  return y0 + ((y1 - y0) * (x - x0)) / (x1 - x0)
+}
+
+/** The depot: a red plank shack with a tin roof and the porch the player spawns on (the shell). */
+function depot(): void {
+  const D = DEPOT,
+    cz = (D.z0 + D.z1) / 2
+  world.box([-6, 0, 2], [6, 0.4, 10], 0x7a4a2b) // footing
+  world.box(
+    [(D.x0 + D.x1) / 2, 0.4, cz],
+    [D.x1 - D.x0, D.wallTop - 0.4, D.z1 - D.z0],
+    0xa8402f,
+    0,
+    0x8a3326,
+  ) // walls
+  for (const [z, w] of WINDOWS) {
+    world.box([-3.97, 1.15, z], [0.08, 1.7, w + 0.3], 0x6b4026) // window frame
+    glow.box([-3.9, 1.3, z], [0.04, 1.4, w], 0xffa94d) // lit window
+  }
+  world.box([-1.5, 0, 2], [4, 0.35, 10], 0x8a5a36, 0, 0x9c6a40) // porch deck
+  for (const z of D.posts)
+    world.box([D.postX, 0.35, z], [0.22, D.header - 0.35, 0.22], 0x6b4026) // porch posts
+  // The gable roof: two slopes, each with an underside so the eaves show from below; the gables fill the ends.
+  const [z0, z1] = D.roofZ,
+    under: V3 = [D.ridgeX, 0, cz],
+    over: V3 = [D.ridgeX, 20, cz]
+  for (const eave of [D.eaveW, D.eaveE]) {
+    const ridge: V3 = [D.ridgeX, D.ridgeY, z0],
+      ridge1: V3 = [D.ridgeX, D.ridgeY, z1],
+      e0: V3 = [eave, gableY(eave), z0],
+      e1: V3 = [eave, gableY(eave), z1]
+    outQuad(world, ridge, e0, e1, ridge1, under, 0x7c8296)
+    const drop = (p: V3): V3 => [p[0], p[1] - 0.06, p[2]]
+    outQuad(
+      world,
+      drop(ridge),
+      drop(e0),
+      drop(e1),
+      drop(ridge1),
+      over,
+      0x6b4026,
+    )
+  }
+  for (const [z, out] of [
+    [D.z0, -1],
+    [D.z1, 1],
+  ] as const) {
+    const a: V3 = [D.x0, D.wallTop, z],
+      b: V3 = [D.x1, D.wallTop, z],
+      c: V3 = [D.ridgeX, D.ridgeY - 0.06, z] // up to the roof's underside, so no slit shows
+    if (out < 0) world.tri(a, c, b, 0xa8402f)
+    else world.tri(a, b, c, 0xa8402f)
+  }
+  // The porch's shed roof: tin on top, a plank ceiling underneath (lit, not a void), a fascia at the front.
+  const [px0, px1] = [D.porchIn[0], D.porchOut[0]],
+    [pz0, pz1] = D.porchZ,
+    top = (x: number, z: number): V3 => [x, porchY(x), z],
+    low = (x: number, z: number): V3 => [x, porchY(x) - 0.07, z]
+  outQuad(
+    world,
+    top(px0, pz0),
+    top(px1, pz0),
+    top(px1, pz1),
+    top(px0, pz1),
+    [0, 0, 2],
+    0x7c8296,
+  )
+  outQuad(
+    world,
+    low(px0, pz0),
+    low(px1, pz0),
+    low(px1, pz1),
+    low(px0, pz1),
+    [0, 20, 2],
+    0x9a6a44,
+  )
+  beam(
+    world,
+    [px1, porchY(px1) - 0.08, pz0],
+    [px1, porchY(px1) - 0.08, pz1],
+    0.16,
+    0x6b4026,
+  ) // fascia
+  beam(
+    world,
+    [D.postX, D.header + 0.09, pz0],
+    [D.postX, D.header + 0.09, pz1],
+    0.18,
+    0x6b4026,
+  ) // header beam on the posts
+}
+
+/** A solid of revolution round the vertical axis at (x, z): rings (radius, y) from bottom to top, each band
+ *  one colour, with a cap on each end (no ring may have radius 0, so no triangle is degenerate). */
+function lathe(
+  g: Geo,
+  x: number,
+  z: number,
+  rings: readonly (readonly [number, number])[],
+  sides: number,
+  hex: Hex | readonly Hex[],
+  caps = true,
+): void {
+  const at = (r: number, y: number, i: number): V3 => {
+    const a = (-i / sides) * Math.PI * 2
+    return [x + Math.cos(a) * r, y, z + Math.sin(a) * r]
+  }
+  for (let k = 0; k + 1 < rings.length; k++) {
+    const [r0, y0] = rings[k]!,
+      [r1, y1] = rings[k + 1]!,
+      band = typeof hex === 'number' ? hex : hex[k % hex.length]!
+    for (let i = 0; i < sides; i++)
+      outQuad(
+        g,
+        at(r0, y0, i),
+        at(r0, y0, i + 1),
+        at(r1, y1, i + 1),
+        at(r1, y1, i),
+        [x, (y0 + y1) / 2, z],
+        band,
+      )
+  }
+  if (!caps) return
+  const first = rings[0]!,
+    last = rings.at(-1)!,
+    end = typeof hex === 'number' ? hex : hex.at(-1)!
+  for (let i = 0; i < sides; i++) {
+    g.tri(
+      [x, last[1], z],
+      at(last[0], last[1], i),
+      at(last[0], last[1], i + 1),
+      end,
+    )
+    g.tri(
+      [x, first[1], z],
+      at(first[0], first[1], i + 1),
+      at(first[0], first[1], i),
+      end,
+    )
+  }
+}
+
+/** A wheel on an axle along x: a `sides`-gon of radius r, w m wide, centred at c. */
+function wheel(
+  g: Geo,
+  c: V3,
+  r: number,
+  w: number,
+  sides: number,
+  hex: Hex,
+): void {
+  const at = (s: number, i: number): V3 => {
+    const a = (i / sides) * Math.PI * 2
+    return [c[0] + s * (w / 2), c[1] + Math.cos(a) * r, c[2] + Math.sin(a) * r]
+  }
+  for (let i = 0; i < sides; i++) {
+    outQuad(g, at(-1, i), at(1, i), at(1, i + 1), at(-1, i + 1), c, hex)
+    for (const s of [-1, 1]) {
+      const hub: V3 = [c[0] + s * (w / 2), c[1], c[2]]
+      // The cap faces out along x: wind it so its normal points the way s does.
+      if (s > 0) g.tri(hub, at(s, i), at(s, i + 1), hex)
+      else g.tri(hub, at(s, i + 1), at(s, i), hex)
+    }
+  }
+}
+
+/** Blocky capitals for the BRASSCAP sign, as strokes on a 3 by 5 grid (x right, y up). */
+const LETTERS: Readonly<
+  Record<string, readonly (readonly [number, number, number, number])[]>
+> = {
+  B: [
+    [0, 0, 0, 5],
+    [0, 5, 2.2, 5],
+    [0, 2.5, 2.4, 2.5],
+    [0, 0, 2.4, 0],
+    [2.6, 2.9, 2.6, 4.6],
+    [2.9, 0.4, 2.9, 2.1],
+  ],
+  R: [
+    [0, 0, 0, 5],
+    [0, 5, 2.2, 5],
+    [2.6, 2.9, 2.6, 4.6],
+    [0, 2.5, 2.2, 2.5],
+    [1.3, 2.5, 2.9, 0],
+  ],
+  A: [
+    [0, 0, 1.5, 5],
+    [1.5, 5, 3, 0],
+    [0.75, 1.8, 2.25, 1.8],
+  ],
+  S: [
+    [0.4, 5, 3, 5],
+    [0, 2.9, 0, 4.6],
+    [0.4, 2.5, 2.6, 2.5],
+    [3, 0.4, 3, 2.1],
+    [0, 0, 2.6, 0],
+  ],
+  C: [
+    [0.4, 5, 3, 5],
+    [0, 0.4, 0, 4.6],
+    [0.4, 0, 3, 0],
+  ],
+  P: [
+    [0, 0, 0, 5],
+    [0, 5, 2.2, 5],
+    [2.6, 2.9, 2.6, 4.6],
+    [0, 2.5, 2.2, 2.5],
+  ],
+}
+
+/** Two tin shades, alternating rib to rib. */
+const TIN = [0x8d93a6, 0x868ca0] as const
+
+/** Corrugated tin on both roofs and the ridge cap. */
+function depotTin(): void {
+  const D = DEPOT,
+    g = hero
+  // Corrugated tin: a raised rib down each slope every 0.32 m, two faces turned either way, so the sun
+  // picks out light and dark lines; a few ribs run rusty.
+  const rib = (
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    z: number,
+    k: number,
+  ): void => {
+    const h = 0.035,
+      w = 0.09,
+      rusty = k % 11 === 3 || k % 13 === 7,
+      hex = rusty ? 0x9a7a6a : TIN[k % 2]!
+    const below: V3 = [(x0 + x1) / 2, -50, z]
+    outQuad(
+      g,
+      [x0, y0, z - w],
+      [x1, y1, z - w],
+      [x1, y1 + h, z],
+      [x0, y0 + h, z],
+      below,
+      hex,
+    )
+    outQuad(
+      g,
+      [x0, y0 + h, z],
+      [x1, y1 + h, z],
+      [x1, y1, z + w],
+      [x0, y0, z + w],
+      below,
+      hex,
+    )
+  }
+  const [rz0, rz1] = D.roofZ
+  let k = 0
+  for (let z = rz0 + 0.16; z < rz1; z += 0.32, k++) {
+    // West slope runs ridge to eave toward -x; east toward +x: wind each rib so its faces point up.
+    rib(D.eaveW, gableY(D.eaveW), D.ridgeX, D.ridgeY, z, k)
+    rib(D.ridgeX, D.ridgeY, D.eaveE, gableY(D.eaveE), z, k + 5)
+  }
+  beam(
+    g,
+    [D.ridgeX, D.ridgeY + 0.02, rz0 - 0.05],
+    [D.ridgeX, D.ridgeY + 0.02, rz1 + 0.05],
+    0.16,
+    0x6f7486,
+  ) // ridge cap
+  const [pz0, pz1] = D.porchZ,
+    [px0, px1] = [D.porchIn[0], D.porchOut[0]]
+  k = 0
+  for (let z = pz0 + 0.16; z < pz1; z += 0.32, k++)
+    rib(px0, porchY(px0), px1, porchY(px1), z, k + 2)
+}
+
+/** The porch's wood: the ceiling planks and rafters, braces, the deck, wall seams, windows, the door and the bench. */
+function depotWood(): void {
+  const D = DEPOT,
+    g = hero,
+    [pz0, pz1] = D.porchZ,
+    [px0, px1] = [D.porchIn[0], D.porchOut[0]]
+  let k = 0
+  // The porch ceiling: planks along x, alternating shades, just under the roof, and rafters under them.
+  const shades = [0xa4724a, 0x93633e, 0xab7a50] as const
+  for (let z = pz0; z < pz1 - 0.01; z += 0.28, k++) {
+    const z1 = Math.min(z + 0.27, pz1),
+      y = (x: number): number => porchY(x) - 0.082
+    outQuad(
+      g,
+      [px0, y(px0), z1],
+      [px1, y(px1), z1],
+      [px1, y(px1), z],
+      [px0, y(px0), z],
+      [0, 50, z],
+      shades[k % 3]!,
+    )
+  }
+  for (let z = pz0 + 0.2; z < pz1; z += 1.0)
+    beam(
+      g,
+      [px0 + 0.02, porchY(px0) - 0.16, z],
+      [px1 - 0.03, porchY(px1) - 0.16, z],
+      0.13,
+      0x6e4528,
+    )
+  // Knee braces from each post to the header, and a ledger on the wall that carries the rafters.
+  for (const z of D.posts)
+    for (const dz of [-0.75, 0.75])
+      if (z + dz > pz0 && z + dz < pz1)
+        beam(
+          g,
+          [D.postX, D.header - 0.6, z],
+          [D.postX, D.header + 0.02, z + dz],
+          0.1,
+          0x6b4026,
+        )
+  beam(
+    g,
+    [D.x1 + 0.06, porchY(px0) - 0.2, D.z0],
+    [D.x1 + 0.06, porchY(px0) - 0.2, D.z1],
+    0.12,
+    0x6b4026,
+  )
+  // The porch deck: planks along z, three shades, a hair above the deck.
+  k = 0
+  for (let x = -3.5; x < 0.5 - 0.01; x += 0.25, k++)
+    outQuad(
+      g,
+      [x, 0.356, -3],
+      [x, 0.356, 7],
+      [x + 0.24, 0.356, 7],
+      [x + 0.24, 0.356, -3],
+      [x, -50, 2],
+      shades[(k * 2) % 3]!,
+    )
+  // Plank seams on the walls: a dark line every 0.32 m, on all four faces, and corner boards.
+  for (let y = 0.72; y < D.wallTop - 0.1; y += 0.32) {
+    const s = 0.03,
+      e = 0.006,
+      mid: V3 = [(D.x0 + D.x1) / 2, y, (D.z0 + D.z1) / 2]
+    outQuad(
+      g,
+      [D.x1 + e, y, D.z1],
+      [D.x1 + e, y, D.z0],
+      [D.x1 + e, y + s, D.z0],
+      [D.x1 + e, y + s, D.z1],
+      mid,
+      0x6e2a1f,
+    )
+    outQuad(
+      g,
+      [D.x0 - e, y, D.z0],
+      [D.x0 - e, y, D.z1],
+      [D.x0 - e, y + s, D.z1],
+      [D.x0 - e, y + s, D.z0],
+      mid,
+      0x6e2a1f,
+    )
+    outQuad(
+      g,
+      [D.x0, y, D.z0 - e],
+      [D.x0, y + s, D.z0 - e],
+      [D.x1, y + s, D.z0 - e],
+      [D.x1, y, D.z0 - e],
+      mid,
+      0x6e2a1f,
+    )
+    outQuad(
+      g,
+      [D.x1, y, D.z1 + e],
+      [D.x1, y + s, D.z1 + e],
+      [D.x0, y + s, D.z1 + e],
+      [D.x0, y, D.z1 + e],
+      mid,
+      0x6e2a1f,
+    )
+  }
+  for (const x of [D.x0, D.x1])
+    for (const z of [D.z0, D.z1])
+      g.box([x, 0.4, z], [0.16, D.wallTop - 0.4, 0.16], 0x6b4026)
+  // Window muntins (four panes) and sills.
+  for (const [z, w] of WINDOWS) {
+    g.box([-3.86, 1.3, z], [0.04, 1.4, 0.06], 0x5a3420)
+    g.box([-3.86, 1.97, z], [0.04, 0.06, w], 0x5a3420)
+    g.box([-3.86, 1.05, z], [0.18, 0.08, w + 0.4], 0x6b4026)
+  }
+  // The door, between the first window and the second: a frame, plank leaves, a brass knob.
+  g.box([-3.95, 0.4, 0.55], [0.08, 2.35, 1.2], 0x5a3420)
+  for (const [dz, hex] of [
+    [-0.25, 0x7a4a2b],
+    [0, 0x6b4026],
+    [0.25, 0x7a4a2b],
+  ] as const)
+    g.box([-3.9, 0.4, 0.55 + dz], [0.05, 2.2, 0.24], hex)
+  g.box([-3.86, 1.35, 0.92], [0.06, 0.08, 0.08], 0xc9a227)
+  // The bench under the middle window's right: seat, back, four legs.
+  g.box([-3.55, 0.76, 3.9], [0.45, 0.07, 1.5], 0x8a5a36, 0, 0x9c6a40)
+  g.box([-3.86, 0.95, 3.9], [0.06, 0.42, 1.5], 0x7a4a2b)
+  for (const x of [-3.72, -3.4])
+    for (const z of [3.25, 4.55])
+      g.box([x, 0.35, z], [0.07, 0.41, 0.07], 0x5a3420)
+}
+
+/** The porch's props: barrels, the wall lantern and the bell. */
+function depotProps(): void {
+  const D = DEPOT,
+    g = hero
+  // Barrels with iron hoops: two at the porch's north end, two by the depot's south wall.
+  const barrel = (x: number, y: number, z: number, s: number): void => {
+    lathe(
+      g,
+      x,
+      z,
+      [
+        [0.29 * s, y],
+        [0.33 * s, y + 0.22 * s],
+        [0.345 * s, y + 0.45 * s],
+        [0.33 * s, y + 0.68 * s],
+        [0.29 * s, y + 0.9 * s],
+      ],
+      10,
+      [0x8a5a36, 0x9a6a40, 0x9a6a40, 0x8a5a36],
+    )
+    for (const at of [0.14, 0.72])
+      lathe(
+        g,
+        x,
+        z,
+        [
+          [0.335 * s + 0.012, y + at * s],
+          [0.345 * s + 0.012, y + (at + 0.06) * s],
+        ],
+        10,
+        0x3f3a38,
+        false,
+      )
+  }
+  barrel(-0.25, 0.35, 6.45, 1)
+  barrel(-0.95, 0.35, 6.6, 0.9)
+  barrel(-5.1, 0, -3.45, 1)
+  barrel(-5.85, 0, -3.6, 0.95)
+  // The wall lantern by the door: an iron bracket, a base, a lit glass, four corner rods and a cap.
+  const L: V3 = [-3.72, 1.98, -0.45]
+  beam(g, [D.x1, 2.5, L[2]], [L[0], 2.5, L[2]], 0.04, 0x2f2a28)
+  beam(g, [L[0], 2.5, L[2]], [L[0], L[1] + 0.48, L[2]], 0.025, 0x2f2a28)
+  g.box(L, [0.22, 0.05, 0.22], 0x3a3330)
+  // A box has no bottom; the lantern hangs in the air, so its base gets one (Codex MUST).
+  outQuad(
+    g,
+    [L[0] - 0.11, L[1], L[2] - 0.11],
+    [L[0] + 0.11, L[1], L[2] - 0.11],
+    [L[0] + 0.11, L[1], L[2] + 0.11],
+    [L[0] - 0.11, L[1], L[2] + 0.11],
+    [L[0], L[1] + 1, L[2]],
+    0x2f2a28,
+  )
+  heroGlow.box([L[0], L[1] + 0.05, L[2]], [0.17, 0.3, 0.17], 0xffc45a)
+  for (const dx of [-0.1, 0.1])
+    for (const dz of [-0.1, 0.1])
+      beam(
+        g,
+        [L[0] + dx, L[1] + 0.05, L[2] + dz],
+        [L[0] + dx, L[1] + 0.35, L[2] + dz],
+        0.025,
+        0x3a3330,
+      )
+  lathe(
+    g,
+    L[0],
+    L[2],
+    [
+      [0.15, L[1] + 0.35],
+      [0.04, L[1] + 0.46],
+    ],
+    4,
+    0x3a3330,
+  )
+  // The brass bell on an iron bracket off the wall, by the rack.
+  const B: V3 = [-3.25, 2.24, -1.15]
+  beam(g, [D.x1, 2.78, B[2]], [B[0] - 0.05, 2.78, B[2]], 0.06, 0x2f2a28)
+  beam(g, [D.x1, 2.35, B[2]], [-3.55, 2.78, B[2]], 0.04, 0x2f2a28)
+  beam(g, [B[0], 2.78, B[2]], [B[0], 2.6, B[2]], 0.03, 0x2f2a28)
+  lathe(
+    g,
+    B[0],
+    B[2],
+    [
+      [0.16, B[1]],
+      [0.145, B[1] + 0.04],
+      [0.11, B[1] + 0.13],
+      [0.095, B[1] + 0.26],
+      [0.05, B[1] + 0.34],
+    ],
+    10,
+    [0xd8b040, 0xc9a227, 0xb8921e, 0xc9a227],
+  )
+  lathe(
+    g,
+    B[0],
+    B[2],
+    [
+      [0.035, B[1] - 0.04],
+      [0.035, B[1] + 0.02],
+    ],
+    6,
+    0x6b5a2a,
+  ) // the clapper
+}
+
+/** The rack, its rifle and the ammo crate. */
+function depotRack(): void {
+  const g = hero
+  // The rack (the `rack` empty, -2.2, 1.12, -0.92): a plank board on two posts across the porch's south end,
+  // two pairs of pegs, the lever-action resting on them.
+  for (const x of [-3.45, -0.95])
+    g.box([x, 0.35, -1.06], [0.1, 1.1, 0.1], 0x5a3420)
+  for (const [y, hex] of [
+    [0.86, 0x8a5a36],
+    [1.13, 0x7a4a2b],
+  ] as const)
+    g.box([-2.2, y, -1.07], [2.4, 0.27, 0.06], hex)
+  g.box([-2.2, 1.4, -1.07], [2.56, 0.06, 0.12], 0x5a3420, 0, 0x6b4026) // the cap rail
+  for (const x of [-3.05, -1.4])
+    for (const y of [0.97, 1.24])
+      beam(g, [x, y, -1.04], [x, y + 0.03, -0.86], 0.035, 0xb8921e)
+  // The lever-action: a walnut stock, a brass receiver with its lever loop, a barrel over its magazine tube.
+  const r = -0.92
+  beam(g, [-3.2, 1.0, r], [-2.62, 1.09, r], 0.11, 0x5a3420) // stock
+  beam(g, [-2.62, 1.09, r], [-2.47, 1.11, r], 0.07, 0x5a3420) // wrist
+  g.box([-2.31, 1.05, r], [0.32, 0.12, 0.075], 0xc9a227, 0, 0xe0b830) // receiver
+  beam(g, [-2.42, 1.04, r], [-2.42, 0.95, r], 0.025, 0xb8921e)
+  beam(g, [-2.42, 0.95, r], [-2.27, 0.95, r], 0.025, 0xb8921e)
+  beam(g, [-2.27, 0.95, r], [-2.2, 1.04, r], 0.025, 0xb8921e) // the lever loop
+  beam(g, [-2.15, 1.145, r], [-1.15, 1.145, r], 0.035, 0x2f3338) // barrel
+  beam(g, [-2.15, 1.1, r], [-1.3, 1.1, r], 0.03, 0x3a3e44) // magazine tube
+  beam(g, [-2.15, 1.115, r], [-1.75, 1.115, r], 0.07, 0x6b3a22) // fore-end
+  // The ammo crate in front of the rack: X-braced sides and two cartridge boxes on top.
+  const C: V3 = [-3.1, 0.35, -0.45],
+    cs = 0.5
+  g.box(C, [cs, cs, cs], 0x9a6a40, 0, 0xa8784a)
+  const cx0 = C[0] - cs / 2,
+    cx1 = C[0] + cs / 2,
+    cz0 = C[2] - cs / 2,
+    cz1 = C[2] + cs / 2,
+    cy0 = C[1] + 0.03,
+    cy1 = C[1] + cs - 0.03
+  for (const [a, b] of [
+    [
+      [cx0 + 0.03, cy0, cz1 + 0.01],
+      [cx1 - 0.03, cy1, cz1 + 0.01],
+    ],
+    [
+      [cx0 + 0.03, cy1, cz1 + 0.01],
+      [cx1 - 0.03, cy0, cz1 + 0.01],
+    ],
+    [
+      [cx1 + 0.01, cy0, cz0 + 0.03],
+      [cx1 + 0.01, cy1, cz1 - 0.03],
+    ],
+    [
+      [cx1 + 0.01, cy1, cz0 + 0.03],
+      [cx1 + 0.01, cy0, cz1 - 0.03],
+    ],
+  ] as const)
+    beam(g, a, b, 0.04, 0x6b4026)
+  g.box(
+    [C[0] - 0.08, C[1] + cs, C[2] - 0.04],
+    [0.2, 0.12, 0.16],
+    0xc9a227,
+    0.2,
+    0xe0b830,
+  )
+  g.box(
+    [C[0] + 0.12, C[1] + cs, C[2] + 0.06],
+    [0.16, 0.09, 0.12],
+    0xb8322a,
+    -0.3,
+  )
+}
+
+/** The BRASSCAP sign. */
+function depotSign(): void {
+  const D = DEPOT,
+    g = hero
+  // The BRASSCAP sign, standing on the porch roof's south edge and facing down the canyon, so the trail sees
+  // it and the porch's ceiling hides it from spawn: a framed board on two posts, raised letters.
+  // Seen from -z, the reader's right is -x, so the letters run from +x to -x.
+  const [sz] = D.porchZ,
+    zf = sz - 0.04,
+    sx = -1.5,
+    sy = porchY(-3.7) + 0.02
+  for (const x of [-3.2, 0.2])
+    beam(
+      g,
+      [x, porchY(x) - 0.05, sz + 0.12],
+      [x, sy + 0.8, sz + 0.12],
+      0.1,
+      0x5a3420,
+    )
+  g.box([sx, sy, sz + 0.02], [4.4, 0.9, 0.06], 0x4a2c1a)
+  for (const y0 of [sy - 0.05, sy + 0.88])
+    g.box([sx, y0, zf], [4.6, 0.08, 0.06], 0x8a5a36)
+  const unit = 0.112,
+    word = 'BRASSCAP',
+    pitch = 4.1,
+    left = sx + ((word.length * pitch - 1.1) * unit) / 2
+  for (const [i, ch] of word.split('').entries())
+    for (const [u0, v0, u1, v1] of LETTERS[ch]!) {
+      const len = Math.hypot(u1 - u0, v1 - v0),
+        du = ((u1 - u0) / len) * 0.35,
+        dv = ((v1 - v0) / len) * 0.35
+      const p = (u: number, v: number): V3 => [
+        left - (i * pitch + u) * unit,
+        sy + 0.17 + v * unit,
+        zf - 0.04,
+      ]
+      beam(g, p(u0 - du, v0 - dv), p(u1 + du, v1 + dv), 0.08, 0xf0dcae)
+    }
+}
+
+/** The handcar on the rail's siding. */
+function depotHandcar(): void {
+  const g = hero
+  // The handcar on the siding: a plank deck on four wheels that sit on the rails, the pump's A-frame and its
+  // walking beam. `on` places a point given across (lx) and along (lz) the track, which leans as the line curves.
+  const t = 12,
+    [hx, hz] = railPath(t),
+    [hx2, hz2] = railPath(t + 1),
+    yaw = Math.atan2(hx2 - hx, -(hz2 - hz)),
+    slope = (hx2 - hx) / (hz2 - hz),
+    on = (lx: number, y: number, lz: number): V3 => [
+      hx + lx + slope * lz,
+      y,
+      hz + lz,
+    ]
+  g.box(on(0, 0.5, 0), [1.2, 0.12, 2.1], 0xb8862a, -yaw, 0xc9963a)
+  for (const s of [-0.7, 0.7])
+    for (const f of [-0.65, 0.65])
+      wheel(g, on(s, 0.42, f), 0.22, 0.07, 10, 0x3a3330)
+  for (const s of [-1, 1])
+    beam(g, on(-0.35, 0.62, s * 0.45), on(0, 1.38, 0), 0.07, 0xb8862a)
+  beam(g, on(0, 1.4, -0.85), on(0, 1.4, 0.85), 0.06, 0x8a6a2a)
+  for (const s of [-1, 1])
+    beam(g, on(-0.45, 1.4, s * 0.85), on(0.45, 1.4, s * 0.85), 0.05, 0x5a3420)
+}
+
+/** The hero's detail (LF2-5), in the depot's own GLB: tin, planks, rafters, the sign and the props. */
+function depotDetail(): void {
+  depotTin()
+  depotWood()
+  depotProps()
+  depotRack()
+  depotSign()
+  depotHandcar()
 }
 
 /** A tall faceted rock: `tiers` banded tiers on a polygon `ru` by `rn` m along the axes `u` and its normal. */
@@ -1094,19 +1743,23 @@ function welded(g: Geo): {
   return out
 }
 
-/** Builds the level GLB from scratch; every call returns the same bytes. `bake` writes the
- *  bake's input instead (BM-2's three author-side changes, now in source): no sky dome (the
- *  sunset is `look` keys), the sand skirt to the 250 m edge, and a welded far stand-in `far.canyon`. */
-export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
-  const bake = options.bake === true
-  seed = SEED
-  world = new Geo()
-  sky = new Geo()
-  glow = new Geo()
-  door = new Geo()
-  scene()
-  if (bake) skirt()
-  else skyDome()
+/** One mesh for `glb`: a name, its geometry, its material index, and an index list if it is welded. */
+interface MeshIn {
+  readonly name: string
+  readonly g: Pick<Geo, 'pos' | 'nor' | 'col'>
+  readonly material: number
+  readonly index?: readonly number[]
+}
+
+/** Writes a GLB of `meshes` (one node each) and the named empties `marks`; the same input, the same bytes. */
+function glb(
+  meshes: readonly MeshIn[],
+  marks: readonly (readonly [string, V3])[],
+  materials: readonly object[],
+  unlit: boolean,
+  generator: string,
+  scene: string,
+): Buffer {
   const chunks: Buffer[] = [],
     views: object[] = [],
     accessors: object[] = []
@@ -1124,11 +1777,7 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
     offset += padded.length
     return views.length - 1
   }
-  const primitive = (
-    g: Pick<Geo, 'pos' | 'nor' | 'col'>,
-    material: number,
-    index?: readonly number[],
-  ): object => {
+  const primitive = ({ g, material, index }: MeshIn): object => {
     const count = g.pos.length / 3,
       min = [Infinity, Infinity, Infinity],
       max = [-Infinity, -Infinity, -Infinity]
@@ -1186,15 +1835,82 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
       material,
     }
   }
+  const gltfMeshes = meshes.map(mesh => ({
+    name: mesh.name,
+    primitives: [primitive(mesh)],
+  }))
+  const nodes = [
+    ...gltfMeshes.map(({ name }, mesh) => ({ name, mesh })),
+    ...marks.map(([name, translation]) => ({ name, translation })),
+  ]
+  const bin = Buffer.concat(chunks)
+  const json = {
+    asset: { version: '2.0', generator },
+    ...(unlit ? { extensionsUsed: ['KHR_materials_unlit'] } : {}),
+    scene: 0,
+    scenes: [{ name: scene, nodes: nodes.map((_, i) => i) }],
+    nodes,
+    meshes: gltfMeshes,
+    materials,
+    accessors,
+    bufferViews: views,
+    buffers: [{ byteLength: bin.length }],
+  }
+  let text = Buffer.from(JSON.stringify(json))
+  text = Buffer.concat([text, Buffer.alloc((4 - (text.length % 4)) % 4, 0x20)])
+  const header = Buffer.alloc(12),
+    jh = Buffer.alloc(8),
+    bh = Buffer.alloc(8)
+  header.writeUInt32LE(0x46546c67, 0)
+  header.writeUInt32LE(2, 4)
+  header.writeUInt32LE(12 + 8 + text.length + 8 + bin.length, 8)
+  jh.writeUInt32LE(text.length, 0)
+  jh.writeUInt32LE(0x4e4f534a, 4)
+  bh.writeUInt32LE(bin.length, 0)
+  bh.writeUInt32LE(0x004e4942, 4)
+  return Buffer.concat([header, jh, text, bh, bin])
+}
+
+/** Appends `from`'s triangles to `to`. */
+function merge(to: Geo, from: Geo): void {
+  to.pos.push(...from.pos)
+  to.nor.push(...from.nor)
+  to.col.push(...from.col)
+}
+
+/** Builds the level GLB from scratch; every call returns the same bytes. `bake` writes the
+ *  bake's input instead (BM-2's three author-side changes, now in source): no sky dome (the
+ *  sunset is `look` keys), the sand skirt to the 250 m edge, and a welded far stand-in `far.canyon`.
+ *  LF2-5: the depot's detail ships in its own source GLB (`buildDepot`, depot.glb), which keeps
+ *  canyon.glb under the repo's 1 MiB file limit; the bake input folds it into the canyon and glow
+ *  meshes after the far stand-in is welded, so the far mesh keeps only the depot's shell. */
+export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
+  const bake = options.bake === true
+  seed = SEED
+  world = new Geo()
+  sky = new Geo()
+  glow = new Geo()
+  door = new Geo()
+  hero = new Geo()
+  heroGlow = new Geo()
+  scene()
+  if (bake) {
+    depotDetail()
+    skirt()
+  } else skyDome()
   const far = bake ? welded(world) : undefined
-  const meshes = [
-    { name: 'canyon', primitives: [primitive(world, 0)] },
-    ...(bake ? [] : [{ name: 'sky', primitives: [primitive(sky, 1)] }]),
-    { name: 'glow', primitives: [primitive(glow, bake ? 1 : 2)] },
-    { name: 'gate.door', primitives: [primitive(door, 0)] },
+  if (bake) {
+    merge(world, hero)
+    merge(glow, heroGlow)
+  }
+  const meshes: MeshIn[] = [
+    { name: 'canyon', g: world, material: 0 },
+    ...(bake ? [] : [{ name: 'sky', g: sky, material: 1 }]),
+    { name: 'glow', g: glow, material: bake ? 1 : 2 },
+    { name: 'gate.door', g: door, material: 0 },
     ...(far === undefined
       ? []
-      : [{ name: 'far.canyon', primitives: [primitive(far, 0, far.index)] }]),
+      : [{ name: 'far.canyon', g: far, material: 0, index: far.index }]),
   ]
   // Named empties the product rows point at (spawn, rack, targets, camps, gate, the Wyrm's pit).
   const marks: readonly (readonly [string, V3])[] = [
@@ -1215,42 +1931,41 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
     ['gate', [2, 0, -62]],
     ['wyrm', [2, 0, -100]],
   ]
-  const nodes = [
-    ...meshes.map(({ name }, mesh) => ({ name, mesh })),
-    ...marks.map(([name, translation]) => ({ name, translation })),
-  ]
-  const bin = Buffer.concat(chunks)
-  const json = {
-    asset: {
-      version: '2.0',
-      generator: 'shardfile src/tools/brasscap/canyon.ts (BM-1)',
-    },
-    ...(bake ? {} : { extensionsUsed: ['KHR_materials_unlit'] }),
-    scene: 0,
-    scenes: [{ name: 'brasscap-mesa', nodes: nodes.map((_, i) => i) }],
-    nodes,
+  // The bake reads no unlit extension: the sky is look keys, and glow's look entry makes it emissive.
+  return glb(
     meshes,
-    // The bake reads no unlit extension: the sky is look keys, and glow's look entry makes it emissive.
-    materials: bake
-      ? [MESA, { ...GLOW, extensions: undefined }]
-      : [MESA, SKY, GLOW],
-    accessors,
-    bufferViews: views,
-    buffers: [{ byteLength: bin.length }],
-  }
-  let text = Buffer.from(JSON.stringify(json))
-  text = Buffer.concat([text, Buffer.alloc((4 - (text.length % 4)) % 4, 0x20)])
-  const header = Buffer.alloc(12),
-    jh = Buffer.alloc(8),
-    bh = Buffer.alloc(8)
-  header.writeUInt32LE(0x46546c67, 0)
-  header.writeUInt32LE(2, 4)
-  header.writeUInt32LE(12 + 8 + text.length + 8 + bin.length, 8)
-  jh.writeUInt32LE(text.length, 0)
-  jh.writeUInt32LE(0x4e4f534a, 4)
-  bh.writeUInt32LE(bin.length, 0)
-  bh.writeUInt32LE(0x004e4942, 4)
-  return Buffer.concat([header, jh, text, bh, bin])
+    marks,
+    bake ? [MESA, { ...GLOW, extensions: undefined }] : [MESA, SKY, GLOW],
+    !bake,
+    'shardfile src/tools/brasscap/canyon.ts (BM-1)',
+    'brasscap-mesa',
+  )
+}
+
+/** The depot's detail GLB (LF2-5), in world coordinates beside canyon.glb: tin, planks, rafters, the sign,
+ *  the bench, barrels, lantern, bell, rack, crate and handcar (`depot`), and the lantern's lit glass
+ *  (`depot.glow`). The bake input carries the same triangles inside its canyon and glow meshes. */
+export function buildDepot(): Buffer {
+  hero = new Geo()
+  heroGlow = new Geo()
+  depotDetail()
+  return glb(
+    [
+      { name: 'depot', g: hero, material: 0 },
+      { name: 'depot.glow', g: heroGlow, material: 1 },
+    ],
+    [],
+    [MESA, GLOW],
+    true,
+    'shardfile src/tools/brasscap/canyon.ts (LF2-5)',
+    'brasscap-depot',
+  )
+}
+
+/** The depot detail's solid mesh, for the checks in canyon.test.ts. */
+export function depotGeo(): Geo {
+  buildDepot()
+  return hero
 }
 
 /** The level's world mesh (everything solid but the gate door), for the layout checks in canyon.test.ts. */
@@ -1269,4 +1984,13 @@ if (process.argv[1] === import.meta.filename) {
   process.stdout.write(
     `${out}: ${file.length} bytes, ${(world.pos.length + sky.pos.length + glow.pos.length + door.pos.length) / 9} triangles\n`,
   )
+  // The level's source writes the depot's detail GLB beside it (LF2-5); the bake input carries it already.
+  if (!bake) {
+    const depotOut = path.join(path.dirname(out), 'depot.glb'),
+      depotFile = buildDepot()
+    writeFileSync(depotOut, depotFile)
+    process.stdout.write(
+      `${depotOut}: ${depotFile.length} bytes, ${(hero.pos.length + heroGlow.pos.length) / 9} triangles\n`,
+    )
+  }
 }

@@ -105,7 +105,12 @@ json(
     }
   ).identity,
 )
-json('look.json', section('look/look.json')['look'])
+// The bake cooks no post pass, and sharddev's format can lag this corpus's post ops (LF2-3's `viewRay`), so
+// the throwaway project leaves `look.post` out; the cooked world and sim sections never read it (LF2-5).
+const { post: _post, ...bakeLook } = section('look/look.json')[
+  'look'
+] as Record<string, unknown>
+json('look.json', bakeLook)
 json('state.json', section('state/state.json')['state'])
 json('hooks.json', section('sim/hooks.json')['hooks'])
 json('sim.json', authoredSim)

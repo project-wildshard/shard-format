@@ -372,3 +372,36 @@ lever-only subset of Pine's native assembly in rows.
   ledge, so on the ledge they drop it into the rock; aim by setting
   `player.yaw` and `pitch` instead. The ledge dome's FP cameras have
   the same problem through views.mjs.
+
+## LF2-5: the depot, porch and rack (opus-lf25, 2026-11-12 ~03:40 Cancún)
+
+- **The depot ships in two source GLBs.** `canyon.glb` keeps the
+  depot's shell (footing, walls, gable roof, deck, posts, the porch's
+  shed roof, header and fascia); the detail goes in
+  `corpus/sources/brasscap-mesa/depot.glb` (`depotDetail` in
+  `canyon.ts`; `node src/tools/brasscap/canyon.ts` writes both).
+  With the detail in it, `canyon.glb` would have passed the repo's
+  1 MiB file limit; split, it is 996,304 bytes and `depot.glb`
+  246,588. The bake input (`--bake`) folds the detail into its canyon
+  and glow meshes after welding the far stand-in, so the far mesh
+  holds only the shell: 7,448 triangles (was 7,478).
+- **Detail:** corrugated tin ribs on both roofs, a plank ceiling on
+  rafters, knee braces, plank seams and corner boards, four-pane
+  windows with sills, a door, a bench, four hooped barrels, a wall
+  lantern whose glass is `glow` (with a `look.light.pools` pool at its
+  foot), the brass bell on an iron bracket, the rack as a two-plank
+  board on pegs with the lever-action, an X-braced ammo crate, the
+  handcar on the siding, and BRASSCAP in raised low-poly letters on the
+  porch roof's south edge. Low-poly letters cost no draw (same
+  `mesa` material); a KTX2 decal would have added a material, so one
+  draw in each tile it touched. No detail draws on `rand`, so BM-1's
+  mesas stay put.
+- **Caps:** L0 at most 3,534 triangles and 4 draws (was 3,210 and 4),
+  L1 4,548 and 2, far 7,448 of 8,000. The bake's warning ("far
+  resident target 1,788,560 > 1,600,000") is on the far mesh, which
+  this row only shrank, so it predates LF2-5.
+- **The re-bake leaves `look.post` out** of its throwaway project: the
+  sibling sharddev's format predates LF2-3's `viewRay` op and refused
+  the look, and the cooked world and sim sections never read the post
+  graph. `rebake.ts --write` settled the new blobs and `look.json`'s
+  pool; `--check` then reads 234 of 234 files byte-equal.
