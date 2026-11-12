@@ -9,7 +9,7 @@
     "maxNodes": 4096,
     "maxMessageBytes": 65536
   },
-  "v0SchemaHash": 516954244,
+  "v0SchemaHash": 2038956392,
   "messages": [
     {
       "id": 1,
@@ -2429,7 +2429,7 @@
     {
       "id": 1,
       "name": "player",
-      "rowFields": 8,
+      "rowFields": 11,
       "fields": [
         {
           "id": 1,
@@ -2574,6 +2574,43 @@
           "default": 0,
           "since": 0,
           "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 55,
+          "name": "swing",
+          "node": {
+            "kind": "uint",
+            "bits": 8
+          },
+          "default": 0,
+          "since": 0,
+          "send": "others",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 56,
+          "name": "heavy",
+          "node": {
+            "kind": "bool"
+          },
+          "default": false,
+          "since": 0,
+          "send": "others",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 57,
+          "name": "air",
+          "node": {
+            "kind": "bool"
+          },
+          "default": false,
+          "since": 0,
+          "send": "others",
           "predicted": false,
           "required": false
         },

@@ -60,11 +60,12 @@ async function inSourceRepo(root: string): Promise<boolean> {
   if (top === undefined) {
     return false
   }
-  const [own, here] = await Promise.all([
-    realpath(path.join(top, 'packages', 'wire')),
-    realpath(root),
-  ])
-  return own === here
+  // An installed copy inside another git repo (a consumer's node_modules)
+  // finds that repo's top, which has no packages/wire: not the source.
+  const own = await realpath(path.join(top, 'packages', 'wire')).catch(
+    (): undefined => undefined,
+  )
+  return own !== undefined && own === (await realpath(root))
 }
 
 /** A lock as a release lock, or a refusal. */

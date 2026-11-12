@@ -54,9 +54,44 @@ function columnsNamed(name: string): ClassColumns {
   return columns
 }
 
-/** The v1 columns of a class, by its v0 class's name. */
-const columnsOf = (cls: Readonly<NetClass<never>>): ClassColumns =>
-  columnsNamed(cls.cls)
+/** The sender tables of the recorded classes, compiled once each. */
+const SENT = new WeakMap<object, ClassColumns>()
+
+/**
+ * The v1 columns of a class as the recorded sender had them: its v0 class's
+ * name, with only the row fields its rows carried. A v1 sender's table is its
+ * own, so a row field added since a capture (REMOTE-PLAYERS RP6's `swing`,
+ * `heavy` and `air`) was never in that sender's rows.
+ */
+function columnsOf(cls: Readonly<NetClass<never>>): ClassColumns {
+  const known = SENT.get(cls)
+  if (known !== undefined) {
+    return known
+  }
+  const entry = WIRE_CLASSES.find(
+    (wireClass: (typeof WIRE_CLASSES)[number]): boolean =>
+      wireClass.name === cls.cls,
+  )
+  const full = columnsNamed(cls.cls)
+  const sent = new Set(
+    cls.row.map((column: Readonly<{ name: string }>): string => column.name),
+  )
+  const named = new Set(
+    (entry?.fields ?? [])
+      .filter((field: Readonly<{ name: string }>): boolean =>
+        sent.has(field.name),
+      )
+      .map((field: Readonly<{ id: number }>): number => field.id),
+  )
+  const columns = {
+    ...full,
+    row: full.row.filter((column: Readonly<{ id: number }>): boolean =>
+      named.has(column.id),
+    ),
+  }
+  SENT.set(cls, columns)
+  return columns
+}
 
 function baselineOf(input: Readonly<FrameInput>): SnapshotInput['baseline'] {
   const { baseline } = input

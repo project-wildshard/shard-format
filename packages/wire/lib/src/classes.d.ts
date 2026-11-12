@@ -486,6 +486,28 @@ declare const WIRE_CLASSES: readonly [{
             readonly bits: 8;
         };
     }, {
+        readonly id: 55;
+        readonly name: 'swing';
+        readonly node: {
+            readonly kind: 'uint';
+            readonly bits: 8;
+        };
+        readonly send: 'others';
+    }, {
+        readonly id: 56;
+        readonly name: 'heavy';
+        readonly node: {
+            readonly kind: 'bool';
+        };
+        readonly send: 'others';
+    }, {
+        readonly id: 57;
+        readonly name: 'air';
+        readonly node: {
+            readonly kind: 'bool';
+        };
+        readonly send: 'others';
+    }, {
         readonly send: 'all';
         readonly predicted: true;
         readonly id: 11;

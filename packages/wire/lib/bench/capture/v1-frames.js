@@ -27,8 +27,32 @@ function columnsNamed(name) {
     }
     return columns;
 }
-/** The v1 columns of a class, by its v0 class's name. */
-const columnsOf = (cls) => columnsNamed(cls.cls);
+/** The sender tables of the recorded classes, compiled once each. */
+const SENT = new WeakMap();
+/**
+ * The v1 columns of a class as the recorded sender had them: its v0 class's
+ * name, with only the row fields its rows carried. A v1 sender's table is its
+ * own, so a row field added since a capture (REMOTE-PLAYERS RP6's `swing`,
+ * `heavy` and `air`) was never in that sender's rows.
+ */
+function columnsOf(cls) {
+    const known = SENT.get(cls);
+    if (known !== undefined) {
+        return known;
+    }
+    const entry = WIRE_CLASSES.find((wireClass) => wireClass.name === cls.cls);
+    const full = columnsNamed(cls.cls);
+    const sent = new Set(cls.row.map((column) => column.name));
+    const named = new Set((entry?.fields ?? [])
+        .filter((field) => sent.has(field.name))
+        .map((field) => field.id));
+    const columns = {
+        ...full,
+        row: full.row.filter((column) => named.has(column.id)),
+    };
+    SENT.set(cls, columns);
+    return columns;
+}
 function baselineOf(input) {
     const { baseline } = input;
     if (baseline === null) {

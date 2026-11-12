@@ -153,7 +153,7 @@ function checkWireCommand(bin: string, consumer: string): void {
   assert.equal(check.status, 0, check.stderr)
   assert.match(
     check.stdout,
-    /lock current; .* 2 added \(player\.name #54, animal\.species #24\)/u,
+    /lock current; .* 5 added \(player\.name #54, player\.swing #55, player\.heavy #56, player\.air #57, animal\.species #24\)/u,
   )
 }
 

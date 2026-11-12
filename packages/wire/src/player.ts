@@ -4,7 +4,8 @@ import type { WireClass } from './grammar.ts'
 
 // The `player` class: a row for everyone else, an exact owner block for its
 // owner (J140). Ids 1 to 53 are the WS2 baseline's order at engine cfd6681;
-// `name` (54) was added after it. Declared order is the sender's layout.
+// `name` (54) was added after it, and `swing`, `heavy` and `air` (55 to 57)
+// after that (REMOTE-PLAYERS RP6). Declared order is the sender's layout.
 const PREDICTED = { send: 'all', predicted: true } as const
 const OWNER = { send: 'owner' } as const
 const OTHERS = { send: 'others', required: true } as const
@@ -25,6 +26,12 @@ const PLAYER = {
     { id: 8, name: 'maxHp', node: U16, ...OWNER },
     { id: 9, name: 'statusStun', node: F32, ...OWNER },
     { id: 10, name: 'held', node: U8 },
+    // What another page animates (RP6): a count that moves on each swing or
+    // shot and wraps at 256, whether that swing was the heavy, and whether
+    // the body is off the ground (not swimming). The owner has its own.
+    { id: 55, name: 'swing', node: U8, send: 'others' },
+    { id: 56, name: 'heavy', node: BOOL, send: 'others' },
+    { id: 57, name: 'air', node: BOOL, send: 'others' },
     { id: 11, name: 'px', node: F64, ...PREDICTED },
     { id: 12, name: 'py', node: F64, ...PREDICTED },
     { id: 13, name: 'pz', node: F64, ...PREDICTED },

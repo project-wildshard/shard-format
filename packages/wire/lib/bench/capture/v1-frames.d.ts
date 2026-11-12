@@ -5,8 +5,13 @@ import type { RawFrame, SnapshotInput } from '../../src/snapshot.ts';
 import type { CapturedFrame } from './frame-data.ts';
 /** The v1 columns of a class, by its name. */
 declare function columnsNamed(name: string): ClassColumns;
-/** The v1 columns of a class, by its v0 class's name. */
-declare const columnsOf: (cls: Readonly<NetClass<never>>) => ClassColumns;
+/**
+ * The v1 columns of a class as the recorded sender had them: its v0 class's
+ * name, with only the row fields its rows carried. A v1 sender's table is its
+ * own, so a row field added since a capture (REMOTE-PLAYERS RP6's `swing`,
+ * `heavy` and `air`) was never in that sender's rows.
+ */
+declare function columnsOf(cls: Readonly<NetClass<never>>): ClassColumns;
 /** A v0 frame input as a v1 snapshot input. */
 declare function snapshotInput(input: Readonly<FrameInput>): SnapshotInput;
 /** A v0 receiver baseline as a v1 raw frame. */
