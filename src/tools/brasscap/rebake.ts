@@ -125,7 +125,7 @@ import sim from './sim.json' with { type: 'json' };
 
 const base = emptyShardfile(identity);
 export default { ...base, look, state, sim, hooks, world: {
-  glb: 'canyon.glb', materials: { Mesa: 'mesa', Glow: 'glow' }, colliders: 'mesh', far: 'far.', farMode: 'replace', detail: 'dress', coarse: 'coarse.',
+  glb: 'canyon.glb', materials: { Mesa: 'mesa', Glow: 'glow', Metal: 'metal' }, colliders: 'mesh', far: 'far.', farMode: 'replace', detail: 'dress', coarse: 'coarse.',
   interactive: [
     { node: 'gate.door', id: 'brasscap.gate', colliderId: 'brasscap.gate' },
     { node: 'rack.rifle', id: 'brasscap.rack.rifle', colliderId: 'brasscap.rack.rifle' },
@@ -304,6 +304,29 @@ function settleLibrary({
   index.admission.budgets.library.resident += costIn.resident - costOut.resident
 }
 
+/** The pack a new blob joins: the one sharing the most members with the cooked pack holding it. LF2-7: a blob
+ *  that shares none (every member of its old pack changed, as the far mesh's does on a palette change) refills a
+ *  pack its gone blobs emptied, so no pack is left empty. */
+function packFor(
+  packs: readonly PackRow[],
+  members: ReadonlySet<string>,
+): PackRow | undefined {
+  let most = -1,
+    target: PackRow | undefined = undefined
+  for (const pack of packs) {
+    const overlap = pack.entries.filter((entry): boolean =>
+      members.has(entry.hash),
+    ).length
+    if (overlap > most) {
+      target = pack
+      most = overlap
+    }
+  }
+  if (most === 0)
+    return packs.find((pack): boolean => pack.entries.length === 0) ?? target
+  return target
+}
+
 /** Settles shard.json after a --write (LF2-2): the changed blobs' rows swap in `files` and the critical
  *  list, blobs no section names any more are dropped, the sim budget and server memory move by the
  *  critical blobs' change (the budget is their sum, plus fixed headroom), and `shardfile pack` measures
@@ -370,17 +393,7 @@ function settle(after: Set<string>): void {
       pack.entries.some((entry): boolean => entry.hash === row.hash),
     )
     const members = new Set(home?.entries.map((entry): string => entry.hash))
-    let most = -1,
-      target: PackRow | undefined = undefined
-    for (const pack of index.packs) {
-      const overlap = pack.entries.filter((entry): boolean =>
-        members.has(entry.hash),
-      ).length
-      if (overlap > most) {
-        target = pack
-        most = overlap
-      }
-    }
+    const target = packFor(index.packs, members)
     if (home === undefined || target === undefined)
       throw new Error(`no cooked pack holds ${row.hash}`)
     target.entries.push({

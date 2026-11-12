@@ -447,3 +447,27 @@ lever-only subset of Pine's native assembly in rows.
   side, so camp 2's last bandit, idling behind the flag pole at
   x 15.3, is not shot through the pole every time; and the walk into
   camp 2 goes round the tent's north-east corner first.
+
+## LF2-7: the metal material and the palette (opus-lf27, 2026-11-12)
+
+- **One `metal` material** (`Metal` in the GLBs, `look.materials.metal`:
+  pbr, vertex-coloured, metalness 0.5, roughness 0.45, faceted). It
+  draws the roofs' tin, the rails, the gate's iron straps, rivets and
+  pull rings, both bells with their brackets, and the water tower's
+  hoops, cone roof and finial. Brass and tin differ only in vertex
+  colour. `metal(() => ...)` in `canyon.ts` flags the triangles drawn
+  inside it; a flagged mesh writes a second primitive.
+- **L0 only.** The engine's L1 tiles take 2 draws and already use
+  them, so in the bake the canyon node's metal (the roofs, the rails,
+  the depot's bell) moves into `dress` (L0 detail) and is drawn in
+  `mesa` in `coarse.mesas` (L1). The far stand-in ignores the flags.
+- **Caps:** metal is in 5 L0 tiles, (3,3), (3,4), (4,2), (4,3) and
+  (4,4): L0 at most 6 draws (was 4) and 14,321 triangles (unchanged),
+  L1 2 draws (unchanged), far 7,498 of 8,000 (the palette moved the
+  weld). No tile keeps its metal in `mesa` for want of draws.
+- **Palette:** the sand and the mesa bands moved half the measured
+  step toward the targets' means (sand linear red x1.25, blue x0.8;
+  bands red x1.2, green and blue x0.95); the LUT fits on top.
+- **`rebake.ts`:** a changed blob that shares no member with any pack
+  (the far mesh, after a palette change) now refills the pack its old
+  blob left empty; `shardfile pack` refused an empty pack.

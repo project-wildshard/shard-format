@@ -49,8 +49,10 @@ interface Gltf {
   readonly meshes: readonly {
     readonly primitives: readonly {
       readonly attributes: { readonly NORMAL: number }
+      readonly material: number
     }[]
   }[]
+  readonly materials: readonly { readonly name: string }[]
   readonly nodes: readonly { readonly name: string }[]
 }
 
@@ -73,7 +75,26 @@ function parse(file: Buffer): { json: Gltf; bin: Buffer } {
 function triangles(file: Buffer, name: string): number {
   const { json } = parse(file),
     mesh = json.meshes[json.nodes.findIndex(n => n.name === name)]!
-  return json.accessors[mesh.primitives[0]!.attributes.NORMAL]!.count / 3
+  // LF2-7: a node may carry a second primitive in the metal material; count them all.
+  return mesh.primitives.reduce(
+    (sum, primitive) =>
+      sum + json.accessors[primitive.attributes.NORMAL]!.count / 3,
+    0,
+  )
+}
+
+/** The triangles of node `name` drawn in the `Metal` material (LF2-7); 0 when the file has no metal. */
+function metalTriangles(file: Buffer, name: string): number {
+  const { json } = parse(file),
+    metal = json.materials.findIndex(m => m.name === 'Metal'),
+    mesh = json.meshes[json.nodes.findIndex(n => n.name === name)]!
+  return mesh.primitives
+    .filter(primitive => primitive.material === metal)
+    .reduce(
+      (sum, primitive) =>
+        sum + json.accessors[primitive.attributes.NORMAL]!.count / 3,
+      0,
+    )
 }
 
 /** The distance from (x, z) to the segment a to b. */
@@ -142,16 +163,20 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
       source = buildCanyon(),
       depot = buildDepot()
     // The bake's canyon adds the skirt's 8 triangles and the depot's detail to the source's canyon, less the plain
-    // mesas (LF2-4), which the bake draws as `coarse.mesas` in the L1 tiles only.
-    const { shell } = terrainGeo()
+    // mesas (LF2-4), which the bake draws as `coarse.mesas` in the L1 tiles only, and less its metal (LF2-7), which
+    // the bake draws in `dress` (L0) and as mesa in `coarse.mesas` (L1).
+    const { shell } = terrainGeo(),
+      moved =
+        metalTriangles(bake, 'dress') - metalTriangles(buildProps(), 'props')
+    assert.ok(moved > 0)
     assert.equal(
-      triangles(bake, 'canyon'),
+      triangles(bake, 'canyon') + moved,
       triangles(source, 'canyon') -
         shell.pos.length / 9 +
         8 +
         triangles(depot, 'depot'),
     )
-    assert.equal(triangles(bake, 'coarse.mesas'), shell.pos.length / 9)
+    assert.equal(triangles(bake, 'coarse.mesas'), shell.pos.length / 9 + moved)
     // The rack's rifle is its own node in both, so the bake makes it a panel a take hides (TE-ENG6).
     assert.ok(triangles(depot, 'rack.rifle') > 0)
     assert.equal(triangles(bake, 'rack.rifle'), triangles(depot, 'rack.rifle'))
@@ -195,8 +220,32 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
     assert.equal(
       triangles(bake, 'dress'),
       (rock.pos.length + dress.pos.length) / 9 +
-        triangles(buildProps(), 'props'),
+        triangles(buildProps(), 'props') +
+        metalTriangles(bake, 'dress') -
+        metalTriangles(buildProps(), 'props'),
     )
+  })
+
+  it('draws the metal in its own material, L0 only in the bake (LF2-7)', (): void => {
+    const bake = buildCanyon({ bake: true }),
+      source = buildCanyon()
+    // The roofs' tin, the rails and the depot's bell; the props' bell, tower cap and hoops; the gate's straps.
+    assert.ok(metalTriangles(buildDepot(), 'depot') > 0)
+    assert.ok(metalTriangles(buildProps(), 'props') > 0)
+    assert.ok(metalTriangles(source, 'canyon') > 0)
+    assert.ok(metalTriangles(bake, 'gate.door') > 0)
+    assert.ok(
+      metalTriangles(bake, 'dress') > metalTriangles(buildProps(), 'props'),
+    )
+    // The L1 tiles take 2 draws, so neither the canyon node (L0 and L1) nor `coarse.mesas` (L1) draws metal.
+    assert.equal(metalTriangles(bake, 'canyon'), 0)
+    assert.equal(metalTriangles(bake, 'coarse.mesas'), 0)
+    // The terrain parts carry no metal: their material catalogue stays Mesa alone.
+    for (const part of TERRAIN_PARTS)
+      assert.equal(
+        parse(buildTerrain(part)).json.materials.some(m => m.name === 'Metal'),
+        false,
+      )
   })
 
   it('writes the props detail GLB the same every run, committed and under 1 MiB (LF2-6)', (): void => {
@@ -301,10 +350,12 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
       parse(buildCanyon()),
       parse(buildCanyon({ bake: true })),
       parse(buildDepot()),
+      parse(buildProps()),
       ...TERRAIN_PARTS.map(part => parse(buildTerrain(part))),
     ])
-      for (const mesh of json.meshes) {
-        const accessor = json.accessors[mesh.primitives[0]!.attributes.NORMAL]!
+      // Every primitive, the metal ones included (LF2-7, Codex SHOULD).
+      for (const primitive of json.meshes.flatMap(mesh => mesh.primitives)) {
+        const accessor = json.accessors[primitive.attributes.NORMAL]!
         assert.equal(accessor.componentType, FLOAT)
         const view = json.bufferViews[accessor.bufferView]!,
           normals = new Float32Array(

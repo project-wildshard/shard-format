@@ -32,10 +32,15 @@ function rand(): number {
 }
 const jitter = (n: number): number => (rand() * 2 - 1) * n
 
+/** LF2-7: while set, every triangle drawn is flagged `metal`; see `metal`. */
+let metalOn = false
+
 export class Geo {
   readonly pos: number[] = []
   readonly nor: number[] = []
   readonly col: number[] = []
+  /** LF2-7: one flag a triangle, 1 for the `metal` material, 0 for `mesa`. */
+  readonly mat: number[] = []
   tri(a: V3, b: V3, c: V3, hex: Hex): void {
     const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
       w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
@@ -51,6 +56,7 @@ export class Geo {
       this.nor.push(n[0]! / len, n[1]! / len, n[2]! / len)
       this.col.push(rgb[0], rgb[1], rgb[2], 255)
     }
+    this.mat.push(metalOn ? 1 : 0)
   }
   quad(a: V3, b: V3, c: V3, d: V3, hex: Hex): void {
     this.tri(a, b, c, hex)
@@ -191,10 +197,14 @@ let world = new Geo(),
   propsGlow = new Geo(),
   /** LF2-6: the plain camps' flames; the source canyon.glb's glow keeps them, the bake draws the detail's. */
   plainGlow = new Geo()
+/** The mesa bands. LF2-7 retuned them toward the targets' measured means: redder, a touch less green and blue
+ *  (linear red x1.2, green and blue x0.95, half the measured step, as the LUT fits on top). */
 const BANDS: readonly Hex[] = [
-  0xa94a35, 0xc4663f, 0xd98a52, 0xb9553a, 0xe2a466, 0x9c4130,
+  0xb74834, 0xd5643d, 0xeb8750, 0xc95338, 0xf5a064, 0xa93f2f,
 ]
-const SAND: readonly Hex[] = [0xdba06a, 0xd4955d, 0xe2ab74, 0xcf8f58]
+/** The canyon floor's sand. LF2-7: warmer and more saturated, toward the targets' orange (linear red x1.25, blue
+ *  x0.8; LF2-4 found it paler than the targets'). */
+const SAND: readonly Hex[] = [0xf2a05f, 0xea9553, 0xf9ab68, 0xe58f4f]
 
 /** A banded mesa: stacked jittered tiers, each one band colour, narrowing as it rises. A `near` mesa (the canyon's
  *  walls and the buttes by the gate) goes to `shell` as plain prisms and to `rock` as a faceted cliff (LF2-4); the
@@ -380,17 +390,19 @@ function waterTower(x: number, z: number): void {
     shell.box([x + dx, 0, z + dz], [0.3, 7, 0.3], 0x4f3322)
   shell.box([x, 3, z], [3.6, 0.2, 3.6], 0x5e3a22)
   shell.cylinder([x, 7, z], 2.4, 3.6, 10, 0x8a5a36, 0x7a4a2b)
-  shell.prism(
-    Array.from({ length: 10 }, (_, i) => {
-      const a = (-i / 10) * Math.PI * 2
-      return [x + Math.cos(a) * 2.6, z + Math.sin(a) * 2.6] as const
-    }),
-    10.6,
-    10.8,
-    0x7d8890,
-    0x8b98a1,
-  )
-  shell.cylinder([x, 10.8, z], 1.2, 1.0, 10, 0x8b98a1, 0x9aa6ae)
+  metal(() => {
+    shell.prism(
+      Array.from({ length: 10 }, (_, i) => {
+        const a = (-i / 10) * Math.PI * 2
+        return [x + Math.cos(a) * 2.6, z + Math.sin(a) * 2.6] as const
+      }),
+      10.6,
+      10.8,
+      0x7d8890,
+      0x8b98a1,
+    )
+    shell.cylinder([x, 10.8, z], 1.2, 1.0, 10, 0x8b98a1, 0x9aa6ae)
+  })
 }
 
 /** The rail line's centre at distance t along it (the railway and the handcar on its siding share it). */
@@ -408,19 +420,22 @@ function railway(): void {
     const yaw = Math.atan2(x2 - x, -(z2 - z))
     world.box([x, 0, z], [2.4, 0.12, 0.35], 0x6b4a34, -yaw) // across the track
   }
-  for (const off of [-0.7, 0.7]) {
-    for (let t = 0; t < 78; t += 4) {
-      const [x, z] = path(t),
-        [x2, z2] = path(t + 4)
-      world.quad(
-        [x + off - 0.06, 0.2, z],
-        [x + off + 0.06, 0.2, z],
-        [x2 + off + 0.06, 0.2, z2],
-        [x2 + off - 0.06, 0.2, z2],
-        0x8a8f94,
-      )
+  // LF2-7: the rails are metal.
+  metal(() => {
+    for (const off of [-0.7, 0.7]) {
+      for (let t = 0; t < 78; t += 4) {
+        const [x, z] = path(t),
+          [x2, z2] = path(t + 4)
+        world.quad(
+          [x + off - 0.06, 0.2, z],
+          [x + off + 0.06, 0.2, z],
+          [x2 + off + 0.06, 0.2, z2],
+          [x2 + off - 0.06, 0.2, z2],
+          0x8a8f94,
+        )
+      }
     }
-  }
+  })
   // The fence stops short of camp 2's ledge (LF2-2), which stands where it ran on.
   for (let t = 0; t < 40; t += 3) {
     const [x, z] = path(t),
@@ -596,7 +611,8 @@ const porchY = (x: number): number => {
 /** The depot: a red plank shack with a tin roof and the porch the player spawns on (the shell). */
 function depot(): void {
   const D = DEPOT,
-    cz = (D.z0 + D.z1) / 2
+    cz = (D.z0 + D.z1) / 2,
+    g = world
   world.box([-6, 0, 2], [6, 0.4, 10], 0x7a4a2b) // footing
   world.box(
     [(D.x0 + D.x1) / 2, 0.4, cz],
@@ -621,7 +637,9 @@ function depot(): void {
       ridge1: V3 = [D.ridgeX, D.ridgeY, z1],
       e0: V3 = [eave, gableY(eave), z0],
       e1: V3 = [eave, gableY(eave), z1]
-    outQuad(world, ridge, e0, e1, ridge1, under, 0x7c8296)
+    metal(() => {
+      outQuad(g, ridge, e0, e1, ridge1, under, 0x7c8296)
+    })
     const drop = (p: V3): V3 => [p[0], p[1] - 0.06, p[2]]
     outQuad(
       world,
@@ -648,15 +666,17 @@ function depot(): void {
     [pz0, pz1] = D.porchZ,
     top = (x: number, z: number): V3 => [x, porchY(x), z],
     low = (x: number, z: number): V3 => [x, porchY(x) - 0.07, z]
-  outQuad(
-    world,
-    top(px0, pz0),
-    top(px1, pz0),
-    top(px1, pz1),
-    top(px0, pz1),
-    [0, 0, 2],
-    0x7c8296,
-  )
+  metal(() => {
+    outQuad(
+      world,
+      top(px0, pz0),
+      top(px1, pz0),
+      top(px1, pz1),
+      top(px0, pz1),
+      [0, 0, 2],
+      0x7c8296,
+    )
+  })
   outQuad(
     world,
     low(px0, pz0),
@@ -1084,7 +1104,15 @@ function depotProps(): void {
     0x3a3330,
   )
   // The brass bell on an iron bracket off the wall, by the rack.
-  const B: V3 = [-3.25, 2.24, -1.15]
+  metal(() => {
+    depotBell(g)
+  })
+}
+
+/** The porch's bell (LF2-7: all metal): an iron bracket off the wall, the brass bell and its clapper. */
+function depotBell(g: Geo): void {
+  const D = DEPOT,
+    B: V3 = [-3.25, 2.24, -1.15]
   beam(g, [D.x1, 2.78, B[2]], [B[0] - 0.05, 2.78, B[2]], 0.06, 0x2f2a28)
   beam(g, [D.x1, 2.35, B[2]], [-3.55, 2.78, B[2]], 0.04, 0x2f2a28)
   beam(g, [B[0], 2.78, B[2]], [B[0], 2.6, B[2]], 0.03, 0x2f2a28)
@@ -1256,7 +1284,7 @@ function depotHandcar(): void {
 
 /** The hero's detail (LF2-5), in the depot's own GLB: tin, planks, rafters, the sign and the props. */
 function depotDetail(): void {
-  depotTin()
+  metal(depotTin)
   depotWood()
   depotProps()
   depotRack()
@@ -1295,6 +1323,7 @@ function place(
     to.nor.push(nx * c + nz * s, from.nor[i + 1]!, -nx * s + nz * c)
   }
   for (const v of from.col) to.col.push(v)
+  for (const v of from.mat) to.mat.push(v)
 }
 
 /** A thin sheet: the quad facing away from `centre` in `out`, and its back in `back`, so it reads from both sides. */
@@ -1844,7 +1873,8 @@ function saguaro(
 /** The gate's double plank doors (BM-4's `gate.door`, the panel field 101 hides and drops): two leaves of planks
  *  with iron straps and rivets on the canyon side, pull rings at the meeting stiles, rails and a brace behind. */
 function gateDoors(): void {
-  const z = -62,
+  const g = door,
+    z = -62,
     front = z + 0.11,
     leaves = [
       [-3.05, 2.02],
@@ -1860,19 +1890,20 @@ function gateDoors(): void {
         [pw - 0.035, k % 2 === li % 2 ? 4.6 : 4.48, 0.22],
         [0x7a4a2b, 0x6b4026, 0x845232][(k + li) % 3]!,
       )
-    for (const y of [0.85, 3.35]) {
-      door.box(
-        [(x0 + x1) / 2, y, front + 0.03],
-        [x1 - x0 - 0.12, 0.28, 0.06],
-        0x3a3330,
-      )
-      for (let k = 0; k < 4; k++)
-        door.box(
-          [x0 + 0.3 + ((x1 - x0 - 0.6) * k) / 3, y + 0.09, front + 0.08],
-          [0.09, 0.09, 0.05],
-          0x7a7068,
+    for (const y of [0.85, 3.35])
+      metal(() => {
+        g.box(
+          [(x0 + x1) / 2, y, front + 0.03],
+          [x1 - x0 - 0.12, 0.28, 0.06],
+          0x3a3330,
         )
-    }
+        for (let k = 0; k < 4; k++)
+          g.box(
+            [x0 + 0.3 + ((x1 - x0 - 0.6) * k) / 3, y + 0.09, front + 0.08],
+            [0.09, 0.09, 0.05],
+            0x7a7068,
+          )
+      })
     // The back: two rails and a brace from the hinge side's foot to the meeting side's top rail.
     for (const y of [1.0, 3.2])
       door.box(
@@ -1885,13 +1916,15 @@ function gateDoors(): void {
     beam(door, [hinge, 1.2, z - 0.16], [meet, 3.2, z - 0.16], 0.16, 0x5e3a22)
     // A pull ring at the meeting stile.
     const px = li === 0 ? x1 - 0.32 : x0 + 0.32
-    beam(
-      door,
-      [px, 2.05, front + 0.07],
-      [px, 2.45, front + 0.07],
-      0.05,
-      0x2f2a28,
-    )
+    metal(() => {
+      beam(
+        g,
+        [px, 2.05, front + 0.07],
+        [px, 2.45, front + 0.07],
+        0.05,
+        0x2f2a28,
+      )
+    })
   }
 }
 
@@ -1943,6 +1976,34 @@ function gateDetail(): void {
   const px = 7.6,
     bz0 = zf + 0.62,
     by = beamY - 0.62
+  metal(() => {
+    gateBell(g, px, bz0, by, zf, beamY)
+  })
+  g.box([px, 0.85, zf + 0.34], [0.3, 0.42, 0.14], 0x3a3330)
+  beam(g, [px, 1.06, zf + 0.43], [px + 0.14, 1.48, zf + 0.55], 0.045, 0x2f2a28)
+  beam(
+    g,
+    [px + 0.14, 1.48, zf + 0.55],
+    [px + 0.19, 1.62, zf + 0.59],
+    0.07,
+    0xc93a2c,
+  )
+  saguaro(-3.0, -59.6, 3.6, [
+    [-0.9, 1.5, 1.2],
+    [0.7, 2.2, 0.9],
+  ])
+}
+
+/** The gate's bell (LF2-7: all metal): an iron bracket off the crossbeam over the lever post, the brass bell and
+ *  its clapper. */
+function gateBell(
+  g: Geo,
+  px: number,
+  bz0: number,
+  by: number,
+  zf: number,
+  beamY: number,
+): void {
   beam(
     g,
     [px, beamY + 0.12, zf + 0.25],
@@ -1976,19 +2037,54 @@ function gateDetail(): void {
     6,
     0x6b5a2a,
   )
-  g.box([px, 0.85, zf + 0.34], [0.3, 0.42, 0.14], 0x3a3330)
-  beam(g, [px, 1.06, zf + 0.43], [px + 0.14, 1.48, zf + 0.55], 0.045, 0x2f2a28)
-  beam(
+}
+
+/** The water tower's three iron hoops, its tin cone roof and the finial (LF2-7: all metal). */
+function towerCap(
+  g: Geo,
+  x: number,
+  z: number,
+  R: number,
+  staves: number,
+): void {
+  for (const y of [7.6, 8.9, 10.2])
+    lathe(
+      g,
+      x,
+      z,
+      [
+        [R + 0.04, y],
+        [R + 0.04, y + 0.12],
+      ],
+      staves,
+      0x3f3a38,
+    )
+  lathe(
     g,
-    [px + 0.14, 1.48, zf + 0.55],
-    [px + 0.19, 1.62, zf + 0.59],
-    0.07,
-    0xc93a2c,
+    x,
+    z,
+    [
+      [2.75, 10.55],
+      [2.75, 10.68],
+      [1.3, 11.55],
+      [0.14, 12.3],
+    ],
+    staves,
+    [0x8d93a6, 0x9aa0b2, 0x868ca0],
   )
-  saguaro(-3.0, -59.6, 3.6, [
-    [-0.9, 1.5, 1.2],
-    [0.7, 2.2, 0.9],
-  ])
+  lathe(
+    g,
+    x,
+    z,
+    [
+      [0.08, 12.2],
+      [0.08, 12.6],
+      [0.15, 12.68],
+      [0.02, 12.82],
+    ],
+    6,
+    0x6b625a,
+  )
 }
 
 /** The water tower's detail (LF2-6): legs leaning in on X-braces, a plank deck, a stave tank with three iron
@@ -2037,44 +2133,10 @@ function towerDetail(x: number, z: number): void {
       [0x8a5a36, 0x9a6a40, 0x7e5030][i % 3]!,
     )
   }
-  for (const y of [7.6, 8.9, 10.2])
-    lathe(
-      g,
-      x,
-      z,
-      [
-        [R + 0.04, y],
-        [R + 0.04, y + 0.12],
-      ],
-      staves,
-      0x3f3a38,
-    )
-  lathe(
-    g,
-    x,
-    z,
-    [
-      [2.75, 10.55],
-      [2.75, 10.68],
-      [1.3, 11.55],
-      [0.14, 12.3],
-    ],
-    staves,
-    [0x8d93a6, 0x9aa0b2, 0x868ca0],
-  )
-  lathe(
-    g,
-    x,
-    z,
-    [
-      [0.08, 12.2],
-      [0.08, 12.6],
-      [0.15, 12.68],
-      [0.02, 12.82],
-    ],
-    6,
-    0x6b625a,
-  )
+  // LF2-7: the hoops, the tin cone roof and its finial are metal.
+  metal(() => {
+    towerCap(g, x, z, R, staves)
+  })
   // The spout off the tank's west side, and a ladder up the west face to the deck.
   beam(
     g,
@@ -3000,6 +3062,15 @@ const MESA = {
     roughnessFactor: 1,
   },
 }
+/** LF2-7: the second surface material, pbr and vertex-coloured at mid metalness; look's `metal` row sets it. */
+const METAL = {
+  name: 'Metal',
+  pbrMetallicRoughness: {
+    baseColorFactor: [1, 1, 1, 1],
+    metallicFactor: 0.5,
+    roughnessFactor: 0.45,
+  },
+}
 const SKY = {
   name: 'Sky',
   doubleSided: true,
@@ -3024,7 +3095,7 @@ const GLOW = {
 function skirt(): void {
   const rim = 216,
     edge = 250,
-    hex = 0xd4955d
+    hex = 0xea9553
   world.quad(
     [-edge, 0, -edge],
     [-edge, 0, edge],
@@ -3098,6 +3169,11 @@ interface MeshIn {
   readonly g: Pick<Geo, 'pos' | 'nor' | 'col'>
   readonly material: number
   readonly index?: readonly number[]
+  /** LF2-7: a second primitive in another material (the metal), left out when empty. */
+  readonly extra?: {
+    readonly g: Pick<Geo, 'pos' | 'nor' | 'col'>
+    readonly material: number
+  }
 }
 
 /** Writes a GLB of `meshes` (one node each) and the named empties `marks`; the same input, the same bytes. */
@@ -3126,7 +3202,11 @@ function glb(
     offset += padded.length
     return views.length - 1
   }
-  const primitive = ({ g, material, index }: MeshIn): object => {
+  const primitive = ({
+    g,
+    material,
+    index,
+  }: Pick<MeshIn, 'g' | 'material' | 'index'>): object => {
     const count = g.pos.length / 3,
       min = [Infinity, Infinity, Infinity],
       max = [-Infinity, -Infinity, -Infinity]
@@ -3140,7 +3220,13 @@ function glb(
       componentType: number,
       extra: object = {},
     ): number => {
-      accessors.push({ bufferView: view, componentType, count, type, ...extra })
+      accessors.push({
+        bufferView: view,
+        componentType,
+        count,
+        type,
+        ...extra,
+      })
       return accessors.length - 1
     }
     const position = acc(
@@ -3186,7 +3272,14 @@ function glb(
   }
   const gltfMeshes = meshes.map(mesh => ({
     name: mesh.name,
-    primitives: [primitive(mesh)],
+    primitives: [
+      ...(mesh.extra === undefined || mesh.g.pos.length > 0
+        ? [primitive(mesh)]
+        : []),
+      ...(mesh.extra !== undefined && mesh.extra.g.pos.length > 0
+        ? [primitive(mesh.extra)]
+        : []),
+    ],
   }))
   const nodes = [
     ...gltfMeshes.map(({ name }, mesh) => ({ name, mesh })),
@@ -3226,6 +3319,31 @@ function merge(to: Geo, from: Geo): void {
   for (const v of from.pos) to.pos.push(v)
   for (const v of from.nor) to.nor.push(v)
   for (const v of from.col) to.col.push(v)
+  for (const v of from.mat) to.mat.push(v)
+}
+
+/** LF2-7: draws `draw`'s triangles in the `metal` material (tin, rails, iron straps, the bells, the tower's cap and
+ *  hoops). Brass and tin differ only in vertex colour; everything else stays `mesa`. */
+function metal(draw: () => void): void {
+  metalOn = true
+  try {
+    draw()
+  } finally {
+    metalOn = false
+  }
+}
+
+/** `g`'s triangles flagged `flag` (0 mesa, 1 metal), in order. */
+function part(g: Geo, flag: number): Geo {
+  const out = new Geo()
+  for (const [t, f] of g.mat.entries()) {
+    if (f !== flag) continue
+    for (let i = t * 9; i < t * 9 + 9; i++) out.pos.push(g.pos[i]!)
+    for (let i = t * 9; i < t * 9 + 9; i++) out.nor.push(g.nor[i]!)
+    for (let i = t * 12; i < t * 12 + 12; i++) out.col.push(g.col[i]!)
+    out.mat.push(flag)
+  }
+  return out
 }
 
 /** Builds the level GLB from scratch; every call returns the same bytes. `bake` writes the
@@ -3277,17 +3395,42 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
     // stand-ins are in `shell` (the far stand-in and `coarse.mesas`), their flames left out of the bake.
     merge(detail, props)
   } else merge(glow, plainGlow)
+  // LF2-7: the metal is a primitive of its own. The engine's L1 tiles take 2 draws, so in the bake the canyon's
+  // metal (the roofs' tin, the rails, the depot's bell) is L0 detail (`dress`), and the L1 tiles draw it in `mesa`
+  // (`coarse.mesas`, beside the shell's plain tower cap).
+  const metalIndex = bake ? 2 : 3,
+    canyonMetal = part(bake ? world : solid, 1),
+    coarse = new Geo(),
+    detailMetal = part(detail, 1)
+  merge(coarse, shell)
+  merge(coarse, canyonMetal)
+  merge(detailMetal, canyonMetal)
   const meshes: MeshIn[] = [
-    { name: 'canyon', g: bake ? world : solid, material: 0 },
+    {
+      name: 'canyon',
+      g: part(bake ? world : solid, 0),
+      material: 0,
+      ...(bake ? {} : { extra: { g: canyonMetal, material: metalIndex } }),
+    },
     ...(bake ? [] : [{ name: 'sky', g: sky, material: 1 }]),
     { name: 'glow', g: glow, material: bake ? 1 : 2 },
-    { name: 'gate.door', g: door, material: 0 },
+    {
+      name: 'gate.door',
+      g: part(door, 0),
+      material: 0,
+      extra: { g: part(door, 1), material: metalIndex },
+    },
     ...(bake
       ? [
           { name: 'rack.rifle', g: rackRifle, material: 0 },
-          { name: 'dress', g: detail, material: 0 },
+          {
+            name: 'dress',
+            g: part(detail, 0),
+            material: 0,
+            extra: { g: detailMetal, material: metalIndex },
+          },
           { name: 'dress.glow', g: propsGlow, material: 1 },
-          { name: 'coarse.mesas', g: shell, material: 0 },
+          { name: 'coarse.mesas', g: coarse, material: 0 },
         ]
       : []),
     ...(far === undefined
@@ -3317,7 +3460,9 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
   return glb(
     meshes,
     marks,
-    bake ? [MESA, { ...GLOW, extensions: undefined }] : [MESA, SKY, GLOW],
+    bake
+      ? [MESA, { ...GLOW, extensions: undefined }, METAL]
+      : [MESA, SKY, GLOW, METAL],
     !bake,
     'shardfile src/tools/brasscap/canyon.ts (BM-1)',
     'brasscap-mesa',
@@ -3335,12 +3480,17 @@ export function buildDepot(): Buffer {
   depotDetail()
   return glb(
     [
-      { name: 'depot', g: hero, material: 0 },
+      {
+        name: 'depot',
+        g: part(hero, 0),
+        material: 0,
+        extra: { g: part(hero, 1), material: 2 },
+      },
       { name: 'depot.glow', g: heroGlow, material: 1 },
       { name: 'rack.rifle', g: rackRifle, material: 0 },
     ],
     [],
-    [MESA, GLOW],
+    [MESA, GLOW, METAL],
     true,
     'shardfile src/tools/brasscap/canyon.ts (LF2-5)',
     'brasscap-depot',
@@ -3378,11 +3528,16 @@ export function buildProps(): Buffer {
   buildCanyon()
   return glb(
     [
-      { name: 'props', g: props, material: 0 },
+      {
+        name: 'props',
+        g: part(props, 0),
+        material: 0,
+        extra: { g: part(props, 1), material: 2 },
+      },
       { name: 'props.glow', g: propsGlow, material: 1 },
     ],
     [],
-    [MESA, GLOW],
+    [MESA, GLOW, METAL],
     true,
     'shardfile src/tools/brasscap/canyon.ts (LF2-6)',
     'brasscap-props',
