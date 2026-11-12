@@ -1,4 +1,4 @@
-/* oxlint-disable eslint/no-magic-numbers, eslint/id-length, unicorn/numeric-separators-style, unicorn/number-literal-case, typescript/no-non-null-assertion, eslint/capitalized-comments, eslint/no-inline-comments, eslint/no-bitwise, eslint/sort-vars, eslint/no-plusplus, eslint/curly, typescript/explicit-function-return-type, eslint/max-params, typescript/explicit-member-accessibility, eslint/max-statements, unicorn/no-zero-fractions, unicorn/consistent-function-scoping, unicorn/max-nested-calls, typescript/prefer-readonly-parameter-types, eslint/max-lines-per-function, node/no-sync, eslint/no-shadow, eslint/max-lines, import/exports-last, import/group-exports -- Author-side level data, a stand-in for a Blender export: coordinates and colours, never shipped or imported. */
+/* oxlint-disable eslint/no-magic-numbers, eslint/id-length, unicorn/numeric-separators-style, unicorn/number-literal-case, typescript/no-non-null-assertion, eslint/capitalized-comments, eslint/no-inline-comments, eslint/no-bitwise, eslint/sort-vars, eslint/no-plusplus, eslint/curly, typescript/explicit-function-return-type, eslint/max-params, typescript/explicit-member-accessibility, eslint/max-statements, unicorn/no-zero-fractions, unicorn/consistent-function-scoping, unicorn/max-nested-calls, typescript/prefer-readonly-parameter-types, eslint/max-lines-per-function, node/no-sync, eslint/no-shadow, eslint/max-lines, import/exports-last, import/group-exports, eslint/no-use-before-define, eslint/no-continue -- Author-side level data, a stand-in for a Blender export: coordinates and colours, never shipped or imported. */
 // Brasscap Mesa (Template 2) level blockout, BM-1 in meta TEMPLATE-E2E-PLAN.
 // An author-side stand-in for the Blender export: it writes a flat-shaded,
 // vertex-coloured low-poly canyon and its sunset sky dome as one GLB. It is
@@ -172,13 +172,24 @@ let world = new Geo(),
   glow = new Geo(),
   door = new Geo(),
   hero = new Geo(),
-  heroGlow = new Geo()
+  heroGlow = new Geo(),
+  /** LF2-4: the near mesas and crags as BM-1's plain prisms. They feed the far stand-in and the source canyon.glb; the
+   *  bake draws `rock` in their place. */
+  shell = new Geo(),
+  /** LF2-4: the same mesas and crags faceted, chamfered, capped and jittered, with scree at the foot: west of the
+   *  trail (x < 0) and east of it, two source GLBs so each stays under the repo's 1 MiB limit. */
+  rockWest = new Geo(),
+  rockEast = new Geo(),
+  /** LF2-4: the ground's dressing (ground.glb): patches, the path's edges, ruts, rocks and tufts; L0 tiles only. */
+  dress = new Geo()
 const BANDS: readonly Hex[] = [
   0xa94a35, 0xc4663f, 0xd98a52, 0xb9553a, 0xe2a466, 0x9c4130,
 ]
 const SAND: readonly Hex[] = [0xdba06a, 0xd4955d, 0xe2ab74, 0xcf8f58]
 
-/** A banded mesa: stacked jittered tiers, each one band colour, narrowing as it rises. */
+/** A banded mesa: stacked jittered tiers, each one band colour, narrowing as it rises. A `near` mesa (the canyon's
+ *  walls and the buttes by the gate) goes to `shell` as plain prisms and to `rock` as a faceted cliff (LF2-4); the
+ *  background stays plain in `world`. Either way it draws `rand` the same, so nothing after it moves. */
 function mesa(
   x: number,
   z: number,
@@ -186,7 +197,9 @@ function mesa(
   rz: number,
   height: number,
   tiers: number,
+  near = false,
 ): void {
+  const stack: Tier[] = []
   let y = 0
   for (let t = 0; t < tiers; t++) {
     const shrink = 1 - t * 0.07 - (t === tiers - 1 ? 0.06 : 0),
@@ -199,15 +212,12 @@ function mesa(
         z + Math.sin(a) * rz * shrink * (0.85 + rand() * 0.25),
       ] as const
     })
-    world.prism(
-      ring,
-      y,
-      y + h,
-      BANDS[(t * 2 + Math.floor(rand() * 2)) % BANDS.length]!,
-      0xc9794a,
-    )
+    const band = BANDS[(t * 2 + Math.floor(rand() * 2)) % BANDS.length]!
+    ;(near ? shell : world).prism(ring, y, y + h, band, 0xc9794a)
+    stack.push({ ring, y0: y, y1: y + h, band })
     y += h
   }
+  if (near) cliff(stack)
 }
 
 /** The canyon floor: a coarse faceted grid, flat on the walkway. */
@@ -256,7 +266,17 @@ function cactus(x: number, z: number, h: number): void {
   if (rand() > 0.4) arm(-0.8, h * 0.6, h * 0.25)
 }
 
+/** The trail's centre line at z (the path quads in `ground` run between its 4 m points). */
+const trailX = (z: number): number => Math.sin(z * 0.05) * 3
+
 function boulder(x: number, z: number, r: number): void {
+  // LF2-4: none on the trail or in front of a target post (it still draws `rand`, into a throwaway).
+  const g =
+    Math.abs(x - trailX(z)) < 2.6 + r ||
+    Math.hypot(x - 2.5, z + 10) < 2.5 + r ||
+    Math.hypot(x + 3.5, z + 14) < 2.5 + r
+      ? new Geo()
+      : world
   const top: V3 = [x, r * 1.1, z],
     bottom: V3 = [x, 0, z]
   const ring: V3[] = Array.from({ length: 6 }, (_, i) => {
@@ -268,8 +288,8 @@ function boulder(x: number, z: number, r: number): void {
     ]
   })
   for (let i = 0; i < 6; i++) {
-    world.tri(top, ring[i]!, ring[(i + 1) % 6]!, 0xa86a52)
-    world.tri(bottom, ring[(i + 1) % 6]!, ring[i]!, 0x8a5440)
+    g.tri(top, ring[i]!, ring[(i + 1) % 6]!, 0xa25d40)
+    g.tri(bottom, ring[(i + 1) % 6]!, ring[i]!, 0x7e4532)
   }
 }
 
@@ -1215,7 +1235,8 @@ function crag(
   tiers: number,
   u: readonly [number, number] = [1, 0],
 ): void {
-  const n = [-u[1], u[0]] as const
+  const n = [-u[1], u[0]] as const,
+    stack: Tier[] = []
   let y = 0
   for (let t = 0; t < tiers; t++) {
     const shrink = 1 - t * 0.12,
@@ -1227,15 +1248,13 @@ function crag(
         pn = Math.sin(a) * rn * shrink * (0.85 + rnd() * 0.25)
       return [x + pu * u[0] + pn * n[0], z + pu * u[1] + pn * n[1]] as const
     })
-    world.prism(
-      wound(ring),
-      y,
-      y + h,
-      BANDS[(t * 2 + Math.floor(rnd() * 2)) % BANDS.length]!,
-      0xc9794a,
-    )
+    const band = BANDS[(t * 2 + Math.floor(rnd() * 2)) % BANDS.length]!,
+      base = wound(ring)
+    shell.prism(base, y, y + h, band, 0xc9794a)
+    stack.push({ ring: base, y0: y, y1: y + h, band })
     y += h
   }
+  cliff(stack)
 }
 
 /** Camp 2's ledge (LF2-2): a two-tier stepped mesa, flat on top at 6 m, a plank barricade along its
@@ -1485,6 +1504,458 @@ function layout(): void {
   signpost()
 }
 
+/** One tier of a mesa or crag: its footprint ring (wound for `prism`), its floor and top, its band colour. */
+interface Tier {
+  readonly ring: readonly (readonly [number, number])[]
+  readonly y0: number
+  readonly y1: number
+  readonly band: Hex
+}
+
+/** LF2-4's own fixed-seed generator for the cliffs and the ground's dressing, so neither moves BM-1's or LF2-2's
+ *  layout (which draw `rand` and `lcg(2202)`). Reset by `buildCanyon`. */
+let rk = lcg(2404)
+
+/** `hex` with each channel scaled by `1 + f` (f a fixed-seed jitter of up to `amount`), a little warmer or cooler. */
+function vary(hex: Hex, amount: number): Hex {
+  const f = 1 + (rk() * 2 - 1) * amount,
+    warm = (rk() * 2 - 1) * amount * 0.35
+  const ch = (shift: number, k: number): number =>
+    Math.max(0, Math.min(255, Math.round(((hex >> shift) & 255) * k)))
+  return (ch(16, f + warm) << 16) | (ch(8, f) << 8) | ch(0, f - warm)
+}
+
+/** `a` blended `t` of the way to `b`, per channel in sRGB. */
+function mix(a: Hex, b: Hex, t: number): Hex {
+  const ch = (shift: number): number =>
+    Math.round(((a >> shift) & 255) * (1 - t) + ((b >> shift) & 255) * t)
+  return (ch(16) << 16) | (ch(8) << 8) | ch(0)
+}
+
+/** A triangle turned to face away from `centre`. */
+function outTri(g: Geo, a: V3, b: V3, c: V3, centre: V3, hex: Hex): void {
+  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+    w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
+  const n = [
+    u[1]! * w[2]! - u[2]! * w[1]!,
+    u[2]! * w[0]! - u[0]! * w[2]!,
+    u[0]! * w[1]! - u[1]! * w[0]!,
+  ]
+  const out = [0, 1, 2].map(k => (a[k]! + b[k]! + c[k]!) / 3 - centre[k]!)
+  if (n[0]! * out[0]! + n[1]! * out[1]! + n[2]! * out[2]! >= 0)
+    g.tri(a, b, c, hex)
+  else g.tri(a, c, b, hex)
+}
+
+/** The cream of the mesas' lit tops, and the paler lip under it (the targets' caps). */
+const CREAM = 0xf2d8a8,
+  CREAM_LIP = 0xe6bf88
+
+/** LF2-4: a mesa's tiers as a faceted cliff into `rock`: each tier's wall in two rows of facets (the middle ring
+ *  pushed in or out a little), a chamfered lip, some tiers with an overhanging cornice, a lit cap (cream on the
+ *  top tier), every face its band colour jittered on a fixed seed, and scree boulders at the foot. The base ring
+ *  is the plain prism's, so the cliff stands on the same footprint as the shell the far stand-in is welded from. */
+function cliff(tiers: readonly Tier[]): void {
+  for (const [k, tier] of tiers.entries()) {
+    const { y0, y1, band } = tier,
+      top = k === tiers.length - 1
+    // Long faces split in two at a point set a little in, so a wall reads as columns of facets, not one slab.
+    const ring: (readonly [number, number])[] = []
+    for (const [i, p] of tier.ring.entries()) {
+      const q = tier.ring[(i + 1) % tier.ring.length]!
+      ring.push(p)
+      if (Math.hypot(q[0] - p[0], q[1] - p[1]) > 7) {
+        const t = 0.4 + rk() * 0.2
+        ring.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t])
+      }
+    }
+    const n = ring.length
+    const rock = tiers[0]!.ring[0]![0] < 0 ? rockWest : rockEast
+    const cx = ring.reduce((sum, p) => sum + p[0], 0) / n,
+      cz = ring.reduce((sum, p) => sum + p[1], 0) / n,
+      rad =
+        ring.reduce((sum, p) => sum + Math.hypot(p[0] - cx, p[1] - cz), 0) / n
+    const h = y1 - y0,
+      lip = Math.min(0.7, Math.max(0.25, h * 0.12), rad * 0.12),
+      over = k > 0 && h > 2.5 && rk() < (top ? 0.6 : 0.3),
+      cornice = over ? Math.min(0.5, h * 0.12) : 0,
+      yb = y1 - lip,
+      yc = yb - cornice,
+      ym = y0 + (yc - y0) * (0.4 + rk() * 0.2)
+    const scaled = (
+      p: readonly [number, number],
+      s: number,
+    ): readonly [number, number] => [cx + (p[0] - cx) * s, cz + (p[1] - cz) * s]
+    const mid: (readonly [number, number])[] = [],
+      out: (readonly [number, number])[] = []
+    for (const p of ring) mid.push(scaled(p, 0.96 + rk() * 0.07))
+    for (const p of ring) out.push(scaled(p, over ? 1.05 + rk() * 0.03 : 1))
+    const inner = ring.map(p => scaled(p, 1 - lip / rad)),
+      centre: V3 = [cx, (y0 + y1) / 2, cz],
+      lower = top ? mix(band, CREAM_LIP, 0.2) : band,
+      // The upper row takes a neighbouring band, so each tier reads as two strata, as the targets' walls do.
+      upper = top
+        ? mix(band, CREAM_LIP, 0.55)
+        : mix(band, BANDS[(BANDS.indexOf(band) + 2) % BANDS.length]!, 0.75),
+      lipHex = top ? CREAM_LIP : mix(band, CREAM, 0.25),
+      capHex = top ? CREAM : mix(band, CREAM, 0.4)
+    const at = (p: readonly [number, number], y: number): V3 => [p[0], y, p[1]]
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n
+      outQuad(
+        rock,
+        at(ring[i]!, y0),
+        at(ring[j]!, y0),
+        at(mid[j]!, ym),
+        at(mid[i]!, ym),
+        centre,
+        vary(lower, 0.12),
+      )
+      outQuad(
+        rock,
+        at(mid[i]!, ym),
+        at(mid[j]!, ym),
+        at(ring[j]!, yc),
+        at(ring[i]!, yc),
+        centre,
+        vary(upper, 0.12),
+      )
+      if (over) {
+        outQuad(
+          rock,
+          at(ring[i]!, yc),
+          at(ring[j]!, yc),
+          at(out[j]!, yc),
+          at(out[i]!, yc),
+          [cx, yc + 20, cz],
+          vary(mix(band, 0x5a2a20, 0.3), 0.06),
+        )
+        outQuad(
+          rock,
+          at(out[i]!, yc),
+          at(out[j]!, yc),
+          at(out[j]!, yb),
+          at(out[i]!, yb),
+          centre,
+          vary(upper, 0.08),
+        )
+      }
+      outQuad(
+        rock,
+        at(out[i]!, yb),
+        at(out[j]!, yb),
+        at(inner[j]!, y1),
+        at(inner[i]!, y1),
+        [cx, yb - 20, cz],
+        vary(lipHex, 0.06),
+      )
+      outTri(
+        rock,
+        [cx, y1, cz],
+        at(inner[i]!, y1),
+        at(inner[j]!, y1),
+        [cx, y1 - 20, cz],
+        vary(capHex, 0.05),
+      )
+    }
+    if (k === 0) scree(rock, ring, cx, cz)
+  }
+}
+
+const SCREE: readonly Hex[] = [0x9a5238, 0xb0603f, 0x8a4630, 0xc0754a]
+
+/** Scree boulders along a cliff's foot, out from its base ring, kept off the routes, the camps and the pit. */
+function scree(
+  rock: Geo,
+  ring: readonly (readonly [number, number])[],
+  cx: number,
+  cz: number,
+): void {
+  for (let i = 0; i < ring.length; i++) {
+    const p = ring[i]!,
+      q = ring[(i + 1) % ring.length]!
+    for (let m = 0; m < 2; m++) {
+      if (rk() > 0.5) continue
+      const t = rk(),
+        x0 = p[0] + (q[0] - p[0]) * t,
+        z0 = p[1] + (q[1] - p[1]) * t,
+        len = Math.hypot(x0 - cx, z0 - cz) || 1,
+        d = 0.2 + rk() * 1.6,
+        x = x0 + ((x0 - cx) / len) * d,
+        z = z0 + ((z0 - cz) / len) * d,
+        r = 0.35 + rk() * 0.85,
+        h = r * (0.6 + rk() * 0.5)
+      if (
+        !clearOf(x, z, r) ||
+        Math.hypot(x - PIT.at[0], z - PIT.at[1]) < PIT.ring + 5
+      )
+        continue
+      stone(rock, x, z, r, h, SCREE)
+    }
+  }
+}
+
+/** A faceted rock: a jittered base ring sunk a little, a narrower shoulder ring and an off-centre apex. */
+function stone(
+  g: Geo,
+  x: number,
+  z: number,
+  r: number,
+  h: number,
+  hexes: readonly Hex[],
+): void {
+  const sides = 6 + Math.floor(rk() * 2),
+    turn = rk() * Math.PI
+  const base: V3[] = [],
+    mid: V3[] = []
+  for (let i = 0; i < sides; i++) {
+    const a = turn - (i / sides) * Math.PI * 2,
+      rb = r * (0.85 + rk() * 0.3),
+      rm = r * (0.55 + rk() * 0.3)
+    base.push([x + Math.cos(a) * rb, -0.05, z + Math.sin(a) * rb])
+    mid.push([
+      x + Math.cos(a) * rm,
+      h * (0.45 + rk() * 0.25),
+      z + Math.sin(a) * rm,
+    ])
+  }
+  const apex: V3 = [x + (rk() - 0.5) * r * 0.4, h, z + (rk() - 0.5) * r * 0.4],
+    centre: V3 = [x, h * 0.3, z],
+    hex = hexes[Math.floor(rk() * hexes.length)]!
+  for (let i = 0; i < sides; i++) {
+    const j = (i + 1) % sides
+    outQuad(g, base[i]!, base[j]!, mid[j]!, mid[i]!, centre, vary(hex, 0.1))
+    outTri(g, mid[i]!, mid[j]!, apex, centre, vary(mix(hex, CREAM, 0.12), 0.08))
+  }
+}
+
+/** The ways a player walks (LF2-4): to camp 1, the branch to the ledge's stair, to camp 3 and through the gate
+ *  into the pit. Dressing and scree keep off them, so nothing taller than a step stands where a player walks. */
+export const ROUTES: readonly (readonly (readonly [number, number])[])[] = [
+  [
+    [1.5, -4],
+    [0, -10],
+    [-2, -18],
+    [-7, -23],
+    [-11, -25],
+    [-14, -28],
+  ],
+  [
+    [-2, -22],
+    [3.2, -25.8],
+    [16.9, -25.8],
+  ],
+  [
+    [0.8, -20.5],
+    [3.4, -25.8],
+  ],
+  [
+    [3.2, -25.8],
+    [0, -40],
+    [2, -52],
+    [6.5, -57.5],
+    [9.5, -55.6],
+    [13.5, -52.5],
+    [18.4, -50.5],
+  ],
+  [
+    [9.5, -55.6],
+    [5, -57.5],
+    [2, -60],
+    [2, -70],
+    [2, -84],
+    [2, -100],
+  ],
+]
+
+/** The distance from (x, z) to the segment a to b. */
+function toSegment(
+  x: number,
+  z: number,
+  a: readonly [number, number],
+  b: readonly [number, number],
+): number {
+  const dx = b[0] - a[0],
+    dz = b[1] - a[1],
+    t = Math.max(
+      0,
+      Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz)),
+    )
+  return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t)
+}
+
+/** The distance from (x, z) to the nearest route. */
+function toRoute(x: number, z: number): number {
+  let best = Infinity
+  for (const route of ROUTES)
+    for (let i = 0; i + 1 < route.length; i++)
+      best = Math.min(best, toSegment(x, z, route[i]!, route[i + 1]!))
+  return best
+}
+
+/** Whether a rock of radius r at (x, z) leaves the walk clear: off the routes and the trail, away from the camps,
+ *  the target posts, the depot, the ledge and its stair, the gate and the pit's floor. */
+function clearOf(x: number, z: number, r: number): boolean {
+  if (toRoute(x, z) < 1.4 + r) return false
+  if (z > -66 && z < 4 && Math.abs(x - trailX(z)) < 2 + r) return false
+  if (CAMPS.some(([, c]) => Math.hypot(x - c[0], z - c[2]) < 7 + r))
+    return false
+  if (
+    Math.hypot(x - 2.5, z + 10) < 2.5 + r ||
+    Math.hypot(x + 3.5, z + 14) < 2.5 + r
+  )
+    return false
+  if (x > -10.5 - r && x < 1.6 + r && z > -4.5 - r && z < 8 + r) return false
+  if (
+    x > LEDGE.stairX - 0.8 - r &&
+    x < LEDGE.x1 + 0.8 + r &&
+    z > LEDGE.z1 - 0.8 - r &&
+    z < LEDGE.stairZ[0] + 0.8 + r
+  )
+    return false
+  if (Math.abs(z + 62) < 3 + r && x > -7 && x < 11) return false
+  return Math.hypot(x - PIT.at[0], z - PIT.at[1]) > PIT.floor + 1 + r
+}
+
+const PATCHES: readonly Hex[] = [
+  0xc98552, 0xcf8a55, 0xbf7a4a, 0xc47e4e, 0xd38f5a, 0xb86e44,
+]
+const PEBBLES: readonly Hex[] = [0xb5704a, 0xa0603f, 0xc98458, 0x8f5238]
+const STRAW: readonly Hex[] = [0xc9ac5e, 0xb39548, 0xd8bd72, 0x9c8a46]
+
+/** A flat ring of `sides` points round (x, z), r jittered, at height y, fanned and facing up. */
+function patch(x: number, z: number, r: number, y: number, hex: Hex): void {
+  const sides = 6 + Math.floor(rk() * 3),
+    turn = rk() * Math.PI
+  const pts: V3[] = Array.from({ length: sides }, (_, i) => {
+    const a = turn - (i / sides) * Math.PI * 2,
+      rr = r * (0.65 + rk() * 0.45)
+    return [x + Math.cos(a) * rr, y, z + Math.sin(a) * rr]
+  })
+  for (let i = 0; i < sides; i++)
+    outTri(
+      dress,
+      [x, y, z],
+      pts[i]!,
+      pts[(i + 1) % sides]!,
+      [x, y - 10, z],
+      vary(hex, 0.05),
+    )
+}
+
+/** A dry-grass tuft: `blades` thin blades leaning out from (x, z), each a double-sided triangle. */
+function tuft(x: number, z: number, tall: number): void {
+  const blades = 5 + Math.floor(rk() * 3),
+    hex = STRAW[Math.floor(rk() * STRAW.length)]!
+  for (let i = 0; i < blades; i++) {
+    const a = rk() * Math.PI * 2,
+      ox = Math.cos(a) * 0.06,
+      oz = Math.sin(a) * 0.06,
+      lean = 0.08 + rk() * 0.14,
+      h = tall * (0.6 + rk() * 0.4),
+      w = 0.035,
+      across = [-Math.sin(a) * w, Math.cos(a) * w]
+    const b0: V3 = [x + ox - across[0]!, 0, z + oz - across[1]!],
+      b1: V3 = [x + ox + across[0]!, 0, z + oz + across[1]!],
+      tip: V3 = [x + ox + Math.cos(a) * lean, h, z + oz + Math.sin(a) * lean],
+      c = vary(hex, 0.1)
+    dress.tri(b0, b1, tip, c)
+    dress.tri(b1, b0, tip, c)
+  }
+}
+
+/** A strip along the trail at offsets o0 to o1 m from its centre, between z0 and z1, in pieces of `piece` m. */
+function trailStrip(
+  o0: number,
+  o1: number,
+  z0: number,
+  z1: number,
+  y: number,
+  hex: Hex,
+  piece: number,
+): void {
+  // The path quads run straight between the trail's 4 m points, so the strip follows the same straight lines.
+  const along = (z: number): number => {
+    const za = Math.ceil(z / 4) * 4,
+      zb = za - 4,
+      t = (za - z) / 4
+    return trailX(za) + (trailX(zb) - trailX(za)) * t
+  }
+  for (let z = z0; z > z1 + 1e-6; z -= piece) {
+    const zn = Math.max(z - piece, z1),
+      a = along(z),
+      b = along(zn)
+    outQuad(
+      dress,
+      [a + o0, y, z],
+      [a + o1, y, z],
+      [b + o1, y, zn],
+      [b + o0, y, zn],
+      [a, y - 10, z],
+      vary(hex, 0.07),
+    )
+  }
+}
+
+/** LF2-4's ground: colour patches over the walkway, the trail's edges, wheel ruts to the gate, a faceted rock
+ *  every 2 to 4 m along the trail, bigger rocks set back from it, and dry-grass tufts. All of it is `dress`, which
+ *  the bake draws in the L0 tiles only; nothing a player walks over stands taller than a step (0.25 m). */
+/** Whether a ground patch of radius r at (x, z) shows: off the trail, the pit's floor and the depot's footing. */
+const patchShows = (x: number, z: number, r: number): boolean =>
+  !(z > -66 && z < 4 && Math.abs(x - trailX(z)) < 1.7 + r) &&
+  Math.hypot(x - PIT.at[0], z - PIT.at[1]) >= PIT.floor + r &&
+  !(x > -10 && x < 1.5 && z > -4 && z < 7.5)
+
+/** Colour patches on a jittered 6 m grid, each smaller than half the spacing so no two overlap. */
+function patches(): void {
+  for (let x = -24; x <= 24; x += 6)
+    for (let z = 26; z >= -92; z -= 6) {
+      const px = x + (rk() - 0.5) * 1.6,
+        pz = z + (rk() - 0.5) * 1.6,
+        r = 1.1 + rk() * 0.9,
+        hex = PATCHES[Math.floor(rk() * PATCHES.length)]!
+      if (rk() <= 0.75 && patchShows(px, pz, r)) patch(px, pz, r, 0.008, hex)
+    }
+}
+
+function dressing(): void {
+  rk = lcg(2405)
+  patches()
+  // The path's edges: a darker band each side, broken into pieces of their own shade.
+  trailStrip(-1.95, -1.6, 0, -64, 0.023, 0xc07c4c, 1.6)
+  trailStrip(1.6, 1.95, 0, -64, 0.023, 0xc07c4c, 1.6)
+  // Wheel ruts from the fork to the gate.
+  for (const o of [-0.72, 0.56])
+    trailStrip(o, o + 0.17, -20, -64, 0.025, 0xb87246, 2)
+  // A faceted rock every 2 to 4 m along the trail, alternating sides, low enough to step over.
+  let side = 1
+  for (let z = -2.5; z > -62; z -= 2 + rk() * 2) {
+    const o = side * (1.9 + rk() * 0.7),
+      x = trailX(z) + o,
+      r = 0.16 + rk() * 0.2
+    side = -side
+    if (toRoute(x, z) < 0.9 + r || Math.hypot(x - 0.8, z + 20.5) < 1.2) continue
+    stone(dress, x, z, r, Math.min(0.24, r * (0.7 + rk() * 0.5)), PEBBLES)
+  }
+  // Bigger rocks set back from the trail, and the tufts.
+  for (let k = 0; k < 70; k++) {
+    const z = 4 - rk() * 70,
+      x = trailX(z) + (rk() < 0.5 ? -1 : 1) * (3.2 + rk() * 14),
+      r = 0.3 + rk() * 0.45
+    if (!clearOf(x, z, r)) continue
+    stone(dress, x, z, r, r * (0.6 + rk() * 0.5), PEBBLES)
+  }
+  for (let k = 0; k < 220; k++) {
+    const z = 20 - rk() * 108,
+      edge = rk() < 0.35,
+      x = edge
+        ? trailX(z) + (rk() < 0.5 ? -1 : 1) * (2 + rk() * 0.6)
+        : (rk() * 2 - 1) * 23
+    if (edge ? toRoute(x, z) < 1 || z < -64 : !clearOf(x, z, 0.3)) continue
+    tuft(x, z, 0.26 + rk() * 0.16)
+  }
+}
+
 function scene(): void {
   ground()
   depot()
@@ -1503,6 +1974,7 @@ function scene(): void {
       12 + rand() * 4,
       14 + rand() * 14,
       5 + Math.floor(rand() * 2),
+      true,
     )
     mesa(
       38 + jitter(4),
@@ -1511,10 +1983,11 @@ function scene(): void {
       12 + rand() * 4,
       12 + rand() * 12,
       5,
+      true,
     )
   }
-  mesa(-14, -60, 9, 6, 9, 3)
-  mesa(19, -64, 9, 6, 10, 3)
+  mesa(-14, -60, 9, 6, 9, 3, true)
+  mesa(19, -64, 9, 6, 10, 3, true)
   for (let i = 0; i < 9; i++)
     mesa(
       -120 + i * 30 + jitter(8),
@@ -1549,6 +2022,7 @@ function scene(): void {
   for (let i = 0; i < 18; i++)
     boulder(jitter(22), -8 - rand() * 70, 0.3 + rand() * 0.6)
   layout()
+  dressing()
 }
 
 /** The sunset dome: turquoise zenith to a gold horizon, pink clouds and a low sun behind the gate. */
@@ -1873,9 +2347,10 @@ function glb(
 
 /** Appends `from`'s triangles to `to`. */
 function merge(to: Geo, from: Geo): void {
-  to.pos.push(...from.pos)
-  to.nor.push(...from.nor)
-  to.col.push(...from.col)
+  // A loop, not a spread: the cliffs hold more values than a call takes arguments.
+  for (const v of from.pos) to.pos.push(v)
+  for (const v of from.nor) to.nor.push(v)
+  for (const v of from.col) to.col.push(v)
 }
 
 /** Builds the level GLB from scratch; every call returns the same bytes. `bake` writes the
@@ -1893,21 +2368,42 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
   door = new Geo()
   hero = new Geo()
   heroGlow = new Geo()
+  shell = new Geo()
+  rockWest = new Geo()
+  rockEast = new Geo()
+  dress = new Geo()
+  rk = lcg(2404)
   scene()
   if (bake) {
     depotDetail()
     skirt()
   } else skyDome()
-  const far = bake ? welded(world) : undefined
+  // LF2-4: the far stand-in is welded from the plain shell. The bake draws the faceted cliffs and the ground's
+  // dressing in the L0 tiles only (`dress`, which also collides), and the plain shell in the L1 tiles only
+  // (`coarse.mesas`, which never collides), so the coarse tiles and their near view keep BM-1's weight.
+  const solid = new Geo()
+  merge(solid, world)
+  merge(solid, shell)
+  const far = bake ? welded(solid) : undefined
+  const detail = new Geo()
   if (bake) {
     merge(world, hero)
     merge(glow, heroGlow)
+    merge(detail, rockWest)
+    merge(detail, rockEast)
+    merge(detail, dress)
   }
   const meshes: MeshIn[] = [
-    { name: 'canyon', g: world, material: 0 },
+    { name: 'canyon', g: bake ? world : solid, material: 0 },
     ...(bake ? [] : [{ name: 'sky', g: sky, material: 1 }]),
     { name: 'glow', g: glow, material: bake ? 1 : 2 },
     { name: 'gate.door', g: door, material: 0 },
+    ...(bake
+      ? [
+          { name: 'dress', g: detail, material: 0 },
+          { name: 'coarse.mesas', g: shell, material: 0 },
+        ]
+      : []),
     ...(far === undefined
       ? []
       : [{ name: 'far.canyon', g: far, material: 0, index: far.index }]),
@@ -1962,16 +2458,52 @@ export function buildDepot(): Buffer {
   )
 }
 
+/** The terrain detail GLBs (LF2-4), in world coordinates beside canyon.glb, each under the repo's 1 MiB limit:
+ *  `cliffs-west` and `cliffs-east` hold the near mesas and crags as faceted cliffs with scree (they replace
+ *  canyon.glb's plain ones), `ground` the ground's dressing. The bake input carries all three as its `dress` node,
+ *  drawn in the L0 tiles only, with canyon.glb's plain mesas as `coarse.mesas` in the L1 tiles. */
+export const TERRAIN_PARTS = ['cliffs-west', 'cliffs-east', 'ground'] as const
+export type TerrainPart = (typeof TERRAIN_PARTS)[number]
+function terrainPart(part: TerrainPart): Geo {
+  if (part === 'ground') return dress
+  return part === 'cliffs-west' ? rockWest : rockEast
+}
+
+export function buildTerrain(part: TerrainPart): Buffer {
+  buildCanyon()
+  return glb(
+    [{ name: part, g: terrainPart(part), material: 0 }],
+    [],
+    [MESA],
+    true,
+    'shardfile src/tools/brasscap/canyon.ts (LF2-4)',
+    `brasscap-${part}`,
+  )
+}
+
+/** The terrain detail's cliffs, ground dressing and the plain shell they stand in for, for canyon.test.ts. */
+export function terrainGeo(): { rock: Geo; dress: Geo; shell: Geo } {
+  buildCanyon()
+  const rock = new Geo()
+  merge(rock, rockWest)
+  merge(rock, rockEast)
+  return { rock, dress, shell }
+}
+
 /** The depot detail's solid mesh, for the checks in canyon.test.ts. */
 export function depotGeo(): Geo {
   buildDepot()
   return hero
 }
 
-/** The level's world mesh (everything solid but the gate door), for the layout checks in canyon.test.ts. */
+/** The level's world mesh (everything solid but the gate door, with the plain mesas), for the layout checks in
+ *  canyon.test.ts. */
 export function canyonWorld(): Geo {
   buildCanyon()
-  return world
+  const g = new Geo()
+  merge(g, world)
+  merge(g, shell)
+  return g
 }
 
 if (process.argv[1] === import.meta.filename) {
@@ -1982,7 +2514,7 @@ if (process.argv[1] === import.meta.filename) {
     file = buildCanyon({ bake })
   writeFileSync(out, file)
   process.stdout.write(
-    `${out}: ${file.length} bytes, ${(world.pos.length + sky.pos.length + glow.pos.length + door.pos.length) / 9} triangles\n`,
+    `${out}: ${file.length} bytes, ${(world.pos.length + shell.pos.length + sky.pos.length + glow.pos.length + door.pos.length) / 9} triangles\n`,
   )
   // The level's source writes the depot's detail GLB beside it (LF2-5); the bake input carries it already.
   if (!bake) {
@@ -1992,5 +2524,13 @@ if (process.argv[1] === import.meta.filename) {
     process.stdout.write(
       `${depotOut}: ${depotFile.length} bytes, ${(hero.pos.length + heroGlow.pos.length) / 9} triangles\n`,
     )
+    for (const part of TERRAIN_PARTS) {
+      const partOut = path.join(path.dirname(out), `${part}.glb`),
+        partFile = buildTerrain(part)
+      writeFileSync(partOut, partFile)
+      process.stdout.write(
+        `${partOut}: ${partFile.length} bytes, ${terrainPart(part).pos.length / 9} triangles\n`,
+      )
+    }
   }
 }

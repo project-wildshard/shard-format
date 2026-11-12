@@ -125,7 +125,7 @@ import sim from './sim.json' with { type: 'json' };
 
 const base = emptyShardfile(identity);
 export default { ...base, look, state, sim, hooks, world: {
-  glb: 'canyon.glb', materials: { Mesa: 'mesa', Glow: 'glow' }, colliders: 'mesh', far: 'far.', farMode: 'replace',
+  glb: 'canyon.glb', materials: { Mesa: 'mesa', Glow: 'glow' }, colliders: 'mesh', far: 'far.', farMode: 'replace', detail: 'dress', coarse: 'coarse.',
   interactive: [{ node: 'gate.door', id: 'brasscap.gate', colliderId: 'brasscap.gate' }],
 } };
 export const behaviour = [{ id: 'gate', source: 'gate.as' }];

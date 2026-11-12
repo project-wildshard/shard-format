@@ -13,6 +13,10 @@ import {
   LEDGE,
   PIT,
   SIDE,
+  buildTerrain,
+  ROUTES,
+  TERRAIN_PARTS,
+  terrainGeo,
 } from './canyon.ts'
 
 const COMMITTED = new URL(
@@ -69,6 +73,30 @@ function triangles(file: Buffer, name: string): number {
   return json.accessors[mesh.primitives[0]!.attributes.NORMAL]!.count / 3
 }
 
+/** The distance from (x, z) to the segment a to b. */
+function toSegment(
+  x: number,
+  z: number,
+  a: readonly [number, number],
+  b: readonly [number, number],
+): number {
+  const dx = b[0] - a[0],
+    dz = b[1] - a[1],
+    along = ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz),
+    t = Math.max(0, Math.min(1, along))
+  return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t)
+}
+
+/** The committed source GLB of a terrain part. */
+function committed(part: string): Buffer {
+  return readFileSync(
+    new URL(
+      `../../../corpus/sources/brasscap-mesa/${part}.glb`,
+      import.meta.url,
+    ),
+  )
+}
+
 describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
   it('writes the same bytes every run, and the committed GLB is its output', (): void => {
     const first = buildCanyon()
@@ -101,11 +129,17 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
     const bake = buildCanyon({ bake: true }),
       source = buildCanyon(),
       depot = buildDepot()
-    // The bake's canyon adds the skirt's 8 triangles and the depot's detail to the source's canyon.
+    // The bake's canyon adds the skirt's 8 triangles and the depot's detail to the source's canyon, less the plain
+    // mesas (LF2-4), which the bake draws as `coarse.mesas` in the L1 tiles only.
+    const { shell } = terrainGeo()
     assert.equal(
       triangles(bake, 'canyon'),
-      triangles(source, 'canyon') + 8 + triangles(depot, 'depot'),
+      triangles(source, 'canyon') -
+        shell.pos.length / 9 +
+        8 +
+        triangles(depot, 'depot'),
     )
+    assert.equal(triangles(bake, 'coarse.mesas'), shell.pos.length / 9)
     assert.equal(
       triangles(bake, 'glow'),
       triangles(source, 'glow') + triangles(depot, 'depot.glow'),
@@ -118,6 +152,41 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
       json.accessors[far.indices]!.count / 3,
       triangles(source, 'canyon') + 8,
     )
+  })
+
+  it('writes the terrain detail GLBs the same every run, committed and each under 1 MiB (LF2-4)', (): void => {
+    for (const part of TERRAIN_PARTS) {
+      const first = buildTerrain(part)
+      assert.ok(first.equals(buildTerrain(part)), `${part}: two runs differ`)
+      assert.ok(
+        first.equals(committed(part)),
+        `corpus/sources/brasscap-mesa/${part}.glb is stale: run node src/tools/brasscap/canyon.ts`,
+      )
+      assert.ok(first.length < MIB, part)
+    }
+  })
+
+  it('bakes the cliffs and ground as L0 detail, the far stand-in from the plain shell alone (LF2-4)', (): void => {
+    const bake = buildCanyon({ bake: true })
+    const { rock, dress } = terrainGeo()
+    assert.equal(
+      triangles(bake, 'dress'),
+      (rock.pos.length + dress.pos.length) / 9,
+    )
+  })
+
+  it('keeps everything taller than a step off the routes a player walks (LF2-4)', (): void => {
+    const { dress } = terrainGeo()
+    for (let v = 0; v < dress.pos.length; v += 3) {
+      const [x, y, z] = [dress.pos[v]!, dress.pos[v + 1]!, dress.pos[v + 2]!]
+      if (y <= 0.25) continue
+      for (const route of ROUTES)
+        for (let i = 0; i + 1 < route.length; i += 1)
+          assert.ok(
+            toSegment(x, z, route[i]!, route[i + 1]!) > 0.3,
+            `dressing ${y.toFixed(2)} m tall at (${x.toFixed(1)}, ${z.toFixed(1)}) on a route`,
+          )
+    }
   })
 
   it('names the empties the product rows point at', (): void => {
@@ -148,7 +217,12 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
   })
 
   it('has only unit normals, so no triangle is degenerate', (): void => {
-    for (const { json, bin } of [parse(buildCanyon()), parse(buildDepot())])
+    for (const { json, bin } of [
+      parse(buildCanyon()),
+      parse(buildCanyon({ bake: true })),
+      parse(buildDepot()),
+      ...TERRAIN_PARTS.map(part => parse(buildTerrain(part))),
+    ])
       for (const mesh of json.meshes) {
         const accessor = json.accessors[mesh.primitives[0]!.attributes.NORMAL]!
         assert.equal(accessor.componentType, FLOAT)

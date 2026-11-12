@@ -405,3 +405,35 @@ lever-only subset of Pine's native assembly in rows.
   the look, and the cooked world and sim sections never read the post
   graph. `rebake.ts --write` settled the new blobs and `look.json`'s
   pool; `--check` then reads 234 of 234 files byte-equal.
+
+## LF2-4: mesas and ground (opus-lf24, 2026-11-12 ~03:40 Cancún)
+
+- **Three new source GLBs.** The near mesas (both walls, the two
+  buttes by the gate) and LF2-2's crags are faceted cliffs in
+  `cliffs-west.glb` (608,752 bytes) and `cliffs-east.glb` (771,464),
+  split at x 0 so each stays under the 1 MiB limit; the ground's
+  dressing is `ground.glb` (352,704). `canyon.glb` keeps BM-1's plain
+  mesas (992,272). `node src/tools/brasscap/canyon.ts` writes all five.
+- **The bake splits by tile level.** `--bake` writes the cliffs and
+  the dressing as one `dress` node and the plain mesas as
+  `coarse.mesas`; `rebake.ts` declares `detail: 'dress'` and
+  `coarse: 'coarse.'`. So the L0 tiles draw the cliffs and dressing
+  (and they collide), the L1 tiles and their near view draw the plain
+  mesas (never colliding), and the far stand-in is welded from the
+  plain shell as before: 7,448 triangles, unchanged. Folding the
+  cliffs into `canyon` instead pushed the near view to 1,071,468
+  bytes, past the pack's 1 MiB entry, and the settle failed.
+- **Fixed seeds.** The cliffs and dressing draw on `lcg(2404)` and
+  `lcg(2405)`; `mesa` and `crag` still draw `rand` and `lcg(2202)`
+  exactly as before, so nothing BM-1 or LF2-2 placed moves. The
+  boulders by the trail and the target posts are left out (they still
+  draw `rand`), and the boulder colour is warmer.
+- **Walkable.** `ROUTES` lists the ways a player walks (to camp 1,
+  the stair branch, to camp 3, through the gate). Scree and set-back
+  rocks keep 1.4 m plus their radius off them and 7 m off each camp;
+  the rocks along the trail are under 0.25 m; a test holds anything
+  taller than 0.25 m off every route.
+- **Caps:** L0 at most 9,212 triangles and 4 draws (was 3,534), L1
+  4,636 and 2, far 7,448 of 8,000 in 894,828 bytes, near view 781 KB.
+  The bake's one warning (far resident 1,788,560 > 1,600,000) is
+  unchanged.
