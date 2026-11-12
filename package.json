@@ -116,6 +116,7 @@
     "./cookPreparation": "./src/format/cook-preparation.ts",
     "./formatHook": "./src/hook/format-hook.mjs",
     "./featureSides": "./src/format/feature-sides.ts",
+    "./scriptSides": "./src/format/script-sides.ts",
     "./fieldPresentation": "./src/format/fieldPresentation.ts",
     "./figures": "./src/format/figures.ts",
     "./findsCatalogue": "./src/format/findsCatalogue.ts",

@@ -22,11 +22,13 @@ const PIN_RUNS: readonly (readonly [name: string, hash: string])[] = [
     '3b322eccd99e209f98bbe59e16f79de77375b6075bc91f379d67cefff7bcf740',
   ],
   ['68 MB', 'ab7b1d4e1d2ddd29771d6964e470244f3b0ffe6af108bb6196b5071ba18a4e9d'],
-  [
-    '327 MB',
-    '0e246ab03210d777619bf1fb09bbaa9da1bbcaea5093a8adfce913508762f084',
-  ],
 ]
+// SERVER-PARITY SS7: the 327 MB pin is Pine, refused for pine.life until SS5 gives it a server half. Both validators
+// must still give the same refusal; move it back to PIN_RUNS once Pine's new pin admits.
+const PINE_PIN =
+  '0e246ab03210d777619bf1fb09bbaa9da1bbcaea5093a8adfce913508762f084'
+const PINE_REFUSAL =
+  'Script side refused: sim script pine.life runs in page-only feature page.life (actors/page-life.json), which no server host runs'
 
 function sha256(bytes: Readonly<Uint8Array>): string {
   return createHash('sha256').update(bytes).digest('hex')
@@ -56,6 +58,35 @@ describe.each(PIN_RUNS)('the %s pin', (_name: string, hash: string): void => {
       expect(result.shard).toEqual(old.shard)
       expect([result.complete, result.pending]).toEqual([true, []])
       expect(result.heldBytes).toBeLessThan(64_000_000)
+    },
+    300_000,
+  )
+})
+
+describe('the 327 MB pin (Pine)', (): void => {
+  const file = path.join(PINS, `${PINE_PIN}.tar`)
+  test.skipIf(!existsSync(file))(
+    'is refused by both validators with the same SS7 line',
+    async (): Promise<void> => {
+      await prepareAssetDecoders()
+      const files = readTar(readFileSync(file))
+      expect((): unknown =>
+        validateShardfileProduct(
+          {
+            read: (name: string): Uint8Array =>
+              files.get(name) ?? new Uint8Array(),
+            paths: (): Iterable<string> => files.keys(),
+          },
+          { hash: sha256, readThrough: true },
+        ),
+      ).toThrow(PINE_REFUSAL)
+      await expect(
+        validateShardfileStream(
+          (): AsyncIterable<Uint8Array> =>
+            createReadStream(file, { highWaterMark: CHUNK }),
+          nodeStreamPorts({ brotli: false }),
+        ),
+      ).rejects.toThrow(PINE_REFUSAL)
     },
     300_000,
   )

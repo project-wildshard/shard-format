@@ -16,6 +16,43 @@ the simulation owner rejects view bindings. The unused client-only field
 fallback was retired with Z9. Weather field rows are ordinary presentation
 data and do not start a view script.
 
+### Declared side (SERVER-PARITY SS7, 2026-11-12)
+
+`side` is `"sim"` or `"view"`, in SS2's words (`feature-sides.ts`):
+
+| Script | Side word | Where it runs |
+|---|---|---|
+| v1 `sim` | `both` | the server owns the gameplay; return programs also project on the page |
+| v1 `view` | `view` | the page only; writes no gameplay |
+| v2 `sim` lane | `server` | the server's owned batch only |
+| v2 `project` lane | `both` | both sides; the server owns the gameplay |
+| v2 `view` lane | `view` | the page only (a server pose view is `view.program`'s `both` entry) |
+
+The maps are `SCRIPT_V1_FEATURE_SIDES` and `SCRIPT_V2_LANE_SIDES` in
+`script-sides.ts`. Admission refuses:
+
+- a `view` row with any command but `timer`, `cue` or `channel` (a row rule in
+  `decisionScripts.ts`);
+- a page-only feature's program (`page.life`'s `program.script`) that is not,
+  value for value, its `actors/return-scripts` row, so its side and rules are
+  the admitted row's;
+- a `sim` row that a page-only feature runs, since no server host runs that
+  binding. Pine's `pine.life` is refused this way until SS5;
+- a `view` row in `sim/scripts`, which only the server's decision host runs.
+
+Both validators run the product checks (`script-sides.ts`) once the sections
+are read, on named files whose size and hash match the index.
+
+Open edges, for the rows that use `view`: a v1 `view` module belongs in the
+render library (`assetAdmission.ts` refuses it as critical), and engine's
+native loans (`nativeRuntimeLoans.ts`) still load every return row, so engine
+must skip `view` rows before a shard ships one. Engine's `DecisionScript.side`
+is the literal `'sim'`; the engine bump that takes this format narrows the
+`sim/scripts` and spawn rows it spreads into it (both are always `sim`).
+`practice.course` also runs a `sim` row on the page alone; it is cosmetic, and
+joins the page-only hosts once Nalati and Nine Dragon declare those rows
+`view`.
+
 Use `buildDecisionScripts(project, rows, registries, options)` (or
 `compileDecisionScripts` with in-memory sources). It inspects all authored AS,
 requires the exported `on…` handlers to match `on` exactly, generates binding

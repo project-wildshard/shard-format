@@ -917,7 +917,6 @@
    "unicorn(numeric-separators-style)": 3
   },
   "src/format/decisionScripts.ts": {
-   "eslint(capitalized-comments)": 1,
    "eslint(complexity)": 1,
    "eslint(curly)": 17,
    "eslint(id-length)": 6,

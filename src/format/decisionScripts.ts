@@ -2,6 +2,7 @@ import * as v from 'valibot';
 import { isJsonData } from './json.ts';
 import { SCRIPT_V1_COMMANDS, SCRIPT_V1_EVENTS, SCRIPT_V1_LISTS, SCRIPT_V1_READS } from './scriptAbiV1.ts';
 import { SCRIPT_LIMITS } from './scriptLimits.ts';
+import { SCRIPT_V1_SIDES, VIEW_WRITES_GAMEPLAY, isViewCommand } from './script-sides.ts';
 
 function keys<T extends Readonly<Record<string, number>>>(table: T): (keyof T & string)[] { return Object.keys(table); }
 const id = v.pipe(v.string(), v.regex(/^[A-Za-z][A-Za-z0-9.:-]*$/u), v.maxLength(128));
@@ -17,8 +18,9 @@ const state = v.strictObject({ name: local, type: v.picklist(['bool', 'i32', 'f6
 export const SCRIPT_V1_REFERENCE_KINDS = ['actors', 'moves', 'strikes', 'cues', 'fields', 'flags', 'zones', 'spots', 'targets', 'spawns', 'signals', 'facts', 'rewards', 'channels', 'impulses', 'weather', 'bodies', 'colliders'] as const;
 export type ScriptV1ReferenceKind = typeof SCRIPT_V1_REFERENCE_KINDS[number];
 const rowEntries = {
-  // per-frame view is the v2 view lane's (view/modules, client view.program); a v1 script is simulation only
-  id, abi: v.literal('1.0'), side: v.literal('sim'),
+  // SERVER-PARITY SS7: `sim` is server-owned gameplay; `view` runs on the page only and writes no gameplay (row rules).
+  // Per-frame view is still the v2 view lane's (view/modules, client view.program).
+  id, abi: v.literal('1.0'), side: v.picklist(SCRIPT_V1_SIDES),
   module: v.pipe(v.string(), v.regex(/^blobs\/wasm\/[a-f0-9]{64}\.wasm$/u)),
   source: v.pipe(v.string(), v.maxLength(256), v.regex(/^behaviour\/(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*\/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\.as$/u),
     v.check(value => !value.split('/').includes('generated'), 'authored script source, not generated glue')),
@@ -63,6 +65,7 @@ export function decisionScriptRowRules(script: DecisionScriptRow): string[] {
     errors.push('spawn groups declare members and actor-scoped simulation state');
   if ((script.tick !== null) !== script.on.includes('tick')) errors.push('tick subscription has a declared 1/2/5/10 Hz rate');
   if (script.on.some(name => SCRIPT_V1_EVENTS[name] >= 30) || script.commands.some(name => SCRIPT_V1_COMMANDS[name] >= 100)) errors.push('simulation script uses only simulation ops');
+  if (script.side === 'view' && !script.commands.every(isViewCommand)) { errors.push(VIEW_WRITES_GAMEPLAY); }
   for (const names of [...SCRIPT_V1_REFERENCE_KINDS.map(kind => Object.keys(script[kind] ?? {})), script.timers, script.state.map(slot => slot.name), Object.keys(script.params)]) {
     if (!validNames(names)) errors.push('unique nonreserved generated binding names');
   }
@@ -190,7 +193,7 @@ export type BorrowedDecision = v.InferOutput<typeof BorrowedDecisionSchema>;
 interface DecisionScriptRowInputFields {
     id: string;
     abi: '1.0';
-    side: 'sim';
+    side: 'sim' | 'view';
     module: string;
     source: string;
     sourceHash?: string;
@@ -245,7 +248,7 @@ export type DecisionScriptRowInput = { [Key in keyof DecisionScriptRowInputField
 interface DecisionScriptRowFields {
     id: string;
     abi: '1.0';
-    side: 'sim';
+    side: 'sim' | 'view';
     module: string;
     source: string;
     sourceHash?: string;

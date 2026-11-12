@@ -33,6 +33,7 @@ import {
 import { walkTar } from './product-stream-tar.ts'
 import { prepareAssetDecoders } from './product.ts'
 import { readCanonicalJson } from './productValidation.ts'
+import { assertScriptSides } from './script-sides.ts'
 import { scriptAdmissionRows } from './scriptContract.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
@@ -219,6 +220,13 @@ function readSections(
     validateOutputSection(entry.name, value)
     payloads.set(entry.name, value)
   }
+  assertScriptSides(payloads, index, {
+    paths: (): Iterable<string> => replay.members.keys(),
+    read: (path: string): Uint8Array | undefined =>
+      replay.members.get(path)?.bytes,
+    verify: (bytes: Readonly<Uint8Array>, expected: string): boolean =>
+      replay.hash(bytes) === expected,
+  })
   return payloads
 }
 
