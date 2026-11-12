@@ -16,6 +16,7 @@
 // `open`: a host passes a function that opens the stored object afresh.
 
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
+import { assertSectionSides } from './feature-sides.ts'
 import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
 import {
   admitAssets,
@@ -214,6 +215,7 @@ function readSections(
   const payloads = new Map<string, unknown>()
   for (const entry of index.sections) {
     const value = readCanonicalJson(listedBytes(replay, entry))
+    assertSectionSides(entry.name, value)
     validateOutputSection(entry.name, value)
     payloads.set(entry.name, value)
   }

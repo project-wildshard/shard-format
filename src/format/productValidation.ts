@@ -15,6 +15,7 @@ import { preflightDeclaredCosts, validateShardfileAssets } from './assetAdmissio
 import { validationSourceBytes } from './validationReceipt.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 import { assetStore, checkPacks, mountSharesBlob } from './product-reads.ts';
+import { assertSectionSides } from './feature-sides.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -142,7 +143,8 @@ function inspectBlob(file: OutputFile, bytes: Uint8Array, ports: ProductValidati
 
 /** Validate a built product folder with format alone: the index and section schemas, the exact inventory (no unlisted,
  *  missing or changed file), every hash and size, byte kinds against declared kinds and costs, KTX2 device costs, pack
- *  members, registered named JSON, budgets and admission, world targets and the declared source hash. */
+ *  members, registered named JSON, budgets and admission, world targets and the declared source hash. A `client/plan`
+ *  kind with no declared side (SERVER-PARITY SS2, `feature-sides.ts`) is refused by name before its section schema runs. */
 export function validateShardfileProduct(files: ProductFiles, ports: ProductValidationPorts): ValidatedProduct {
   const verify = ports.verify ?? ((bytes: Uint8Array, expected: string): boolean => ports.hash(bytes) === expected);
   const index = parseOutputIndex(readCanonicalJson(files.read('shard.json', limits.sourceBytes)));
@@ -153,7 +155,7 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
     if (bytes.length !== entry.bytes || !verify(bytes, entry.hash, true)) throw new Error(`Output hash or size mismatch: ${entry.path}`);
     return bytes;
   };
-  for (const entry of index.sections) { const value = readCanonicalJson(read(entry)); validateOutputSection(entry.name, value); payloads.set(entry.name, value); }
+  for (const entry of index.sections) { const value = readCanonicalJson(read(entry)); assertSectionSides(entry.name, value); validateOutputSection(entry.name, value); payloads.set(entry.name, value); }
   const scripts = scriptAdmissionRows(payloads), contracts = decisionModuleContracts(scripts, index.files);
   for (const entry of index.files) {
     const bytes = read({ path: entry.path, hash: entry.hash, bytes: entry.compressed });
