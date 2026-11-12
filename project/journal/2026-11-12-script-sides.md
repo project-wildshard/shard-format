@@ -23,3 +23,11 @@ named table, starting with `page.life`.
 Of the 28 products in engine's `out/`, 27 still validate unchanged; Pine is refused until SS5. The
 327 MB pin test now expects that refusal from both validators. Engine's next format bump narrows
 `DecisionScript.side` to the `sim` rows it spreads in (a type change only).
+
+- SS7 grandfather (opus-ss7b): the refusal blocked engine's format bump
+  (and so SS8) because every validator refused Pine's live product. SS5
+  put Pine's secret on the server, so `script-side-grandfather.ts` now
+  names that one product (slug, source hash, `pine.life`) and both
+  validators admit it with a warning (`warnings` on their result,
+  printed by `shardfile validate`). A new Pine upload, or any other
+  product, is still refused; SERVER-PARITY SS11 drops the entry.

@@ -5,9 +5,11 @@
 // oxlint-disable typescript/prefer-readonly-parameter-types -- OutputIndex and the byte arrays are only read
 import { CLIENT_FEATURE_SIDES } from './feature-sides.ts'
 import { parseNamedJson } from './json.ts'
+import { splitGrandfathered } from './script-side-grandfather.ts'
 
 import type { FeatureSide } from './feature-sides.ts'
 import type { OutputIndex } from './outputIndex.ts'
+import type { ScriptSideProduct } from './script-side-grandfather.ts'
 import type { ScriptV1CommandName } from './scriptAbiV1.ts'
 import type { V2Lane } from './scriptFuelV2.ts'
 
@@ -45,7 +47,8 @@ function isViewCommand(command: ScriptV1CommandName): boolean {
 /**
  * The `view` feature kinds whose named file (`file`) carries a return program that only the page runs, with the path
  * of the script row inside that file. A `sim` row run here is page-only gameplay: Pine's `pine.life` sets
- * `secret:log` from engine's client `pageLife` alone (SERVER-PARITY inventory row 3, fixed by SS5).
+ * `secret:log` from engine's client `pageLife` alone (SERVER-PARITY inventory row 3). SS5 runs it on the server too,
+ * and the live product passes on `SCRIPT_SIDE_GRANDFATHER` until SS11.
  *
  * `practice.course` has the same shape (a `sim` row only the page runs) but is cosmetic; it joins this table once
  * Nalati and Nine Dragon declare their `practice.course` rows `view`.
@@ -225,19 +228,32 @@ function namedJsonReader(index: OutputIndex, files: UncheckedFiles): NamedJson {
   }
 }
 
-/** Refuse a product whose scripts run on the wrong side. Both validators call it once their sections are read. */
+/** A product's side refusals, split: lines a grandfather entry covers become warnings, the rest stay refusals. */
+function scriptSideVerdict(
+  sections: ReadonlyMap<string, unknown>,
+  named: NamedJson,
+  product: ScriptSideProduct,
+): { refused: string[]; warnings: string[] } {
+  return splitGrandfathered(scriptSideRefusals(sections, named), product)
+}
+
+/** Refuse a product whose scripts run on the wrong side, and return its grandfathered lines as warnings. Both
+ *  validators call it once their sections are read. */
 function assertScriptSides(
   sections: ReadonlyMap<string, unknown>,
   index: OutputIndex,
   files: UncheckedFiles,
-): void {
-  const [first, ...rest] = scriptSideRefusals(
+): string[] {
+  const { refused, warnings } = scriptSideVerdict(
     sections,
     namedJsonReader(index, files),
+    { slug: index.identity.slug, sourceHash: index.build.sourceHash },
   )
+  const [first, ...rest] = refused
   if (first !== undefined) {
     throw new Error(`Script side refused: ${[first, ...rest].join('; ')}`)
   }
+  return warnings
 }
 
 /** The side SS2's table gives each page-only host (a test pins them all to `view`). */
@@ -268,5 +284,6 @@ export {
   isViewCommand,
   pageOnlyHostSides,
   scriptSideRefusals,
+  scriptSideVerdict,
 }
 export type { NamedJson, ScriptV1Side, UncheckedFiles }

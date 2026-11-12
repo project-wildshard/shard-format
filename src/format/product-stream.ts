@@ -70,6 +70,8 @@ interface StreamedProduct {
   readonly shard: Shardfile
   readonly sections: ReadonlyMap<string, unknown>
   readonly scripts: ScriptAdmissionRows
+  /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
+  readonly warnings: readonly string[]
   /** True only when every check `validateShardfileProduct` runs has run: always, since AC6a2. */
   readonly complete: boolean
   /** The checks still to run, by name, while `complete` is false: none, since AC6a2. */
@@ -207,12 +209,12 @@ function readIndex(replay: Readonly<Replay>): OutputIndex {
   return parseOutputIndex(readCanonicalJson(listedBytes(replay, listed)))
 }
 
-/** Each section: listed, hashed, canonical and valid. */
+/** Each section: listed, hashed, canonical and valid; with the script side warnings (`assertScriptSides`). */
 function readSections(
   replay: Readonly<Replay>,
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   index: OutputIndex,
-): Map<string, unknown> {
+): { sections: Map<string, unknown>; warnings: string[] } {
   const payloads = new Map<string, unknown>()
   for (const entry of index.sections) {
     const value = readCanonicalJson(listedBytes(replay, entry))
@@ -220,14 +222,14 @@ function readSections(
     validateOutputSection(entry.name, value)
     payloads.set(entry.name, value)
   }
-  assertScriptSides(payloads, index, {
+  const warnings = assertScriptSides(payloads, index, {
     paths: (): Iterable<string> => replay.members.keys(),
     read: (path: string): Uint8Array | undefined =>
       replay.members.get(path)?.bytes,
     verify: (bytes: Readonly<Uint8Array>, expected: string): boolean =>
       replay.hash(bytes) === expected,
   })
-  return payloads
+  return { sections: payloads, warnings }
 }
 
 /** Stream-validate a stored shardfile object (see the file comment): `open` gives a fresh stream of it on each call.
@@ -245,7 +247,7 @@ async function validateShardfileStream(
     hash: ports.hash,
   }
   const index = readIndex(replay)
-  const sections = readSections(replay, index)
+  const { sections, warnings } = readSections(replay, index)
   const scripts = scriptAdmissionRows(sections)
   replayBeforePacks(replay, index, scripts)
   const before = admitBeforeAssets(index, sections, scripts)
@@ -269,6 +271,7 @@ async function validateShardfileStream(
     shard,
     sections,
     scripts,
+    warnings,
     complete: true,
     pending: [],
     heldBytes: Math.max(walked.heldBytes, later.heldBytes),

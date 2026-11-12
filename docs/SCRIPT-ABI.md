@@ -37,7 +37,13 @@ The maps are `SCRIPT_V1_FEATURE_SIDES` and `SCRIPT_V2_LANE_SIDES` in
   value for value, its `actors/return-scripts` row, so its side and rules are
   the admitted row's;
 - a `sim` row that a page-only feature runs, since no server host runs that
-  binding. Pine's `pine.life` is refused this way until SS5;
+  binding. Pine's live product is the one exception: `SCRIPT_SIDE_GRANDFATHER`
+  in `script-side-grandfather.ts` names it by slug, source hash and script id
+  (`pine.life`, whose secret SS5 also runs on the server), and both validators
+  admit it with a warning (`warnings` on their result; `shardfile validate`
+  prints it). Any other product, a new Pine upload included, is refused.
+  SERVER-PARITY SS11 moves Pine's page half to a `view` row and deletes the
+  entry;
 - a `view` row in `sim/scripts`, which only the server's decision host runs.
 
 Both validators run the product checks (`script-sides.ts`) once the sections

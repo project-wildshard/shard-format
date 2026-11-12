@@ -31,6 +31,8 @@ interface ProductSummary {
   readonly sections: number
   readonly assets: number
   readonly sourceHash: string
+  /** Grandfathered script side lines (SERVER-PARITY SS11): admitted, but printed. */
+  readonly warnings: readonly string[]
 }
 
 const START = 0
@@ -139,13 +141,18 @@ async function validateProduct(target: string): Promise<ProductSummary> {
     sections: valid.sections.size,
     assets: valid.assets.size,
     sourceHash: valid.index.build.sourceHash,
+    warnings: valid.warnings,
   }
 }
 
-/** One line for a product that passed. */
+/** One line for a product that passed, then one `warning:` line for each of its warnings. */
 function summary(product: ProductSummary): string {
   const counts = `${String(product.sections)} sections, ${String(product.assets)} assets`
-  return `ok ${product.slug} r${String(product.revision)}: ${counts}, source ${product.sourceHash}`
+  const ok = `ok ${product.slug} r${String(product.revision)}: ${counts}, source ${product.sourceHash}`
+  return [
+    ok,
+    ...product.warnings.map((line: string): string => `warning: ${line}`),
+  ].join('\n')
 }
 
 export type { ProductSummary }

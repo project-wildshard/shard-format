@@ -61,6 +61,8 @@ export interface ValidatedProduct {
   readonly sections: ReadonlyMap<string, unknown>;
   /** The script admission rows the product was admitted with. */
   readonly scripts: ScriptAdmissionRows;
+  /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
+  readonly warnings: readonly string[];
 }
 
 const decoder = (): TextDecoder => new TextDecoder('utf-8', { fatal: true });
@@ -157,7 +159,7 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
     if (bytes.length !== entry.bytes || !verify(bytes, entry.hash, true)) throw new Error(`Output hash or size mismatch: ${entry.path}`);
     return bytes;
   };
-  for (const entry of index.sections) { const value = readCanonicalJson(read(entry)); assertSectionSides(entry.name, value); validateOutputSection(entry.name, value); payloads.set(entry.name, value); } assertScriptSides(payloads, index, { ...files, verify });
+  for (const entry of index.sections) { const value = readCanonicalJson(read(entry)); assertSectionSides(entry.name, value); validateOutputSection(entry.name, value); payloads.set(entry.name, value); } const warnings = assertScriptSides(payloads, index, { ...files, verify });
   const scripts = scriptAdmissionRows(payloads), contracts = decisionModuleContracts(scripts, index.files);
   for (const entry of index.files) {
     const bytes = read({ path: entry.path, hash: entry.hash, bytes: entry.compressed });
@@ -195,5 +197,5 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
   const shard = admitShardfileProduct(assembleOutputShardfile(index, payloads), assets, ports.hash, 'warn', scripts);
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw new Error('Output sections differ from the declared source hash');
-  return { index, shard, assets, sections: payloads, scripts };
+  return { index, shard, assets, sections: payloads, scripts, warnings };
 }
