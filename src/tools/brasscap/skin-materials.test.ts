@@ -93,7 +93,12 @@ function source(glb: Buffer, materials?: unknown) {
       rows: { looks: [look] },
       files,
       library: files.map(row => row.hash),
-      look: { materials: { 'brasscap.gullet': { family: 'emissive' } } },
+      look: {
+        materials: {
+          'brasscap.gullet': { family: 'emissive' },
+          'brasscap.graph': { family: 'graph' },
+        },
+      },
     }
   return {
     shard: shard as unknown as Parameters<typeof validateSkinAssets>[0] &
@@ -133,6 +138,12 @@ describe('skin binding materials (TE-ENG10)', (): void => {
     assert.throws(() => {
       validateSkinAssets(undeclared.shard, undeclared.assets)
     }, /brasscap.nowhere is not a declared look material/u)
+    const graph = source(withPart(buildWyrm(), 'Gullet'), {
+      Gullet: 'brasscap.graph',
+    })
+    assert.throws(() => {
+      validateSkinAssets(graph.shard, graph.assets)
+    }, /brasscap.graph is a graph material/u)
     const channels = source(
       withPart(buildWyrm(), 'Gullet', ({ COLOR_0: _colour, ...rest }) => rest),
     )

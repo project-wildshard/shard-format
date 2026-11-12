@@ -20,3 +20,7 @@ text and number lists (`rows.ts`), so `pack` refused the object a Brasscap
 preview wrote; 37f272e's `parameters.materials` could never be written. The
 binding is a JSON blob with its own strict schema, and is where the plan row
 asked for it ("a skin binding row").
+
+Codex review: a mapped part naming a graph look material is now refused. A
+part flashes with the body through its family emissive or colour, and an
+unlit graph ignores its emissive port.

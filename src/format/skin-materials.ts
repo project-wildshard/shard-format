@@ -131,7 +131,7 @@ function skinPartsFault(
   return missing === undefined ? '' : `no GLB material ${missing}`
 }
 
-/** Why a binding's mapped IDs refuse, or '': each is a declared `look.materials` ID. */
+/** Why a binding's mapped IDs refuse, or '': each is a declared `look.materials` ID of a family (not a graph) material. */
 function skinMaterialsFault(
   parts: Names | undefined,
   declared: Readonly<Record<string, unknown>>,
@@ -139,9 +139,24 @@ function skinMaterialsFault(
   const missing = Object.values(parts ?? {}).find(
     (id: string): boolean => !Object.hasOwn(declared, id),
   )
-  return missing === undefined
+  if (missing !== undefined) {
+    return `skin material ${missing} is not a declared look material`
+  }
+  // A part flashes with the body through its family's emissive or colour; a graph has neither port for certain
+  const isGraph = (id: string): boolean => {
+    const entry: unknown = declared[id]
+    return (
+      typeof entry === 'object' &&
+      entry !== null &&
+      Reflect.get(entry, 'family') === 'graph'
+    )
+  }
+  const graph = Object.values(parts ?? {}).find((id: string): boolean =>
+    isGraph(id),
+  )
+  return graph === undefined
     ? ''
-    : `skin material ${missing} is not a declared look material`
+    : `skin material ${graph} is a graph material: a skin part takes a family material`
 }
 
 export {

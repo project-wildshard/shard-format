@@ -1096,7 +1096,8 @@ GLB's one skinned mesh may then carry up to eight primitives with the same chann
 one per GLB material. A primitive in a mapped material draws with that look material
 (an emissive eye or gullet: one more draw per rig, and one more shadow draw where the
 rig casts); every other primitive draws, merged, with the binding's family material.
-Each mapped name must be drawn by the GLB and each ID declared; 1 to 7 names.
+Each mapped name must be drawn by the GLB and each ID a declared family (not graph)
+material, since a part flashes with the body through its family's ports; 1 to 7 names.
 
 Quest `track` defaults to true; false leaves the HUD tracker empty while retaining
 quest state, map presentation and completion/reward handling. The teaching template
