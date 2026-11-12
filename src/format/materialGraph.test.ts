@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { GRAPH_ADMISSION_LIMITS, graphAdmissionErrors } from './materialGraph.ts';
+import { GRAPH_ADMISSION_LIMITS, graphAdmissionErrors, validateGraph } from './materialGraph.ts';
 
 test('array length stays outside JSON byte and node counts at exact limits', () => {
   const exact = ['x'.repeat(GRAPH_ADMISSION_LIMITS.bytes - 4)];
@@ -59,4 +59,13 @@ test.each(['repeat', 'é🌿', 'quote"\\\n', '\uD800'])('repeated string bytes c
   value.pad = '';
   Object.defineProperty(shared, 'hidden', { value: word });
   expect(graphAdmissionErrors(value, 80)).toEqual(['graph: JSON accessors and hidden properties refused']);
+});
+
+test('viewRay is a post input: a world direction for sky detail, refused on a mesh', (): void => {
+  const post = { version: 1, kind: 'post', nodes: { scene: { op: 'sceneColour' }, rgb: { op: 'swizzle', in: ['scene'], mask: 'xyz' }, ray: { op: 'viewRay' }, up: { op: 'swizzle', in: ['ray'], mask: 'y' }, out: { op: 'mul', in: ['rgb', 'up'] } }, stages: { post: { colour: 'out' } } };
+  const admitted = validateGraph(post);
+  expect(admitted.ok ? [] : admitted.errors).toEqual([]);
+  const mesh = { version: 1, kind: 'material', nodes: { ray: { op: 'viewRay' } }, stages: { fragment: { colour: 'ray' } } };
+  const refused = validateGraph(mesh);
+  expect(refused.ok).toBe(false);
 });

@@ -351,6 +351,10 @@ export interface GraphOpSpec {
   readonly places?: readonly GraphPlace[];
 }
 
+/** `viewRay`'s estimate: two multiply-adds of the camera's basis and a normalise */
+const VIEW_RAY_COST = 8;
+/** An input op's arity, both ends */
+const NO_INPUTS = 0;
 /** the lighting stage's places (fragment work, like the surface) */
 const LIT: readonly GraphPlace[] = ['sun', 'ambient', 'grade'];
 const FRAG: readonly GraphPlace[] = ['fragment', 'outline', 'post', ...LIT];
@@ -407,6 +411,9 @@ export const GRAPH_OPS: Readonly<Record<string, GraphOpSpec>> = {
   materialEmissive: { arity: [0, 0], rule: 'input', cost: 1, type: 'vec3', places: FRAG },
   fogSample: { arity: [5, 5], rule: 'fogSample', cost: 1, type: 'vec4', places: ['post'] },
   screenUV: { arity: [0, 0], rule: 'input', cost: 0, type: 'vec2', places: ['post'] },
+  // The world-space unit direction from the scene camera through this pixel (LF2-3): a post graph's sky detail (clouds, a
+  // sun glow against `atmosphereSunDirection`) keyed to it holds still in the world as the camera turns, where `screenUV` swims
+  viewRay: { arity: [NO_INPUTS, NO_INPUTS], rule: 'input', cost: VIEW_RAY_COST, type: 'vec3', places: ['post'] },
   // the pixel's window coordinate in pixels (`gl_FragCoord.xy`, from the top left as three's node back-end gives it): a
   // screen-space dither or clip on a mesh, never a full-screen pass (that is `screenUV`)
   pointCoord: { arity: [0, 0], rule: 'input', cost: 0, type: 'vec2', places: ['fragment'] },
