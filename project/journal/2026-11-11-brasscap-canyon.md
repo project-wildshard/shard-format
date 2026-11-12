@@ -87,3 +87,33 @@ lever-only subset of Pine's native assembly in rows.
 - The rack: BM-1's canyon already bakes a static rifle on the rack
   at the `rack` empty. A pickup needs that rifle hidden once taken, so
   BM-3 will move it out of the baked tiles into a target panel.
+
+## BM-3: the lever-action in the product (opus-bm3b)
+
+- Rows only, on engine `c098cc0c`'s `kit.lever` (TE-ENG2) and format
+  `e51eec6`. `combat/items`: a `brasscap.lever` context and the
+  `weapon.brasscap-lever` row (6 rounds, a tube of 5 plus the chamber,
+  12 in reserve, per-round reload, a round does 10), primary in the
+  loadout, which a locked family does not unlock. `sim/hooks`: the
+  rack's take (102/3) and reload (102/4) scenes. `ui/ui`: the
+  `brasscap.rack.use` prompt on the canyon's `rack` empty and the two
+  `itemActions`.
+- `rifle.glb` is a blob now, in `admission.library` with its
+  `parseGlbData` costs (decoded 27996, gpu 26208, 4 draws), so the
+  held model is BM-3's GLB, not the `kit.rifle` stand-in.
+- Target posts: two `brasscap.target` bodies (10 hp, a red
+  `engine.sphere` look) in front of the baked posts, on a still
+  `pursue` brain, since a spawn with no brain needs an encounter to
+  own it. `greyBlob` is the kind because the client registers only
+  that, boar and bear for a data shard.
+- Not done, an engine follow-up: the rack keeps its baked rifle and
+  its prompt after the take. A target panel follows a state field and
+  needs a script binding, and `kit.lever`'s `taken` is an owned line,
+  not a field, so no row can hide it.
+- Proof: engine preview with this corpus over the format dependency
+  and `pins.ts install --from-format brasscap-mesa`, headless Chromium:
+  locked at spawn, E at the rack takes it (6 / 6 + 12), shot 1 and
+  shot 2 down the two targets, six shots empty the tube, R feeds
+  0 to 5 one round at a time and a second R gives 6. No console
+  error, nothing off the machine. Shot `progress/t2-05-rifle-play.jpg`.
+  `src/ci/brasscap-mesa.test.ts` holds the rows to the GLBs' empties.

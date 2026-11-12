@@ -1,1 +1,1 @@
-{"rows":{"species":[]}}
+{"rows":{"species":[{"aggressive":false,"dims":{"bodyHalfLen":0.3,"bodyRadius":0.42,"bodyY":0.45,"feet":[],"halfWidth":0.45,"headRadius":0.2,"legLen":0.4},"id":"brasscap.target","kind":"greyBlob","label":"Tin target","lockable":true,"variants":[{"hp":10,"id":"tin","label":"Tin target","mods":{"chargeDamage":0,"chargeDist":1,"damageTaken":1,"relentless":false,"speed":1},"rarity":"common","scale":[1,1],"weight":1}]}]}}

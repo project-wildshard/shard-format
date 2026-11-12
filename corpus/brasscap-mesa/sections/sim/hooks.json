@@ -1,1 +1,1 @@
-{"hooks":{"conditions":[],"scenes":[]}}
+{"hooks":{"conditions":[],"scenes":[{"id":"brasscap.rack.take","type":102,"value":3},{"id":"brasscap.rack.reload","type":102,"value":4}]}}
