@@ -51,6 +51,7 @@ import { AccentSchema } from './accent.ts';
 import { MapSchema, PresentationSchema } from './presentation.ts';
 import { MigrationsSchema, migrationRules } from './migrations.ts';
 import { skinLookRules } from './skinAssets.ts';
+import { skinLookMaterialRules } from './skin-materials.ts';
 import { MaterialsSchema, FamilyLooksSchema, MaterialCurvesSchema, TextureSamplersSchema, materialExists, materialTextureRefs, materialGraphRules, materialCurveRules, textureSamplerRules } from './materials.ts';
 import { PostStackSchema, postStackRules } from './postStack.ts';
 import { LookBloomSchema, LookLightSchema } from './look-light.ts';
@@ -293,7 +294,7 @@ export function shardfileRules(s: Shardfile): string[] {
   if (s.items.rows.some((row) => row.kind === 'tool' && row.action === null) && s.runtime?.binds?.includes('items') !== true) errors.push('native tools require runtime.binds items');
   if (s.modes !== undefined && (s.modes.traverse.some(row => row.kind !== 'ladder') || (s.modes.ride?.length ?? 0) > 0 || (s.modes.grapple?.length ?? 0) > 0) && !pageOwner && s.runtime?.binds?.includes('modes') !== true) errors.push('traverse modes require their declared page or runtime player phase');
   if (s.runtime !== null && s.modes?.traverse.some(row => row.kind === 'ladder')) errors.push('ladder traversal requires the data-only player owner');
-  errors.push(...skinLookRules(s));
+  errors.push(...skinLookRules(s), ...skinLookMaterialRules(s));
   errors.push(...clientScriptRules(s));
   if (s.props !== null) {
     try { validatePropsReferences(s.props, s); } catch { errors.push('declared prop references'); }

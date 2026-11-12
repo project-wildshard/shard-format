@@ -4074,7 +4074,7 @@
    "eslint(init-declarations)": 1,
    "eslint(max-statements)": 3,
    "eslint(no-continue)": 3,
-   "eslint(no-magic-numbers)": 15,
+   "eslint(no-magic-numbers)": 14,
    "eslint(prefer-destructuring)": 3,
    "eslint(sort-vars)": 3,
    "import(consistent-type-specifier-style)": 3,
@@ -4084,7 +4084,7 @@
    "typescript(explicit-function-return-type)": 8,
    "typescript(prefer-readonly-parameter-types)": 8,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 14
+   "unicorn(max-nested-calls)": 13
   },
   "src/format/skinData.ts": {
    "eslint(curly)": 9,

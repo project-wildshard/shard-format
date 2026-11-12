@@ -1088,6 +1088,15 @@ one admitted GLB. Animation recipe `platform.clips` takes an `attackSpan` in sec
 (default 1, bounded 0.05–10). The rig, clips and numeric pose layers are validated
 without importing a renderer; the client samples the same exported clips as the skin player.
 
+A skin look may also map GLB material names to `look.materials` IDs in
+`parameters.materials` (TE-ENG10), the way `props.materials` does for props:
+`{ skin, materials: { Gullet: 'brasscap.gullet' } }`. The GLB's one skinned mesh may
+then carry up to eight primitives with the same channels, one per GLB material. A
+primitive in a mapped material draws with that look material (an emissive eye or
+gullet: one more draw per rig, and one more shadow draw where the rig casts); every
+other primitive draws, merged, with the binding's family material. Each mapped name
+must be drawn by the GLB and each ID declared; 1 to 7 names.
+
 Quest `track` defaults to true; false leaves the HUD tracker empty while retaining
 quest state, map presentation and completion/reward handling. The teaching template
 keeps its previous untracked adventure. Declared item views mount in the normal

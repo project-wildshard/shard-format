@@ -17,6 +17,7 @@ import type { Shardfile } from './shardSchema.ts';
 import { parseGlbData as parseGlb } from './glbCost.ts';
 import { skinLayerDecoded } from './skinLayers.ts';
 import { MaterialsSchema } from './materials.ts';
+import { SkinGlbMaterialsSchema, SkinPrimitiveSchema, skinLookMaterials, skinPartsFault, skinPrimitiveCount } from './skin-materials.ts';
 
 import { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE, SkinLookParametersSchema, SkinClipParametersSchema, ShardSkinFileSchema, type SkinLookParameters } from './skins.ts';
 
@@ -49,13 +50,14 @@ export function skinLookRules(source: Pick<Shardfile, 'rows' | 'files' | 'librar
 
 const glbRigSchema = v.object({
   nodes: v.array(v.object({ name: v.optional(v.string()), mesh: v.optional(v.number()), skin: v.optional(v.number()) })),
-  meshes: v.array(v.object({ primitives: v.array(v.unknown()) })),
+  meshes: v.array(v.object({ primitives: v.array(SkinPrimitiveSchema) })),
+  materials: SkinGlbMaterialsSchema,
   skins: v.array(v.object({ joints: v.array(v.number()) })),
   animations: v.optional(v.array(v.object({ name: v.optional(v.string()) })), []),
 });
 
 /** Check admitted GLB joint order, sockets and clips before a renderer allocates the creature view. */
-function validateRigBytes(glb: Uint8Array, row: SkinRow): void {
+function validateRigBytes(glb: Uint8Array, row: SkinRow, parts: Readonly<Record<string, string>> | undefined): void {
   // parseGlb already bounds and validates the header, JSON chunk and every node/accessor reference.
   const length = new DataView(glb.buffer, glb.byteOffset, glb.byteLength).getUint32(12, true);
   const rig = v.parse(glbRigSchema, JSON.parse(new TextDecoder().decode(glb.subarray(20, 20 + length))));
@@ -64,7 +66,9 @@ function validateRigBytes(glb: Uint8Array, row: SkinRow): void {
   const meshes = rig.nodes.filter(node => node.skin !== undefined && node.mesh !== undefined);
   const mesh = meshes[0];
   if (meshes.length !== 1 || mesh?.mesh === undefined || mesh.skin === undefined
-    || rig.meshes[mesh.mesh]?.primitives.length !== 1) fail('expected one skinned mesh');
+    || !skinPrimitiveCount(rig.meshes[mesh.mesh]?.primitives.length)) fail('expected one skinned mesh');
+  const partsFault = skinPartsFault(rig.meshes[mesh.mesh]?.primitives ?? [], rig.materials, parts);
+  if (partsFault !== '') { fail(partsFault); }
   const joints = rig.skins[mesh.skin]?.joints.map(index => rig.nodes[index]?.name);
   const expected = row.rig.joints[0];
   if (joints === undefined || expected === undefined || joints.length !== expected.length
@@ -92,7 +96,7 @@ export function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'>, as
     const glb = assets.get(row.file), declared = files.get(row.file);
     if (glb === undefined || declared === undefined) throw new Error('skin GLB missing');
     const cost = parseGlb(glb);
-    validateRigBytes(glb, row);
+    validateRigBytes(glb, row, skinLookMaterials(look));
     cost.decoded += skinLayerDecoded(binding.poseLayers ?? {}, row.rig.joints[0]?.length ?? 0);
     for (const key of ['decoded', 'gpu', 'triangles', 'draws'] as const) {
       if (cost[key] > row.cost[key] || cost[key] > declared[key]) throw new Error('skin cost understated');
