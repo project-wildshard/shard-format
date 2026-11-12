@@ -199,4 +199,5 @@ function readTar(bytes: Readonly<Uint8Array>): ReadonlyMap<string, Uint8Array> {
 
 export type { TarEntry, TarSource } from './tar-source.ts'
 export { writeTar } from './tar-write.ts'
-export { indexTar, readTar }
+// `readTarHeader` is the streaming walk's (productStream.ts): one header, the same refusals.
+export { header as readTarHeader, indexTar, readTar }

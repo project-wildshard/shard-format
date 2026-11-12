@@ -9,5 +9,6 @@
     "isolatedDeclarations": true
   },
   "include": ["*.ts", "standards/format-standards.d.ts"],
-  "exclude": ["*.test.ts"]
+  // product-stream-node.ts is a host adapter (node:crypto, node:zlib; a Worker has them under nodejs_compat).
+  "exclude": ["*.test.ts", "product-stream-node.ts"]
 }
