@@ -26,7 +26,8 @@ import { buildRifle } from '../tools/brasscap/rifle.ts'
 const BRASSCAP = path.join(ROOT, 'corpus/brasscap-mesa')
 const CODE = /\.(?:ts|tsx|js|mjs|cjs|py)$/u
 const BLOB = /^blobs\/[a-z\d]+\/(?<hash>[\da-f]{64})\.[a-z\d]+$/u
-const MAX_SUN_DEGREES = 15
+/** Still a low sunset sun: LF2-3 raised it to 16 degrees, so the canyon's faces catch it. */
+const MAX_SUN_DEGREES = 20
 const GLB_JSON_AT = 20
 const GLB_JSON_LENGTH_AT = 12
 const L0_TILES = 64

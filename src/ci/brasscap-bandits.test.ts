@@ -27,8 +27,9 @@ import { CAMPS } from '../tools/brasscap/canyon.ts'
 const BRASSCAP = path.join(ROOT, 'corpus/brasscap-mesa')
 const BANDIT = 'brasscap.bandit'
 const PER_CAMP = 3
-/** How far a bandit may stand from its camp's empty. */
-const CAMP_REACH = 6
+/** How far a bandit may stand from its camp's empty. LF2-2's side canyon puts
+ *  camp 3's first bandit 6.4 m from `camp.3`, up the slot toward the gate. */
+const CAMP_REACH = 7
 const GATE_FIELD = 101
 
 const Num = number()
