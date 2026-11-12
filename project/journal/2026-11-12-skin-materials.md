@@ -24,3 +24,12 @@ asked for it ("a skin binding row").
 Codex review: a mapped part naming a graph look material is now refused. A
 part flashes with the body through its family emissive or colour, and an
 unlit graph ignores its emissive port.
+
+## Brasscap's glow rows (opus-bmglow, ~06:55 Cancún)
+
+- `bandit.ts` and `wyrm.ts` emit the eye box (12 triangles) and the gullet's cap (8) as a second primitive in a GLB
+  material `Eye` / `Gullet`, over the same vertex accessors with its own index list; the skin bindings map them to
+  the look's `glow` (`materials: { Eye: 'glow' }`, `{ Gullet: 'glow' }`). The TE-ENG10 format test now builds its
+  one-part Wyrm by dropping the part, and a new case checks both generated GLBs carry the mapped part.
+- `subjects.ts` swapped four blobs: library +769 bytes. Caps hold (bandit 337 triangles, 73,200 bytes; Wyrm 416,
+  76,120).

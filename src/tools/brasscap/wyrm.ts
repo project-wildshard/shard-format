@@ -169,6 +169,9 @@ class Mesh {
   readonly nor: number[] = []
   readonly col: number[] = []
   readonly joint: number[] = []
+  /** Per triangle: drawn in the GLB's `Gullet` material (TE-ENG10's glowing part) rather than the body's. */
+  readonly glow: boolean[] = []
+  glowing = false
   tri(a: V3, b0: V3, c0: V3, hex: Hex, joint: number, centre: V3): void {
     const cross = (b: V3, c: V3): number[] => {
       const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
@@ -194,6 +197,7 @@ class Mesh {
       this.col.push(rgb[0], rgb[1], rgb[2])
       this.joint.push(joint)
     }
+    this.glow.push(this.glowing)
   }
   quad(a: V3, b: V3, c: V3, d: V3, hex: Hex, joint: number, centre: V3): void {
     this.tri(a, b, c, hex, joint, centre)
@@ -466,6 +470,8 @@ function wyrm(): void {
   }
   const gullet = ringAt(add(RIM, MOUTH_T, -0.3), MOUTH_T, 0.17, 8),
     core = add(RIM, MOUTH_T, -0.3)
+  // The gullet's cap is the `Gullet` part, drawn in the look's `glow` (TE-ENG10).
+  mesh.glowing = true
   for (let s = 0; s < 8; s++)
     mesh.tri(
       core,
@@ -475,6 +481,7 @@ function wyrm(): void {
       HEAD,
       add(RIM, MOUTH_T, -1.2),
     )
+  mesh.glowing = false
   // Eight cream teeth round the rim, pointing in and forward; the lower four ride the jaw.
   for (let i = 0; i < 8; i++) {
     const a = ((i + 0.5) / 8) * Math.PI * 2,
@@ -730,17 +737,18 @@ export function buildWyrm(): Buffer {
     count,
     { normalized: true },
   )
-  const indices = acc(
-    push(
-      Buffer.from(
-        new Uint16Array(Array.from({ length: count }, (_, i) => i)).buffer,
-      ),
-      34963,
-    ),
-    'SCALAR',
-    5123,
-    count,
-  )
+  // TE-ENG10: the body's triangles, then the gullet's as a second primitive over the same vertices.
+  const [indices, partIndices] = [false, true].map((glow): number => {
+    const corners = mesh.glow.flatMap((g, t): number[] =>
+      g === glow ? [t * 3, t * 3 + 1, t * 3 + 2] : [],
+    )
+    return acc(
+      push(Buffer.from(new Uint16Array(corners).buffer), 34963),
+      'SCALAR',
+      5123,
+      corners.length,
+    )
+  })
   const animations = CLIPS.map(clip => {
     const input = acc(
       push(f32(clip.times)),
@@ -810,12 +818,32 @@ export function buildWyrm(): Buffer {
             mode: 4,
             material: 0,
           },
+          {
+            attributes: {
+              POSITION: position,
+              NORMAL: normal,
+              COLOR_0: colour,
+              JOINTS_0: joint,
+              WEIGHTS_0: weight,
+            },
+            indices: partIndices,
+            mode: 4,
+            material: 1,
+          },
         ],
       },
     ],
     materials: [
       {
         name: 'Plate',
+        pbrMetallicRoughness: {
+          baseColorFactor: [1, 1, 1, 1],
+          metallicFactor: 0.05,
+          roughnessFactor: 0.8,
+        },
+      },
+      {
+        name: 'Gullet',
         pbrMetallicRoughness: {
           baseColorFactor: [1, 1, 1, 1],
           metallicFactor: 0.05,
@@ -883,6 +911,7 @@ export function buildWyrmSkin(glb: Buffer): Buffer {
         roughness: 0.8,
         vertexColours: true,
       },
+      materials: { Gullet: 'glow' },
       skin: WYRM_ID,
     },
   }

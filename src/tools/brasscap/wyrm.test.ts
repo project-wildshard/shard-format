@@ -152,9 +152,11 @@ describe('the Brasscap Dust Wyrm generator (BM-5)', (): void => {
       },
     }
     validateSkinAssets(
-      { rows: { looks: [look] }, files } as unknown as Parameters<
-        typeof validateSkinAssets
-      >[0],
+      {
+        rows: { looks: [look] },
+        files,
+        look: { materials: { glow: { family: 'emissive' } } },
+      } as unknown as Parameters<typeof validateSkinAssets>[0],
       new Map([
         [sha256(skin), new Uint8Array(skin)],
         [row.file, new Uint8Array(glb)],

@@ -197,9 +197,11 @@ describe('the Brasscap tin bandit generator (BM-4)', (): void => {
     // The format's own admission: rig bytes (one skinned mesh, joint order, sockets, clips), body and head bones,
     // the binding's material and the declared cost
     validateSkinAssets(
-      { rows: { looks: [look] }, files } as unknown as Parameters<
-        typeof validateSkinAssets
-      >[0],
+      {
+        rows: { looks: [look] },
+        files,
+        look: { materials: { glow: { family: 'emissive' } } },
+      } as unknown as Parameters<typeof validateSkinAssets>[0],
       new Map([
         [sha256(skin), new Uint8Array(skin)],
         [row.file, new Uint8Array(glb)],

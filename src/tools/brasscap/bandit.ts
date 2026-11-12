@@ -91,6 +91,9 @@ class Mesh {
   readonly nor: number[] = []
   readonly col: number[] = []
   readonly joint: number[] = []
+  /** Per triangle: drawn in the GLB's `Eye` material (TE-ENG10's glowing part) rather than the body's. */
+  readonly glow: boolean[] = []
+  glowing = false
   tri(a: V3, b0: V3, c0: V3, hex: Hex, joint: number, centre: V3): void {
     const cross = (b: V3, c: V3): number[] => {
       const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
@@ -116,6 +119,7 @@ class Mesh {
       this.col.push(rgb[0], rgb[1], rgb[2])
       this.joint.push(joint)
     }
+    this.glow.push(this.glowing)
   }
   quad(a: V3, b: V3, c: V3, d: V3, hex: Hex, joint: number, centre: V3): void {
     this.tri(a, b, c, hex, joint, centre)
@@ -250,9 +254,12 @@ function bandit(): void {
     HEAD,
     [0, 0.95, 0],
   )
-  // One big yellow eye in a dark socket, standing proud of the can (LF2-8).
+  // One big yellow eye in a dark socket, standing proud of the can (LF2-8); the eye is the `Eye` part, drawn in the
+  // look's `glow` (TE-ENG10).
   mesh.box([-0.09, 1.055, 0.17], [0.18, 0.12, 0.07], HAT, HEAD)
+  mesh.glowing = true
   mesh.box([-0.065, 1.07, 0.2], [0.13, 0.09, 0.075], EYE, HEAD)
+  mesh.glowing = false
   // The stovepipe hat: a wide brim, a tall crown and a brass band.
   mesh.can(0.34, 1.2, 1.24, HAT, HAT_SHADE, HEAD)
   mesh.can(0.19, 1.24, 1.46, HAT, HAT_SHADE, HEAD, true, HAT_SHADE)
@@ -394,17 +401,18 @@ export function buildBandit(): Buffer {
     count,
   )
   const weight = acc(push(f32(weights), 34962), 'VEC4', 5126, count)
-  const indices = acc(
-    push(
-      Buffer.from(
-        new Uint32Array(Array.from({ length: count }, (_, i) => i)).buffer,
-      ),
-      34963,
-    ),
-    'SCALAR',
-    5125,
-    count,
-  )
+  // TE-ENG10: the body's triangles, then the eye's as a second primitive over the same vertices.
+  const [indices, partIndices] = [false, true].map((glow): number => {
+    const corners = mesh.glow.flatMap((g, t): number[] =>
+      g === glow ? [t * 3, t * 3 + 1, t * 3 + 2] : [],
+    )
+    return acc(
+      push(Buffer.from(new Uint32Array(corners).buffer), 34963),
+      'SCALAR',
+      5125,
+      corners.length,
+    )
+  })
   const animations = CLIPS.map(clip => {
     const input = acc(
       push(f32(clip.times)),
@@ -471,12 +479,32 @@ export function buildBandit(): Buffer {
             mode: 4,
             material: 0,
           },
+          {
+            attributes: {
+              POSITION: position,
+              NORMAL: normal,
+              COLOR_0: colour,
+              JOINTS_0: joint,
+              WEIGHTS_0: weight,
+            },
+            indices: partIndices,
+            mode: 4,
+            material: 1,
+          },
         ],
       },
     ],
     materials: [
       {
         name: 'Tin',
+        pbrMetallicRoughness: {
+          baseColorFactor: [1, 1, 1, 1],
+          metallicFactor: 0.25,
+          roughnessFactor: 0.55,
+        },
+      },
+      {
+        name: 'Eye',
         pbrMetallicRoughness: {
           baseColorFactor: [1, 1, 1, 1],
           metallicFactor: 0.25,
@@ -545,6 +573,7 @@ export function buildBanditSkin(glb: Buffer): Buffer {
         roughness: 0.55,
         vertexColours: true,
       },
+      materials: { Eye: 'glow' },
       skin: BANDIT_ID,
     },
   }

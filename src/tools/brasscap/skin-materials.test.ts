@@ -5,29 +5,22 @@ import { describe, it } from 'node:test'
 
 import { parseGlbData } from '../../format/glbCost.ts'
 import { skinLookRules, validateSkinAssets } from '../../format/skinAssets.ts'
+import { buildBandit, buildBanditSkin } from './bandit.ts'
 import { ATTACK_SPAN, buildWyrm, buildWyrmSkin, sha256 } from './wyrm.ts'
 
-/** The Wyrm with a second primitive over the same accessors, drawn in a second GLB material named `name`. */
-function withPart(
-  glb: Buffer,
-  name: string,
-  channels?: (attributes: Record<string, number>) => Record<string, number>,
-): Buffer {
+interface Json {
+  meshes: {
+    primitives: { attributes: Record<string, number>; material?: number }[]
+  }[]
+  materials: { name: string }[]
+}
+
+/** `glb` with its JSON chunk edited in place by `edit`; the binary chunk is kept. */
+function rewrite(glb: Buffer, edit: (json: Json) => void): Buffer {
   const length = glb.readUInt32LE(12),
-    json = JSON.parse(glb.subarray(20, 20 + length).toString('utf8')) as {
-      meshes: {
-        primitives: { attributes: Record<string, number>; material?: number }[]
-      }[]
-      materials: { name: string }[]
-    },
-    bin = glb.subarray(20 + length + 8),
-    first = json.meshes[0]!.primitives[0]!
-  json.materials.push({ name })
-  json.meshes[0]!.primitives.push({
-    ...first,
-    attributes: channels?.(first.attributes) ?? first.attributes,
-    material: json.materials.length - 1,
-  })
+    json = JSON.parse(glb.subarray(20, 20 + length).toString('utf8')) as Json,
+    bin = glb.subarray(20 + length + 8)
+  edit(json)
   let text = Buffer.from(JSON.stringify(json))
   text = Buffer.concat([text, Buffer.alloc((4 - (text.length % 4)) % 4, 0x20)])
   const header = Buffer.alloc(12),
@@ -43,12 +36,41 @@ function withPart(
   return Buffer.concat([header, jh, text, bh, bin])
 }
 
+/** The Wyrm with a second primitive over the same accessors, drawn in a second GLB material named `name`. */
+function withPart(
+  glb: Buffer,
+  name: string,
+  channels?: (attributes: Record<string, number>) => Record<string, number>,
+): Buffer {
+  return rewrite(glb, (json): void => {
+    const first = json.meshes[0]!.primitives[0]!
+    json.materials.push({ name })
+    json.meshes[0]!.primitives.push({
+      ...first,
+      attributes: channels?.(first.attributes) ?? first.attributes,
+      material: json.materials.length - 1,
+    })
+  })
+}
+
+/** The Wyrm's body alone: its `Gullet` part and material dropped, so one primitive in one material. */
+function bodyOnly(glb: Buffer): Buffer {
+  return rewrite(glb, (json): void => {
+    json.meshes[0]!.primitives.length = 1
+    json.materials.length = 1
+  })
+}
+
+const wyrmBody = (): Buffer => bodyOnly(buildWyrm())
+
 /** The Wyrm's skin file for `glb`, its binding carrying `materials` when given. */
 function skinFile(glb: Buffer, materials?: unknown): Buffer {
   const file = JSON.parse(buildWyrmSkin(glb).toString('utf8')) as {
     binding: Record<string, unknown>
   }
-  if (materials !== undefined) {
+  if (materials === undefined) {
+    delete file.binding['materials']
+  } else {
     file.binding['materials'] = materials
   }
   return Buffer.from(JSON.stringify(file))
@@ -111,41 +133,62 @@ function source(glb: Buffer, materials?: unknown) {
 }
 
 describe('skin binding materials (TE-ENG10)', (): void => {
+  it("draws the bandit's eye and the Wyrm's gullet as a second GLB part, mapped to the look's glow", (): void => {
+    for (const [glb, skinOf, part, corners] of [
+      [buildBandit(), buildBanditSkin, 'Eye', 36],
+      [buildWyrm(), buildWyrmSkin, 'Gullet', 24],
+    ] as const) {
+      const length = glb.readUInt32LE(12),
+        json = JSON.parse(glb.subarray(20, 20 + length).toString('utf8')) as {
+          accessors: { count: number }[]
+          meshes: { primitives: { indices: number; material: number }[] }[]
+          materials: { name: string }[]
+        },
+        [, glow] = json.meshes[0]!.primitives,
+        skin = JSON.parse(skinOf(glb).toString('utf8')) as {
+          binding: { materials: Record<string, string> }
+        }
+      assert.equal(json.meshes[0]!.primitives.length, 2)
+      assert.equal(json.materials[glow!.material]!.name, part)
+      assert.equal(json.accessors[glow!.indices]!.count, corners)
+      assert.deepEqual(skin.binding.materials, { [part]: 'glow' })
+    }
+  })
   it('admits a two-material skin whose binding maps the second GLB material to a declared look material', (): void => {
-    const { shard, assets } = source(withPart(buildWyrm(), 'Gullet'), {
+    const { shard, assets } = source(withPart(wyrmBody(), 'Gullet'), {
       Gullet: 'brasscap.gullet',
     })
     assert.deepEqual(skinLookRules(shard), [])
     validateSkinAssets(shard, assets)
   })
   it('still admits a one-material skin with no map, and a two-material skin with none (one draw, the family)', (): void => {
-    for (const glb of [buildWyrm(), withPart(buildWyrm(), 'Gullet')]) {
+    for (const glb of [wyrmBody(), withPart(wyrmBody(), 'Gullet')]) {
       const { shard, assets } = source(glb)
       assert.deepEqual(skinLookRules(shard), [])
       validateSkinAssets(shard, assets)
     }
   })
   it('refuses a mapped name the GLB lacks, an undeclared look material, and primitives whose channels differ', (): void => {
-    const missing = source(buildWyrm(), {
+    const missing = source(wyrmBody(), {
       Gullet: 'brasscap.gullet',
     })
     assert.throws(() => {
       validateSkinAssets(missing.shard, missing.assets)
     }, /no GLB material Gullet/u)
-    const undeclared = source(withPart(buildWyrm(), 'Gullet'), {
+    const undeclared = source(withPart(wyrmBody(), 'Gullet'), {
       Gullet: 'brasscap.nowhere',
     })
     assert.throws(() => {
       validateSkinAssets(undeclared.shard, undeclared.assets)
     }, /brasscap.nowhere is not a declared look material/u)
-    const graph = source(withPart(buildWyrm(), 'Gullet'), {
+    const graph = source(withPart(wyrmBody(), 'Gullet'), {
       Gullet: 'brasscap.graph',
     })
     assert.throws(() => {
       validateSkinAssets(graph.shard, graph.assets)
     }, /brasscap.graph is a graph material/u)
     const channels = source(
-      withPart(buildWyrm(), 'Gullet', ({ COLOR_0: _colour, ...rest }) => rest),
+      withPart(wyrmBody(), 'Gullet', ({ COLOR_0: _colour, ...rest }) => rest),
     )
     assert.throws(() => {
       validateSkinAssets(channels.shard, channels.assets)
@@ -160,7 +203,7 @@ describe('skin binding materials (TE-ENG10)', (): void => {
         ]),
       ),
     ]) {
-      const bad = source(withPart(buildWyrm(), 'Gullet'), materials)
+      const bad = source(withPart(wyrmBody(), 'Gullet'), materials)
       assert.throws(() => {
         validateSkinAssets(bad.shard, bad.assets)
       }, /skin bindings/u)
