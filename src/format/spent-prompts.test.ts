@@ -16,6 +16,8 @@ function shard(family: string, type = 'bool'): Shard {
     hooks: {
       conditions: [
         { id: 'brazier.lit', scope: 'shared', fieldId: 102, equals: 1 },
+        { id: 'rack.taken', scope: 'player', fieldId: 301, equals: 1 },
+        { id: 'secret', scope: 'player', fieldId: 302, equals: 1 },
       ],
       scenes: [{ id: 'rack.take' }, { id: 'brazier.light' }],
     },
@@ -65,4 +67,38 @@ test('a kit.lever take projects to a bool player field; nothing else does', (): 
   expect(
     targetRules(targets('', 'fuel'), shard('kit.lever', 'f64'), noProps),
   ).toContain('declared item state projections')
+})
+
+test('a player condition spends a use only through a projected field', (): void => {
+  const refused = 'declared target interaction conditions'
+  expect(
+    targetRules(targets('rack.taken'), shard('kit.lever'), noProps),
+  ).not.toContain(refused)
+  expect(targetRules(targets('secret'), shard('kit.lever'), noProps)).toContain(
+    refused,
+  )
+})
+test('a panel on a projected player field is drawn only, with no collider', (): void => {
+  const refused = 'declared item projection colliders'
+  const panel = {
+    panel: 'rack.rifle',
+    scope: 'player',
+    fieldId: 301,
+    equals: 1,
+    visibleWhenMatched: false,
+    activeWhenMatched: false,
+  }
+  const withPanel = (colliders: readonly string[]): Targets =>
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The rows as the schema admits them.
+    ({
+      ...targets(''),
+      panels: [{ ...panel, colliders }],
+    }) as unknown as Targets
+
+  expect(targetRules(withPanel([]), shard('kit.lever'), noProps)).not.toContain(
+    refused,
+  )
+  expect(
+    targetRules(withPanel(['rack.rifle']), shard('kit.lever'), noProps),
+  ).toContain(refused)
 })

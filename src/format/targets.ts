@@ -38,10 +38,27 @@ function idsOf(rows: readonly Readonly<{ id: string }>[]): Set<string> {
   }
   return out;
 }
-/** TE-ENG6: an interaction's `unless` names a declared condition. */
-function unlessRefused(rows: readonly Readonly<{ unless?: string }>[], conditions: readonly Readonly<{ id: string }>[]): boolean {
+/** TE-ENG6: an interaction's `unless` names a declared condition a page can read: a shared field, or a player field an
+ *  item projects (the page sees no other player field). */
+function unlessRefused(
+  rows: readonly Readonly<{ unless?: string }>[],
+  conditions: readonly Readonly<{ id: string; scope: string; fieldId: number }>[],
+  projected: ReadonlySet<number>,
+): boolean {
   for (const row of rows) {
-    if (row.unless !== undefined && !conditions.some((condition): boolean => condition.id === row.unless)) {
+    const condition = row.unless === undefined ? undefined : conditions.find((entry): boolean => entry.id === row.unless);
+    if (row.unless !== undefined && (condition === undefined || (condition.scope !== 'shared' && !projected.has(condition.fieldId)))) {
+      return true;
+    }
+  }
+  return false;
+}
+/** TE-ENG6: a panel on a projected player field is drawn only: the server's colliders read the script's fields, which a
+ *  projection never writes, so a collider there would stand differently on the page and the server. */
+function projectedColliders(panels: readonly Readonly<{ scope: string; fieldId: number; colliders: readonly string[] }>[], projected: ReadonlySet<number>): boolean {
+  for (const panel of panels) {
+    const [collider] = panel.colliders;
+    if (panel.scope === 'player' && projected.has(panel.fieldId) && collider !== undefined) {
       return true;
     }
   }
@@ -54,6 +71,27 @@ function projects(items: readonly Readonly<{ id: string; kind: string; family?: 
     return item?.kind === 'weapon' && item.family === LEVER_FAMILY;
   }
   return item?.kind === 'tool';
+}
+/** TE-ENG6: what a spent use and a projected panel may read. */
+function spentRules(
+  targets: Readonly<{
+    interactions: readonly Readonly<{ unless?: string }>[];
+    panels: readonly Readonly<{ scope: string; fieldId: number; colliders: readonly string[] }>[];
+    itemFields?: readonly Readonly<{ fieldId: number }>[];
+  }>,
+  conditions: readonly Readonly<{ id: string; scope: string; fieldId: number }>[]): string[] {
+  const projected = new Set<number>();
+  for (const row of targets.itemFields ?? []) {
+    projected.add(row.fieldId);
+  }
+  const errors: string[] = [];
+  if (unlessRefused(targets.interactions, conditions, projected)) {
+    errors.push('declared target interaction conditions');
+  }
+  if (projectedColliders(targets.panels, projected)) {
+    errors.push('declared item projection colliders');
+  }
+  return errors;
 }
 /** TE-ENG3: a talk speaks a declared tree no other talk speaks, under its own id (never an interaction's), drawn by a props figure. */
 function talksRefused(
@@ -81,9 +119,7 @@ export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput
   const bound = targets.panels.flatMap((row) => row.colliders);
   if (new Set(bound).size !== bound.length || targets.panels.some((row) => !panels.has(row.panel) || row.colliders.some((collider) => !colliders.has(collider)))) errors.push('declared target panel/collider references');
   if (new Set(targets.interactions.map((row) => row.id)).size !== targets.interactions.length || targets.interactions.some((row) => !scenes.has(row.scene))) errors.push('declared target interaction scenes');
-  if (unlessRefused(targets.interactions, shard.hooks.conditions)) {
-    errors.push('declared target interaction conditions');
-  }
+  errors.push(...spentRules(targets, shard.hooks.conditions));
   if (targets.panels.length > 0 && shard.sim.bindings.length === 0) errors.push('target fields require script bindings');
   const actions = targets.itemActions ?? [], fields = targets.itemFields ?? [];
   if (new Set(actions.map((row) => row.scene)).size !== actions.length || actions.some((row) => !scenes.has(row.scene) || !shard.items.rows.some((item) => item.id === row.item && (item.kind === 'tool' || item.family === LEVER_FAMILY)))) errors.push('declared item action scenes');

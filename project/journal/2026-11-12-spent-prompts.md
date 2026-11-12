@@ -9,3 +9,5 @@ names, in `unless`, the `hooks.conditions` row that spends it (Mossgate's rows a
 `template.brazier-a.lit`); while it holds, engine drops the prompt. A rack's take prompt needs no
 row: engine knows a taken lever. `itemFields` gains `taken` for a kit.lever (a bool player field)
 so a panel can hide the rack's own rifle once this player holds it (BM-3's follow-up). Additive.
+
+Codex review (MUSTs): a player condition the page cannot read would leave a spent prompt up, and a collider on a projected field would stand differently on the page and the server. Both are refused now: `unless` reads a shared field or a projected player field, and a projected panel binds no collider.
