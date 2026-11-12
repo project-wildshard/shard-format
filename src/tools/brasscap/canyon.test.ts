@@ -80,6 +80,14 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
       assert.ok(names.has(mark), mark)
   })
 
+  it('bakes with no sky, the gate door as its own node and a far stand-in', (): void => {
+    const names = new Set(
+      parse(buildCanyon({ bake: true })).json.nodes.map(n => n.name),
+    )
+    assert.ok(names.has('gate.door') && names.has('far.canyon'))
+    assert.ok(!names.has('sky'))
+  })
+
   it('has only unit normals, so no triangle is degenerate', (): void => {
     const { json, bin } = parse(buildCanyon())
 

@@ -5,7 +5,8 @@
 // never part of the template's runtime; the GLB it writes is the raw asset.
 // The output is deterministic: a fixed-seed generator, so the same source
 // writes the same bytes (canyon.test.ts holds the committed GLB to that).
-//   node src/tools/brasscap/canyon.ts [out.glb]
+//   node src/tools/brasscap/canyon.ts [out.glb]          the level, with its sky
+//   node src/tools/brasscap/canyon.ts --bake <out.glb>   the bake input (BM-4)
 import { writeFileSync } from 'node:fs'
 
 type V3 = readonly [number, number, number]
@@ -119,9 +120,19 @@ export class Geo {
   }
 }
 
+/** The three bandit camps (BM-4), as data: the tents and the `camp.N` empties both read this, so a
+ *  layout pass (LF2-2: camp 2 onto a ledge, camp 3 into a side canyon) moves them in one place. Camp 3
+ *  stands before the gate, 12 m short of it, since clearing it is what opens the gate. */
+export const CAMPS: readonly (readonly [string, V3])[] = [
+  ['camp.1', [-14, 0, -28]],
+  ['camp.2', [13, 0, -40]],
+  ['camp.3', [8, 0, -50]],
+]
+
 let world = new Geo(),
   sky = new Geo(),
-  glow = new Geo()
+  glow = new Geo(),
+  door = new Geo()
 const BANDS: readonly Hex[] = [
   0xa94a35, 0xc4663f, 0xd98a52, 0xb9553a, 0xe2a466, 0x9c4130,
 ]
@@ -314,18 +325,19 @@ function camp(x: number, z: number): void {
   )
 }
 
-/** The canyon gate: stone pillars, a plank gate and a sign board. */
+/** The canyon gate: stone pillars and a sign board, and the plank gate itself as its own
+ *  node (`gate.door`), so the bake makes it a panel with its own collider that a flag drops (BM-4). */
 function gate(): void {
   world.box([-4.5, 0, -62], [2.4, 7, 2.4], 0x9a6a4a, 0, 0x8a5c40)
   world.box([8.5, 0, -62], [2.4, 7, 2.4], 0x9a6a4a, 0, 0x8a5c40)
   for (let x = -3; x < 7.2; x += 0.85)
-    world.box(
+    door.box(
       [x + 0.4, 0, -62],
       [0.75, 5.2, 0.3],
       x % 1.7 < 0.85 ? 0x7a4a2b : 0x6b4026,
     )
-  world.box([2, 3.6, -61.7], [10.5, 0.35, 0.2], 0x5e3a22)
-  world.box([2, 1.2, -61.7], [10.5, 0.35, 0.2], 0x5e3a22)
+  door.box([2, 3.6, -61.7], [10.5, 0.35, 0.2], 0x5e3a22)
+  door.box([2, 1.2, -61.7], [10.5, 0.35, 0.2], 0x5e3a22)
   world.box([2, 5.4, -61.9], [5, 1.3, 0.3], 0x5e3a22)
   world.box([2, 5.55, -61.7], [4.4, 0.9, 0.1], 0xc9a26a)
 }
@@ -413,12 +425,7 @@ function scene(): void {
   gate()
   waterTower(15, -20)
   railway()
-  for (const [x, z] of [
-    [-14, -28],
-    [13, -40],
-    [-3, -80],
-  ] as const)
-    camp(x, z)
+  for (const [, [x, , z]] of CAMPS) camp(x, z)
   target(2.5, -10)
   target(-3.5, -14)
   // The canyon walls: left and right rows of banded mesas, and buttes beyond the gate.
@@ -569,14 +576,119 @@ function skyDome(): void {
   cloud(0.03, 0.035, 0.035, 0.035, 0xfff2c0)
 }
 
-/** Builds the level GLB from scratch; every call returns the same bytes. */
-export function buildCanyon(): Buffer {
+const MESA = {
+  name: 'Mesa',
+  pbrMetallicRoughness: {
+    baseColorFactor: [1, 1, 1, 1],
+    metallicFactor: 0,
+    roughnessFactor: 1,
+  },
+}
+const SKY = {
+  name: 'Sky',
+  doubleSided: true,
+  pbrMetallicRoughness: {
+    baseColorFactor: [1, 1, 1, 1],
+    metallicFactor: 0,
+    roughnessFactor: 1,
+  },
+  extensions: { KHR_materials_unlit: {} },
+}
+const GLOW = {
+  name: 'Glow',
+  pbrMetallicRoughness: {
+    baseColorFactor: [1, 1, 1, 1],
+    metallicFactor: 0,
+    roughnessFactor: 1,
+  },
+  extensions: { KHR_materials_unlit: {} },
+}
+
+/** The bake's sand skirt: flat ground from the 216 m rim out to the 250 m edge, so the edge sampler finds ground. */
+function skirt(): void {
+  const rim = 216,
+    edge = 250,
+    hex = 0xd4955d
+  world.quad(
+    [-edge, 0, -edge],
+    [-edge, 0, edge],
+    [-rim, 0, edge],
+    [-rim, 0, -edge],
+    hex,
+  )
+  world.quad(
+    [rim, 0, -edge],
+    [rim, 0, edge],
+    [edge, 0, edge],
+    [edge, 0, -edge],
+    hex,
+  )
+  world.quad(
+    [-rim, 0, -edge],
+    [-rim, 0, -rim],
+    [rim, 0, -rim],
+    [rim, 0, -edge],
+    hex,
+  )
+  world.quad(
+    [-rim, 0, rim],
+    [-rim, 0, edge],
+    [rim, 0, edge],
+    [rim, 0, rim],
+    hex,
+  )
+}
+
+/** A welded copy of `g`: shared vertices with averaged normals, so the far proxy can simplify a flat-shaded mesh. */
+function welded(g: Geo): {
+  pos: number[]
+  nor: number[]
+  col: number[]
+  index: number[]
+} {
+  const at = new Map<string, number>(),
+    out = {
+      pos: [] as number[],
+      nor: [] as number[],
+      col: [] as number[],
+      index: [] as number[],
+    }
+  for (let v = 0; v < g.pos.length / 3; v++) {
+    const p = [g.pos[v * 3]!, g.pos[v * 3 + 1]!, g.pos[v * 3 + 2]!],
+      key = p.map(n => n.toFixed(3)).join(',')
+    let i = at.get(key)
+    if (i === undefined) {
+      i = out.pos.length / 3
+      at.set(key, i)
+      out.pos.push(...p)
+      out.nor.push(0, 0, 0)
+      out.col.push(g.col[v * 4]!, g.col[v * 4 + 1]!, g.col[v * 4 + 2]!, 255)
+    }
+    for (let k = 0; k < 3; k++) out.nor[i * 3 + k]! += g.nor[v * 3 + k]!
+    out.index.push(i)
+  }
+  for (let i = 0; i < out.nor.length; i += 3) {
+    const len = Math.hypot(out.nor[i]!, out.nor[i + 1]!, out.nor[i + 2]!) || 1
+    for (let k = 0; k < 3; k++) out.nor[i + k]! /= len
+    if (out.nor[i] === 0 && out.nor[i + 1] === 0 && out.nor[i + 2] === 0)
+      out.nor[i + 1] = 1
+  }
+  return out
+}
+
+/** Builds the level GLB from scratch; every call returns the same bytes. `bake` writes the
+ *  bake's input instead (BM-2's three author-side changes, now in source): no sky dome (the
+ *  sunset is `look` keys), the sand skirt to the 250 m edge, and a welded far stand-in `far.canyon`. */
+export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
+  const bake = options.bake === true
   seed = SEED
   world = new Geo()
   sky = new Geo()
   glow = new Geo()
+  door = new Geo()
   scene()
-  skyDome()
+  if (bake) skirt()
+  else skyDome()
   const chunks: Buffer[] = [],
     views: object[] = [],
     accessors: object[] = []
@@ -594,7 +706,11 @@ export function buildCanyon(): Buffer {
     offset += padded.length
     return views.length - 1
   }
-  const primitive = (g: Geo, material: number): object => {
+  const primitive = (
+    g: Pick<Geo, 'pos' | 'nor' | 'col'>,
+    material: number,
+    index?: readonly number[],
+  ): object => {
     const count = g.pos.length / 3,
       min = [Infinity, Infinity, Infinity],
       max = [-Infinity, -Infinity, -Infinity]
@@ -628,15 +744,39 @@ export function buildCanyon(): Buffer {
       5121,
       { normalized: true },
     )
+    const indices =
+      index === undefined
+        ? {}
+        : {
+            indices: (() => {
+              const view = push(
+                Buffer.from(new Uint32Array(index).buffer),
+                34963,
+              )
+              accessors.push({
+                bufferView: view,
+                componentType: 5125,
+                count: index.length,
+                type: 'SCALAR',
+              })
+              return accessors.length - 1
+            })(),
+          }
     return {
       attributes: { POSITION: position, NORMAL: normal, COLOR_0: colour },
+      ...indices,
       material,
     }
   }
+  const far = bake ? welded(world) : undefined
   const meshes = [
     { name: 'canyon', primitives: [primitive(world, 0)] },
-    { name: 'sky', primitives: [primitive(sky, 1)] },
-    { name: 'glow', primitives: [primitive(glow, 2)] },
+    ...(bake ? [] : [{ name: 'sky', primitives: [primitive(sky, 1)] }]),
+    { name: 'glow', primitives: [primitive(glow, bake ? 1 : 2)] },
+    { name: 'gate.door', primitives: [primitive(door, 0)] },
+    ...(far === undefined
+      ? []
+      : [{ name: 'far.canyon', primitives: [primitive(far, 0, far.index)] }]),
   ]
   // Named empties the product rows point at (spawn, rack, targets, camps, gate, the Wyrm's pit).
   const marks: readonly (readonly [string, V3])[] = [
@@ -644,16 +784,12 @@ export function buildCanyon(): Buffer {
     ['rack', [-2.2, 1.12, -0.92]],
     ['target.1', [2.5, 1.55, -9.88]],
     ['target.2', [-3.5, 1.55, -13.88]],
-    ['camp.1', [-14, 0, -28]],
-    ['camp.2', [13, 0, -40]],
-    ['camp.3', [-3, 0, -80]],
+    ...CAMPS,
     ['gate', [2, 0, -62]],
     ['wyrm', [2, 0, -100]],
   ]
   const nodes = [
-    { name: 'canyon', mesh: 0 },
-    { name: 'sky', mesh: 1 },
-    { name: 'glow', mesh: 2 },
+    ...meshes.map(({ name }, mesh) => ({ name, mesh })),
     ...marks.map(([name, translation]) => ({ name, translation })),
   ]
   const bin = Buffer.concat(chunks)
@@ -662,40 +798,15 @@ export function buildCanyon(): Buffer {
       version: '2.0',
       generator: 'shardfile src/tools/brasscap/canyon.ts (BM-1)',
     },
-    extensionsUsed: ['KHR_materials_unlit'],
+    ...(bake ? {} : { extensionsUsed: ['KHR_materials_unlit'] }),
     scene: 0,
     scenes: [{ name: 'brasscap-mesa', nodes: nodes.map((_, i) => i) }],
     nodes,
     meshes,
-    materials: [
-      {
-        name: 'Mesa',
-        pbrMetallicRoughness: {
-          baseColorFactor: [1, 1, 1, 1],
-          metallicFactor: 0,
-          roughnessFactor: 1,
-        },
-      },
-      {
-        name: 'Sky',
-        doubleSided: true,
-        pbrMetallicRoughness: {
-          baseColorFactor: [1, 1, 1, 1],
-          metallicFactor: 0,
-          roughnessFactor: 1,
-        },
-        extensions: { KHR_materials_unlit: {} },
-      },
-      {
-        name: 'Glow',
-        pbrMetallicRoughness: {
-          baseColorFactor: [1, 1, 1, 1],
-          metallicFactor: 0,
-          roughnessFactor: 1,
-        },
-        extensions: { KHR_materials_unlit: {} },
-      },
-    ],
+    // The bake reads no unlit extension: the sky is look keys, and glow's look entry makes it emissive.
+    materials: bake
+      ? [MESA, { ...GLOW, extensions: undefined }]
+      : [MESA, SKY, GLOW],
     accessors,
     bufferViews: views,
     buffers: [{ byteLength: bin.length }],
@@ -716,10 +827,13 @@ export function buildCanyon(): Buffer {
 }
 
 if (process.argv[1] === import.meta.filename) {
-  const out = process.argv[2] ?? 'corpus/sources/brasscap-mesa/canyon.glb',
-    file = buildCanyon()
+  const bake = process.argv.includes('--bake'),
+    out =
+      process.argv.filter(arg => arg !== '--bake')[2] ??
+      'corpus/sources/brasscap-mesa/canyon.glb',
+    file = buildCanyon({ bake })
   writeFileSync(out, file)
   process.stdout.write(
-    `${out}: ${file.length} bytes, ${(world.pos.length + sky.pos.length + glow.pos.length) / 9} triangles\n`,
+    `${out}: ${file.length} bytes, ${(world.pos.length + sky.pos.length + glow.pos.length + door.pos.length) / 9} triangles\n`,
   )
 }

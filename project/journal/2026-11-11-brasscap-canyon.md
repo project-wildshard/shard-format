@@ -117,3 +117,63 @@ lever-only subset of Pine's native assembly in rows.
   0 to 5 one round at a time and a second R gives 6. No console
   error, nothing off the machine. Shot `progress/t2-05-rifle-play.jpg`.
   `src/ci/brasscap-mesa.test.ts` holds the rows to the GLBs' empties.
+
+## BM-4: the tin bandits (opus-bm4)
+
+- `src/tools/brasscap/bandit.ts` writes `corpus/sources/brasscap-mesa/
+  bandit.glb` (61 KB, 277 triangles, 2 draws) and its skin file
+  `bandit.skin.json`: a tin can body with brass rims, a stovepipe hat,
+  a red bandana and one yellow eye, skinned to `body` and `head`, with
+  `idle`, `walk`, `attack`, `hit` and `die` clips. `die` is the fall:
+  the format names clips `idle|walk|run|attack|hit|die`, and engine
+  plays `die` when a body dies. It draws through a `platform.skin`
+  look; both blobs are in the render library.
+- Nine `brasscap.bandit` bodies (10 hp, one round each) stand three to
+  a camp on a `pursue` brain (kind `bear`, apart from the posts'
+  `greyBlob`).
+- Quest `brasscap.bandits`: one step per camp, done when that camp's
+  own three bodies are down. Engine raises `dead:<spawn id>` on the
+  host's flags at every death, so each step names its bodies
+  (`dead:bandit.camp-1.1` and so on, declared in `flags`). A first cut
+  counted `creature.<kind>` death triggers in a chain; Codex's review
+  caught that killing camp 3 first then cleared camp 1. The quest's
+  completion flag is `brasscap.gate.open`, and its scene of the same
+  name queues event 301. Per-player books in a room (BM-7) get no
+  `dead:` flags of their own yet; the lead's do.
+- `corpus/sources/brasscap-mesa/gate.as` (Template 1's door.as shape)
+  sets shared field 101 on event 301, and a target panel on that field
+  hides the gate door and drops its collider. Compiled once by
+  sharddev's pinned AssemblyScript; the 716-byte Wasm ships raw.
+- The camps are data now (`CAMPS` in canyon.ts: tents and empties),
+  and camp 3 moved to (8, -50), 12 m before the gate: behind it, it
+  could never be cleared to open it. LF2-2 moves camps 2 and 3 again.
+- **The re-bake.** The gate door is its own node, `gate.door`, so the
+  bake makes it a panel with its own collider. `canyon.ts --bake`
+  writes BM-2's bake input from source: no sky dome or unlit extension,
+  a flat sand skirt from the 216 m rim to the 250 m edge at y = 0 (the
+  entryways must meet y = 0), and a welded far stand-in `far.canyon`.
+  In a sharddev checkout, a project whose `shard.config.ts` spreads
+  `emptyShardfile(identity)` with this corpus's `look`, the gate's
+  `state`, `sim` and `hooks`, `behaviour: [{ id: 'gate', source:
+  'gate.as' }]` and `world: { glb, materials: { Mesa: 'mesa', Glow:
+  'glow' }, colliders: 'mesh', far: 'far.', farMode: 'replace',
+  interactive: [{ node: 'gate.door', id: 'brasscap.gate', colliderId:
+  'brasscap.gate' }] }`, then `wildshard build <project> <out>
+  --product-only`. Take its `world/tiles`, `world/collision`,
+  `world/props` and `sim/sim` sections, their blobs, its blob packs and
+  its sim budget into `corpus/brasscap-mesa/`, then `shardfile pack`
+  settles the measured fields. The edge profiles came out identical to
+  BM-2's; the far mesh is 6,550 triangles (BM-2's 4,814).
+- Proof: an engine preview over this corpus (`pins.ts install
+  --from-format brasscap-mesa`, a one-shard catalogue), headless
+  Chromium with `--use-mock-keychain --password-store=basic`. A walk
+  into the shut gate stops at z = -61.2. With the rifle from the rack,
+  each bandit falls to one round (a miss steps round the cover; twelve
+  rounds for nine), each camp's step completes in turn, the quest completes, the
+  gate's row reads 1, its collider is no longer solid, and the walk
+  goes through to z = -67.3. No console error, nothing off the machine.
+  Shot `progress/t2-06-bandits.jpg`.
+- Not done: the bandits close in but never hurt, since the spawns have
+  no strike row (Codex SHOULD; a strike is BM-4's follow-up or LF2-8's).
+  The bandits are lockable, and the lock-on holds the view on a fallen
+  bandit.
