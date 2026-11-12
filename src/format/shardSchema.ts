@@ -188,6 +188,10 @@ export interface Shardfile {
 }
 
 /** Semantic format violations, including reference integrity and the acyclic dependency graph. */
+/** An item action's scene name. */
+function sceneOf(row: Readonly<{ scene: string }>): string { return row.scene; }
+/** A hook's name. */
+function idOf(row: Readonly<{ id: string }>): string { return row.id; }
 export function shardfileRules(s: Shardfile): string[] {
   const errors: string[] = [];
   const pageOwner = hasDeclaredClientPage(s);
@@ -296,7 +300,9 @@ export function shardfileRules(s: Shardfile): string[] {
   if (inputConditions.some(when => when !== undefined && (when.item !== undefined && !s.items.rows.some(row => row.id === when.item) || when.flag !== undefined && !s.quests.flags.includes(when.flag)))) errors.push('declared input item and flag observations');
   if (s.quests.triggers.some((row) => row.kind === 'script' && !conditions.has(row.condition)) || s.quests.quests.some((row) => row.onComplete?.scene !== undefined && !scenes.has(row.onComplete.scene)) || s.quests.dialogue.some((row) => row.nodes.some((node) => node.choices.some((choice) => choice.scene !== undefined && !scenes.has(choice.scene))))) errors.push('declared quest script hooks');
   if (s.plumbing !== null && (s.plumbing.input.some((row) => row.actions.some((action) => action.scene !== undefined && !scenes.has(action.scene))) || s.plumbing.debug.some((row) => row.choices.some((choice) => choice.scene !== undefined && !scenes.has(choice.scene))))) errors.push('declared plumbing scene hooks');
-  if (s.hooks.scenes.length + s.hooks.conditions.length > 0 && s.sim.bindings.length === 0) errors.push('named hooks require script bindings');
+  // TE-ENG2: an item scene (a lantern's toggle, a rack's take) is run by the server's kit, not a script, so it needs no binding.
+  const itemScenes = new Set<string>(s.targets.itemActions?.map(sceneOf)), scriptScenes = s.hooks.scenes.map(idOf).filter((name): boolean => !itemScenes.has(name));
+  if (scriptScenes.length + s.hooks.conditions.length > 0 && s.sim.bindings.length === 0) errors.push('named hooks require script bindings');
   errors.push(...scriptBindingRules(s.sim.bindings, s.sim.scripts));
   if (new Set(s.sim.scripts).size !== s.sim.scripts.length) errors.push('unique script modules');
   if (s.sim.scripts.some((module) => !module.startsWith('commons:') && files.get(module)?.kind !== 'wasm')) errors.push('script module is a Wasm file');
