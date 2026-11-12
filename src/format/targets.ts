@@ -12,12 +12,15 @@ const coord = v.pipe(finite, v.minValue(-250), v.maxValue(250));
 const TALK_ROWS = 64;
 /** A prompt's place, reach and text: an interaction's, and a talk's (TE-ENG3). */
 const prompt = { id, at: v.tuple([coord, coord, coord]), radius: v.pipe(finite, v.minValue(0.1), v.maxValue(8)), label: v.pipe(v.string(), v.minLength(1), v.maxLength(128)) };
+/** A use target: its prompt runs `scene`. `unless` (TE-ENG6) names a `hooks.conditions` row: while it holds, the use is
+ *  spent and its prompt is gone (a lit brazier). */
+const interactionRow = v.strictObject({ ...prompt, scene: id, unless: v.exactOptional(id) });
 /** Named panels and colliders follow published state; interactions enqueue a named scene on the existing input path. */
 export const TargetsSchema: v.GenericSchema<ShardTargetsInput, ShardTargets> = v.strictObject({
   panels: v.pipe(v.array(v.strictObject({ panel: id, scope: v.picklist(['shared', 'player']), fieldId: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), equals: finite, visibleWhenMatched: v.boolean(), colliders: v.array(id), activeWhenMatched: v.boolean() })), v.maxLength(64)),
-  interactions: v.pipe(v.array(v.strictObject({ ...prompt, scene: id })), v.maxLength(64)),
+  interactions: v.pipe(v.array(interactionRow), v.maxLength(64)),
   itemActions: v.exactOptional(v.pipe(v.array(v.strictObject({ scene: id, item: id, action: v.picklist([3, 4]) })), v.maxLength(64))),
-  itemFields: v.exactOptional(v.pipe(v.array(v.strictObject({ item: id, fieldId: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), property: v.picklist(['fuel', 'lit']) })), v.maxLength(64))),
+  itemFields: v.exactOptional(v.pipe(v.array(v.strictObject({ item: id, fieldId: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), property: v.picklist(['fuel', 'lit', 'taken']) })), v.maxLength(64))),
   /** TE-ENG3: a quest-giver who talks from rows. `at` is its feet; its talk prompt stands over them and reaches `radius`. E
    *  opens its `quests.dialogue` tree on the player's node. `figure` names the props model or panel that draws it; none: a
    *  stand-in figure. It is never a combat target. */
@@ -34,6 +37,23 @@ function idsOf(rows: readonly Readonly<{ id: string }>[]): Set<string> {
     out.add(row.id);
   }
   return out;
+}
+/** TE-ENG6: an interaction's `unless` names a declared condition. */
+function unlessRefused(rows: readonly Readonly<{ unless?: string }>[], conditions: readonly Readonly<{ id: string }>[]): boolean {
+  for (const row of rows) {
+    if (row.unless !== undefined && !conditions.some((condition): boolean => condition.id === row.unless)) {
+      return true;
+    }
+  }
+  return false;
+}
+/** A tool projects its fuel or light; a kit.lever (TE-ENG6) whether this player has taken it from its rack. */
+function projects(items: readonly Readonly<{ id: string; kind: string; family?: string }>[], row: Readonly<{ item: string; property: string }>): boolean {
+  const item = items.find((entry) => entry.id === row.item);
+  if (row.property === 'taken') {
+    return item?.kind === 'weapon' && item.family === LEVER_FAMILY;
+  }
+  return item?.kind === 'tool';
 }
 /** TE-ENG3: a talk speaks a declared tree no other talk speaks, under its own id (never an interaction's), drawn by a props figure. */
 function talksRefused(
@@ -61,12 +81,15 @@ export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput
   const bound = targets.panels.flatMap((row) => row.colliders);
   if (new Set(bound).size !== bound.length || targets.panels.some((row) => !panels.has(row.panel) || row.colliders.some((collider) => !colliders.has(collider)))) errors.push('declared target panel/collider references');
   if (new Set(targets.interactions.map((row) => row.id)).size !== targets.interactions.length || targets.interactions.some((row) => !scenes.has(row.scene))) errors.push('declared target interaction scenes');
+  if (unlessRefused(targets.interactions, shard.hooks.conditions)) {
+    errors.push('declared target interaction conditions');
+  }
   if (targets.panels.length > 0 && shard.sim.bindings.length === 0) errors.push('target fields require script bindings');
   const actions = targets.itemActions ?? [], fields = targets.itemFields ?? [];
   if (new Set(actions.map((row) => row.scene)).size !== actions.length || actions.some((row) => !scenes.has(row.scene) || !shard.items.rows.some((item) => item.id === row.item && (item.kind === 'tool' || item.family === LEVER_FAMILY)))) errors.push('declared item action scenes');
   if (new Set(fields.map((row) => row.fieldId)).size !== fields.length || fields.some((row) => {
-    const field = shard.state.player.find((entry) => entry.id === row.fieldId), tool = shard.items.rows.find((item) => item.id === row.item && item.kind === 'tool');
-    return tool === undefined || field === undefined || field.privacy === 'host' || field.type !== (row.property === 'lit' ? 'bool' : 'f64') || (field.min ?? 0) > 0 || (field.max ?? 1) < 1;
+    const field = shard.state.player.find((entry) => entry.id === row.fieldId);
+    return !projects(shard.items.rows, row) || field === undefined || field.privacy === 'host' || field.type !== (row.property === 'fuel' ? 'f64' : 'bool') || (field.min ?? 0) > 0 || (field.max ?? 1) < 1;
   })) errors.push('declared item state projections');
   if (fields.length > 0 && shard.sim.scripts.length === 0) errors.push('item projections require declared state lane');
   if (talksRefused(targets, shard, props)) {
@@ -114,6 +137,7 @@ interface ShardTargetsFields {
         radius: number;
         label: string;
         scene: string;
+        unless?: string;
     })[];
     itemActions?: ({
         scene: string;
@@ -123,7 +147,7 @@ interface ShardTargetsFields {
     itemFields?: ({
         item: string;
         fieldId: number;
-        property: 'fuel' | 'lit';
+        property: 'fuel' | 'lit' | 'taken';
     })[];
     talks?: ({
         id: string;

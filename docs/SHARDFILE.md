@@ -585,6 +585,10 @@ Optional `targets.itemActions` maps a named scene to a declared tool and action
 `3` (toggle) or `4` (refill). Optional `targets.itemFields` maps a tool's `fuel`
 or `lit` value to a compatible player field ID. These are read-only projections
 from the single authoritative item runtime, published after its fixed step.
+A `kit.lever`'s `taken` (TE-ENG6) projects to a bool player field the same way, so a
+panel can hide the rack's own copy once this player holds it. An interaction's optional
+`unless` (TE-ENG6) names a `hooks.conditions` row: while it holds, the use is spent and
+its prompt is gone (a lit brazier). A rack's take prompt goes once its lever is taken.
 Optional `targets.talks` (TE-ENG3) puts a quest-giver on a no-code shard: an `id`,
 its feet `at`, a talk `radius` and `label`, the `quests.dialogue` tree it speaks and,
 optionally, the props model or panel `figure` that draws it (none: a stand-in). E

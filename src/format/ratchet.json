@@ -4491,8 +4491,8 @@
    "import(group-exports)": 8,
    "import(no-namespace)": 1,
    "typescript(explicit-function-return-type)": 21,
-   "typescript(prefer-readonly-parameter-types)": 21,
-   "unicorn(max-nested-calls)": 47,
+   "typescript(prefer-readonly-parameter-types)": 20,
+   "unicorn(max-nested-calls)": 46,
    "unicorn(number-literal-case)": 2,
    "unicorn(numeric-separators-style)": 2
   },
