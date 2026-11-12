@@ -145,6 +145,13 @@ export const GroundLayerSchema: v.GenericSchema<GroundLayerParamsInput, GroundLa
 
 
 const metres = (max: number) => v.pipe(v.number(), v.finite(), v.minValue(1e-3), v.maxValue(max));
+/** One unit value per measure role: [structure, trim, floor]. */
+const roles = v.tuple([unit, unit, unit]);
+/** The largest grain a measure finish takes (m). */
+const GRAIN_MAX_METRES = 8;
+const grainSize = metres(GRAIN_MAX_METRES);
+/** The measure finish's grain: an amount per role and one size (m). */
+const measureGrain = v.strictObject({ amount: roles, size: grainSize });
 /**
  * The PBR family's measure layer (SHARD-PLATFORM SF56, G152): a blockout "dev map" look drawn by the shader, no texture.
  * Every surface is coloured by its role, crossed by a 1 m grid with a lighter sub-grid, and a structure or trim face of at
@@ -168,6 +175,19 @@ export const MeasureLayerSchema: v.GenericSchema<MeasureLayerParamsInput, Measur
   label: v.optional(v.strictObject({ colour: srgb, height: metres(2) }), { colour: [1, 1, 1], height: 0.36 }),
   /** the share of the role colour that glows (unlit), so a face turned from the sun stays readable */
   lift: v.optional(unit, 0.4),
+  // The finish (meta TEMPLATE-E2E LF1-1): three optional knobs, each a triple per role [structure, trim, floor]. Absent is
+  // off (tint 0, grain 0, grid 1), so a layer that names none of them draws exactly as before. No default is filled: a
+  // product built before the knobs parses to the same bytes, so its declared source hash still holds.
+  /**
+   * Per role, the share of the surface's own colour (its vertex colour × `colour`; needs `vertexColours` and a mesh that
+   * carries colours) that replaces the role colour: 0 = the flat role colour, 1 = the mesh's colour. Two stone tones and a
+   * moss cap baked into one mesh keep their difference inside the role
+   */
+  tint: v.exactOptional(roles),
+  /** A grain: value noise in world space, `size` metres across, that shades each role's colour by up to ± `amount` */
+  grain: v.exactOptional(measureGrain),
+  /** Per role, a multiplier on the 1 m lines' and the sub-grid's opacity, down to 0 (no grid on that role) */
+  grid: v.exactOptional(roles),
 });
 /** A measure layer with every default filled. */
 
@@ -461,7 +481,7 @@ export const GRAPH_PRESET_VERSION = 1;
  */
 export function presetRefusal(entry: FamilyMaterialParams): string | null {
   if (entry.family === 'painterly' && entry.terrain !== undefined) return 'painterly preset: a painted terrain is not expressible in IR version 1';
-  if (entry.family === 'pbr' && (entry.measure === null || entry.ground !== null || entry.maps.colour !== null || entry.maps.normal !== null || entry.maps.orm !== null)) return 'pbr preset: IR version 1 expresses the measure layer alone (no maps, no ground layer)';
+  if (entry.family === 'pbr' && (entry.measure === null || entry.ground !== null || entry.maps.colour !== null || entry.maps.normal !== null || entry.maps.orm !== null || entry.measure.tint !== undefined || entry.measure.grain !== undefined || entry.measure.grid !== undefined)) return 'pbr preset: IR version 1 expresses the measure layer alone (no maps, no ground layer, no finish: tint, grain, grid)';
   if (entry.family === 'emissive') {
     const missing: string[] = [];
     if (entry.sky !== null) missing.push('a sky (atan / asin, a screen-position input, back-face depth-off unfogged render state)');
@@ -518,8 +538,8 @@ export interface ToonMaterialParamsInput { family: 'toon'; colour?: [number, num
 export type ToonMaterialParams = { family: 'toon'; colour: [number, number, number]; vertexColours: boolean; faceted: boolean; doubleSided: boolean; roughness: number; metalness: number; };
 export interface GroundLayerParamsInput { wind?: [number, number] | undefined; wavelength?: [number, number] | undefined; lump?: number | undefined; depth?: [number, number] | undefined; relief?: [number, number, number] | undefined; contrast?: { near: number; far: number; window: [number, number]; strength: number; } | undefined; fade?: [number, number] | undefined; slip?: [number, number] | undefined; flat?: [number, number] | undefined; patches?: { floor: number; near: number; window: [number, number]; } | undefined; grain?: { map: (string) | null; mean: number; glintMean: number; strength: number; } | undefined; macro?: [[number, number, number], [number, number, number]] | undefined; albedo?: number | undefined; streaks?: { tint: [number, number, number]; amount: number; } | undefined; trail?: ({ map: string; rect: [number, number, number, number]; ripples: number; tint: [number, number, number]; amount: number; }) | null | undefined; keyShadow?: ({ map: string; rect: [number, number, number, number]; edge: [number, number]; floor: number; }) | null | undefined; terminator?: number | undefined; crest?: { band: [number, number]; gain: number; } | undefined; sheen?: number | undefined; shade?: { tint: [number, number, number]; gain: number; lift: [number, number, number]; amount: number; edge: number; floor: [number, number, number]; } | undefined; saturation?: { flat: number; facing: number; coolTint: [number, number, number]; keep: number; } | undefined; away?: { from: [number, number]; amount: number; } | undefined; pools?: ({ low: [number, number, number]; high: [number, number, number]; split: number; radius: number; gain: number; source?: string; }) | null | undefined; }
 export interface GroundLayerParams { wind: [number, number]; wavelength: [number, number]; lump: number; depth: [number, number]; relief: [number, number, number]; contrast: { near: number; far: number; window: [number, number]; strength: number; }; fade: [number, number]; slip: [number, number]; flat: [number, number]; patches: { floor: number; near: number; window: [number, number]; }; grain: { map: (string) | null; mean: number; glintMean: number; strength: number; }; macro: [[number, number, number], [number, number, number]]; albedo: number; streaks: { tint: [number, number, number]; amount: number; }; trail: ({ map: string; rect: [number, number, number, number]; ripples: number; tint: [number, number, number]; amount: number; }) | null; keyShadow: ({ map: string; rect: [number, number, number, number]; edge: [number, number]; floor: number; }) | null; terminator: number; crest: { band: [number, number]; gain: number; }; sheen: number; shade: { tint: [number, number, number]; gain: number; lift: [number, number, number]; amount: number; edge: number; floor: [number, number, number]; }; saturation: { flat: number; facing: number; coolTint: [number, number, number]; keep: number; }; away: { from: [number, number]; amount: number; }; pools: ({ low: [number, number, number]; high: [number, number, number]; split: number; radius: number; gain: number; source?: string; }) | null; }
-export interface MeasureLayerParamsInput { structure?: [number, number, number] | undefined; trim?: [number, number, number] | undefined; floor?: [number, number, number] | undefined; line?: { colour: [number, number, number]; alpha: number; floorAlpha: number; width: number; } | undefined; sub?: { step: number; alpha: number; } | undefined; label?: { colour: [number, number, number]; height: number; } | undefined; lift?: number | undefined; }
-export interface MeasureLayerParams { structure: [number, number, number]; trim: [number, number, number]; floor: [number, number, number]; line: { colour: [number, number, number]; alpha: number; floorAlpha: number; width: number; }; sub: { step: number; alpha: number; }; label: { colour: [number, number, number]; height: number; }; lift: number; }
+export interface MeasureLayerParamsInput { structure?: [number, number, number] | undefined; trim?: [number, number, number] | undefined; floor?: [number, number, number] | undefined; line?: { colour: [number, number, number]; alpha: number; floorAlpha: number; width: number; } | undefined; sub?: { step: number; alpha: number; } | undefined; label?: { colour: [number, number, number]; height: number; } | undefined; lift?: number | undefined; tint?: [number, number, number]; grain?: { amount: [number, number, number]; size: number; }; grid?: [number, number, number]; }
+export interface MeasureLayerParams { structure: [number, number, number]; trim: [number, number, number]; floor: [number, number, number]; line: { colour: [number, number, number]; alpha: number; floorAlpha: number; width: number; }; sub: { step: number; alpha: number; }; label: { colour: [number, number, number]; height: number; }; lift: number; tint?: [number, number, number]; grain?: { amount: [number, number, number]; size: number; }; grid?: [number, number, number]; }
 export interface PbrMaterialParamsInput { family: 'pbr'; colour?: [number, number, number] | undefined; roughness?: number | undefined; metalness?: number | undefined; maps?: { colour: (string) | null; normal: (string) | null; orm: (string) | null; } | undefined; normalScale?: number | undefined; occlusion?: number | undefined; envStrength?: number | undefined; vertexColours?: boolean | undefined; faceted?: boolean | undefined; doubleSided?: boolean | undefined; alphaCutoff?: number | undefined; ground?: (GroundLayerParamsInput) | null | undefined; measure?: (MeasureLayerParamsInput) | null | undefined; }
 // oxlint-disable-next-line typescript/consistent-type-definitions -- Graph admission requires the material alias's implicit dictionary compatibility.
 export type PbrMaterialParams = { family: 'pbr'; colour: [number, number, number]; roughness: number; metalness: number; maps: { colour: (string) | null; normal: (string) | null; orm: (string) | null; }; normalScale: number; occlusion: number; envStrength: number; vertexColours: boolean; faceted: boolean; doubleSided: boolean; alphaCutoff: number; ground: (GroundLayerParams) | null; measure: (MeasureLayerParams) | null; };
