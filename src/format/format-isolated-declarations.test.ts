@@ -28,6 +28,7 @@ test('format production requires isolated declarations without owning tests',()=
  expect((missing.diagnostics??[]).map(row=>row.code)).toContain(9010);
 });
 
+// Two whole-library checks: 20 s locally and 61 s on CI since AC6a2's streaming validator (meta API-CLOUDFLARE AC6a2), over the suite's 30 s.
 test('every isolated format declaration remains strictly checked by browser consumers',()=>{
  const project=formatProject(),files=project.fileNames.filter(file=>file.endsWith('.ts')&&!file.endsWith('.d.ts'));
  const virtuals=new Map<string,string>(),names=new Map(files.map(file=>[
@@ -68,4 +69,4 @@ test('every isolated format declaration remains strictly checked by browser cons
  virtuals.set(consumer,"import type * as v from 'valibot';\nimport {AudioNodeSchema} from './t4-emitted-audioProfiles.js';\nexport const invalid:v.InferOutput<typeof AudioNodeSchema>={id:'emitter',panner:[1,2]};\n");
  const refused=check([...roots,consumer]);
  expect(refused.map(row=>row.code)).toEqual([2322]);
-});
+},120_000);

@@ -1,4 +1,4 @@
-// oxlint-disable eslint/max-lines, eslint/max-statements, eslint/max-lines-per-function, typescript/prefer-readonly-parameter-types -- the old validator's steps in its order, over reads that share state; the state is only read but for the held maps
+// oxlint-disable eslint/max-lines, eslint/max-statements, typescript/prefer-readonly-parameter-types -- the old validator's steps in its order, over reads that share state; the state is only read but for the held maps
 // `validateShardfileAssets`' byte checks and `checkPacks` over a second read
 // of the stored object (API-CLOUDFLARE AC6a2). The first read (product-
 // stream.ts) found the index; this one runs `admitFileBytes` on each listed
@@ -245,6 +245,16 @@ function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+/** What the later reads start from: the opener, the ports, the first read and the index. */
+interface AssetPassInput {
+  readonly open: StoredSource
+  readonly ports: AssetPassPorts
+  readonly members: ReadonlyMap<string, KeptMember>
+  readonly keptBytes: number
+  readonly index: OutputIndex
+  readonly admission: AssetAdmission | undefined
+}
+
 /** What the later reads need, worked out from the first read and the index. */
 interface AssetPlan {
   readonly open: StoredSource
@@ -407,14 +417,7 @@ function placedPaths(
 }
 
 /** The plan for the later reads. */
-function assetPlan(
-  base: Readonly<
-    Pick<
-      AssetPlan,
-      'open' | 'ports' | 'members' | 'keptBytes' | 'index' | 'admission'
-    >
-  >,
-): AssetPlan {
+function assetPlan(base: AssetPassInput): AssetPlan {
   const paths = assetPaths(base.index)
   const held = new Map<string, Readonly<Uint8Array>>()
   let current: Current | undefined = undefined
@@ -441,14 +444,7 @@ function assetPlan(
 
 /** The later reads: the asset checks and carried packs with the first group of left-out packs, then one read per
  *  further group. Without an admission (the shard failed before its bytes), only the packs. */
-async function assetPasses(
-  base: Readonly<
-    Pick<
-      AssetPlan,
-      'open' | 'ports' | 'members' | 'keptBytes' | 'index' | 'admission'
-    >
-  >,
-): Promise<AssetPasses> {
+async function assetPasses(base: AssetPassInput): Promise<AssetPasses> {
   const plan = assetPlan(base)
   const order = [...plan.members.keys()]
   const sizes = new Map(
@@ -493,5 +489,5 @@ async function assetPasses(
   }
 }
 
-export type { AssetPasses, StoredSource }
+export type { AssetPassInput, AssetPasses, StoredSource }
 export { assetPasses }

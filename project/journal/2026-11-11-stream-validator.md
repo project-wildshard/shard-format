@@ -59,3 +59,7 @@
   flaky push).
 - Still open: a JSON blob can blow the heap while it parses (millions
   of tiny objects), as in the old validator.
+- CI timed `format-isolated-declarations.test.ts` at 61 s after this
+  landed (20 s locally, from 4 s): it gets its own 120 s. The cause
+  of the slowdown is not found yet; blanking `product-stream-assets.ts`
+  brings it back to 4 s, and its emitted declaration is now small.
