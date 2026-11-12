@@ -151,7 +151,10 @@ function checkFrozenRefusal(installed: string, consumer: string): void {
 function checkWireCommand(bin: string, consumer: string): void {
   const check = run(process.execPath, [bin, 'check'], consumer)
   assert.equal(check.status, 0, check.stderr)
-  assert.match(check.stdout, /lock current; .* 1 added \(player\.name #54\)/u)
+  assert.match(
+    check.stdout,
+    /lock current; .* 2 added \(player\.name #54, animal\.species #24\)/u,
+  )
 }
 
 test('the packed package imports and checks inside a real consumer node_modules', (): void => {

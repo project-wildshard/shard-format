@@ -93,6 +93,8 @@ const ANIMAL = {
     { id: 21, name: 'rarity', node: TEXT, ...INITIAL },
     { id: 22, name: 'scale', node: F32, ...INITIAL },
     { id: 23, name: 'seed', node: U32, ...INITIAL },
+    // A declared shard's species id: two species may share one native `kind` (TE-ENG7). Empty for a native body.
+    { id: 24, name: 'species', node: TEXT, ...INITIAL },
   ],
 } as const satisfies WireClass
 

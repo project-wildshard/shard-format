@@ -9,7 +9,7 @@
     "maxNodes": 4096,
     "maxMessageBytes": 65536
   },
-  "v0SchemaHash": 3494901458,
+  "v0SchemaHash": 516954244,
   "messages": [
     {
       "id": 1,
@@ -3424,6 +3424,19 @@
             "bits": 32
           },
           "default": 0,
+          "since": 0,
+          "send": "initial",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 24,
+          "name": "species",
+          "node": {
+            "kind": "text",
+            "maxBytes": 255
+          },
+          "default": "",
           "since": 0,
           "send": "initial",
           "predicted": false,

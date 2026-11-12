@@ -83,7 +83,7 @@ test('a spawn of a class the receiver lacks is read whole and its neighbours app
     cls: ANIMAL.id,
     id: 'animal:2',
     initial: [1_065_353_216, 77],
-    text: ['wolf', 'grey', 'common'],
+    text: ['wolf', 'grey', 'common', ''],
   }
   const bytes = encodeEvents(
     5,
