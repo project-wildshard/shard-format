@@ -280,7 +280,9 @@ function settleLibrary({
   const libraryAdded = added.filter((row): boolean => library.has(row.hash)),
     libraryGone = goneRows.filter((row): boolean => library.has(row.hash))
   if (
-    libraryAdded.some((row): boolean => row.dependencies.length > 0) ||
+    [...libraryAdded, ...libraryGone].some(
+      (row): boolean => row.dependencies.length > 0,
+    ) ||
     (libraryAdded.length > 0 && libraryGone.length > 0)
   )
     throw new Error('a render-library blob changed: settle its budget by hand')
