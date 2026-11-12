@@ -20,9 +20,9 @@ import { buildBandit, buildBanditSkin } from '../tools/brasscap/bandit.ts'
 import { CAMPS } from '../tools/brasscap/canyon.ts'
 
 // BM-4 (meta TEMPLATE-E2E-PLAN): three camps of tin bandits on pursue brains.
-// Each camp is a quest step; the third camp's clear completes the quest,
-// whose hook scene sets the gate's shared field, and the gate panel's
-// collider drops on it.
+// Each camp is a step of BM-6's `brasscap.mesa` quest. The gate is its own
+// untracked quest: clearing all three camps completes it, its hook scene
+// sets the gate's shared field, and the gate panel's collider drops on it.
 
 const BRASSCAP = path.join(ROOT, 'corpus/brasscap-mesa')
 const BANDIT = 'brasscap.bandit'
@@ -49,7 +49,12 @@ const CreaturesSchema = object({
 const Condition = object({ all: optional(Strs) })
 const Step = object({ id: Str, done: Condition })
 const Complete = object({ scene: optional(Str) })
-const Quest = object({ steps: array(Step), onComplete: optional(Complete) })
+const Quest = object({
+  id: Str,
+  completeFlag: Str,
+  steps: array(Step),
+  onComplete: optional(Complete),
+})
 const QuestsSchema = object({
   quests: object({ quests: array(Quest) }),
 })
@@ -82,8 +87,30 @@ type Placed = Readonly<{
   at: readonly number[]
 }>
 
+const MESA = 'brasscap.mesa'
+const GATE_FLAG = 'brasscap.gate.open'
+
 function section(file: string): unknown {
   return JSON.parse(readFileSync(path.join(BRASSCAP, file), 'utf8'))
+}
+
+type QuestRow = Readonly<{
+  id: string
+  completeFlag: string
+  steps: readonly QuestStep[]
+  onComplete?: Readonly<{ scene?: string | undefined }> | undefined
+}>
+type QuestStep = Readonly<{
+  id: string
+  done: Readonly<{ all?: readonly string[] | undefined }>
+}>
+
+/** The quest row with this id, or the one raising this completion flag. */
+function quest(match: (row: QuestRow) => boolean): QuestRow {
+  const { quests } = parse(QuestsSchema, section('sections/quests/quests.json'))
+  const row = quests.quests.find(match)
+  assert.ok(row, 'the quest row')
+  return row
 }
 
 function sha256(bytes: Readonly<Uint8Array>): string {
@@ -169,8 +196,9 @@ function campBodies(campX: number, campZ: number): readonly string[] {
 // Engine raises `dead:<spawn id>` at each death, so a step names its own
 // camp's bodies: killing camp 3 first cannot clear camp 1.
 test('BM-4: each camp is a step, done when its own bandits are down', (): void => {
-  const { quests } = parse(QuestsSchema, section('sections/quests/quests.json'))
-  const steps = quests.quests[0]?.steps ?? []
+  const steps = quest((row: QuestRow): boolean => row.id === MESA).steps.filter(
+    (row: Row): boolean => row.id.startsWith('camp-'),
+  )
   assert.equal(steps.length, CAMPS.length)
   for (const [at, [name, [campX, , campZ]]] of CAMPS.entries()) {
     const dead = campBodies(campX, campZ).map(
@@ -180,9 +208,20 @@ test('BM-4: each camp is a step, done when its own bandits are down', (): void =
   }
 })
 
-test('BM-4: the quest sets the gate field through its hook script', (): void => {
-  const { quests } = parse(QuestsSchema, section('sections/quests/quests.json'))
-  const scene = quests.quests[0]?.onComplete?.scene
+test('BM-4: the gate opens once all three camps are down', (): void => {
+  const gate = quest((row: QuestRow): boolean => row.completeFlag === GATE_FLAG)
+  const dead = bandits().map((row: Placed): string => `dead:${row.id}`)
+  assert.deepEqual(
+    gate.steps.flatMap(
+      (row: QuestStep): readonly string[] => row.done.all ?? [],
+    ),
+    dead,
+  )
+})
+
+test('BM-4: the gate quest sets the gate field through its hook script', (): void => {
+  const gate = quest((row: QuestRow): boolean => row.completeFlag === GATE_FLAG)
+  const scene = gate.onComplete?.scene
   const { hooks } = parse(HooksSchema, section('sections/sim/hooks.json'))
   assert.ok(hooks.scenes.some((row: Row): boolean => row.id === scene))
   const { state } = parse(StateSchema, section('sections/state/state.json'))
