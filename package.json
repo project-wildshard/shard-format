@@ -16,6 +16,7 @@
     "src/cli/*.mjs",
     "!src/cli/*.test.ts",
     "corpus/handwritten/**",
+    "corpus/brasscap-mesa/**",
     "src/format/meshopt-static.mjs",
     "src/format/meshopt-decoder.wasm",
     "src/hook/format-hook.mjs",

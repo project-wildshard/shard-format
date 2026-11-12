@@ -43,3 +43,20 @@ output (tiles, collision, edge, far mesh), so BM-2 bakes it once into
 `corpus/brasscap-mesa/`. The lever-action is BM-3: engine's declared
 kit has only melee families, so the per-round lever law needs a
 lever-only subset of Pine's native assembly in rows.
+
+## BM-2: Brasscap as a product (opus-bm2)
+
+- `corpus/brasscap-mesa/` is the canyon as a product, beside Template
+  1's `corpus/handwritten/` and sharing no blob with it. Baked once in
+  a sharddev checkout (`wildshard build <project> <out> --product-only`)
+  over the GLB: 80 render tiles, 64 collision tiles, one far mesh, the
+  four edge profiles. Packs are left out, as in Template 1 (C0).
+- Three changes to the GLB for the bake, all author-side: the sky dome
+  is dropped (the sunset is now `look` keys: a 9-degree sun from the
+  west, violet ambient for long violet shadows), a flat sand skirt runs
+  from the 216 m rim to the 250 m edge (the edge sampler needs ground
+  there), and a welded copy of the canyon is the far stand-in, since a
+  flat-shaded mesh never simplifies (10,459 far triangles > 8,000).
+- Its discovery row is hidden, order 9, like Template 1's. It ships in
+  `files`, so engine's `pins.ts install --from-format brasscap-mesa`
+  reads it. `src/ci/brasscap-mesa.test.ts` holds the shape.
