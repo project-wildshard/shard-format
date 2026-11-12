@@ -38,7 +38,8 @@ const TIN = 0xb9bec4,
   HAT_SHADE = 0x2a2626,
   BANDANA = 0xc0302a,
   BANDANA_DARK = 0x9a2420,
-  EYE = 0xffe14a
+  EYE = 0xfff06a,
+  GUN = 0x2c2f34
 
 /** Joint indices, in the skin's joint order. */
 const BODY = 0,
@@ -231,9 +232,13 @@ function bandit(): void {
   mesh.can(0.3, 0.42, 0.94, TIN, TIN_SHADE, BODY, true, TIN_LIGHT)
   mesh.can(0.318, 0.42, 0.48, BRASS, BRASS_DARK, BODY, false)
   mesh.can(0.318, 0.88, 0.94, BRASS, BRASS_DARK, BODY, false)
-  // Arms hang at the sides.
+  // The left arm hangs; the right is raised forward with a revolver in its fist (LF2-8, as t2-07 and t2-10 draw it).
   mesh.box([-0.4, 0.5, -0.06], [0.1, 0.36, 0.12], STEEL, BODY)
-  mesh.box([0.3, 0.5, -0.06], [0.1, 0.36, 0.12], STEEL, BODY)
+  mesh.box([0.3, 0.6, -0.08], [0.1, 0.18, 0.14], STEEL, BODY)
+  mesh.box([0.3, 0.62, 0.0], [0.1, 0.1, 0.3], STEEL, BODY)
+  mesh.box([0.305, 0.6, 0.28], [0.09, 0.12, 0.09], BOOT, BODY)
+  mesh.box([0.33, 0.66, 0.35], [0.04, 0.05, 0.2], GUN, BODY)
+  mesh.box([0.32, 0.65, 0.33], [0.06, 0.07, 0.07], GUN, BODY, STEEL)
   // The head: a smaller tin can, a red bandana over its lower half with a flap in front, one yellow eye.
   mesh.can(0.22, 0.94, 1.2, TIN, TIN_SHADE, HEAD)
   mesh.can(0.235, 0.95, 1.04, BANDANA, BANDANA_DARK, HEAD, false)
@@ -245,7 +250,9 @@ function bandit(): void {
     HEAD,
     [0, 0.95, 0],
   )
-  mesh.box([-0.06, 1.08, 0.19], [0.12, 0.07, 0.07], EYE, HEAD)
+  // One big yellow eye in a dark socket, standing proud of the can (LF2-8).
+  mesh.box([-0.09, 1.055, 0.17], [0.18, 0.12, 0.07], HAT, HEAD)
+  mesh.box([-0.065, 1.07, 0.2], [0.13, 0.09, 0.075], EYE, HEAD)
   // The stovepipe hat: a wide brim, a tall crown and a brass band.
   mesh.can(0.34, 1.2, 1.24, HAT, HAT_SHADE, HEAD)
   mesh.can(0.19, 1.24, 1.46, HAT, HAT_SHADE, HEAD, true, HAT_SHADE)

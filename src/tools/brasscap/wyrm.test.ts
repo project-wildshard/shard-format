@@ -1,4 +1,4 @@
-/* oxlint-disable eslint/max-lines-per-function, typescript/no-non-null-assertion, eslint/curly, eslint/id-length, eslint/sort-vars, typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion, typescript/prefer-readonly-parameter-types -- A byte-level check of a generated GLB: indexed reads into typed arrays, like the generator it tests. */
+/* oxlint-disable eslint/max-lines-per-function, typescript/no-non-null-assertion, eslint/curly, eslint/id-length, eslint/sort-vars, typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion, typescript/prefer-readonly-parameter-types, eslint/max-statements, eslint/prefer-destructuring, eslint/no-plusplus -- A byte-level check of a generated GLB: indexed reads into typed arrays, like the generator it tests. */
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
@@ -23,8 +23,8 @@ const COMMITTED_SKIN = new URL(
   '../../../corpus/sources/brasscap-mesa/wyrm.skin.json',
   import.meta.url,
 )
-/** One boss on screen: well under a tile's prop budget, and a small download. */
-const MAX_TRIANGLES = 400
+/** One boss on screen: well under a tile's prop budget (LF2-8's arched, plated body and open maw), and a small download. */
+const MAX_TRIANGLES = 600
 const MAX_BYTES = 96 * 1024
 const JOINTS = ['body', 'neck', 'head', 'jaw']
 
@@ -160,5 +160,39 @@ describe('the Brasscap Dust Wyrm generator (BM-5)', (): void => {
         [row.file, new Uint8Array(glb)],
       ]),
     )
+  })
+  it("binds every vertex wholly to one joint, and the jaw carries the maw's lower lip (LF2-8)", (): void => {
+    const file = buildWyrm(),
+      length = file.readUInt32LE(12),
+      json = JSON.parse(file.subarray(20, 20 + length).toString()) as {
+        accessors: {
+          bufferView: number
+          count: number
+          componentType: number
+          normalized?: boolean
+        }[]
+        bufferViews: { byteOffset: number }[]
+        meshes: { primitives: { attributes: Record<string, number> }[] }[]
+      },
+      bin = file.subarray(28 + length),
+      attributes = json.meshes[0]!.primitives[0]!.attributes,
+      joints = json.accessors[attributes['JOINTS_0']!]!,
+      weights = json.accessors[attributes['WEIGHTS_0']!]!
+    assert.equal(joints.componentType, 5121)
+    assert.equal(weights.componentType, 5121)
+    assert.equal(weights.normalized, true)
+    const jointAt = json.bufferViews[joints.bufferView]!.byteOffset,
+      weightAt = json.bufferViews[weights.bufferView]!.byteOffset
+    let jaw = 0
+    for (let v = 0; v < joints.count; v++) {
+      assert.ok(bin[jointAt + v * 4]! < 4)
+      assert.deepEqual(
+        [...bin.subarray(weightAt + v * 4, weightAt + v * 4 + 4)],
+        [255, 0, 0, 0],
+      )
+      if (bin[jointAt + v * 4] === 3) jaw++
+    }
+    // The rim's three faces below the mouth's axis (6 triangles) and the four lower teeth (16).
+    assert.equal(jaw / 3, 22)
   })
 })

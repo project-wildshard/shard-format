@@ -3,26 +3,28 @@
 // TEMPLATE-E2E-PLAN. An author-side stand-in for the Blender export, like
 // bandit.ts (BM-4): a flat-shaded, vertex-coloured low-poly skinned creature
 // as one GLB, for a `platform.skin` look. A sand mound with a plated
-// segmented body rising out of it (terracotta and cream plates, cream
-// spines down its back), a blunt armoured head, and a jaw plate over a
-// bright yellow gullet. About 1.9 m tall at scale 1 (the spawn scales it),
-// its base at y = 0, facing +Z.
+// segmented body rising out of it and arching over toward +Z (terracotta
+// plates, cream spines down its back), ending in a round maw: a cream rim
+// with eight teeth round a dark throat and the bright yellow gullet, open
+// in every pose as the targets draw it (LF2-8). About 2.1 m tall at scale 1
+// (the spawn scales it), its base at y = 0, facing +Z.
 //
 // Joints, in skin order: `body` (root, the lower segments), `neck`, `head`
-// and `jaw` (the plate over the gullet), each a child of the one before;
+// and `jaw` (the maw's lower lip: the rim's lower half and lower four
+// teeth, hinged at the rim's foot), each a child of the one before;
 // all four are sockets. The bind pose is unrotated and unscaled.
 //
 // Clips, linear keys on every joint's translation and rotation (every clip
 // sets all four, so no pose leaks between clips):
 //   `attack.rise`  the body heaves up out of the mound and rears back,
 //   `attack.burst` it slams its head down into the sand (the sand-ring tell),
-//   `attack.open`  it lifts its head and the jaw drops: the gullet is open
+//   `attack.open`  it lifts its head and the jaw drops: the maw gapes wide
 //                  (shipped for when engine can play a clip from a field;
 //                  until then the open window shows as gullet particles),
 //   `attack`       rise then burst, since engine plays `attack` across a
 //                  strike's windup only and cancels it as the strike lands:
 //                  the burst's slam meets the windup's end,
-//   `idle`         a slow weave, the jaw shut; `hit` a recoil; `die` it
+//   `idle`         a slow weave, the jaw at rest; `hit` a recoil; `die` it
 //                  sinks back under the sand.
 //
 // It also writes the skin file (`wyrm.skin.json`: the rig row, with the
@@ -37,27 +39,83 @@ import { parseGlbData } from '../../format/glbCost.ts'
 type V3 = readonly [number, number, number]
 type Hex = number
 
-const SAND = 0xd9a86a,
-  SAND_SHADE = 0xbf8f55,
-  TERRA = 0xb5532f,
-  TERRA_SHADE = 0x93401f,
-  CREAM = 0xeadcb8,
-  CREAM_SHADE = 0xcdbb92,
-  MAW = 0x2a1410,
-  GULLET = 0xffd23a,
-  GULLET_DEEP = 0xff9a1a
+// LF2-8: lighter than BM-5's, so the Wyrm reads warm against the low sun behind it, not dark.
+const SAND = 0xe2b47a,
+  SAND_SHADE = 0xc99a5e,
+  TERRA = 0xd0693c,
+  TERRA_SHADE = 0xb1532e,
+  TERRA_LIGHT = 0xe08a58,
+  CREAM = 0xf4e6c4,
+  CREAM_SHADE = 0xdcc79c,
+  MAW = 0x4a1c12,
+  MAW_DEEP = 0x6e2a14,
+  GULLET = 0xfff27a,
+  GULLET_DEEP = 0xffb02e
 
 /** Joint indices, in the skin's joint order. */
 const BODY = 0,
   NECK = 1,
   HEAD = 2,
   JAW = 3
-/** World rest positions of the joints. */
+type Vec = [number, number, number]
+const add = (a: V3, b: V3, k = 1): Vec => [
+  a[0] + b[0] * k,
+  a[1] + b[1] * k,
+  a[2] + b[2] * k,
+]
+/** The curve's side axis: the Wyrm arches in the y-z plane, so every ring's first axis is +x. */
+const SIDE: V3 = [1, 0, 0]
+/** A ring's second axis for tangent `t`: x cross t, in the y-z plane (+z at the upright base: the front). */
+const front = (t: V3): V3 => [0, -t[2], t[1]]
+const dir = (theta: number): V3 => [0, Math.cos(theta), Math.sin(theta)]
+function ringAt(c: V3, t: V3, r: number, sides: number): Vec[] {
+  const n = front(t)
+  return Array.from({ length: sides }, (_, i) => {
+    const a = ((i + 0.5) / sides) * Math.PI * 2
+    return add(add(c, SIDE, Math.cos(a) * r), n, Math.sin(a) * r)
+  })
+}
+
+/**
+ * LF2-8: the spine's lean from upright, per segment (radians toward +z, the front). The body rises out of the mound
+ * and arches over toward the player, so the round maw at its end faces them, as `t2-14` and `t2-15` draw it.
+ */
+const LEAN = [0, 0.06, 0.16, 0.32, 0.52, 0.78, 1.04, 1.3] as const
+const HEAD_LEAN = 1.62
+const SEGMENT = 0.235
+const RADII = [0.5, 0.5, 0.49, 0.47, 0.46, 0.45, 0.45, 0.48, 0.56] as const
+/**
+ * Seen from the front the arch would be a straight column, so it also sweeps across: the base sits off to -x and the
+ * body swings back over the mound's centre as it rises, the maw centred (the curve of `t2-15`).
+ */
+const SWEEP = [-0.4, -0.42, -0.4, -0.34, -0.25, -0.15, -0.07, -0.02, 0] as const
+/** Spine points p0..p8 and the tangent at each (the mean of the segments meeting there, in the y-z plane). */
+const SPINE: V3[] = [[SWEEP[0], 0.06, 0]]
+LEAN.forEach((theta, k): void => {
+  const at = add(SPINE.at(-1)!, dir(theta), SEGMENT)
+  SPINE.push([SWEEP[k + 1]!, at[1], at[2]])
+})
+const TANGENT: V3[] = SPINE.map((_, k): V3 => {
+  const before = LEAN[k - 1] ?? LEAN[0],
+    after = LEAN[k] ?? HEAD_LEAN
+  return dir((before + after) / 2)
+})
+/** The segment a joint owns from: body p0..p2, neck p3..p5, head p6 on. */
+function ownerOf(k: number): number {
+  if (k < 3) return BODY
+  return k < 6 ? NECK : HEAD
+}
+
+/** The mouth's down axis at the rim (the jaw side), and the rim's centre. */
+const MOUTH_T = dir(HEAD_LEAN)
+const RIM = SPINE[8]!
+
+/** World rest positions of the joints: the body in the mound, the neck and head on the arch (LF2-8). */
 export const BODY_AT: V3 = [0, 0.3, 0]
-export const NECK_AT: V3 = [0, 0.85, 0]
-export const HEAD_AT: V3 = [0, 1.35, 0]
-/** The jaw hinges at the bottom front of the head. */
-export const JAW_AT: V3 = [0, 1.38, 0.24]
+export const NECK_AT: V3 = SPINE[3]!
+export const HEAD_AT: V3 = SPINE[6]!
+/** The jaw hinges at the bottom of the maw's rim, where the lower teeth sit. */
+export const JAW_AT: V3 = add(RIM, front(MOUTH_T), 0.52)
 const JOINTS = ['body', 'neck', 'head', 'jaw'] as const
 
 export const WYRM_ID = 'brasscap.wyrm'
@@ -260,40 +318,172 @@ class Mesh {
 
 let mesh = new Mesh()
 
+/** A frustum from ring (a, ta, ra) to ring (b, tb, rb), faces alternating two shades, outward from its axis. */
+function frustum(
+  a: V3,
+  ta: V3,
+  ra: number,
+  b: V3,
+  tb: V3,
+  rb: number,
+  hex: Hex,
+  shade: Hex,
+  joint: number | ((face: number) => number),
+  sides = 8,
+): void {
+  const ring0 = ringAt(a, ta, ra, sides),
+    ring1 = ringAt(b, tb, rb, sides),
+    centre: V3 = add(a, add(b, a, -1), 0.5)
+  for (let i = 0; i < sides; i++) {
+    const j = (i + 1) % sides
+    mesh.quad(
+      ring0[i]!,
+      ring0[j]!,
+      ring1[j]!,
+      ring1[i]!,
+      i % 2 === 0 ? hex : shade,
+      typeof joint === 'number' ? joint : joint(i),
+      centre,
+    )
+  }
+}
+/** A three-sided cone from a base round `at` (perpendicular to the tip) to `tip`. */
+function cone(at: V3, tip: V3, r: number, hex: Hex, joint: number): void {
+  const axis = add(tip, at, -1),
+    len = Math.hypot(...axis),
+    t: V3 = [axis[0] / len, axis[1] / len, axis[2] / len]
+  // Any axis not along t, then two perpendiculars.
+  const pick: V3 = Math.abs(t[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0]
+  const u: Vec = [
+    t[1] * pick[2] - t[2] * pick[1],
+    t[2] * pick[0] - t[0] * pick[2],
+    t[0] * pick[1] - t[1] * pick[0],
+  ]
+  const ul = Math.hypot(...u),
+    uu: V3 = [u[0] / ul, u[1] / ul, u[2] / ul],
+    w: V3 = [
+      t[1] * uu[2] - t[2] * uu[1],
+      t[2] * uu[0] - t[0] * uu[2],
+      t[0] * uu[1] - t[1] * uu[0],
+    ]
+  const base = [0, 1, 2].map(i => {
+    const a = (i / 3) * Math.PI * 2
+    return add(add(at, uu, Math.cos(a) * r), w, Math.sin(a) * r)
+  })
+  const centre = add(at, axis, 1 / 3)
+  for (let i = 0; i < 3; i++)
+    mesh.tri(base[i]!, base[(i + 1) % 3]!, tip, hex, joint, centre)
+  mesh.tri(base[0]!, base[1]!, base[2]!, hex, joint, centre)
+}
+
 function wyrm(): void {
   // The sand mound it bursts from (on `body`, so it sinks with it on death only a little).
-  mesh.ring(0.95, 0.7, 0, 0.14, SAND, SAND_SHADE, BODY, false)
-  mesh.ring(0.7, 0.46, 0.14, 0.26, SAND, SAND_SHADE, BODY, true)
-  // Lower segments: plated terracotta with cream bands.
-  mesh.ring(0.44, 0.42, 0.1, 0.5, TERRA, TERRA_SHADE, BODY, false)
-  mesh.ring(0.47, 0.47, 0.44, 0.52, CREAM, CREAM_SHADE, BODY, false)
-  mesh.ring(0.41, 0.38, 0.5, 0.86, TERRA, TERRA_SHADE, BODY, false)
-  mesh.ring(0.43, 0.43, 0.78, 0.86, CREAM, CREAM_SHADE, BODY, false)
-  // Neck segments.
-  mesh.ring(0.37, 0.34, 0.84, 1.12, TERRA, TERRA_SHADE, NECK, false)
-  mesh.ring(0.39, 0.39, 1.04, 1.12, CREAM, CREAM_SHADE, NECK, false)
-  mesh.ring(0.33, 0.32, 1.1, 1.36, TERRA, TERRA_SHADE, NECK, false)
-  // Cream spines down the back (-Z).
-  for (const [y, joint] of [
-    [0.6, BODY],
-    [0.95, NECK],
-    [1.22, NECK],
-  ] as const)
-    mesh.spike([0, y, -0.34], [0, y + 0.12, -0.62], 0.07, CREAM, joint)
-  // The head: an armoured terracotta block with a cream brow plate and crest.
-  mesh.ring(0.34, 0.3, 1.34, 1.78, TERRA, TERRA_SHADE, HEAD, true, 0.04)
-  mesh.box([-0.3, 1.66, -0.05], [0.6, 0.16, 0.42], CREAM, HEAD, CREAM_SHADE)
-  mesh.spike([0, 1.8, -0.12], [0, 2.02, -0.42], 0.08, CREAM, HEAD)
-  for (const x of [-0.22, 0.22])
-    mesh.spike([x, 1.74, 0.1], [x * 1.6, 1.9, -0.18], 0.05, CREAM, HEAD)
-  // The maw: a dark socket on the head's front with the yellow gullet deep in it.
-  mesh.box([-0.22, 1.4, 0.3], [0.44, 0.3, 0.06], MAW, HEAD)
-  mesh.box([-0.15, 1.45, 0.34], [0.3, 0.2, 0.04], GULLET_DEEP, HEAD)
-  mesh.box([-0.1, 1.49, 0.37], [0.2, 0.12, 0.03], GULLET, HEAD)
-  // The jaw plate over the maw, hinged at the bottom; cream teeth along its top edge.
-  mesh.box([-0.27, 1.38, 0.4], [0.54, 0.36, 0.08], CREAM, JAW, CREAM_SHADE)
-  for (const x of [-0.18, -0.06, 0.06, 0.18])
-    mesh.spike([x, 1.72, 0.42], [x, 1.8, 0.43], 0.035, CREAM_SHADE, JAW)
+  mesh.ring(1.2, 0.86, 0, 0.16, SAND, SAND_SHADE, BODY, false)
+  mesh.ring(0.86, 0.56, 0.16, 0.3, SAND, SAND_SHADE, BODY, true)
+  // Plated segments along the arch: terracotta, each running a little into the next so a bend never opens a gap.
+  for (let k = 0; k < 8; k++) {
+    const a = SPINE[k]!,
+      b = add(SPINE[k + 1]!, TANGENT[k + 1]!, k === 7 ? 0 : 0.04)
+    frustum(
+      a,
+      TANGENT[k]!,
+      RADII[k]!,
+      b,
+      k === 7 ? MOUTH_T : TANGENT[k + 1]!,
+      RADII[k + 1]!,
+      TERRA,
+      TERRA_SHADE,
+      ownerOf(k),
+    )
+  }
+  // A raised plate rim over every joint of the arch (lighter terracotta, as the targets' plates catch the light), and
+  // a cream spine on the back of most.
+  for (let k = 1; k < 8; k++) {
+    const c = SPINE[k]!,
+      t = TANGENT[k]!,
+      r = RADII[k]! + 0.04
+    frustum(
+      add(c, t, -0.05),
+      t,
+      r,
+      add(c, t, 0.05),
+      t,
+      r,
+      TERRA_LIGHT,
+      TERRA,
+      ownerOf(k),
+    )
+    if (k >= 2) {
+      const back: V3 = [0, front(t)[1] * -1, front(t)[2] * -1]
+      cone(
+        add(c, back, r - 0.02),
+        add(add(c, back, r + 0.2), t, -0.1),
+        0.06,
+        CREAM,
+        ownerOf(k),
+      )
+    }
+  }
+  // The maw: a cream rim, a dark throat narrowing inward, and the yellow gullet at its end.
+  frustum(
+    add(RIM, MOUTH_T, -0.03),
+    MOUTH_T,
+    0.6,
+    add(RIM, MOUTH_T, 0.05),
+    MOUTH_T,
+    0.56,
+    CREAM,
+    CREAM_SHADE,
+    // The rim's lower half (faces centred below the mouth's axis) is the jaw's lip.
+    (face: number): number =>
+      Math.sin(((face + 1) / 8) * Math.PI * 2) > 1e-6 ? JAW : HEAD,
+  )
+  const throat: readonly (readonly [number, number, Hex, Hex])[] = [
+    [0.05, 0.52, MAW, MAW_DEEP],
+    [-0.12, 0.34, MAW_DEEP, MAW],
+    [-0.26, 0.23, GULLET_DEEP, GULLET_DEEP],
+    [-0.3, 0.17, GULLET, GULLET],
+  ]
+  for (let i = 0; i + 1 < throat.length; i++) {
+    const [d0, r0, hex, shade] = throat[i]!,
+      [d1, r1] = throat[i + 1]!
+    // Inward normals: the throat's faces are wound out from a point deep behind the gullet.
+    const ring0 = ringAt(add(RIM, MOUTH_T, d0), MOUTH_T, r0, 8),
+      ring1 = ringAt(add(RIM, MOUTH_T, d1), MOUTH_T, r1, 8),
+      deep = add(RIM, MOUTH_T, -1.2)
+    for (let s = 0; s < 8; s++) {
+      const j = (s + 1) % 8
+      mesh.quad(
+        ring0[s]!,
+        ring0[j]!,
+        ring1[j]!,
+        ring1[s]!,
+        s % 2 === 0 ? hex : shade,
+        HEAD,
+        deep,
+      )
+    }
+  }
+  const gullet = ringAt(add(RIM, MOUTH_T, -0.3), MOUTH_T, 0.17, 8),
+    core = add(RIM, MOUTH_T, -0.3)
+  for (let s = 0; s < 8; s++)
+    mesh.tri(
+      core,
+      gullet[s]!,
+      gullet[(s + 1) % 8]!,
+      GULLET,
+      HEAD,
+      add(RIM, MOUTH_T, -1.2),
+    )
+  // Eight cream teeth round the rim, pointing in and forward; the lower four ride the jaw.
+  for (let i = 0; i < 8; i++) {
+    const a = ((i + 0.5) / 8) * Math.PI * 2,
+      n = front(MOUTH_T),
+      out = add(add([0, 0, 0], SIDE, Math.cos(a)), n, Math.sin(a)),
+      at = add(add(RIM, out, 0.5), MOUTH_T, 0.03),
+      tip = add(add(RIM, out, 0.34), MOUTH_T, 0.17)
+    cone(at, tip, 0.06, CREAM_SHADE, Math.sin(a) > 0 ? JAW : HEAD)
+  }
 }
 
 type Quat = readonly [number, number, number, number]
@@ -518,7 +708,7 @@ export function buildWyrm(): Buffer {
     weights: number[] = []
   for (const j of mesh.joint) {
     joints.push(j, 0, 0, 0)
-    weights.push(1, 0, 0, 0)
+    weights.push(255, 0, 0, 0)
   }
   const position = acc(push(f32(mesh.pos), 34962), 'VEC3', 5126, count, {
     min,
@@ -526,22 +716,29 @@ export function buildWyrm(): Buffer {
   })
   const normal = acc(push(f32(mesh.nor), 34962), 'VEC3', 5126, count)
   const colour = acc(push(f32(mesh.col), 34962), 'VEC3', 5126, count)
+  // LF2-8: one byte per joint index and per weight (each triangle is bound wholly to one joint, so 255 is 1).
   const joint = acc(
-    push(Buffer.from(new Uint16Array(joints).buffer), 34962),
+    push(Buffer.from(new Uint8Array(joints).buffer), 34962),
     'VEC4',
-    5123,
+    5121,
     count,
   )
-  const weight = acc(push(f32(weights), 34962), 'VEC4', 5126, count)
+  const weight = acc(
+    push(Buffer.from(new Uint8Array(weights).buffer), 34962),
+    'VEC4',
+    5121,
+    count,
+    { normalized: true },
+  )
   const indices = acc(
     push(
       Buffer.from(
-        new Uint32Array(Array.from({ length: count }, (_, i) => i)).buffer,
+        new Uint16Array(Array.from({ length: count }, (_, i) => i)).buffer,
       ),
       34963,
     ),
     'SCALAR',
-    5125,
+    5123,
     count,
   )
   const animations = CLIPS.map(clip => {

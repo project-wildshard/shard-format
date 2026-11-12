@@ -3,7 +3,8 @@
 // TEMPLATE-E2E-PLAN. An author-side stand-in for the Blender export, like
 // canyon.ts (BM-1): a flat-shaded, vertex-coloured low-poly rifle as one GLB,
 // walnut stock and fore-end, brass receiver and lever loop, a blued octagonal
-// barrel over its magazine tube. Two primitives: matte (wood, steel) and brass.
+// barrel over its magazine tube, and the holder's gloved hands and sleeves
+// (LF2-8). Two primitives: matte (wood, steel, leather, cloth) and brass.
 // The rifle lies along -Z (the muzzle forward, as a camera-held model points),
 // +Y up, the origin at the receiver. Named empties: `muzzle` at the barrel's
 // tip, `grip` at the wrist and `fore` under the fore-end, where hands go.
@@ -24,7 +25,13 @@ const WALNUT = 0x6b3a1f,
   BRASS_DARK = 0x9c7a1c,
   BLUED = 0x2f3338,
   STEEL = 0x454b52,
-  BUTT_PLATE = 0x3a2a20
+  BUTT_PLATE = 0x3a2a20,
+  // LF2-8: the holder's brown leather gloves and tan duster sleeves, as t2-03 and t2-07 draw them.
+  GLOVE = 0x80553a,
+  GLOVE_DARK = 0x60402a,
+  CUFF = 0x45291a,
+  SLEEVE = 0xc2733c,
+  SLEEVE_SHADE = 0xa55d2e
 
 /** The barrel's tip, where rounds and the flash leave. */
 export const MUZZLE: V3 = [0, 0.028, -0.74]
@@ -149,6 +156,97 @@ function tube(
   }
 }
 
+/** A prism of `sides` from ring (a, ra) to ring (b, rb), round the axis a to b, capped; faces alternate two shades. */
+function limb(
+  g: Geo,
+  a: V3,
+  b: V3,
+  ra: number,
+  rb: number,
+  sides: number,
+  hex: Hex,
+  shade: Hex = hex,
+): void {
+  const d = sub(b, a),
+    len = Math.hypot(...d),
+    t: V3 = [d[0] / len, d[1] / len, d[2] / len],
+    pick: V3 = Math.abs(t[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0],
+    u0: V3 = [
+      t[1] * pick[2] - t[2] * pick[1],
+      t[2] * pick[0] - t[0] * pick[2],
+      t[0] * pick[1] - t[1] * pick[0],
+    ],
+    ul = Math.hypot(...u0),
+    u: V3 = [u0[0] / ul, u0[1] / ul, u0[2] / ul],
+    w: V3 = [
+      t[1] * u[2] - t[2] * u[1],
+      t[2] * u[0] - t[0] * u[2],
+      t[0] * u[1] - t[1] * u[0],
+    ]
+  const ring = (c: V3, r: number): V3[] =>
+    Array.from({ length: sides }, (_, i) => {
+      const k = (i / sides) * Math.PI * 2 + Math.PI / sides,
+        x = Math.cos(k) * r,
+        y = Math.sin(k) * r
+      return [
+        c[0] + u[0] * x + w[0] * y,
+        c[1] + u[1] * x + w[1] * y,
+        c[2] + u[2] * x + w[2] * y,
+      ] as const
+    })
+  const back = ring(a, ra),
+    front = ring(b, rb),
+    part = new Part(g, centroid([a, b]))
+  part.face(back, shade)
+  part.face(front, shade)
+  for (let i = 0; i < sides; i++) {
+    const j = (i + 1) % sides
+    part.face(
+      [back[i]!, back[j]!, front[j]!, front[i]!],
+      i % 2 === 0 ? hex : shade,
+    )
+  }
+}
+
+/**
+ * The holder's hands (LF2-8): a gloved right hand round the wrist, its fingers into the lever loop, and a gloved left
+ * hand cupping the fore-end; each wrist has a dark cuff and a sleeve that runs back and down out of the frame.
+ */
+function hands(g: Geo): void {
+  // Right hand: the palm over the wrist, a thumb across its top, two finger bars curled into the loop.
+  box(g, [0.005, -0.03, 0.15], [0.058, 0.08, 0.09], GLOVE, GLOVE)
+  box(g, [0.034, -0.026, 0.135], [0.012, 0.05, 0.07], GLOVE_DARK)
+  box(g, [-0.012, 0.012, 0.13], [0.022, 0.018, 0.06], GLOVE_DARK)
+  box(g, [0, -0.08, 0.1], [0.03, 0.022, 0.03], GLOVE_DARK)
+  box(g, [0, -0.08, 0.135], [0.03, 0.022, 0.03], GLOVE)
+  limb(g, [0.012, -0.045, 0.185], [0.04, -0.105, 0.265], 0.036, 0.042, 6, CUFF)
+  limb(
+    g,
+    [0.035, -0.095, 0.25],
+    [0.12, -0.3, 0.56],
+    0.047,
+    0.058,
+    6,
+    SLEEVE,
+    SLEEVE_SHADE,
+  )
+  // Left hand: under and round the fore-end, fingers up its far side, the thumb along its near side.
+  box(g, [0.0, -0.04, -0.27], [0.056, 0.03, 0.1], GLOVE)
+  box(g, [0.026, -0.012, -0.275], [0.014, 0.05, 0.085], GLOVE_DARK)
+  box(g, [-0.026, -0.016, -0.26], [0.012, 0.036, 0.07], GLOVE)
+  limb(g, [-0.006, -0.055, -0.235], [-0.04, -0.1, -0.16], 0.034, 0.04, 6, CUFF)
+  limb(
+    g,
+    [-0.036, -0.094, -0.175],
+    [-0.22, -0.36, 0.14],
+    0.045,
+    0.058,
+    6,
+    SLEEVE,
+    SLEEVE_SHADE,
+  )
+}
+
 /** The lever loop: four bars round a finger hole, under the receiver. */
 function lever(g: Geo): void {
   const w = 0.012,
@@ -251,6 +349,7 @@ function rifle(): void {
   box(brass, [0, 0.012, -0.6], [0.03, 0.05, 0.01], BRASS, BRASS_LIGHT)
   box(matte, [0, 0.046, -0.2], [0.014, 0.012, 0.008], STEEL) // rear sight
   box(brass, [0, 0.047, -0.72], [0.003, 0.014, 0.01], BRASS_LIGHT) // front bead
+  hands(matte)
 }
 
 /** One GLB: a mesh of two primitives (matte, brass) and the named empties. */
