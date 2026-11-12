@@ -286,7 +286,7 @@ export function shardfileRules(s: Shardfile): string[] {
   errors.push(...hookRules(s.hooks, s.state));
   errors.push(...meshCollisionRules(s));
   errors.push(...nativeGroundRules(s), ...navigationRules(s));
-  errors.push(...targetRules(s.targets, s, { panels: s.props?.panels ?? [], colliders: [...s.props?.colliders ?? [], ...s.meshCollision?.panels ?? []] }));
+  errors.push(...targetRules(s.targets, s, { panels: s.props?.panels ?? [], colliders: [...s.props?.colliders ?? [], ...s.meshCollision?.panels ?? []], models: s.props?.models ?? [] }));
   errors.push(...itemRules(s.items, s.sim.scripts));
   if (s.migrations.some(step => step.equipmentSlots?.some(rename => !s.items.rows.some(row => row.kind === 'weapon' && row.slot === rename.to)))) errors.push('migration equipment slots resolve declared weapons');
   if ((s.items.runtimeContexts?.length ?? 0) > 0 && !pageOwner && s.runtime?.binds?.includes('items') !== true) errors.push('native input contexts require their declared page or runtime owner');

@@ -585,6 +585,12 @@ Optional `targets.itemActions` maps a named scene to a declared tool and action
 `3` (toggle) or `4` (refill). Optional `targets.itemFields` maps a tool's `fuel`
 or `lit` value to a compatible player field ID. These are read-only projections
 from the single authoritative item runtime, published after its fixed step.
+Optional `targets.talks` (TE-ENG3) puts a quest-giver on a no-code shard: an `id`,
+its feet `at`, a talk `radius` and `label`, the `quests.dialogue` tree it speaks and,
+optionally, the props model or panel `figure` that draws it (none: a stand-in). E
+opens the player's current node; a choice sets its flags (so a `startWhen` quest
+starts) and a node without choices ends the talk. The server keeps each player's
+node in the existing dialogue save. A talk is never a combat target.
 
 Local references are file hashes; shared references are `commons:<hash>` and must be
 declared in `requires.commons`. Every local dependency resolves. The dependency graph

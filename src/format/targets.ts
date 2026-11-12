@@ -8,19 +8,54 @@ import type { ShardItems } from './items.ts';
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9.-]*$/u), v.maxLength(128));
 const finite = v.pipe(v.number(), v.finite());
 const coord = v.pipe(finite, v.minValue(-250), v.maxValue(250));
+/** How many talks a shard may declare. */
+const TALK_ROWS = 64;
+/** A prompt's place, reach and text: an interaction's, and a talk's (TE-ENG3). */
+const prompt = { id, at: v.tuple([coord, coord, coord]), radius: v.pipe(finite, v.minValue(0.1), v.maxValue(8)), label: v.pipe(v.string(), v.minLength(1), v.maxLength(128)) };
 /** Named panels and colliders follow published state; interactions enqueue a named scene on the existing input path. */
 export const TargetsSchema: v.GenericSchema<ShardTargetsInput, ShardTargets> = v.strictObject({
   panels: v.pipe(v.array(v.strictObject({ panel: id, scope: v.picklist(['shared', 'player']), fieldId: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), equals: finite, visibleWhenMatched: v.boolean(), colliders: v.array(id), activeWhenMatched: v.boolean() })), v.maxLength(64)),
-  interactions: v.pipe(v.array(v.strictObject({ id, at: v.tuple([coord, coord, coord]), radius: v.pipe(finite, v.minValue(0.1), v.maxValue(8)), label: v.pipe(v.string(), v.minLength(1), v.maxLength(128)), scene: id })), v.maxLength(64)),
+  interactions: v.pipe(v.array(v.strictObject({ ...prompt, scene: id })), v.maxLength(64)),
   itemActions: v.exactOptional(v.pipe(v.array(v.strictObject({ scene: id, item: id, action: v.picklist([3, 4]) })), v.maxLength(64))),
   itemFields: v.exactOptional(v.pipe(v.array(v.strictObject({ item: id, fieldId: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), property: v.picklist(['fuel', 'lit']) })), v.maxLength(64))),
+  /** TE-ENG3: a quest-giver who talks from rows. `at` is its feet; its talk prompt stands over them and reaches `radius`. E
+   *  opens its `quests.dialogue` tree on the player's node. `figure` names the props model or panel that draws it; none: a
+   *  stand-in figure. It is never a combat target. */
+  talks: v.exactOptional(v.pipe(v.array(v.strictObject({ ...prompt, dialogue: id, figure: v.exactOptional(id) })), v.maxLength(TALK_ROWS))),
 });
 /** Plain target bindings, without authored callbacks or collider mutations. */
 
 /** A declared lever-action (TE-ENG2) is the one weapon an item scene may name: its action 3 takes it from a rack, 4 reloads it. */
 const LEVER_FAMILY = 'kit.lever';
+/** Each row's id. */
+function idsOf(rows: readonly Readonly<{ id: string }>[]): Set<string> {
+  const out = new Set<string>();
+  for (const row of rows) {
+    out.add(row.id);
+  }
+  return out;
+}
+/** TE-ENG3: a talk speaks a declared tree no other talk speaks, under its own id (never an interaction's), drawn by a props figure. */
+function talksRefused(
+  targets: Readonly<{ interactions: readonly Readonly<{ id: string }>[]; talks?: readonly Readonly<{ id: string; dialogue: string; figure?: string }>[] }>,
+  shard: Readonly<{ quests?: Readonly<{ dialogue: readonly Readonly<{ id: string }>[] }> }>,
+  props: Readonly<{ panels: readonly Readonly<{ id: string }>[]; models?: readonly Readonly<{ id: string }>[] }> | null,
+): boolean {
+  const ids = idsOf(targets.interactions);
+  const spoken = new Set<string>();
+  const trees = idsOf(shard.quests?.dialogue ?? []);
+  const figures = idsOf([...props?.panels ?? [], ...props?.models ?? []]);
+  for (const row of targets.talks ?? []) {
+    if (ids.has(row.id) || spoken.has(row.dialogue) || !trees.has(row.dialogue) || (row.figure !== undefined && !figures.has(row.figure))) {
+      return true;
+    }
+    ids.add(row.id);
+    spoken.add(row.dialogue);
+  }
+  return false;
+}
 /** Refuse dangling identities, private fields and two writers for the same visual or collider. */
-export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput<typeof StateSchema>; hooks: ShardHooks; sim: { scripts: readonly string[]; bindings: ShardScriptBindings }; items: ShardItems }, props: { panels: readonly { id: string }[]; colliders: readonly { id: string }[] } | null): string[] {
+export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput<typeof StateSchema>; hooks: ShardHooks; sim: { scripts: readonly string[]; bindings: ShardScriptBindings }; items: ShardItems; quests?: { dialogue: readonly { id: string }[] } }, props: { panels: readonly { id: string }[]; colliders: readonly { id: string }[]; models?: readonly { id: string }[] } | null): string[] {
   const errors = hookRules({ conditions: targets.panels.map((row) => ({ id: row.panel, ...row })), scenes: [] }, shard.state);
   const panels = new Set(props?.panels.map((row) => row.id)), colliders = new Set(props?.colliders.map((row) => row.id)), scenes = new Set(shard.hooks.scenes.map((row) => row.id));
   const bound = targets.panels.flatMap((row) => row.colliders);
@@ -34,6 +69,9 @@ export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput
     return tool === undefined || field === undefined || field.privacy === 'host' || field.type !== (row.property === 'lit' ? 'bool' : 'f64') || (field.min ?? 0) > 0 || (field.max ?? 1) < 1;
   })) errors.push('declared item state projections');
   if (fields.length > 0 && shard.sim.scripts.length === 0) errors.push('item projections require declared state lane');
+  if (talksRefused(targets, shard, props)) {
+    errors.push('declared talk dialogues and figures');
+  }
   return errors;
 }
 
@@ -86,6 +124,18 @@ interface ShardTargetsFields {
         item: string;
         fieldId: number;
         property: 'fuel' | 'lit';
+    })[];
+    talks?: ({
+        id: string;
+        at: [
+            number,
+            number,
+            number
+        ];
+        radius: number;
+        label: string;
+        dialogue: string;
+        figure?: string;
     })[];
 }
 export type ShardTargets = { [Key in keyof ShardTargetsFields]: ShardTargetsFields[Key] };
