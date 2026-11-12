@@ -177,3 +177,92 @@ lever-only subset of Pine's native assembly in rows.
   no strike row (Codex SHOULD; a strike is BM-4's follow-up or LF2-8's).
   The bandits are lockable, and the lock-on holds the view on a fallen
   bandit.
+
+## BM-5: the Dust Wyrm (opus-bm5)
+
+- `src/tools/brasscap/wyrm.ts` writes `corpus/sources/brasscap-mesa/
+  wyrm.glb` (74.5 KB, 292 triangles, 2 draws) and `wyrm.skin.json`: a
+  sand mound, plated terracotta and cream segments with cream back
+  spines, an armoured head, and a jaw plate over a yellow gullet. Four
+  joints (`body`, `neck`, `head`, `jaw`). Clips `attack.rise`,
+  `attack.burst` and `attack.open`, and `attack`, rise then burst
+  (1.5 s, the look's `attackSpan`): engine plays `attack` across a
+  strike's windup only and cancels it as the strike lands
+  (`StrikeRunner`), so the slam meets the end of the 1.2 s windup.
+  `attack.open` (the jaw down) ships but no engine path plays a clip
+  from a field yet, so the window shows as gullet particles. Also
+  `idle`, `hit` and `die` (it sinks back under the sand).
+- Rows (TE-ENG1): spawn `dust-wyrm` (species `brasscap.wyrm`, kind
+  `bear`, 80 hp, scale 2, no brain) on the canyon's `wyrm` empty,
+  strike `brasscap.wyrm.burst` (a 1.6 point, 3.2 m at scale 2, 20
+  damage), boss encounter `brasscap.wyrm` (arena 14 m, phase two at
+  0.5) with a `wyrm-panel` boss bar, public shared fields 110
+  `brasscap.wyrm-tell` and 111 `brasscap.wyrm-gullet`.
+- The decision, `behaviour/wyrm.as`, is the Warden's shape: each beat
+  the tell rises, the guard goes to 1 and the burst starts; at the
+  windup's end the tell drops, the gullet opens and the guard goes to
+  3 (rounds only) for 3 s, then back to 1. Fight entry opens the guard
+  after `onStart`, so `onStart` shuts it and an `arm` timer shuts it
+  again a tick later (0.02 s); `onStop` leaves it shut, since a phase
+  change stops and restarts the decision (Codex MUST: the Warden's 0.1 s
+  arm and `onStop` reset left gaps where a round could land). The tell and gullet are
+  particles, not panels (a panel needs a re-bake and adds draws to the
+  tile; the Warden hit the 8-draw cap): twelve `sand-ring.N` anchors
+  3.4 m round the mound read 110, a `gullet` anchor at the maw reads
+  111, through `sand.as`, a 731-byte ABI v0 client script.
+- The lever's reserve goes from 12 to 30: nine bandits take nine to
+  twelve rounds, and 18 in all left too few for an 80 hp Wyrm.
+- **The one-time bake.** Both Wasm modules ship raw: the decision
+  (`blobs/wasm/1d6ace79…`, critical) and `sand.as`
+  (`24a4d4c1…`, in the render library). To re-bake after editing either
+  source, in a sharddev checkout (`ab8231b` here), write this as
+  `tmp/<lane>/bake.ts`, bundle it with
+  `node_modules/.bin/esbuild tmp/<lane>/bake.ts --bundle --platform=node
+  --format=esm --outfile=tmp/<lane>/bake.mjs --external:assemblyscript
+  --external:binaryen` and run `node tmp/<lane>/bake.mjs <shardfile>
+  <out>`:
+
+  ```ts
+  import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+  import { join } from 'node:path'
+  import { createHash } from 'node:crypto'
+  import { emptyShardfile } from '../../src/sharddev/author.ts'
+  import { compileDeclaredDecisionScripts } from '../../src/sharddev/buildDecisionScripts.ts'
+  import { compileScript } from '../../src/sharddev/bake/compileScript.ts'
+  const [shardfile, out] = process.argv.slice(2)
+  const S = join(shardfile, 'corpus/brasscap-mesa/sections'), src = join(shardfile, 'corpus/sources/brasscap-mesa')
+  const sec = p => JSON.parse(readFileSync(join(S, p), 'utf8'))
+  const base = emptyShardfile({ slug: 'brasscap-mesa', name: 'Brasscap Mesa', author: 'Wildshard', revision: 1, seed: 1 })
+  const source = { ...base, creatures: sec('actors/creatures.json').creatures, state: sec('state/state.json').state,
+    rows: { ...base.rows, species: sec('actors/species.json').rows.species, strikes: sec('combat/strikes.json').rows.strikes } }
+  const { sourceHash, ...row } = sec('sim/scripts.json')[0]   // the shipped row is the input; module is rewritten
+  const authored = new Map([[row.source, readFileSync(join(src, row.source), 'utf8')]])
+  const built = await compileDeclaredDecisionScripts([row], source, [], authored, { asLineCeiling: 256 })
+  const sha = b => createHash('sha256').update(b).digest('hex'); mkdirSync(out, { recursive: true })
+  for (const b of built.blobs) writeFileSync(join(out, `${sha(b.bytes)}.wasm`), b.bytes)
+  writeFileSync(join(out, 'scripts.json'), JSON.stringify(built.rows))
+  const sand = await compileScript(readFileSync(join(src, 'sand.as'), 'utf8'), { abi: 0, maximumPages: 1 })
+  writeFileSync(join(out, `${sha(sand)}.wasm`), sand)
+  ```
+
+  Then put the Wasm in `blobs/wasm/`, the row in `sections/sim/
+  scripts.json`, the new hashes in `shard.json`'s `files` (the decision
+  `critical`, named `behaviour/wyrm.wasm`) and admission lists and in
+  the client bindings' `module`, and `shardfile pack` the folder; copy
+  the tarball's settled `shard.json`, `validation.json` and sections
+  back.
+- Proof: an engine preview (`d1d73749`, this corpus over the format
+  dependency, `pins.ts install --from-format brasscap-mesa`, built with
+  a `WILDSHARD_CATALOGUE` that lists Brasscap: without it the page
+  stalls at "Reading build files", BM-4's corpus too), headless
+  Chromium with `--use-mock-keychain --password-store=basic`. E takes
+  the rack's rifle; 10 m from the mound the fight starts; four rounds
+  with the gullet shut fire and land 0, each showing MISS: one in the
+  fight's first frame, one while the ring rises, one just after phase
+  two begins; eight rounds in the windows land 10 each, and the Wyrm
+  falls in the third window, 16 s in. No console error, nothing off
+  the machine. Shot `progress/t2-07-wyrm.jpg`.
+- Seen, not done (LF2-8 or engine): the Wyrm reads dark against the
+  low sun, the dead body ragdolls over and draws white, and the burst
+  never reaches a player who stays out of the ring, so the Wyrm does no
+  harm to a rifle at range.

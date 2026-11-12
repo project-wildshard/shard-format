@@ -7,6 +7,7 @@ import { test } from 'node:test'
 import {
   array,
   boolean,
+  nullable,
   number,
   object,
   optional,
@@ -33,7 +34,13 @@ const GATE_FIELD = 101
 const Num = number()
 const Str = string()
 const Strs = array(Str)
-const Spawn = object({ id: Str, species: Str, brain: Str, at: array(Num) })
+// The Wyrm (BM-5) stands brainless: its encounter owns it.
+const Spawn = object({
+  id: Str,
+  species: Str,
+  brain: nullable(Str),
+  at: array(Num),
+})
 const Brain = object({ id: Str, kind: Str })
 const CreaturesSchema = object({
   creatures: object({ brains: array(Brain), spawns: array(Spawn) }),
@@ -70,7 +77,7 @@ type Row = Readonly<{ id: string }>
 type Placed = Readonly<{
   id: string
   species: string
-  brain: string
+  brain: string | null
   at: readonly number[]
 }>
 
@@ -89,7 +96,7 @@ function bandits(): readonly Placed[] {
   )
 }
 
-function brainKind(id: string): string | undefined {
+function brainKind(id: string | null): string | undefined {
   const file = section('sections/actors/creatures.json')
   const { brains } = parse(CreaturesSchema, file).creatures
   return brains.find((row: Row): boolean => row.id === id)?.kind
