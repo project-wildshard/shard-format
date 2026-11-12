@@ -17,6 +17,8 @@ export const TargetsSchema: v.GenericSchema<ShardTargetsInput, ShardTargets> = v
 });
 /** Plain target bindings, without authored callbacks or collider mutations. */
 
+/** A declared lever-action (TE-ENG2) is the one weapon an item scene may name: its action 3 takes it from a rack, 4 reloads it. */
+const LEVER_FAMILY = 'kit.lever';
 /** Refuse dangling identities, private fields and two writers for the same visual or collider. */
 export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput<typeof StateSchema>; hooks: ShardHooks; sim: { scripts: readonly string[]; bindings: ShardScriptBindings }; items: ShardItems }, props: { panels: readonly { id: string }[]; colliders: readonly { id: string }[] } | null): string[] {
   const errors = hookRules({ conditions: targets.panels.map((row) => ({ id: row.panel, ...row })), scenes: [] }, shard.state);
@@ -26,7 +28,7 @@ export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput
   if (new Set(targets.interactions.map((row) => row.id)).size !== targets.interactions.length || targets.interactions.some((row) => !scenes.has(row.scene))) errors.push('declared target interaction scenes');
   if (targets.panels.length > 0 && shard.sim.bindings.length === 0) errors.push('target fields require script bindings');
   const actions = targets.itemActions ?? [], fields = targets.itemFields ?? [];
-  if (new Set(actions.map((row) => row.scene)).size !== actions.length || actions.some((row) => !scenes.has(row.scene) || !shard.items.rows.some((item) => item.id === row.item && item.kind === 'tool'))) errors.push('declared item action scenes');
+  if (new Set(actions.map((row) => row.scene)).size !== actions.length || actions.some((row) => !scenes.has(row.scene) || !shard.items.rows.some((item) => item.id === row.item && (item.kind === 'tool' || item.family === LEVER_FAMILY)))) errors.push('declared item action scenes');
   if (new Set(fields.map((row) => row.fieldId)).size !== fields.length || fields.some((row) => {
     const field = shard.state.player.find((entry) => entry.id === row.fieldId), tool = shard.items.rows.find((item) => item.id === row.item && item.kind === 'tool');
     return tool === undefined || field === undefined || field.privacy === 'host' || field.type !== (row.property === 'lit' ? 'bool' : 'f64') || (field.min ?? 0) > 0 || (field.max ?? 1) < 1;
