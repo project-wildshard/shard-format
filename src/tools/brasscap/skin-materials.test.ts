@@ -4,7 +4,6 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import { parseGlbData } from '../../format/glbCost.ts'
-import { skinLookMaterialRules } from '../../format/skin-materials.ts'
 import { skinLookRules, validateSkinAssets } from '../../format/skinAssets.ts'
 import { ATTACK_SPAN, buildWyrm, buildWyrmSkin, sha256 } from './wyrm.ts'
 
@@ -44,8 +43,19 @@ function withPart(
   return Buffer.concat([header, jh, text, bh, bin])
 }
 
-function source(glb: Buffer, parameters: Record<string, unknown>) {
-  const skin = buildWyrmSkin(glb),
+/** The Wyrm's skin file for `glb`, its binding carrying `materials` when given. */
+function skinFile(glb: Buffer, materials?: unknown): Buffer {
+  const file = JSON.parse(buildWyrmSkin(glb).toString('utf8')) as {
+    binding: Record<string, unknown>
+  }
+  if (materials !== undefined) {
+    file.binding['materials'] = materials
+  }
+  return Buffer.from(JSON.stringify(file))
+}
+
+function source(glb: Buffer, materials?: unknown) {
+  const skin = skinFile(glb, materials),
     cost = parseGlbData(glb),
     file = sha256(glb),
     look = {
@@ -53,7 +63,7 @@ function source(glb: Buffer, parameters: Record<string, unknown>) {
       species: 'brasscap.wyrm',
       recipe: 'platform.skin',
       material: JSON.parse('null') as null,
-      parameters: { skin: sha256(skin), ...parameters },
+      parameters: { skin: sha256(skin) },
       animation: {
         recipe: 'platform.clips',
         parameters: { attackSpan: ATTACK_SPAN },
@@ -87,8 +97,7 @@ function source(glb: Buffer, parameters: Record<string, unknown>) {
     }
   return {
     shard: shard as unknown as Parameters<typeof validateSkinAssets>[0] &
-      Parameters<typeof skinLookRules>[0] &
-      Parameters<typeof skinLookMaterialRules>[0],
+      Parameters<typeof skinLookRules>[0],
     assets: new Map([
       [sha256(skin), new Uint8Array(skin)],
       [file, new Uint8Array(glb)],
@@ -96,37 +105,36 @@ function source(glb: Buffer, parameters: Record<string, unknown>) {
   }
 }
 
-describe('skin look materials (TE-ENG10)', (): void => {
-  it('admits a two-material skin whose look maps the second GLB material to a declared look material', (): void => {
+describe('skin binding materials (TE-ENG10)', (): void => {
+  it('admits a two-material skin whose binding maps the second GLB material to a declared look material', (): void => {
     const { shard, assets } = source(withPart(buildWyrm(), 'Gullet'), {
-      materials: { Gullet: 'brasscap.gullet' },
+      Gullet: 'brasscap.gullet',
     })
     assert.deepEqual(skinLookRules(shard), [])
     validateSkinAssets(shard, assets)
   })
   it('still admits a one-material skin with no map, and a two-material skin with none (one draw, the family)', (): void => {
     for (const glb of [buildWyrm(), withPart(buildWyrm(), 'Gullet')]) {
-      const { shard, assets } = source(glb, {})
+      const { shard, assets } = source(glb)
       assert.deepEqual(skinLookRules(shard), [])
       validateSkinAssets(shard, assets)
     }
   })
   it('refuses a mapped name the GLB lacks, an undeclared look material, and primitives whose channels differ', (): void => {
     const missing = source(buildWyrm(), {
-      materials: { Gullet: 'brasscap.gullet' },
+      Gullet: 'brasscap.gullet',
     })
     assert.throws(() => {
       validateSkinAssets(missing.shard, missing.assets)
     }, /no GLB material Gullet/u)
     const undeclared = source(withPart(buildWyrm(), 'Gullet'), {
-      materials: { Gullet: 'brasscap.nowhere' },
+      Gullet: 'brasscap.nowhere',
     })
-    assert.deepEqual(skinLookMaterialRules(undeclared.shard), [
-      'skin look materials name declared look.materials',
-    ])
+    assert.throws(() => {
+      validateSkinAssets(undeclared.shard, undeclared.assets)
+    }, /brasscap.nowhere is not a declared look material/u)
     const channels = source(
       withPart(buildWyrm(), 'Gullet', ({ COLOR_0: _colour, ...rest }) => rest),
-      {},
     )
     assert.throws(() => {
       validateSkinAssets(channels.shard, channels.assets)
@@ -141,8 +149,10 @@ describe('skin look materials (TE-ENG10)', (): void => {
         ]),
       ),
     ]) {
-      const bad = source(withPart(buildWyrm(), 'Gullet'), { materials })
-      assert.deepEqual(skinLookRules(bad.shard), ['skin look parameters'])
+      const bad = source(withPart(buildWyrm(), 'Gullet'), materials)
+      assert.throws(() => {
+        validateSkinAssets(bad.shard, bad.assets)
+      }, /skin bindings/u)
     }
   })
 })

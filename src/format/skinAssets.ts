@@ -17,7 +17,7 @@ import type { Shardfile } from './shardSchema.ts';
 import { parseGlbData as parseGlb } from './glbCost.ts';
 import { skinLayerDecoded } from './skinLayers.ts';
 import { MaterialsSchema } from './materials.ts';
-import { SkinGlbMaterialsSchema, SkinPrimitiveSchema, skinLookMaterials, skinPartsFault, skinPrimitiveCount } from './skin-materials.ts';
+import { SkinGlbMaterialsSchema, SkinPrimitiveSchema, skinMaterialsFault, skinPartsFault, skinPrimitiveCount } from './skin-materials.ts';
 
 import { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE, SkinLookParametersSchema, SkinClipParametersSchema, ShardSkinFileSchema, type SkinLookParameters } from './skins.ts';
 
@@ -82,7 +82,7 @@ function validateRigBytes(glb: Uint8Array, row: SkinRow, parts: Readonly<Record<
 }
 
 /** Admit each rig binding and its exact GLB dependency before allocating a client view. */
-export function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'>, assets: ReadonlyMap<string, Uint8Array>): void {
+export function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'> & { readonly look?: Pick<Shardfile['look'], 'materials'> }, assets: ReadonlyMap<string, Uint8Array>): void {
   const files = new Map(source.files.map((file) => [file.hash, file]));
   for (const look of source.rows.looks) {
     if (look.recipe !== SKIN_LOOK_RECIPE) continue;
@@ -96,7 +96,9 @@ export function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'>, as
     const glb = assets.get(row.file), declared = files.get(row.file);
     if (glb === undefined || declared === undefined) throw new Error('skin GLB missing');
     const cost = parseGlb(glb);
-    validateRigBytes(glb, row, skinLookMaterials(look));
+    validateRigBytes(glb, row, binding.materials);
+    const undeclared = skinMaterialsFault(binding.materials, source.look?.materials ?? {});
+    if (undeclared !== '') { throw new Error(undeclared); }
     cost.decoded += skinLayerDecoded(binding.poseLayers ?? {}, row.rig.joints[0]?.length ?? 0);
     for (const key of ['decoded', 'gpu', 'triangles', 'draws'] as const) {
       if (cost[key] > row.cost[key] || cost[key] > declared[key]) throw new Error('skin cost understated');

@@ -1,5 +1,6 @@
 import * as v from 'valibot';
 import { SkinPoseLayerSchema, validateSkinLayers } from './skinLayers.ts';
+import { SkinMaterialsSchema } from './skin-materials.ts';
 /** Animation clip identity; the native rig uses the same bounded family namespace. */
 export type SkinClipName = `${'idle' | 'walk' | 'run' | 'attack' | 'hit' | 'die' | 'turn' | 'swim' | 'fly'}${'' | `.${string}`}`;
 
@@ -18,8 +19,8 @@ export const SkinRowSchema: v.GenericSchema<SkinRowInput, SkinRow> = v.object({
 });
 /** A validated exported skin row. */
 
-/** How a skin plays and draws: the family material entry (SF10a, validated by the family registry) the clips that loop and independent numeric pose clocks. */
-export const SkinBindingSchema: v.GenericSchema<SkinBindingInput, SkinBinding> = v.strictObject({ skin: id, material: v.record(v.string(), v.unknown()), loops: v.pipe(v.array(SkinClipNameSchema), v.maxLength(32)), poseLayers: v.exactOptional(v.record(SkinClipNameSchema, v.pipe(v.array(SkinPoseLayerSchema), v.maxLength(32)))) });
+/** How a skin plays and draws: the family material entry (SF10a, validated by the family registry) the clips that loop and independent numeric pose clocks; `materials` (TE-ENG10) maps GLB material names to look materials (`./skin-materials`). */
+export const SkinBindingSchema: v.GenericSchema<SkinBindingInput, SkinBinding> = v.strictObject({ skin: id, material: v.record(v.string(), v.unknown()), materials: v.exactOptional(SkinMaterialsSchema), loops: v.pipe(v.array(SkinClipNameSchema), v.maxLength(32)), poseLayers: v.exactOptional(v.record(SkinClipNameSchema, v.pipe(v.array(SkinPoseLayerSchema), v.maxLength(32)))) });
 /** A validated skin binding. */
 
 
@@ -94,6 +95,7 @@ export type SkinRow = { [Key in keyof SkinRowFields]: SkinRowFields[Key] };
 interface SkinBindingInputFields {
     skin: string;
     material: Record<string, unknown>;
+    materials?: Record<string, string>;
     loops: (SkinClipNameRowsInput)[];
     poseLayers?: v.InferInput<v.RecordSchema<v.GenericSchema<SkinClipNameRowsInput, SkinClipNameRows>, v.GenericSchema<(v.InferInput<typeof SkinPoseLayerSchema>)[], (v.InferOutput<typeof SkinPoseLayerSchema>)[]>, undefined>>;
 }
@@ -101,6 +103,7 @@ export type SkinBindingInput = { [Key in keyof SkinBindingInputFields]: SkinBind
 interface SkinBindingFields {
     skin: string;
     material: Record<string, unknown>;
+    materials?: Record<string, string>;
     loops: (SkinClipNameRows)[];
     poseLayers?: v.InferOutput<v.RecordSchema<v.GenericSchema<SkinClipNameRowsInput, SkinClipNameRows>, v.GenericSchema<(v.InferInput<typeof SkinPoseLayerSchema>)[], (v.InferOutput<typeof SkinPoseLayerSchema>)[]>, undefined>>;
 }

@@ -1,8 +1,9 @@
 /**
- * Named skin materials (TE-ENG10, meta TEMPLATE-E2E-PLAN): a `platform.skin` look row may map a material name in its
- * skin's GLB to a `look.materials` ID, the way `props.materials` does for props:
+ * Named skin materials (TE-ENG10, meta TEMPLATE-E2E-PLAN): a skin's binding (the `{ row, binding }` skin file a
+ * `platform.skin` look names) may map a material name in its GLB to a `look.materials` ID, the way `props.materials`
+ * does for props:
  *
- *   parameters: { skin: '<json file hash>', materials: { Gullet: 'brasscap.gullet' } }
+ *   binding: { skin, material: { family: 'pbr', ... }, materials: { Gullet: 'brasscap.gullet' }, loops }
  *
  * The GLB's one skinned mesh may then carry up to eight primitives (one per GLB material, the same channels). A
  * primitive drawn in a mapped material draws with that look material (an emissive eye or gullet), each mapped name one
@@ -20,7 +21,6 @@ import {
   pipe,
   record,
   regex,
-  safeParse,
   string,
 } from 'valibot'
 
@@ -33,16 +33,6 @@ interface SkinPrimitive {
 }
 interface SkinGlbMaterial {
   readonly name?: string | undefined
-}
-/** What the rules read of a look row. */
-interface LookRow {
-  readonly recipe: string
-  readonly parameters: unknown
-}
-/** What the reference rule reads of a shard. */
-interface LookSource {
-  readonly rows: { readonly looks: readonly LookRow[] }
-  readonly look: { readonly materials: Readonly<Record<string, unknown>> }
 }
 type Names = Readonly<Record<string, string>>
 
@@ -60,8 +50,6 @@ const RESERVED: ReadonlySet<string> = new Set([
   'prototype',
   'constructor',
 ])
-const SKIN_RECIPE = 'platform.skin'
-const UNDECLARED = 'skin look materials name declared look.materials'
 
 function isGlbName(name: string): boolean {
   return name.trim() === name && !RESERVED.has(name) && !CONTROL.test(name)
@@ -96,20 +84,6 @@ const SkinGlbMaterialsSchema: GenericSchema<
   SkinGlbMaterial[] | undefined,
   SkinGlbMaterial[]
 > = optional(array(glbMaterial), [])
-
-/** A look row's mapped skin materials, or undefined (not a skin look, none mapped, or malformed). */
-function skinLookMaterials(row: LookRow): Names | undefined {
-  if (row.recipe !== SKIN_RECIPE) {
-    return undefined
-  }
-  const parameters: unknown = row.parameters
-  if (typeof parameters !== 'object' || parameters === null) {
-    return undefined
-  }
-  const named: unknown = Reflect.get(parameters, 'materials')
-  const parsed = safeParse(SkinMaterialsSchema, named)
-  return parsed.success ? parsed.output : undefined
-}
 
 /** A skin's primitive count is one to eight. */
 function skinPrimitiveCount(count: number | undefined): boolean {
@@ -157,17 +131,17 @@ function skinPartsFault(
   return missing === undefined ? '' : `no GLB material ${missing}`
 }
 
-/** Shardfile reference rule: every mapped skin material is a declared `look.materials` ID. */
-function skinLookMaterialRules(source: LookSource): string[] {
-  const declared = (id: string): boolean =>
-    Object.hasOwn(source.look.materials, id)
-  const undeclared = (row: LookRow): boolean => {
-    const ids = Object.values(skinLookMaterials(row) ?? {})
-    return !ids.every((id: string): boolean => declared(id))
-  }
-  return source.rows.looks.some((row: LookRow): boolean => undeclared(row))
-    ? [UNDECLARED]
-    : []
+/** Why a binding's mapped IDs refuse, or '': each is a declared `look.materials` ID. */
+function skinMaterialsFault(
+  parts: Names | undefined,
+  declared: Readonly<Record<string, unknown>>,
+): string {
+  const missing = Object.values(parts ?? {}).find(
+    (id: string): boolean => !Object.hasOwn(declared, id),
+  )
+  return missing === undefined
+    ? ''
+    : `skin material ${missing} is not a declared look material`
 }
 
 export {
@@ -175,8 +149,7 @@ export {
   SkinGlbMaterialsSchema,
   SkinMaterialsSchema,
   SkinPrimitiveSchema,
-  skinLookMaterialRules,
-  skinLookMaterials,
+  skinMaterialsFault,
   skinPartsFault,
   skinPrimitiveCount,
   type SkinGlbMaterial,

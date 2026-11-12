@@ -13,3 +13,10 @@ declared (`src/format/skin-materials.ts`, test
 engine half (merge the primitives, one draw per mapped material, hit flash over
 all of them) lands in engine next. Brasscap's own GLBs are still one primitive:
 splitting the eye and gullet into their own GLB material is the corpus step.
+
+Correction, same lane: the map moved from the look row's `parameters` to the
+skin binding's `materials`. A look row's parameters admit only numbers, flags,
+text and number lists (`rows.ts`), so `pack` refused the object a Brasscap
+preview wrote; 37f272e's `parameters.materials` could never be written. The
+binding is a JSON blob with its own strict schema, and is where the plan row
+asked for it ("a skin binding row").
