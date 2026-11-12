@@ -173,6 +173,9 @@ let world = new Geo(),
   door = new Geo(),
   hero = new Geo(),
   heroGlow = new Geo(),
+  /** The lever-action on its rack, a node of its own (`rack.rifle`): the bake makes it a drawn-only panel that the
+   *  player's `brasscap.rack.taken` field hides once that player takes the rifle (TE-ENG6). */
+  rackRifle = new Geo(),
   /** LF2-4: the near mesas and crags as BM-1's plain prisms. They feed the far stand-in and the source canyon.glb; the
    *  bake draws `rock` in their place. */
   shell = new Geo(),
@@ -1093,17 +1096,19 @@ function depotRack(): void {
   for (const x of [-3.05, -1.4])
     for (const y of [0.97, 1.24])
       beam(g, [x, y, -1.04], [x, y + 0.03, -0.86], 0.035, 0xb8921e)
-  // The lever-action: a walnut stock, a brass receiver with its lever loop, a barrel over its magazine tube.
-  const r = -0.92
-  beam(g, [-3.2, 1.0, r], [-2.62, 1.09, r], 0.11, 0x5a3420) // stock
-  beam(g, [-2.62, 1.09, r], [-2.47, 1.11, r], 0.07, 0x5a3420) // wrist
-  g.box([-2.31, 1.05, r], [0.32, 0.12, 0.075], 0xc9a227, 0, 0xe0b830) // receiver
-  beam(g, [-2.42, 1.04, r], [-2.42, 0.95, r], 0.025, 0xb8921e)
-  beam(g, [-2.42, 0.95, r], [-2.27, 0.95, r], 0.025, 0xb8921e)
-  beam(g, [-2.27, 0.95, r], [-2.2, 1.04, r], 0.025, 0xb8921e) // the lever loop
-  beam(g, [-2.15, 1.145, r], [-1.15, 1.145, r], 0.035, 0x2f3338) // barrel
-  beam(g, [-2.15, 1.1, r], [-1.3, 1.1, r], 0.03, 0x3a3e44) // magazine tube
-  beam(g, [-2.15, 1.115, r], [-1.75, 1.115, r], 0.07, 0x6b3a22) // fore-end
+  // The lever-action: a walnut stock, a brass receiver with its lever loop, a barrel over its magazine tube. It is
+  // `rack.rifle`'s own node, so a panel can hide it once taken; the rack, pegs and crate stay in `hero`.
+  const r = -0.92,
+    gun = rackRifle
+  beam(gun, [-3.2, 1.0, r], [-2.62, 1.09, r], 0.11, 0x5a3420) // stock
+  beam(gun, [-2.62, 1.09, r], [-2.47, 1.11, r], 0.07, 0x5a3420) // wrist
+  gun.box([-2.31, 1.05, r], [0.32, 0.12, 0.075], 0xc9a227, 0, 0xe0b830) // receiver
+  beam(gun, [-2.42, 1.04, r], [-2.42, 0.95, r], 0.025, 0xb8921e)
+  beam(gun, [-2.42, 0.95, r], [-2.27, 0.95, r], 0.025, 0xb8921e)
+  beam(gun, [-2.27, 0.95, r], [-2.2, 1.04, r], 0.025, 0xb8921e) // the lever loop
+  beam(gun, [-2.15, 1.145, r], [-1.15, 1.145, r], 0.035, 0x2f3338) // barrel
+  beam(gun, [-2.15, 1.1, r], [-1.3, 1.1, r], 0.03, 0x3a3e44) // magazine tube
+  beam(gun, [-2.15, 1.115, r], [-1.75, 1.115, r], 0.07, 0x6b3a22) // fore-end
   // The ammo crate in front of the rack: X-braced sides and two cartridge boxes on top.
   const C: V3 = [-3.1, 0.35, -0.45],
     cs = 0.5
@@ -2368,6 +2373,7 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
   door = new Geo()
   hero = new Geo()
   heroGlow = new Geo()
+  rackRifle = new Geo()
   shell = new Geo()
   rockWest = new Geo()
   rockEast = new Geo()
@@ -2400,6 +2406,7 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
     { name: 'gate.door', g: door, material: 0 },
     ...(bake
       ? [
+          { name: 'rack.rifle', g: rackRifle, material: 0 },
           { name: 'dress', g: detail, material: 0 },
           { name: 'coarse.mesas', g: shell, material: 0 },
         ]
@@ -2439,16 +2446,19 @@ export function buildCanyon(options: { readonly bake?: boolean } = {}): Buffer {
 }
 
 /** The depot's detail GLB (LF2-5), in world coordinates beside canyon.glb: tin, planks, rafters, the sign,
- *  the bench, barrels, lantern, bell, rack, crate and handcar (`depot`), and the lantern's lit glass
- *  (`depot.glow`). The bake input carries the same triangles inside its canyon and glow meshes. */
+ *  the bench, barrels, lantern, bell, rack, crate and handcar (`depot`), the lantern's lit glass
+ *  (`depot.glow`) and the rack's lever-action (`rack.rifle`). The bake input carries the first two inside its
+ *  canyon and glow meshes, and the rifle as its own `rack.rifle` node, a panel. */
 export function buildDepot(): Buffer {
   hero = new Geo()
   heroGlow = new Geo()
+  rackRifle = new Geo()
   depotDetail()
   return glb(
     [
       { name: 'depot', g: hero, material: 0 },
       { name: 'depot.glow', g: heroGlow, material: 1 },
+      { name: 'rack.rifle', g: rackRifle, material: 0 },
     ],
     [],
     [MESA, GLOW],
@@ -2490,10 +2500,13 @@ export function terrainGeo(): { rock: Geo; dress: Geo; shell: Geo } {
   return { rock, dress, shell }
 }
 
-/** The depot detail's solid mesh, for the checks in canyon.test.ts. */
+/** The depot detail's solid mesh with the rack's rifle, for the checks in canyon.test.ts. */
 export function depotGeo(): Geo {
   buildDepot()
-  return hero
+  const g = new Geo()
+  merge(g, hero)
+  merge(g, rackRifle)
+  return g
 }
 
 /** The level's world mesh (everything solid but the gate door, with the plain mesas), for the layout checks in
@@ -2514,7 +2527,7 @@ if (process.argv[1] === import.meta.filename) {
     file = buildCanyon({ bake })
   writeFileSync(out, file)
   process.stdout.write(
-    `${out}: ${file.length} bytes, ${(world.pos.length + shell.pos.length + sky.pos.length + glow.pos.length + door.pos.length + (bake ? rockWest.pos.length + rockEast.pos.length + dress.pos.length : 0)) / 9} triangles\n`,
+    `${out}: ${file.length} bytes, ${(world.pos.length + shell.pos.length + sky.pos.length + glow.pos.length + door.pos.length + (bake ? rockWest.pos.length + rockEast.pos.length + dress.pos.length + rackRifle.pos.length : 0)) / 9} triangles\n`,
   )
   // The level's source writes the depot's detail GLB beside it (LF2-5); the bake input carries it already.
   if (!bake) {
@@ -2522,7 +2535,7 @@ if (process.argv[1] === import.meta.filename) {
       depotFile = buildDepot()
     writeFileSync(depotOut, depotFile)
     process.stdout.write(
-      `${depotOut}: ${depotFile.length} bytes, ${(hero.pos.length + heroGlow.pos.length) / 9} triangles\n`,
+      `${depotOut}: ${depotFile.length} bytes, ${(hero.pos.length + heroGlow.pos.length + rackRifle.pos.length) / 9} triangles\n`,
     )
     for (const part of TERRAIN_PARTS) {
       const partOut = path.join(path.dirname(out), `${part}.glb`),

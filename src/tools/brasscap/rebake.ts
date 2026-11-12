@@ -126,7 +126,10 @@ import sim from './sim.json' with { type: 'json' };
 const base = emptyShardfile(identity);
 export default { ...base, look, state, sim, hooks, world: {
   glb: 'canyon.glb', materials: { Mesa: 'mesa', Glow: 'glow' }, colliders: 'mesh', far: 'far.', farMode: 'replace', detail: 'dress', coarse: 'coarse.',
-  interactive: [{ node: 'gate.door', id: 'brasscap.gate', colliderId: 'brasscap.gate' }],
+  interactive: [
+    { node: 'gate.door', id: 'brasscap.gate', colliderId: 'brasscap.gate' },
+    { node: 'rack.rifle', id: 'brasscap.rack.rifle', colliderId: 'brasscap.rack.rifle' },
+  ],
 } };
 export const behaviour = [{ id: 'gate', source: 'gate.as' }];
 `,
@@ -141,6 +144,28 @@ execFileSync(
     stdio: 'inherit',
   },
 )
+
+// The rack's rifle is a drawn-only panel (TE-ENG6): its panel follows the player's projected `taken` field,
+// which the server's colliders never read, so the format refuses it a bound collider. sharddev bakes a collider
+// for every interactive node; this drops the rifle's, so its blob is never named, copied or admitted.
+const DRAWN_ONLY = new Set(['brasscap.rack.rifle'])
+{
+  const path = join(out, 'sections/world/collision.json')
+  const text = readFileSync(path, 'utf8')
+  const cooked = JSON.parse(text) as {
+    meshCollision: { panels: { panel: string }[] }
+  }
+  const before = cooked.meshCollision.panels.length
+  cooked.meshCollision.panels = cooked.meshCollision.panels.filter(
+    (row): boolean => !DRAWN_ONLY.has(row.panel),
+  )
+  if (before - cooked.meshCollision.panels.length !== DRAWN_ONLY.size)
+    throw new Error('the cook baked no collider for a drawn-only panel')
+  writeFileSync(
+    path,
+    `${JSON.stringify(cooked)}${text.endsWith('\n') ? '\n' : ''}`,
+  )
+}
 
 // 4. Compare or copy: the four sections and every blob they name.
 const blobPath = (root: string, hash: string): string | undefined => {
@@ -199,6 +224,8 @@ interface FileRow {
   critical: boolean
   compressed: number
   decoded: number
+  gpu: number
+  dependencies: string[]
 }
 interface PackRow {
   bytes: number
@@ -210,7 +237,10 @@ interface Index {
   admission: {
     critical: string[]
     library: string[]
-    budgets: { sim: { compressed: number; resident: number } }
+    budgets: {
+      library: { compressed: number; resident: number }
+      sim: { compressed: number; resident: number }
+    }
     serverBudget: { memory: number }
   }
 }
@@ -220,6 +250,51 @@ const criticalSum = (rows: FileRow[], key: 'compressed' | 'decoded'): number =>
   rows
     .filter((row): boolean => row.critical)
     .reduce((total, row): number => total + row[key], 0)
+
+/** A render-library blob's cost, as sharddev's cook counts it: decoded plus gpu resident, and compressed. */
+const libraryCost = (
+  rows: FileRow[],
+): { compressed: number; resident: number } => ({
+  compressed: rows.reduce((total, row): number => total + row.compressed, 0),
+  resident: rows.reduce(
+    (total, row): number => total + row.decoded + row.gpu,
+    0,
+  ),
+})
+
+/** A drawn panel's GLB is a render-library blob (the rack's rifle, TE-ENG6): it joins or leaves
+ *  `admission.library`, and the library budget moves by its cost. A library blob that only changes
+ *  bytes, or one with dependencies, is still settled by hand. */
+function settleLibrary({
+  index,
+  cookedLibrary,
+  added,
+  goneRows,
+}: {
+  index: Index
+  cookedLibrary: string[]
+  added: FileRow[]
+  goneRows: FileRow[]
+}): void {
+  const library = new Set([...index.admission.library, ...cookedLibrary])
+  const libraryAdded = added.filter((row): boolean => library.has(row.hash)),
+    libraryGone = goneRows.filter((row): boolean => library.has(row.hash))
+  if (
+    libraryAdded.some((row): boolean => row.dependencies.length > 0) ||
+    (libraryAdded.length > 0 && libraryGone.length > 0)
+  )
+    throw new Error('a render-library blob changed: settle its budget by hand')
+  const costIn = libraryCost(libraryAdded),
+    costOut = libraryCost(libraryGone)
+  const gone = new Set(libraryGone.map((row): string => row.hash))
+  index.admission.library = [
+    ...index.admission.library.filter((hash): boolean => !gone.has(hash)),
+    ...libraryAdded.map((row): string => row.hash),
+  ].toSorted()
+  index.admission.budgets.library.compressed +=
+    costIn.compressed - costOut.compressed
+  index.admission.budgets.library.resident += costIn.resident - costOut.resident
+}
 
 /** Settles shard.json after a --write (LF2-2): the changed blobs' rows swap in `files` and the critical
  *  list, blobs no section names any more are dropped, the sim budget and server memory move by the
@@ -252,12 +327,12 @@ function settle(after: Set<string>): void {
   const added = cooked.files.filter(
     (row): boolean => after.has(row.hash) && !listed.has(row.hash),
   )
-  const library = new Set([
-    ...index.admission.library,
-    ...cooked.admission.library,
-  ])
-  if ([...goneRows, ...added].some((row): boolean => library.has(row.hash)))
-    throw new Error('a render-library blob changed: settle its budget by hand')
+  settleLibrary({
+    index,
+    cookedLibrary: cooked.admission.library,
+    added,
+    goneRows,
+  })
   const compressed =
       criticalSum(added, 'compressed') - criticalSum(goneRows, 'compressed'),
     decoded = criticalSum(added, 'decoded') - criticalSum(goneRows, 'decoded')

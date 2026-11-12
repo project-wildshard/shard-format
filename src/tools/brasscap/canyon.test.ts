@@ -131,7 +131,7 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
     )
     assert.ok(first.length < MIB)
     const names = parse(first).json.nodes.map(n => n.name)
-    assert.deepEqual(names, ['depot', 'depot.glow'])
+    assert.deepEqual(names, ['depot', 'depot.glow', 'rack.rifle'])
   })
 
   it('folds the depot detail into the bake input, not into its far stand-in (LF2-5)', (): void => {
@@ -149,6 +149,9 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
         triangles(depot, 'depot'),
     )
     assert.equal(triangles(bake, 'coarse.mesas'), shell.pos.length / 9)
+    // The rack's rifle is its own node in both, so the bake makes it a panel a take hides (TE-ENG6).
+    assert.ok(triangles(depot, 'rack.rifle') > 0)
+    assert.equal(triangles(bake, 'rack.rifle'), triangles(depot, 'rack.rifle'))
     assert.equal(
       triangles(bake, 'glow'),
       triangles(source, 'glow') + triangles(depot, 'depot.glow'),

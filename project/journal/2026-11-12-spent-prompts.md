@@ -11,3 +11,10 @@ row: engine knows a taken lever. `itemFields` gains `taken` for a kit.lever (a b
 so a panel can hide the rack's own rifle once this player holds it (BM-3's follow-up). Additive.
 
 Codex review (MUSTs): a player condition the page cannot read would leave a spent prompt up, and a collider on a projected field would stand differently on the page and the server. Both are refused now: `unless` reads a shared field or a projected player field, and a projected panel binds no collider.
+
+Brasscap's rack (opus-bmrack): the lever-action on the rack is its own `rack.rifle` node in
+depot.glb and the bake input, baked as a prop panel. Player field 201 (`brasscap.rack.taken`,
+bool) takes the lever's `taken` through an `itemFields` row, and a player-scope target panel hides
+the rifle at 1, so B still sees it until B takes theirs. sharddev bakes a collider for every
+interactive node; rebake.ts drops the rifle's (a projected panel binds none) and now settles a new
+render-library blob into `admission.library` and its budget instead of stopping for a hand settle.
