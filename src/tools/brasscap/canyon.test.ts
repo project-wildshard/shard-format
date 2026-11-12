@@ -87,6 +87,15 @@ function toSegment(
   return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t)
 }
 
+/** The distance from (x, z) to the nearest route a player walks. */
+function toRoute(x: number, z: number): number {
+  let best = Infinity
+  for (const route of ROUTES)
+    for (let i = 0; i + 1 < route.length; i += 1)
+      best = Math.min(best, toSegment(x, z, route[i]!, route[i + 1]!))
+  return best
+}
+
 /** The committed source GLB of a terrain part. */
 function committed(part: string): Buffer {
   return readFileSync(
@@ -175,18 +184,24 @@ describe('the Brasscap Mesa canyon generator (BM-1)', (): void => {
     )
   })
 
-  it('keeps everything taller than a step off the routes a player walks (LF2-4)', (): void => {
-    const { dress } = terrainGeo()
-    for (let v = 0; v < dress.pos.length; v += 3) {
-      const [x, y, z] = [dress.pos[v]!, dress.pos[v + 1]!, dress.pos[v + 2]!]
-      if (y <= 0.25) continue
-      for (const route of ROUTES)
-        for (let i = 0; i + 1 < route.length; i += 1)
-          assert.ok(
-            toSegment(x, z, route[i]!, route[i + 1]!) > 0.3,
-            `dressing ${y.toFixed(2)} m tall at (${x.toFixed(1)}, ${z.toFixed(1)}) on a route`,
-          )
-    }
+  it('keeps every cliff, scree and dressing face taller than a step off the routes a player walks (LF2-4)', (): void => {
+    // The L0 detail collides, so its corners and each face's centre, from a step up to head height, keep clear.
+    const { rock, dress } = terrainGeo()
+    for (const g of [rock, dress])
+      for (let v = 0; v < g.pos.length; v += 9) {
+        const at = (k: number, axis: number): number => g.pos[v + k * 3 + axis]!
+        const points = [0, 1, 2, -1].map((k): readonly number[] =>
+          k < 0
+            ? [0, 1, 2].map(a => (at(0, a) + at(1, a) + at(2, a)) / 3)
+            : [at(k, 0), at(k, 1), at(k, 2)],
+        )
+        for (const [x = 0, y = 0, z = 0] of points)
+          if (y > 0.25 && y <= 2)
+            assert.ok(
+              toRoute(x, z) > 0.3,
+              `detail ${y.toFixed(2)} m up at (${x.toFixed(1)}, ${z.toFixed(1)}) on a route`,
+            )
+      }
   })
 
   it('names the empties the product rows point at', (): void => {

@@ -2514,7 +2514,7 @@ if (process.argv[1] === import.meta.filename) {
     file = buildCanyon({ bake })
   writeFileSync(out, file)
   process.stdout.write(
-    `${out}: ${file.length} bytes, ${(world.pos.length + shell.pos.length + sky.pos.length + glow.pos.length + door.pos.length) / 9} triangles\n`,
+    `${out}: ${file.length} bytes, ${(world.pos.length + shell.pos.length + sky.pos.length + glow.pos.length + door.pos.length + (bake ? rockWest.pos.length + rockEast.pos.length + dress.pos.length : 0)) / 9} triangles\n`,
   )
   // The level's source writes the depot's detail GLB beside it (LF2-5); the bake input carries it already.
   if (!bake) {

@@ -437,3 +437,13 @@ lever-only subset of Pine's native assembly in rows.
   4,636 and 2, far 7,448 of 8,000 in 894,828 bytes, near view 781 KB.
   The bake's one warning (far resident 1,788,560 > 1,600,000) is
   unchanged.
+- **Codex review (one `codex exec` on `08b68bb`): no MUST.** Its
+  SHOULD is taken: the route test now checks every L0 detail face
+  (cliffs, scree and dressing, corners and centres from a step up to
+  head height), not only the dressing's vertices. Its NIT too: the
+  `--bake` log counts the detail triangles.
+- **Play proof.** opus-lf22's script got two harness fixes in
+  `template-e2e-v3/lf22-play.mjs`: each standoff starts from the next
+  side, so camp 2's last bandit, idling behind the flag pole at
+  x 15.3, is not shot through the pole every time; and the walk into
+  camp 2 goes round the tent's north-east corner first.
