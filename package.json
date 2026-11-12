@@ -391,7 +391,8 @@
     "md:wrap": "node src/scripts/md-wrap.mjs",
     "test:hooks": "node --test '.githooks/*.test.mjs'",
     "check": "pnpm typecheck && pnpm lint && pnpm lint:format && pnpm format:check && pnpm test && pnpm test:format && pnpm check:asks && pnpm check:agents && pnpm check:agent-sync && pnpm test:agent-hooks && pnpm check:parity && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs && pnpm check:wire",
-    "check:wire": "pnpm --dir packages/wire check && pnpm --dir packages/wire test",
+    "check:wire": "pnpm --dir packages/wire check && pnpm --dir packages/wire test && pnpm check:wire-proofs",
+    "check:wire-proofs": "node --test src/scripts/wire/recordings-proof.mjs src/scripts/wire/graph-proof.mjs src/scripts/wire/prepared-frame-proof.mjs",
     "bench": "pnpm --dir packages/wire bench"
   },
   "dependencies": {

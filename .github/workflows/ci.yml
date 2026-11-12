@@ -73,13 +73,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # The three recording proofs run inside check:wire, so pre-push's
+      # pnpm check runs them too (TS16h): a red one never reaches origin.
       - run: pnpm check:wire
-      - name: Prove complete frozen recording admission
-        run: node --test src/scripts/wire/recordings-proof.mjs
-      - name: Prove complete dense recording admission
-        run: node --test src/scripts/wire/graph-proof.mjs
-      - name: Prove prepared benchmark byte and receiver fidelity
-        run: node --test src/scripts/wire/prepared-frame-proof.mjs
 
   # WS1 cross-repo access is an operator prerequisite, not a push gate.
   # Keep the real install probes mandatory when explicitly dispatched.

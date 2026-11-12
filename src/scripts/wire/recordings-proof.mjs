@@ -1,4 +1,4 @@
-// Explicit CI integration proof, outside local hooks and default test discovery.
+// Explicit integration proof: runs in pnpm check:wire (pre-push and CI), outside default test discovery.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';

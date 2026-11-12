@@ -14,8 +14,10 @@ Run from the repo root.
   every consumer, and pnpm 10.26+ refuses that unless the consumer
   allowlists it.
 - `pnpm check:wire`: the separate `packages/wire` syntax/type checks and
-  packed-consumer tests. Also runs in pre-push through `pnpm check`, and
-  in its own CI job. `wire check` is an empty scaffold until WS2.
+  packed-consumer tests, then `pnpm check:wire-proofs` (the recording,
+  dense-graph and prepared-frame proofs in `src/scripts/wire/`, about
+  3.5 s together). Also runs in pre-push through `pnpm check`, and in
+  its own CI job. `wire check` is an empty scaffold until WS2.
 - `pnpm check`: typecheck + lint + the src/format ratchet + format:check
   + unit tests + format's tests + asks. The pre-push hook and CI run it.
 - `pnpm typecheck`: `src/tsconfig.json` (CLI, tools, tests),
