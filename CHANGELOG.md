@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.4.9 (2026-11-13)
+
+- A shard's named place sets (`world.sets` and `world.bind-sets`) now count as view-only: they list placed models for
+  the sets explorer and need nothing from the server. A place's gameplay, like respawn and discovery, still comes from
+  `quest.world` and `quest.reference`, so Nine Dragon, whose places use named sets alone, no longer asks the server
+  for a places installer it never needed.
+
 ## v0.4.8 (2026-11-13)
 
 - Every audio file under `/assets/music` or `/assets/sfx` now counts toward the shard's audio budget, not only `.m4a`
