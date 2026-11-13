@@ -166,8 +166,8 @@ bytes cost one download. Use that.
 Every shard plays one music style, piano (J304, Jake 2026-11-12). A score can play the engine's own piano stems instead
 of shipping its own: a slot whose set is `base` (or unset) plays the engine's stem of that name, and `bootSlots:
 ['title']` plays the engine's title. The engine has exactly these slots: `ENGINE_MUSIC_SLOTS` in
-`src/format/engine-music.ts` (`island`, `pine`), plus `title`. Validation refuses any other `base` slot
-(`AudioMusicSchema`; tests in `src/format/audio-engine-music.test.ts`).
+`src/format/engine-music.ts` (`island`, `pine`), plus `title`; import it from `@wildshard/shard-format/engineMusic`.
+Validation refuses any other `base` slot (`AudioMusicSchema`; tests in `src/format/audio-engine-music.test.ts`).
 
 Engine music the engine ships costs you no budget in AU5's check, since the bytes are the engine's; a stem your shard
 source mounts itself does count. Engine music is still in the player's download: the piano title alone is 0.76 MB (meta

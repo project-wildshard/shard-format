@@ -116,6 +116,7 @@
     "./eliteScripts": "./src/format/eliteScripts.ts",
     "./encounterRows": "./src/format/encounterRows.ts",
     "./encounters": "./src/format/encounters.ts",
+    "./engineMusic": "./src/format/engine-music.ts",
     "./entryClearance": "./src/format/entryClearance.ts",
     "./entryCoverage": "./src/format/entryCoverage.ts",
     "./entryGeometry": "./src/format/entryGeometry.ts",

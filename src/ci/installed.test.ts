@@ -13,6 +13,7 @@ import { test } from 'node:test'
 
 import { object, parse, record, string } from 'valibot'
 
+import { ENGINE_MUSIC_SLOTS } from '../format/engine-music.ts'
 import { ROOT, scratch } from '../test/helpers/corpus.ts'
 
 // A consumer's install, not this tree. `files` is a list of globs, so a new
@@ -106,4 +107,24 @@ for (const name of ${JSON.stringify(names)}) await import(name)
   })
 
   assert.equal(run.status, 0, run.stderr)
+})
+
+test('the installed package exports the engine music slots', (): void => {
+  // Engine's drift test reads these names (AUDIO AU18), so they ship as an export, not a source path.
+  const script = path.join(APP, 'engine-music.mjs')
+  writeFileSync(
+    script,
+    `import { installFormatHook } from '@wildshard/shard-format/formatHook'
+installFormatHook()
+const { ENGINE_MUSIC_SLOTS } = await import('@wildshard/shard-format/engineMusic')
+console.log(JSON.stringify(ENGINE_MUSIC_SLOTS))
+`,
+  )
+  const run = spawnSync(process.execPath, [script], {
+    cwd: APP,
+    encoding: 'utf8',
+  })
+
+  assert.equal(run.status, 0, run.stderr)
+  assert.deepEqual(JSON.parse(run.stdout), ENGINE_MUSIC_SLOTS)
 })
