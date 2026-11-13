@@ -7,11 +7,10 @@ import {
   parseOutputIndex,
 } from '../format/outputIndex.ts'
 import { packFromMembers } from '../format/product-reads.ts'
-import { prepareAssetDecoders } from '../format/product.ts'
-import { validateShardfileProduct } from '../format/productValidation.ts'
+import { receiptCost } from '../format/receipt-cost.ts'
 import { writeTar } from '../format/tar.ts'
 import { validationSourceBytes } from '../format/validationReceipt.ts'
-import { memoryFiles, productFiles } from './validate.ts'
+import { productFiles, validateInMemory } from './validate.ts'
 
 // `shardfile pack <dir>`: a folder a person holds becomes a tarball, with
 // format alone (J168). An author edits a section and packs: what the sections
@@ -19,7 +18,9 @@ import { memoryFiles, productFiles } from './validate.ts'
 // may be written in any JSON layout, since this writes it canonical. Blobs are
 // baked files named by their hash, so changing one is the baker's job and the
 // validator refuses a stale row. Packs repeat their members, so a tarball
-// leaves them out (C0). Nothing is written unless the validator passes.
+// leaves them out (C0). Nothing is written unless the validator passes. A
+// receipt's figures (memory, worst cost, post cost, grid evidence) are
+// measured again from the product the validator admitted, never kept.
 
 interface PackOutcome {
   readonly file: string
@@ -228,14 +229,28 @@ function settle(folder: Files): Files {
   return new Map([...files, ...sealed(measured(index, files), files)])
 }
 
+/** The receipt, if there is one, with `cost`'s figures in place of its own. */
+function costed(files: Files, cost: () => object): Files {
+  const receipt = files.get(RECEIPT)
+  if (receipt === undefined) {
+    return files
+  }
+  const stored = jsonOf(receipt)
+  const kept = typeof stored === 'object' ? stored : {}
+  const fields = { ...kept, ...cost() }
+  return new Map([...files, [RECEIPT, validationSourceBytes(fields)]])
+}
+
 /** Packs the folder at `dir` and writes `out`, or `<slug>.tar` here if unset. */
 async function packFolder(
   dir: string,
   out: string | undefined,
 ): Promise<PackOutcome> {
-  await prepareAssetDecoders()
-  const files = settle(readFolder(path.resolve(dir)))
-  const product = validateShardfileProduct(memoryFiles(files), { hash: sha256 })
+  const settled = settle(readFolder(path.resolve(dir)))
+  const product = await validateInMemory(settled)
+  const files = costed(settled, (): object =>
+    receiptCost(product.shard, product.assets),
+  )
   const { slug } = product.index.identity
   const file = path.resolve(out ?? `${slug}.tar`)
   const tar = writeTar(files)

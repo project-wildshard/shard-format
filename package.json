@@ -263,6 +263,7 @@
     "./quests": "./src/format/quests.ts",
     "./rainPresentation": "./src/format/rainPresentation.ts",
     "./rangedPage": "./src/format/rangedPage.ts",
+    "./receipt-cost": "./src/format/receipt-cost.ts",
     "./registeredJson": "./src/format/registeredJson.ts",
     "./returnProgramDocument": "./src/format/returnProgramDocument.ts",
     "./returnProjectionV2": "./src/format/returnProjectionV2.ts",

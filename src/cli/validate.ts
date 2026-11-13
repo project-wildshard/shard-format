@@ -12,9 +12,13 @@ import path from 'node:path'
 
 import { prepareAssetDecoders } from '../format/product.ts'
 import { validateShardfileProduct } from '../format/productValidation.ts'
+import { receiptResidencyShortfall } from '../format/receipt-cost.ts'
 import { readTar } from '../format/tar.ts'
 
-import type { ProductFiles } from '../format/productValidation.ts'
+import type {
+  ProductFiles,
+  ValidatedProduct,
+} from '../format/productValidation.ts'
 
 // `shardfile validate <dir|tar>`: format validation of a built product, as a
 // folder or as the tarball a host takes (P1 F3 (a)): schema, inventory, hashes, sizes, costs, budgets and
@@ -36,6 +40,9 @@ interface ProductSummary {
 }
 
 const START = 0
+const RECEIPT = 'validation.json'
+/** A receipt is a few hundred bytes; this only bounds the read. */
+const RECEIPT_BYTES = 1_048_576
 
 function sha256(bytes: Readonly<Uint8Array>): string {
   return createHash('sha256').update(bytes).digest('hex')
@@ -120,6 +127,43 @@ function memoryFiles(
   }
 }
 
+/** A product already in memory, validated with format alone. */
+async function validateInMemory(
+  files: ReadonlyMap<string, Readonly<Uint8Array>>,
+): Promise<ValidatedProduct> {
+  await prepareAssetDecoders()
+  return validateShardfileProduct(memoryFiles(files), { hash: sha256 })
+}
+
+/** The receipt's JSON, or why it can't be read. */
+function readReceipt(
+  files: ProductFiles,
+): Readonly<{ receipt: unknown }> | string {
+  try {
+    const bytes = files.read(RECEIPT, RECEIPT_BYTES)
+    return { receipt: JSON.parse(new TextDecoder().decode(bytes)) }
+  } catch (error: unknown) {
+    return `${RECEIPT} is unreadable: ${String(error)}`
+  }
+}
+
+/** The receipt's figures, or why they can't be read. A receipt is evidence
+ *  the validator never reads, so a bad one warns rather than refuses. */
+function receiptWarnings(
+  files: ProductFiles,
+  shortfall: (receipt: unknown) => string | undefined,
+): readonly string[] {
+  if (![...files.paths()].includes(RECEIPT)) {
+    return []
+  }
+  const read = readReceipt(files)
+  if (typeof read === 'string') {
+    return [read]
+  }
+  const found = shortfall(read.receipt)
+  return found === undefined ? [] : [found]
+}
+
 function targetFiles(target: string): ProductFiles {
   // oxlint-disable-next-line node/no-sync -- read before the sync validator
   if (lstatSync(target).isFile()) {
@@ -132,16 +176,23 @@ function targetFiles(target: string): ProductFiles {
 /** Validates the built product at `target` with format alone. */
 async function validateProduct(target: string): Promise<ProductSummary> {
   await prepareAssetDecoders()
-  const valid = validateShardfileProduct(targetFiles(path.resolve(target)), {
-    hash: sha256,
-  })
+  const files = targetFiles(path.resolve(target))
+  const valid = validateShardfileProduct(files, { hash: sha256 })
+  // A memory figure below the product's own files (Brasscap rev 3: 2,930,740
+  // over 4,670,827) warns rather than refuses while a pinned product still
+  // carries one; `pack` restamps it.
+  const receipt = receiptWarnings(
+    files,
+    (stored: unknown): string | undefined =>
+      receiptResidencyShortfall(stored, valid.shard),
+  )
   return {
     slug: valid.shard.identity.slug,
     revision: valid.shard.identity.revision,
     sections: valid.sections.size,
     assets: valid.assets.size,
     sourceHash: valid.index.build.sourceHash,
-    warnings: valid.warnings,
+    warnings: [...valid.warnings, ...receipt],
   }
 }
 
@@ -156,4 +207,4 @@ function summary(product: ProductSummary): string {
 }
 
 export type { ProductSummary }
-export { memoryFiles, productFiles, summary, validateProduct }
+export { memoryFiles, productFiles, summary, validateInMemory, validateProduct }

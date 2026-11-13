@@ -4171,7 +4171,7 @@
   "src/format/sourceResidency.ts": {
    "eslint(no-magic-numbers)": 6,
    "typescript(explicit-function-return-type)": 2,
-   "typescript(prefer-readonly-parameter-types)": 2,
+   "typescript(prefer-readonly-parameter-types)": 1,
    "unicorn(filename-case)": 1
   },
   "src/format/spawnCombat.ts": {
