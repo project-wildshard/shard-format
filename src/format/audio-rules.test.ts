@@ -261,30 +261,30 @@ describe('per-file rules', (): void => {
 })
 
 describe('budget: AMBER versus red', (): void => {
-  test('green to 4 MB, AMBER over it; one hash counts once', (): void => {
+  test('green to 6 MB, AMBER over it; one hash counts once', (): void => {
     const none = { slug: 's', waiver: undefined, today: TODAY }
-    expect(audioReport([row(4 * MB, 'a')], none).level).toBe('green')
-    const rows = [row(3 * MB, 'a'), row(2 * MB, 'b'), row(2 * MB, 'b')]
+    expect(audioReport([row(6 * MB, 'a')], none).level).toBe('green')
+    const rows = [row(5 * MB, 'a'), row(3 * MB, 'b'), row(3 * MB, 'b')]
     const amber = audioReport(rows, none)
-    expect(amber).toMatchObject({ level: 'amber', files: 2, bytes: 5 * MB })
+    expect(amber).toMatchObject({ level: 'amber', files: 2, bytes: 8 * MB })
     expect((): void => {
       assertAudioAdmission(amber)
     }).not.toThrow()
   })
-  test('red over 8 MB, and admission refuses it', (): void => {
+  test('red over 10 MB, and admission refuses it', (): void => {
     const none = { slug: 's', waiver: undefined, today: TODAY }
-    const red = audioReport([row(5 * MB, 'a'), row(4 * MB, 'b')], none)
+    const red = audioReport([row(6 * MB, 'a'), row(5 * MB, 'b')], none)
     expect(red.level).toBe('red')
     expect((): void => {
       assertAudioAdmission(red)
-    }).toThrow(/Audio rules \(AU5\) refuse s: s holds 9\.00 MB/u)
+    }).toThrow(/Audio rules \(AU5\) refuse s: s holds 11\.00 MB/u)
   })
   test('pack prints AMBER with the numbers, even for a red', (): void => {
     const none = { slug: 'pine-hollow', waiver: undefined, today: TODAY }
     const report = audioReport([row(14_658_913, 'a')], none)
     expect(audioReportLines(report)).toEqual([
-      'audio AMBER: pine-hollow 1 recordings, 14.66 MB (AMBER over 4.00 MB, red over 8.00 MB)',
-      'AMBER audio budget: pine-hollow holds 14.66 MB of its own audio, over the 8.00 MB red line (red: api-server refuses this at upload)',
+      'audio AMBER: pine-hollow 1 recordings, 14.66 MB (AMBER over 6.00 MB, red over 10.00 MB)',
+      'AMBER audio budget: pine-hollow holds 14.66 MB of its own audio, over the 10.00 MB red line (red: api-server refuses this at upload)',
     ])
   })
 })

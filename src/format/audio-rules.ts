@@ -5,7 +5,7 @@ import type { AudioWaiver } from './audio-waiver.ts'
 // rules, and sharddev's `pack` and api-server's admission run this one check.
 // Per recording: AAC-LC 48 kHz, at most 180 s, and a bitrate cap by role and
 // channels with 10% slack. Per shard: its own recordings' bytes against the
-// budget, AMBER over 4 MB and red over 8 MB. Only a red refuses, and only at
+// budget (J303), AMBER over 6 MB and red over 10 MB. Only a red refuses, and only at
 // upload; pack prints every finding as AMBER and still packs. A dated waiver
 // in the shard's source (`audio-waiver.json`, carried in the index as
 // `admission.audioWaiver`) turns the budget's red into AMBER until its date,
@@ -59,8 +59,8 @@ const DATE_LENGTH = 10
 const DECIMALS = 2
 
 const AUDIO_RULES: AudioRules = {
-  budgetAmberBytes: 4_000_000,
-  budgetRedBytes: 8_000_000,
+  budgetAmberBytes: 6_000_000,
+  budgetRedBytes: 10_000_000,
   maxSeconds: 180,
   sampleRate: 48_000,
   slack: 1.1,

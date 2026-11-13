@@ -7,7 +7,7 @@
   validated product's own recordings (audio mounts and non-commons
   `audio.recordings`) and builds the report.
 - Caps: music 64/48 kbps stereo/mono, sfx 48/40, +10% slack, 180 s.
-  Budget: AMBER over 4 MB, red over 8 MB. Only red refuses, at upload
+  Budget (J303, replaces 4/8): AMBER over 6 MB, red over 10 MB. Only red refuses, at upload
   (`assertAudioAdmission`); pack prints every finding as AMBER.
 - Bitrate is AMBER, not red: every live shard is at about 97 kbps until
   AU7 encodes and AU9 to AU12 re-encode, and a red would block them all.
