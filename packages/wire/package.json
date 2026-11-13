@@ -1,9 +1,17 @@
 {
   "name": "@wildshard/wire",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "description": "The Wildshard wire contract and frozen compatibility baseline.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/project-wildshard/shard-format.git",
+    "directory": "packages/wire"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "wire": "./bin.mjs"
   },

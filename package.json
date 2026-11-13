@@ -1,8 +1,15 @@
 {
   "name": "@wildshard/shard-format",
   "version": "0.4.4",
-  "private": true,
   "description": "The raw shardfile format: the spec, the validator and a validate CLI. The public, versioned contract every other repo builds on.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/project-wildshard/shard-format.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "bin": {
     "shard-format": "./src/cli/bin.mjs",
