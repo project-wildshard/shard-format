@@ -43,11 +43,15 @@ from its bytes in `src/format/audio-measure.ts`, no ffmpeg).
 
 The tests that pin each rule are in `src/format/audio-rules.test.ts`.
 
+The check reads each file's **bytes**, not its extension (`audioContainer` in `audio-measure.ts`). AAC bytes at a
+`.wav` or `.flac` URL, as the build's encoder leaves them (it keeps the source URL), are measured as AAC. FLAC, AIFF,
+Ogg, MP3, WebM, CAF or bytes in no container it knows are `audio-container` (red), and still count toward the budget.
+
 ## The targets
 
 | Rule | Target | AU5 check | Level |
 |---|---|---|---|
-| Format | AAC-LC in `.m4a`, 48 kHz, mono or stereo | `formatFinding`: `audio-unreadable`, `audio-wav`, `audio-sample-rate`, `audio-strict-index` | unreadable is red; the rest AMBER |
+| Format | AAC-LC in `.m4a`, 48 kHz, mono or stereo | `formatFinding`: `audio-container`, `audio-unreadable`, `audio-wav`, `audio-sample-rate`, `audio-strict-index` | container and unreadable are red; the rest AMBER |
 | Bitrate, music | 64 kbps stereo, 48 kbps mono | `bitrateFinding`: `audio-bitrate` (cap plus 10%) | AMBER |
 | Bitrate, sound effects | 48 kbps stereo, 40 kbps mono | `bitrateFinding`: `audio-bitrate` (cap plus 10%) | AMBER |
 | Length, any file | 180 s at most | `durationFinding`: `audio-duration` | red |
@@ -175,8 +179,9 @@ source mounts itself does count. Engine music is still in the player's download:
 
 ## The budget (J303)
 
-AU5 counts your shard's **own** recordings: every `/assets/music/` and `/assets/sfx/` mount plus every non-commons
-`audio.recordings` blob, each distinct hash once.
+AU5 counts your shard's **own** recordings: every audio file mounted under `/assets/music/` or `/assets/sfx/` (any audio
+extension, `.flac` and `.aiff` too, or audio bytes under any name; a `music.json` there is not audio) plus every
+non-commons `audio.recordings` blob, each distinct hash once.
 
 | Own audio | Level | What happens |
 |---|---|---|

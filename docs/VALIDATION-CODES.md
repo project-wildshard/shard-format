@@ -80,6 +80,7 @@ finding. Match the code, never the message: messages may be reworded, codes are 
 | Code | Meaning |
 |---|---|
 | `audio-unreadable` | A recording is not readable as AAC-LC 48 kHz mono or stereo (red). |
+| `audio-container` | A recording's bytes are FLAC, AIFF, Ogg, MP3, WebM, CAF or no known container, not AAC in mp4 or WAV; they still count toward the budget (red). |
 | `audio-strict-index` | A recording is AAC outside the strict playback index (amber). |
 | `audio-wav` | A recording is PCM WAV; ship AAC-LC 48 kHz (amber). |
 | `audio-sample-rate` | A recording is AAC at a sample rate other than 48 kHz (amber). |

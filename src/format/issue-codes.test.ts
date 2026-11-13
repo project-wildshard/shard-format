@@ -110,6 +110,7 @@ function recording(
     hash,
     bytes: 1000,
     role: 'sfx',
+    container: 'mp4',
     codec: 'aac',
     ...shape,
     ...change,
@@ -203,6 +204,7 @@ describe('audio findings carry an audio code', (): void => {
   test('each rule gives its code, and a red report refuses as audio-refused', (): void => {
     const rows = [
       recording('a', { codec: 'unreadable', reason: 'no moov' }),
+      recording('h', { codec: 'unreadable', container: 'flac' }),
       recording('b', { reason: 'edts' }),
       recording('c', { codec: 'wav' }),
       recording('d', { sampleRate: 44_100 }),
@@ -222,6 +224,7 @@ describe('audio findings carry an audio code', (): void => {
     ).toEqual([
       'audio-bitrate',
       'audio-budget-red',
+      'audio-container',
       'audio-duration',
       'audio-sample-rate',
       'audio-strict-index',

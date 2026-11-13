@@ -107,9 +107,12 @@ function formatProblem(
 
 function formatFinding(row: Readonly<RecordingMeasure>): AudioFinding[] {
   if (row.codec === 'unreadable') {
-    const why = row.reason ?? 'unknown'
-    const message = `${row.url} is not AAC-LC 48 kHz mono or stereo (${why})`
-    return [{ code: 'audio-unreadable', level: 'red', rule: 'format', message }]
+    const code =
+      row.container === 'mp4' || row.container === 'wav'
+        ? 'audio-unreadable'
+        : 'audio-container'
+    const message = `${row.url} is not AAC-LC 48 kHz mono or stereo (${row.reason ?? 'unknown'})`
+    return [{ code, level: 'red', rule: 'format', message }]
   }
   if (row.codec === 'aac' && row.reason !== undefined) {
     const message = `${row.url} is AAC outside the strict playback index (${row.reason})`
