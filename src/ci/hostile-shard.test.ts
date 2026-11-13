@@ -171,13 +171,29 @@ function edited(
   return out
 }
 
-/** An error a host can catch, with no sign of a parser running off an end. */
+/** The words a fatal TextDecoder throws on bad UTF-8, read from Node itself. */
+function invalidTextMessage(): string {
+  try {
+    new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.of(255))
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return error.message
+    }
+  }
+  throw new Error('a fatal TextDecoder took byte 255')
+}
+const INVALID_TEXT = invalidTextMessage()
+
+/** An error a host can catch, with no sign of a parser running off an end.
+ *  Bad UTF-8 is a TypeError and still a refusal: Node's code names it, or,
+ *  once a check has tagged it with an issue code (SA41), its exact words. */
 function isRefusal(error: unknown): boolean {
   if (!(error instanceof Error) || error instanceof RangeError) {
     return false
   }
   const invalidText =
-    'code' in error && error.code === 'ERR_ENCODING_INVALID_ENCODED_DATA'
+    ('code' in error && error.code === 'ERR_ENCODING_INVALID_ENCODED_DATA') ||
+    error.message === INVALID_TEXT
   return !(error instanceof TypeError) || invalidText
 }
 
