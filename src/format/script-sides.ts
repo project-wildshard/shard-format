@@ -56,7 +56,7 @@ function isViewCommand(command: ScriptV1CommandName): boolean {
  * The `view` feature kinds whose named file (`file`) carries a return program that only the page runs, with the path
  * of the script row inside that file. A `sim` row run here is page-only gameplay: Pine's `pine.life` sets
  * `secret:log` from engine's client `pageLife` alone (SERVER-PARITY inventory row 3). SS5 runs it on the server too,
- * and the live product passes on `SCRIPT_SIDE_GRANDFATHER` until SS11.
+ * and SS11 (Pine revision 4) moved its page half to the view row `pine.ambient`, so the grandfather list is empty.
  *
  * `practice.course` has the same shape (a `sim` row only the page runs) but is cosmetic; it joins this table once
  * Nalati and Nine Dragon declare their `practice.course` rows `view`.

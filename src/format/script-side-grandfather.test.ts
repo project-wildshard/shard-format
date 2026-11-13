@@ -17,26 +17,27 @@ import type { ProductFiles } from './productValidation.ts'
 import type { ScriptSideProduct } from './script-side-grandfather.ts'
 import type { NamedJson } from './script-sides.ts'
 
-// SERVER-PARITY SS7 and SS11: Pine's live product is grandfathered with a warning until SS11 re-uploads it; any other
-// product with the pattern, a new Pine upload included, is still refused. Built products come from engine out/, and
-// their verdict walks every named JSON file (SS12's view return rows, `script-view-returns.test.ts`).
+// SERVER-PARITY SS7 and SS11: Pine's old live product was grandfathered with a warning until SS11 re-uploaded it (Pine
+// revision 4, `page.life` on the view row `pine.ambient`); the list is now empty, so every product with the pattern, the
+// old Pine product included, is refused. Built products come from engine out/, and their verdict walks every named JSON
+// file (SS12's view return rows, `script-view-returns.test.ts`).
 
 type Json = Record<string, unknown>
 type Files = ReadonlyMap<string, Uint8Array>
 
 const ROOT = new URL('../../', import.meta.url).pathname
-const ENGINE_OUT = path.join(ROOT, '../engine/out')
+/** Engine's pinned products (`node scripts/pins.ts install`), or another tree's with WILDSHARD_ENGINE_OUT. */
+const ENGINE_OUT =
+  process.env['WILDSHARD_ENGINE_OUT'] ?? path.join(ROOT, '../engine/out')
 const PINE = path.join(ENGINE_OUT, 'pine-hollow')
 const LIFE = 'actors/page-life.json'
 const PINE_LINE = `sim script pine.life runs in page-only feature page.life (${LIFE}), which no server host runs`
-/** Pine's live product: engine out/ and the live pin (engine test/pins/shardfiles.json, f45e25f2) share it. */
-const PINE_LIVE: ScriptSideProduct = {
+/** Pine's old live product (revision 2, `f45e25f2`), the one product the list grandfathered until SS11. */
+const PINE_OLD: ScriptSideProduct = {
   slug: 'pine-hollow',
   sourceHash:
     'a255585456ff289330fc0a8f7b417b67dca608ebeebcec59b676a7b361f79c15',
 }
-const PINE_NEXT = '0'.repeat(64)
-const PINE_WARNING = `grandfathered: ${PINE_LINE} (pine-hollow: the live product; SS5 (engine 2f5e6965) runs its hollow-log secret on the server too, and SS11 moves its page half to a view row)`
 
 function sha256(bytes: Readonly<Uint8Array>): string {
   return createHash('sha256').update(bytes).digest('hex')
@@ -126,7 +127,7 @@ function pinnedProducts(): [string, string][] {
   )
 }
 
-/** Pine's sections and page-life file, by path. */
+/** Pine's shard.json, sections and page-life file: enough for both validators to reach the side check. */
 function pineFiles(): Map<string, Uint8Array> {
   const shard = readJson(PINE, 'shard.json')
   const life = listed(shard, 'files').find(
@@ -136,20 +137,10 @@ function pineFiles(): Map<string, Uint8Array> {
     String(entry['path']),
   )
   const files = new Map<string, Uint8Array>()
-  for (const file of [...sections, String(life?.['path'])]) {
+  for (const file of ['shard.json', ...sections, String(life?.['path'])]) {
     const bytes = readFileSync(path.join(PINE, file))
     files.set(file, new Uint8Array(bytes))
   }
-  return files
-}
-
-/** Pine's shard.json, sections and page-life file: enough for both validators to reach the SS7 check. `sourceHash`
- *  replaces the declared source hash, as a new upload of Pine would. */
-function pineHead(sourceHash: string): Files {
-  const files = pineFiles()
-  const index = readFileSync(path.join(PINE, 'shard.json'), 'utf8')
-  const next = index.replace(PINE_LIVE.sourceHash, sourceHash)
-  files.set('shard.json', new TextEncoder().encode(next))
   return files
 }
 
@@ -197,29 +188,16 @@ beforeAll(async (): Promise<void> => {
 })
 
 describe('the grandfather list', (): void => {
-  test('holds only Pine live pine.life, one line per product', (): void => {
-    expect(
-      SCRIPT_SIDE_GRANDFATHER.map((entry): string[] => [
-        entry.slug,
-        entry.sourceHash,
-        entry.script,
-      ]),
-    ).toEqual([[PINE_LIVE.slug, PINE_LIVE.sourceHash, 'pine.life']])
+  test('is empty since SS11', (): void => {
+    expect(SCRIPT_SIDE_GRANDFATHER).toEqual([])
   })
 
-  test('turns Pine live pine.life refusal into a warning naming the script and why', (): void => {
-    expect(simLifeVerdict('pine.life', PINE_LIVE)).toEqual({
-      refused: [],
-      warnings: [PINE_WARNING],
-    })
-  })
-
-  test('still refuses a new Pine upload, another shard and another script', (): void => {
+  test('refuses the old Pine product, another shard and another script alike', (): void => {
     const line = `sim script x.life runs in page-only feature page.life (${LIFE}), which no server host runs`
     for (const [id, product, refused] of [
-      ['pine.life', { ...PINE_LIVE, sourceHash: PINE_NEXT }, PINE_LINE],
-      ['pine.life', { ...PINE_LIVE, slug: 'made-up' }, PINE_LINE],
-      ['x.life', PINE_LIVE, line],
+      ['pine.life', PINE_OLD, PINE_LINE],
+      ['pine.life', { ...PINE_OLD, slug: 'made-up' }, PINE_LINE],
+      ['x.life', PINE_OLD, line],
     ] as const) {
       expect(simLifeVerdict(id, product)).toEqual({
         refused: [refused],
@@ -227,36 +205,37 @@ describe('the grandfather list', (): void => {
       })
     }
   })
+
+  test('passes a view row on page.life (Pine revision 4, pine.ambient) with no warning', (): void => {
+    const row = { id: 'pine.ambient', side: 'view' }
+    const sections = new Map<string, unknown>([
+      ['actors/return-scripts', [row]],
+      ['client/plan', { features: [{ file: LIFE, kind: 'page.life' }] }],
+    ])
+    const named: NamedJson = (name: string): unknown =>
+      name === LIFE ? { program: { script: row } } : undefined
+    const result = scriptSideVerdict(
+      sections,
+      { names: [], read: named },
+      PINE_OLD,
+    )
+    expect(result).toEqual({ refused: [], warnings: [] })
+  })
 })
 
 describe('pinned products in engine out/', (): void => {
   const products = pinnedProducts()
   test.skipIf(products.length === 0).each(products)(
-    '%s: none is refused, and only Pine warns, for pine.life',
-    (name: string, root: string): void => {
-      expect(productVerdict(root)).toEqual({
-        refused: [],
-        warnings: name === 'pine-hollow' ? [PINE_WARNING] : [],
-      })
+    '%s: none is refused and none warns',
+    (_name: string, root: string): void => {
+      expect(productVerdict(root)).toEqual({ refused: [], warnings: [] })
     },
   )
 
   test.skipIf(!existsSync(PINE))(
-    'both validators refuse a new Pine upload that keeps the pattern, with the same line',
+    'both validators admit the pinned Pine product past the side check',
     async (): Promise<void> => {
-      const head = pineHead(PINE_NEXT)
-      const old = verdict((): unknown =>
-        validateShardfileProduct(memoryFiles(head), { hash: sha256 }),
-      )
-      expect(old).toBe(`Script side refused: ${PINE_LINE}`)
-      expect(await streamVerdict(head)).toBe(old)
-    },
-  )
-
-  test.skipIf(!existsSync(PINE))(
-    'both validators pass Pine live head through the side check',
-    async (): Promise<void> => {
-      const head = pineHead(PINE_LIVE.sourceHash)
+      const head = pineFiles()
       const old = verdict((): unknown =>
         validateShardfileProduct(memoryFiles(head), { hash: sha256 }),
       )
