@@ -1,0 +1,5 @@
+# Paths under src/ that kit/.oxfmtrc.json ignored when it lived in src/;
+# its ignorePatterns now only reach kit/, and oxfmt refuses ".." (J329).
+src/scripts/**
+src/**/*.md
+src/dist/**

@@ -20,7 +20,7 @@ Run from the repo root.
   its own CI job. `wire check` is an empty scaffold until WS2.
 - `pnpm check`: typecheck + lint + the src/format ratchet + format:check
   + unit tests + format's tests + asks. The pre-push hook and CI run it.
-- `pnpm typecheck`: `src/tsconfig.json` (CLI, tools, tests),
+- `pnpm typecheck`: `kit/tsconfig.json` (CLI, tools, tests),
   `src/format/tsconfig.json` (format and its tests, Node types) and
   `src/format/tsconfig.lib.json` (the library alone: ES2022, no Node,
   no DOM).
@@ -41,7 +41,7 @@ Run from the repo root.
 - `node src/cli/main.ts pack <dir> [--out <file>]`: tar a folder. What
   its sections measure follows them, so edit a section and pack.
 - `pnpm md:wrap`: rewraps Markdown prose to ~72 columns.
-- `src/scripts/ask-new.sh "<Jake's words>"`: opens an ask
+- `kit/scripts/ask-new.sh "<Jake's words>"`: opens an ask
   (`docs/tasks/asks/README.md`).
 
 ## Wire package workspace
@@ -127,7 +127,7 @@ Scratch goes in `tmp/<task>/` and is deleted when done.
 - The library (`src/format`, not its tests) imports only `valibot`,
   `meshoptimizer/decoder` and its own modules, by relative `./x.ts`
   path, never by its package name.
-- Every function has an explicit return type. `src/.oxlintrc.json`
+- Every function has an explicit return type. `kit/.oxlintrc.json`
   denies every category (D28); disable a rule only with a one-line
   reason beside it.
 - Pin dependencies exactly (`.npmrc` has `save-exact=true`).

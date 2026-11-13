@@ -58,7 +58,7 @@ async function measure(): Promise<Baseline> {
     ]),
     output('node_modules/.bin/oxfmt', [
       '-c',
-      'src/.oxfmtrc.json',
+      'kit/.oxfmtrc.json',
       '--list-different',
       TARGET,
     ]),
