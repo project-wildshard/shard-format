@@ -5,9 +5,10 @@ import memoryGates from './memoryGates.json' with { type: 'json' };
 export const CHUNK_SIZE = 500;        // metres, square
 /** Half a cell width in metres. */
 export const CHUNK_HALF: number = CHUNK_SIZE / 2;
-/** Signed placement radius of the finite platform catalogue (SF88); residency budgets stay independent. */
-export const GRID_RADIUS = 2;
-/** Number of placements, including open plots, in the finite square platform. */
+/** Signed placement radius of the finite platform catalogue (SF88): 7×7 since J314, J305's 5×5 at its centre and the
+ * outer ring void until a shard is placed there; residency budgets stay independent. */
+export const GRID_RADIUS = 3;
+/** Most placements, including open plots, the finite square platform holds; a grid may leave cells empty. */
 export const GRID_CELL_COUNT: number = (2 * GRID_RADIUS + 1) ** 2;
 /** Legal midpoint entry opening in metres. */
 export const ENTRY_WIDTH = 8;

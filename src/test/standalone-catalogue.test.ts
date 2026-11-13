@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 
 import { is, parse } from 'valibot'
 
+import { GRID_CELL_COUNT, GRID_RADIUS } from '../format/contentBounds.ts'
 import { GridCatalogueSchema } from '../format/grid-catalogue.ts'
 import {
   GridDocumentSchema,
@@ -12,10 +14,17 @@ import {
 
 import type { GridCatalogueInput, GridCell } from '../format/grid-catalogue.ts'
 
-const RADIUS = 2
+const J305_RADIUS = 2
+const FULL_LINES = [-3, -2, -1, 0, 1, 2, 3]
+// J305's 25 cells and 27 solo placements, as api.wildshard.io's
+// production catalogue.json served them on 2026-11-13 (J314: they never move).
+const J305_TEXT = await readFile(
+  new URL('fixtures/j305-grid.json', import.meta.url),
+  'utf8',
+)
 
 function row(column: number, line: number): GridCell<string> {
-  const name = `${String(column + RADIUS)}-${String(line + RADIUS)}`
+  const name = `${String(column + GRID_RADIUS)}-${String(line + GRID_RADIUS)}`
   return {
     instance: `cell-${name}`,
     slug: `shard-${name}`,
@@ -68,10 +77,57 @@ test('admits a complete grid', (): void => {
   assert.equal(parse(GridCatalogueSchema, grid()).cells.length, 25)
 })
 
-test('refuses a grid with a cell missing', (): void => {
+test('the grid is 7×7', (): void => {
+  assert.deepEqual([GRID_RADIUS, GRID_CELL_COUNT], [3, 49])
+})
+
+test('admits a ring-3 cell beside empty cells', (): void => {
+  const ring = withFirstCell({ cell: [0, 3] })
+
+  assert.equal(parse(GridCatalogueSchema, ring).cells[0]?.cell[1], 3)
+  assert.equal(is(GridCatalogueSchema, { ...grid(), cells: [] }), false)
+})
+
+test('admits a grid with a cell missing', (): void => {
   const short = { ...grid(), cells: grid().cells.slice(1) }
 
-  assert.equal(is(GridCatalogueSchema, short), false)
+  assert.equal(parse(GridCatalogueSchema, short).cells.length, 24)
+})
+
+test('admits a full 7×7 grid', (): void => {
+  const cells = FULL_LINES.flatMap((column: number): GridCell<string>[] =>
+    FULL_LINES.map((line: number): GridCell<string> => row(column, line)),
+  )
+
+  assert.equal(
+    parse(GridCatalogueSchema, { ...grid(), cells }).cells.length,
+    49,
+  )
+})
+
+test('refuses a cell at radius 4', (): void => {
+  for (const cell of [
+    [4, 0],
+    [0, -4],
+    [-4, 4],
+  ] as [number, number][]) {
+    assert.equal(is(GridCatalogueSchema, withFirstCell({ cell })), false)
+  }
+})
+
+test("J305's 25 cells read back unchanged", (): void => {
+  const document: unknown = JSON.parse(J305_TEXT)
+  const parsed = parse(GridDocumentSchema, document)
+
+  assert.equal(parsed.grid.cells.length, 25)
+  for (const placed of parsed.grid.cells) {
+    assert.ok(
+      placed.cell.every(
+        (axis: number): boolean => Math.abs(axis) <= J305_RADIUS,
+      ),
+    )
+  }
+  assert.deepEqual(parsed, document)
 })
 
 test('refuses two rows on one cell', (): void => {

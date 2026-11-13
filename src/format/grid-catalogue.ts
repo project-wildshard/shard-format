@@ -223,15 +223,16 @@ const gridShape = strictObject({
   emptyNeighbour,
 })
 
-/** Placement data, independent of package content and solo coordinates. */
+/** Placement data, independent of package content and solo coordinates. Since J314 a
+ * cell may stay empty: the void a new shard's first upload is placed into. */
 const GridCatalogueSchema: GenericSchema<GridCatalogueInput, GridCatalogue> =
   pipe(
     gridShape,
     check(
       // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's check takes the schema's own type
       (grid: InferOutput<typeof gridShape>): boolean =>
-        uniquePlaces(grid.cells) && grid.cells.length === GRID_CELL_COUNT,
-      'unique stable instance identities and complete signed cell layout',
+        uniquePlaces(grid.cells),
+      'unique stable instance identities and cells',
     ),
   )
 
