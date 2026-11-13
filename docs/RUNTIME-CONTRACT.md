@@ -183,7 +183,7 @@ a `source`, and `content.catalogue` without finishes need none; `species.program
 | `world.ambient-life` | both | `harvest` | `installClientAmbientLife` | — |
 | `world.assembly` | both | `collision` | `installClientWorldAssembly` | `world/scenes` |
 | `world.baked` | both | `collision` | `installClientBakedTiles` | — |
-| `world.bind-sets` | both | `places` | `bindEnteredClientPlaceSets` | — |
+| `world.bind-sets` | view | — | `bindEnteredClientPlaceSets` | — |
 | `world.dressing` | both | `collision` | `SceneDressing` | `world/scenes` |
 | `world.forest-page` | both | `collision` | `enterClientForestPage`, `installClientForestPage` | — |
 | `world.meadow` | view | — | `installClientMeadow` | — |
@@ -191,7 +191,7 @@ a `source`, and `content.catalogue` without finishes need none; `species.program
 | `world.paths` | both | `collision` | `installClientPathRamps` | — |
 | `world.runtime-hooks` | both | `fallFloor` | `installClientRuntimeHooks` | — |
 | `world.scenes` | both | `collision` | `StreamingCamera`, `cameraCone`, `followResidentTiles`, `installWorldScenes`, `noteTileBytes`, `productTileRing`, `residentTiles` | `world/scenes` |
-| `world.sets` | both | `places` | `installClientPlaceSets` | — |
+| `world.sets` | view | — | `installClientPlaceSets` | — |
 | `world.updates` | view | — | `installWorldUpdates` | `look/toon` |
 | `world.water` | view | — | `installClientWaterSurfaces` | — |
 <!-- /generated:kinds -->

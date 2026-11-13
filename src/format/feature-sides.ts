@@ -84,7 +84,8 @@ const CLIENT_FEATURE_SIDES: Readonly<Record<ClientFeatureKind, SideEntry>> =
     'world.ambient-life': both('harvest'),
     'world.assembly': COLLISION,
     'world.baked': COLLISION,
-    'world.bind-sets': both('places'),
+    // SS3b: named sets only list placed models for the sets explorer; a place's gameplay (respawn, discovery) is quest.world's
+    'world.bind-sets': VIEW,
     'world.dressing': COLLISION,
     'world.forest-page': COLLISION,
     'world.meadow': VIEW,
@@ -92,7 +93,7 @@ const CLIENT_FEATURE_SIDES: Readonly<Record<ClientFeatureKind, SideEntry>> =
     'world.paths': COLLISION,
     'world.runtime-hooks': both('fallFloor'),
     'world.scenes': COLLISION,
-    'world.sets': both('places'),
+    'world.sets': VIEW,
     'world.updates': VIEW,
     'world.water': VIEW,
   })
