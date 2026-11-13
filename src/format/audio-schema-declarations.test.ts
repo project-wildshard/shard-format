@@ -17,9 +17,9 @@ test('audio schemas emit isolated declarations that remain strictly checked and 
   const options = { strict: true, exactOptionalPropertyTypes: true, noUncheckedIndexedAccess: true, types: [],
     target: 'ES2022', module: 'ESNext', moduleResolution: 'bundler', allowImportingTsExtensions: true, skipLibCheck: false };
   try {
-    for (const name of ['audioProfiles', 'voicePatches']) put(`${name}.ts`, readFileSync(`src/format/${name}.ts`, 'utf8'));
+    for (const name of ['audioProfiles', 'voicePatches', 'engine-music']) put(`${name}.ts`, readFileSync(`src/format/${name}.ts`, 'utf8'));
     put('emit.json', JSON.stringify({ compilerOptions: { ...options, declaration: true, emitDeclarationOnly: true,
-      isolatedDeclarations: true, outDir: 'out' }, files: ['audioProfiles.ts', 'voicePatches.ts'] }));
+      isolatedDeclarations: true, outDir: 'out' }, files: ['audioProfiles.ts', 'voicePatches.ts', 'engine-music.ts'] }));
     const emit = run('emit.json');
     expect(emit.status, String(emit.stdout) + String(emit.stderr)).toBe(0);
     const declarations = ['audioProfiles', 'voicePatches'].map(name => readFileSync(resolve(root, `out/${name}.d.ts`), 'utf8'));

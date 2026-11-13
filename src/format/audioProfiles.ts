@@ -1,4 +1,5 @@
 import * as v from 'valibot';
+import { ENGINE_SLOTS_MESSAGE, engineSlotsKnown } from './engine-music.ts';
 
 const id = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
 const finite = v.pipe(v.number(), v.finite());
@@ -68,7 +69,8 @@ export const AudioMusicSchema: v.GenericSchema<AudioMusic> = v.pipe(v.strictObje
 }), v.check((music) => new Set(music.slots).size === music.slots.length && music.slots.includes(music.base)
   && music.bootSlots.every((slot) => slot === 'title' || music.slots.includes(slot))
   && music.selection.every((row) => row.slots.every((slot) => music.slots.includes(slot)))
-  && Object.keys(music.sets).every((slot) => music.slots.includes(slot)), 'every selected, base and boot slot belongs to the score (the platform title is allowed)'));
+  && Object.keys(music.sets).every((slot) => music.slots.includes(slot)), 'every selected, base and boot slot belongs to the score (the platform title is allowed)'),
+  v.check<AudioMusic, string>(engineSlotsKnown, ENGINE_SLOTS_MESSAGE));
 /** Same-byte sample catalogue and loop gain selection, without author decoder callbacks. */
 export const AudioSamplesSchema: v.GenericSchema<AudioSamples> = v.strictObject({ catalogue: v.exactOptional(catalogue), set: id, bed: id, loopGains: v.pipe(v.record(id, gain), v.check((gains) => Object.keys(gains).length <= 32, 'bounded loop gains')), omitLoops: optionalIds, omitShots: optionalIds, omitSlots: optionalIds });
 /** Supported native biquad types. */
