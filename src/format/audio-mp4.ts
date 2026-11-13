@@ -40,7 +40,6 @@ const CONTAINERS: ReadonlySet<string> = new Set([
   'stbl',
 ])
 const STSD_ENTRY = 16
-const MP4A_CHANNELS = 24
 const MP4A_RATE = 32
 const ESDS_AT = 36
 const MDHD_V1 = 1
@@ -59,6 +58,9 @@ const DECODER_CONFIG = 4
 const DECODER_SPECIFIC = 5
 const CHANNEL_DIVISOR = 8
 const CHANNEL_VALUES = 16
+const MPEG4_AUDIO = 0x40
+const AAC_LC = 2
+const AAC_FRAMES = 1024
 
 function tagAt(source: Readonly<Bytes>, at: number): string {
   if (at + TAG_BYTES > source.raw.length) {
@@ -92,8 +94,8 @@ function descriptorBody(
   return undefined
 }
 
-/** The channel configuration in an `mp4a` entry's AAC decoder config, or undefined. */
-function configuredChannels(
+/** The body offset of an MPEG-4 audio `mp4a` entry's decoder-specific config, or undefined. */
+function decoderSpecific(
   source: Readonly<Bytes>,
   sample: number,
 ): number | undefined {
@@ -106,15 +108,27 @@ function configuredChannels(
     return undefined
   }
   const decoder = descriptorBody(source, es + ES_FIELDS, DECODER_CONFIG)
-  const specific =
-    decoder === undefined
-      ? undefined
-      : descriptorBody(source, decoder + DECODER_FIELDS, DECODER_SPECIFIC)
+  return decoder === undefined || source.raw[decoder] !== MPEG4_AUDIO
+    ? undefined
+    : descriptorBody(source, decoder + DECODER_FIELDS, DECODER_SPECIFIC)
+}
+
+/** The AAC-LC channel configuration of an `mp4a` entry, or undefined for anything else. */
+function configuredChannels(
+  source: Readonly<Bytes>,
+  sample: number,
+): number | undefined {
+  const specific = decoderSpecific(source, sample)
+  const first = specific === undefined ? undefined : source.raw[specific]
   const second =
     specific === undefined ? undefined : source.raw[specific + NEXT]
-  return second === undefined
-    ? undefined
-    : Math.floor(second / CHANNEL_DIVISOR) % CHANNEL_VALUES
+  if (first === undefined || second === undefined) {
+    return undefined
+  }
+  const lowComplexity = Math.floor(first / CHANNEL_DIVISOR) === AAC_LC
+  return lowComplexity
+    ? Math.floor(second / CHANNEL_DIVISOR) % CHANNEL_VALUES
+    : undefined
 }
 
 /** The first offset of each box type, walking only the sample-table path. */
@@ -148,33 +162,44 @@ function mediaSeconds(source: Readonly<Bytes>, mdhd: number): number {
   return scale === NONE ? NONE : frames / scale
 }
 
-/** Every packet's bytes from `stsz`. */
-function packetBytes(source: Readonly<Bytes>, stsz: number): number {
+/** The packet count and bytes from `stsz`; a count is never trusted past the box's own bytes. */
+function packets(
+  source: Readonly<Bytes>,
+  stsz: number,
+): Readonly<{ count: number; bytes: number }> {
   const fixed = u32(source, stsz + FULL_BOX)
-  const count = u32(source, stsz + STSZ_COUNT)
+  const declared = u32(source, stsz + STSZ_COUNT)
   if (fixed !== NONE) {
-    return fixed * count
+    return { count: declared, bytes: fixed * declared }
   }
-  let total = NONE
+  const room = Math.floor((source.raw.length - stsz - STSZ_SIZES) / WORD)
+  const count = Math.max(NONE, Math.min(declared, room))
+  let bytes = NONE
   for (let index = NONE; index < count; index += NEXT) {
-    total += u32(source, stsz + STSZ_SIZES + index * WORD)
+    bytes += u32(source, stsz + STSZ_SIZES + index * WORD)
   }
-  return total
+  return { count, bytes }
 }
 
+/** Seconds and kbps; the duration is the longer of `mdhd`'s and the packets' own, so a forged `mdhd` can't hide length. */
 function shapeOf(
   source: Readonly<Bytes>,
   boxes: Readonly<{ mdhd: number; sample: number; stsz: number }>,
-): AudioShape {
-  const seconds = mediaSeconds(source, boxes.mdhd)
-  const bits = packetBytes(source, boxes.stsz) * BITS
-  const header = source.view.getUint16(boxes.sample + MP4A_CHANNELS)
-  return {
-    channels: configuredChannels(source, boxes.sample) ?? header,
-    sampleRate: Math.floor(u32(source, boxes.sample + MP4A_RATE) / FIXED_POINT),
-    seconds,
-    kbps: seconds === NONE ? NONE : bits / seconds / KBPS,
+): AudioShape | undefined {
+  const channels = configuredChannels(source, boxes.sample)
+  const sampleRate = Math.floor(
+    u32(source, boxes.sample + MP4A_RATE) / FIXED_POINT,
+  )
+  if (channels === undefined || sampleRate === NONE) {
+    return undefined
   }
+  const coded = packets(source, boxes.stsz)
+  const seconds = Math.max(
+    mediaSeconds(source, boxes.mdhd),
+    (coded.count * AAC_FRAMES) / sampleRate,
+  )
+  const kbps = seconds === NONE ? NONE : (coded.bytes * BITS) / seconds / KBPS
+  return { channels, sampleRate, seconds, kbps }
 }
 
 /** The `mdhd`, `mp4a` entry and `stsz` offsets, or undefined when a box is missing. */

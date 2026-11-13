@@ -42,6 +42,7 @@ const RIFF_HEADER = 12
 const WAV_CHANNELS = 2
 const WAV_RATE = 4
 const WAV_BYTE_RATE = 8
+const WAV_BLOCK = 12
 const WAV_FMT_MIN = 16
 const PAD = 2
 
@@ -61,20 +62,29 @@ function riffTag(raw: Uint8Array, at: number): string {
   return String.fromCodePoint(...raw.subarray(at, at + TAG_BYTES))
 }
 
+/** The `fmt ` fields; a byte rate that is not rate times block size reads as 0, so the file is unreadable. */
 function wavFormat(view: DataView, body: number): WavFormat {
+  const rate = view.getUint32(body + WAV_RATE, true)
+  const byteRate = view.getUint32(body + WAV_BYTE_RATE, true)
+  const block = view.getUint16(body + WAV_BLOCK, true)
   return {
     channels: view.getUint16(body + WAV_CHANNELS, true),
-    rate: view.getUint32(body + WAV_RATE, true),
-    byteRate: view.getUint32(body + WAV_BYTE_RATE, true),
+    rate,
+    byteRate: byteRate === rate * block ? byteRate : NONE,
   }
 }
 
-function wavResult(format: Readonly<WavFormat>, size: number): AudioShape {
-  const seconds = format.byteRate === NONE ? NONE : size / format.byteRate
+function wavResult(
+  format: Readonly<WavFormat>,
+  size: number,
+): AudioShape | undefined {
+  if (format.byteRate === NONE) {
+    return undefined
+  }
   return {
     channels: format.channels,
     sampleRate: format.rate,
-    seconds,
+    seconds: size / format.byteRate,
     kbps: (format.byteRate * BITS) / KBPS,
   }
 }
@@ -98,7 +108,11 @@ function wavChunk(walk: WavWalk, at: number): AudioShape | number {
     walk.format = wavFormat(walk.view, body)
   }
   if (type === 'data' && walk.format !== undefined) {
-    return wavResult(walk.format, size)
+    // An unreadable format ends the walk with no shape.
+    return (
+      wavResult(walk.format, Math.min(size, walk.raw.length - body)) ??
+      walk.raw.length
+    )
   }
   return body + size + (size % PAD)
 }

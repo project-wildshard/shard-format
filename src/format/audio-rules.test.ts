@@ -27,6 +27,10 @@ interface M4aShape {
   readonly packetBytes: number
   readonly edts?: boolean
   readonly headerChannels?: number
+  /** The AAC object type in the decoder config; 2 is AAC-LC. */
+  readonly profile?: number
+  /** The `mdhd` duration, if not the packets' own. */
+  readonly mdhdFrames?: number
 }
 
 const RATE = 48_000
@@ -83,7 +87,7 @@ function full(type: string, ...parts: readonly Bytes[]): Bytes {
 }
 
 function sampleEntry(shape: Readonly<M4aShape>): Bytes {
-  const asc = [0x11, 0x80 | (shape.channels << 3)]
+  const asc = [((shape.profile ?? 2) << 3) | 1, 0x80 | (shape.channels << 3)]
   const decoder = [4, 17, 0x40, 0x15, 0, 0, 0, ...u32(0), ...u32(0), 5, 2]
   const esds = full('esds', [3, 22], u16(1), [0], decoder, asc)
   const header = [...zeros(6), ...u16(1), ...zeros(8)]
@@ -117,7 +121,14 @@ function movie(shape: Readonly<M4aShape>, offset: number): Bytes {
   )
   const media = box(
     'mdia',
-    full('mdhd', u32(0), u32(0), u32(RATE), u32(frames), u32(0)),
+    full(
+      'mdhd',
+      u32(0),
+      u32(0),
+      u32(RATE),
+      u32(shape.mdhdFrames ?? frames),
+      u32(0),
+    ),
     full('hdlr', u32(0), ascii('soun'), zeros(12), [0]),
     box('minf', sampleTable(shape, offset)),
   )
@@ -221,6 +232,51 @@ describe('measure', (): void => {
     expect(isRecordingUrl('/assets/sfx/best/hit.wav')).toBe(true)
     expect(isRecordingUrl('/assets/music/coral-drift/music.json')).toBe(false)
     expect(isRecordingUrl('/assets/baked/x.m4a')).toBe(false)
+  })
+})
+
+/** The bytes with the `stsz` packet count overwritten. */
+function forgedCount(bytes: Readonly<Uint8Array>, count: number): Uint8Array {
+  const copy = new Uint8Array(bytes)
+  const at = Buffer.from(copy).indexOf('stsz') - 4
+  copy.set(u32(count), at + 16)
+  return copy
+}
+
+describe('untrusted bytes off the strict index', (): void => {
+  const loose = { channels: 1, edts: false } as const
+  test('an AAC file outside the strict index is AMBER', (): void => {
+    const bytes = m4a({ ...loose, packets: 100, packetBytes: 100 })
+    const report = alone(measureRecording('/assets/sfx/a/b.m4a', 'h', bytes))
+    expect(report.level).toBe('amber')
+    expect(rules(report)).toEqual(['format'])
+  })
+  test('a forged mdhd duration cannot hide length', (): void => {
+    const shape = { ...loose, packets: 8500, packetBytes: 8, mdhdFrames: 0 }
+    const bytes = m4a(shape)
+    const report = alone(measureRecording('/assets/sfx/a/b.m4a', 'h', bytes))
+    expect(rules(report)).toEqual(['format', 'duration'])
+    expect(report.level).toBe('red')
+  })
+  test('a forged packet count is bounded by the file', (): void => {
+    const bytes = forgedCount(
+      m4a({ ...loose, packets: 10, packetBytes: 8 }),
+      4_294_967_295,
+    )
+    const measured = measureRecording('/assets/sfx/a/b.m4a', 'h', bytes)
+    expect(measured.codec).toBe('aac')
+    expect(measured.seconds).toBeLessThan(1)
+  })
+  test('HE-AAC and a WAV whose byte rate lies are red', (): void => {
+    const he = m4a({ ...loose, packets: 10, packetBytes: 8, profile: 5 })
+    expect(alone(measureRecording('/assets/sfx/a/b.m4a', 'h', he)).level).toBe(
+      'red',
+    )
+    const lying = wav(8000, 1)
+    lying.set(u32(1).toReversed(), 28)
+    expect(
+      alone(measureRecording('/assets/sfx/a/c.wav', 'w', lying)).level,
+    ).toBe('red')
   })
 })
 

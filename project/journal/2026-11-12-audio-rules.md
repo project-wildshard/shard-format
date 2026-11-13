@@ -19,3 +19,10 @@
   Pine 14.66 MB, Nalati 8.66, Nine Dragon 4.28, Driftwood 2.49.
 - Waiver: `src/shards/<folder>/audio-waiver.json` in a shard repo, carried
   by sharddev's build to `admission.audioWaiver` in `shard.json`.
+- Review fold-in (one claude -p review): the loose box walk now bounds
+  the stsz packet count by the file, takes the longer of mdhd's and the
+  packets' own duration (a forged mdhd can't hide a long file), and
+  admits only MPEG-4 AAC-LC (else unreadable, red). A file outside the
+  strict index is AMBER again (lost in a refactor). A WAV whose byte
+  rate is not rate times block size is unreadable; its data size is
+  clamped to the file. Real shards re-measured: unchanged.

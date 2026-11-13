@@ -101,6 +101,10 @@ function formatFinding(row: Readonly<RecordingMeasure>): AudioFinding[] {
     const message = `${row.url} is not AAC-LC 48 kHz mono or stereo (${why})`
     return [{ level: 'red', rule: 'format', message }]
   }
+  if (row.codec === 'aac' && row.reason !== undefined) {
+    const message = `${row.url} is AAC outside the strict playback index (${row.reason})`
+    return [{ level: 'amber', rule: 'format', message }]
+  }
   const problem = formatProblem(row)
   return problem === undefined ? [] : [problem]
 }
