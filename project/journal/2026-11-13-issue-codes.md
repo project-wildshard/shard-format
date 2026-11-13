@@ -13,3 +13,5 @@
   stream's deferred refusals (pack verdicts, file errors) must land in the same check as the old validator's.
 - Not coded: the admitted-with-a-warning lines (`warnings: string[]`), which are not refusals; adding codes there changes
   a type consumers read. sharddev's switch from regexes to codes needs the next shard-format release.
+- `docs/VALIDATION-CODES.md` is generated whole from the table (`node src/tools/validation-codes.ts write`), one section
+  per family; `src/tools/validation-codes.test.ts` fails on drift and on a code that is not kebab-case or listed twice.
