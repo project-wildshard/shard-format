@@ -10,5 +10,6 @@
   },
   "include": ["*.ts", "standards/format-standards.d.ts"],
   // product-stream-node.ts is a host adapter (node:crypto, node:zlib; a Worker has them under nodejs_compat).
-  "exclude": ["*.test.ts", "product-stream-node.ts"]
+  // immutable.ts hashes with node:crypto for Node author tools (SHARD-COMPAT SI1).
+  "exclude": ["*.test.ts", "product-stream-node.ts", "immutable.ts"]
 }

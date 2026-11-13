@@ -158,6 +158,7 @@
     "./heldWeaponDocuments": "./src/format/heldWeaponDocuments.ts",
     "./herdShelter": "./src/format/herdShelter.ts",
     "./hooks": "./src/format/hooks.ts",
+    "./immutable": "./src/format/immutable.ts",
     "./inputDeclarations": "./src/format/inputDeclarations.ts",
     "./islandLibrary": "./src/format/islandLibrary.ts",
     "./items": "./src/format/items.ts",

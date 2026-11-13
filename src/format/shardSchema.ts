@@ -361,7 +361,17 @@ export const ShardfileSchema: v.GenericSchema<unknown, Shardfile> = v.pipe(v.unk
   v.rawCheck(({ dataset, addIssue }) => { if (dataset.typed) { try { preflightAssetGraph(dataset.value); } catch (error) { addIssue({ message: error instanceof Error ? error.message : 'shardfile asset graph admission' }); } } }),
   v.check((s) => entrywayRules(s).length === 0, 'illegal shard: entryway openings must meet road height y=0'), v.check((s) => shardfileRules(s).length === 0, 'shardfile semantic rules'));
 /** Parse untrusted JSON as a validated shardfile, or throw a Valibot error. */
-export function parseShardfile(input: unknown): Shardfile { return v.parse(ShardfileSchema, input); }
+function parseShardfile(input: unknown): Shardfile { return v.parse(ShardfileSchema, input); }
+/** Admit one owned or cached declaration field with its defining schema.
+ * The assembled declaration still crosses parseShardfile's cross-field rules. */
+function parseShardfileField<Key extends keyof Shardfile>(field: Key, input: unknown): Shardfile[Key] {
+  // The defining mapped table binds each key to this output; TS widens a
+  // generic index into it to every field's schema, so the binding is restated.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ShardfileFieldSchemas' mapped type is the proof
+  const schema = ShardfileFieldSchemas[field] as v.GenericSchema<unknown, Shardfile[Key]>;
+  return v.parse(schema, input);
+}
+export { parseShardfile, parseShardfileField };
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 interface ShardfileRowsInputFields {
