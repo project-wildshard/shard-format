@@ -1,0 +1,497 @@
+{
+  "$doc": "Engine-only facts for docs/RUNTIME-CONTRACT.md, hand-kept (SA19). sections: engine scripts/host-ruler/roots.mjs SECTION_HOSTS, each host as <side> <binding> (page = src/client, server = src/server, both = src/shared, shard-format = this package). kinds: engine src/client/game/shardfile/clientPlan.ts CLIENT_FEATURES, page = the bindings the kind loads, reads = its sections list. Copy again when engine changes either table; runtime-contract.test.ts fails when a section or kind is missing or extra.",
+  "engine": "8f613824",
+  "sections": {
+    "actors/creatures": {
+      "hosts": ["server installDeclaredBrains"]
+    },
+    "actors/crowds": {
+      "hosts": ["both prepareDeclaredCrowds"]
+    },
+    "actors/moves": {
+      "hosts": ["server ActorMoveRunner", "shard-format parseActorMoves"]
+    },
+    "actors/npcs": {
+      "hosts": ["server installDeclaredQuestHost"]
+    },
+    "actors/return-scripts": {
+      "hosts": ["both ReturnProgram", "shard-format parseDecisionScripts"]
+    },
+    "actors/spawn-scripts": {
+      "hosts": ["server SpawnScript", "shard-format parseSpawnScript"]
+    },
+    "actors/spawns": {
+      "hosts": ["server installDeclaredBrains"]
+    },
+    "actors/species": {
+      "hosts": ["server speciesResolver", "page clientSpeciesLooks"]
+    },
+    "actors/species-programs": {
+      "hosts": [],
+      "note": "Metadata lent to existing page/native species and hunt owners."
+    },
+    "actors/strikes": {
+      "hosts": [],
+      "note": "Consumed by the runtime's explicitly imported creature host."
+    },
+    "audio/audio": {
+      "hosts": ["page installDeclaredAudio"]
+    },
+    "client/plan": {
+      "hosts": ["page installClientPhase"]
+    },
+    "collections/displays": {
+      "hosts": ["page CollectionCatalogue"]
+    },
+    "combat/encounters": {
+      "hosts": ["server createShardfileSim"]
+    },
+    "combat/items": {
+      "hosts": ["both installDeclaredItems"]
+    },
+    "combat/strikes": {
+      "hosts": ["server createShardfileSim"]
+    },
+    "economy/ledger": {
+      "hosts": ["both Ledger", "both installLedgerEmitter"]
+    },
+    "economy/loot": {
+      "hosts": ["both declaredLootPresentation"]
+    },
+    "explore/catalogue": {
+      "hosts": ["page explorerRoster"]
+    },
+    "held/arms": {
+      "hosts": ["page HeldClaims", "page HeldView"]
+    },
+    "held/equipment": {
+      "hosts": ["page HeldEquipment"]
+    },
+    "held/finishes": {
+      "hosts": ["page HeldFinishes"]
+    },
+    "held/gear": {
+      "hosts": ["page heldGear"]
+    },
+    "held/loadout": {
+      "hosts": ["page installHeldLoadout"]
+    },
+    "look/colour-functions": {
+      "hosts": ["page materialColourGraph"]
+    },
+    "look/hull-book": {
+      "hosts": ["page productHullBook"]
+    },
+    "look/keyed-sky": {
+      "hosts": ["page keyedSkyBackdrop"]
+    },
+    "look/look": {
+      "hosts": ["page shardfileLook"]
+    },
+    "look/map": {
+      "hosts": ["page reserveMapImage"]
+    },
+    "look/materials": {
+      "hosts": ["page clientMaterials"]
+    },
+    "look/painted": {
+      "hosts": ["page productPaintedLook"]
+    },
+    "look/rigged-hulls": {
+      "hosts": ["page productRiggedHulls"]
+    },
+    "look/toon": {
+      "hosts": ["page toonLook"]
+    },
+    "models/island-library": {
+      "hosts": ["page IslandLibrary"]
+    },
+    "player/stealth": {
+      "hosts": ["page StealthController", "shard-format StealthRowsSchema"]
+    },
+    "quests/directors": {
+      "hosts": ["both DirectorStageLane"]
+    },
+    "quests/host": {
+      "hosts": ["server installDeclaredQuestHost"]
+    },
+    "quests/quests": {
+      "hosts": ["both DeclaredQuests"]
+    },
+    "sim/bodies": {
+      "hosts": ["server DeclaredBodyOps", "shard-format DeclaredBodyOpsSchema"]
+    },
+    "sim/client-channels": {
+      "hosts": ["page ClientScriptViews"]
+    },
+    "sim/client-scripts": {
+      "hosts": ["page createShardfileClientScripts"]
+    },
+    "sim/hooks": {
+      "hosts": ["server createShardfileScriptLane"]
+    },
+    "sim/plumbing": {
+      "hosts": ["page installDeclaredPlumbing"]
+    },
+    "sim/runtime-plan": {
+      "hosts": ["server prepareProductRuntimePlan"]
+    },
+    "sim/scripts": {
+      "hosts": ["server DecisionHost", "shard-format parseDecisionScripts"]
+    },
+    "sim/sim": {
+      "hosts": ["server createShardfileScriptLane"]
+    },
+    "state/migrations": {
+      "hosts": ["both logicalStateFromLane"]
+    },
+    "state/modes": {
+      "hosts": ["both playerModes"]
+    },
+    "state/state": {
+      "hosts": ["server numericScriptState"]
+    },
+    "ui/card": {
+      "hosts": [],
+      "note": "Discovery metadata; no per-shard executable implementation."
+    },
+    "ui/compendium": {
+      "hosts": ["both declaredProductCompendium"]
+    },
+    "ui/completion": {
+      "hosts": ["page installCompletion"]
+    },
+    "ui/level": {
+      "hosts": [],
+      "note": "Metadata read by another host."
+    },
+    "ui/strings": {
+      "hosts": [],
+      "note": "Read by an explicitly imported consumer, not executed."
+    },
+    "ui/ui": {
+      "hosts": ["page mountDeclaredUi", "page installDeclaredTargets"]
+    },
+    "view/modules": {
+      "hosts": [
+        "shard-format ViewModulesSchema",
+        "shard-format admitScriptContract"
+      ]
+    },
+    "world/collision": {
+      "hosts": ["both installShardfileColliders"]
+    },
+    "world/days": {
+      "hosts": ["both declaredDay"]
+    },
+    "world/edge": {
+      "hosts": ["both createPortalTraversal"]
+    },
+    "world/movers": {
+      "hosts": [
+        "server createComposedMoverHost",
+        "page installClientMoverOwners"
+      ]
+    },
+    "world/navigation": {
+      "hosts": ["page installProductNavigation"]
+    },
+    "world/physics": {
+      "hosts": [],
+      "note": "Handed to the runtime's explicitly imported native host."
+    },
+    "world/props": {
+      "hosts": ["both propColliderDescriptors"]
+    },
+    "world/scenes": {
+      "hosts": ["page installWorldScenes"]
+    },
+    "world/spawn": {
+      "hosts": [],
+      "note": "Level admission metadata."
+    },
+    "world/targets": {
+      "hosts": ["both WorldTargetHost"]
+    },
+    "world/terrain": {
+      "hosts": ["both clientGround"]
+    },
+    "world/tiles": {
+      "hosts": ["page clientTileViews"]
+    },
+    "world/traversal": {
+      "hosts": ["both createPortalTraversal"]
+    },
+    "world/trees": {
+      "hosts": ["page productTreeSet", "page placeForestPageModels"]
+    },
+    "world/water": {
+      "hosts": ["page installClientWater", "page shardfileWater"]
+    },
+    "world/weather": {
+      "hosts": ["both declaredWeather"]
+    }
+  },
+  "kinds": {
+    "arena-room.entry": {
+      "page": ["installArenaRoomEntry"],
+      "reads": []
+    },
+    "audio.cues": {
+      "page": ["installClientCues"],
+      "reads": ["world/scenes"]
+    },
+    "audio.scene": {
+      "page": ["enterClientAudioScene", "installClientAudioScene"],
+      "reads": []
+    },
+    "bag.finds": {
+      "page": ["installClientFinds"],
+      "reads": []
+    },
+    "boss.held": {
+      "page": ["installClientBossFight"],
+      "reads": ["sim/runtime-plan"]
+    },
+    "boss.spawned": {
+      "page": ["installClientBossFight"],
+      "reads": ["sim/runtime-plan"]
+    },
+    "boss.telegraph": {
+      "page": ["installClientBossTelegraph"],
+      "reads": ["sim/runtime-plan", "actors/strikes"]
+    },
+    "combat.targets": {
+      "page": ["installCombatTargets"],
+      "reads": []
+    },
+    "content.catalogue": {
+      "page": ["installClientCatalogue"],
+      "reads": ["held/finishes"]
+    },
+    "debug.expose": {
+      "page": ["SceneDressing"],
+      "reads": []
+    },
+    "elite.construct": {
+      "page": ["installClientEliteConstruction"],
+      "reads": []
+    },
+    "elite.entry": {
+      "page": ["installClientEliteEntry"],
+      "reads": []
+    },
+    "fx.trail": {
+      "page": ["installClientTrails"],
+      "reads": ["world/scenes"]
+    },
+    "held.claims.enter": {
+      "page": ["entryOwner"],
+      "reads": ["held/arms"]
+    },
+    "held.claims.install": {
+      "page": ["installHeldClaimsEntry"],
+      "reads": []
+    },
+    "held.claims.prepare": {
+      "page": ["prepareHeldClaimsEntry"],
+      "reads": ["held/arms"]
+    },
+    "held.cosmetics": {
+      "page": ["installClientCosmeticFinishes"],
+      "reads": ["held/finishes"]
+    },
+    "held.melee": {
+      "page": ["enterClientHeldMelee", "installClientHeldMelee"],
+      "reads": ["look/painted"]
+    },
+    "held.ranged-feel": {
+      "page": ["installHeldRangedFeel"],
+      "reads": []
+    },
+    "held.ranged-page": {
+      "page": ["installEntryRangedPage", "prepareRangedPage"],
+      "reads": ["held/finishes"]
+    },
+    "light.emitters": {
+      "page": ["installLightEmitters"],
+      "reads": ["world/scenes"]
+    },
+    "look.painterly": {
+      "page": ["setPainterlyLook"],
+      "reads": []
+    },
+    "motion.channels": {
+      "page": ["installSceneMotion"],
+      "reads": ["world/scenes"]
+    },
+    "page.life": {
+      "page": ["installClientPageLife"],
+      "reads": []
+    },
+    "player.enter": {
+      "page": ["enterClientPlayer", "installClientPlayerEnter"],
+      "reads": []
+    },
+    "population.homes": {
+      "page": ["installClientPopulation"],
+      "reads": ["sim/runtime-plan", "sim/scripts"]
+    },
+    "population.hull-book": {
+      "page": ["prepareDeclaredHullBookKit"],
+      "reads": ["actors/species-programs", "explore/catalogue"]
+    },
+    "population.product-creatures": {
+      "page": ["installProductCreatures"],
+      "reads": ["actors/species-programs"]
+    },
+    "population.wildlife": {
+      "page": ["clientWildlife", "installClientWildlife"],
+      "reads": []
+    },
+    "portal.ride": {
+      "page": ["installDeclaredPortalRide"],
+      "reads": []
+    },
+    "practice.course": {
+      "page": ["installPracticeCourse"],
+      "reads": []
+    },
+    "quest.chapter-view": {
+      "page": ["installEntryChapterView"],
+      "reads": []
+    },
+    "quest.composition": {
+      "page": ["installEntryQuestComposition"],
+      "reads": []
+    },
+    "quest.continuation": {
+      "page": ["installQuestContinuationFile"],
+      "reads": []
+    },
+    "quest.page": {
+      "page": ["finishClientQuestPage", "installClientQuestPage"],
+      "reads": ["world/scenes", "world/targets", "look/painted"]
+    },
+    "quest.reference": {
+      "page": ["installEntryQuestReference"],
+      "reads": []
+    },
+    "quest.spawns": {
+      "page": ["installDeclaredQuestSpawns", "publishEntryOwner"],
+      "reads": []
+    },
+    "quest.views": {
+      "page": ["installEntryQuestViews"],
+      "reads": ["world/scenes"]
+    },
+    "quest.world": {
+      "page": ["prepareQuestWorldEntry"],
+      "reads": []
+    },
+    "riding.session": {
+      "page": ["installClientRiding"],
+      "reads": []
+    },
+    "species.program": {
+      "page": ["installClientSpeciesProgram", "prepareClientSpeciesCatalogue"],
+      "reads": ["actors/species-programs", "sim/scripts", "sim/runtime-plan"]
+    },
+    "state.adventure": {
+      "page": ["installClientAdventurePersistence"],
+      "reads": []
+    },
+    "stealth.entry": {
+      "page": ["installClientStealthEntry", "prepareClientStealthEntry"],
+      "reads": ["player/stealth"]
+    },
+    "strings.register": {
+      "page": ["levelRegistrations.strings"],
+      "reads": ["ui/strings"]
+    },
+    "taming.entry": {
+      "page": ["installTamingEntry"],
+      "reads": []
+    },
+    "timed.encounters": {
+      "page": ["installClientTimedEncounters"],
+      "reads": []
+    },
+    "view.program": {
+      "page": ["installViewProgram"],
+      "reads": ["view/modules"]
+    },
+    "weather.fields": {
+      "page": ["installWeatherFields"],
+      "reads": []
+    },
+    "weather.forest": {
+      "page": ["installClientForestWeather"],
+      "reads": []
+    },
+    "world.ambient-life": {
+      "page": ["installClientAmbientLife"],
+      "reads": []
+    },
+    "world.assembly": {
+      "page": ["installClientWorldAssembly"],
+      "reads": ["world/scenes"]
+    },
+    "world.baked": {
+      "page": ["installClientBakedTiles"],
+      "reads": []
+    },
+    "world.bind-sets": {
+      "page": ["bindEnteredClientPlaceSets"],
+      "reads": []
+    },
+    "world.dressing": {
+      "page": ["SceneDressing"],
+      "reads": ["world/scenes"]
+    },
+    "world.forest-page": {
+      "page": ["enterClientForestPage", "installClientForestPage"],
+      "reads": []
+    },
+    "world.meadow": {
+      "page": ["installClientMeadow"],
+      "reads": []
+    },
+    "world.movers": {
+      "page": ["installClientMoverOwners"],
+      "reads": ["world/movers"]
+    },
+    "world.paths": {
+      "page": ["installClientPathRamps"],
+      "reads": []
+    },
+    "world.runtime-hooks": {
+      "page": ["installClientRuntimeHooks"],
+      "reads": []
+    },
+    "world.scenes": {
+      "page": [
+        "StreamingCamera",
+        "cameraCone",
+        "followResidentTiles",
+        "installWorldScenes",
+        "noteTileBytes",
+        "productTileRing",
+        "residentTiles"
+      ],
+      "reads": ["world/scenes"]
+    },
+    "world.sets": {
+      "page": ["installClientPlaceSets"],
+      "reads": []
+    },
+    "world.updates": {
+      "page": ["installWorldUpdates"],
+      "reads": ["look/toon"]
+    },
+    "world.water": {
+      "page": ["installClientWaterSurfaces"],
+      "reads": []
+    }
+  }
+}

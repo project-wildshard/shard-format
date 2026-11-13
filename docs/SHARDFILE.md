@@ -1,5 +1,7 @@
 # Shardfile 0.x
 
+**What a shard may declare, and which engine host runs it:** [RUNTIME-CONTRACT.md](RUNTIME-CONTRACT.md).
+
 The [generated schema and script ABI reference](api/SHARDFILE.md) lists the actual
 fields, optionality, defaults, union branches, bounds and Wasm signatures used by
 `@wildshard/sdk/shardfile`. It is regenerated from the same schema the SDK validates,

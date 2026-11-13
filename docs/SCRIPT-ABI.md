@@ -1,5 +1,7 @@
 # Script ABI v1 — as built
 
+**What a shard may declare, and which engine host runs it:** [RUNTIME-CONTRACT.md](RUNTIME-CONTRACT.md).
+
 Reviewed against local `main` at `74cc3361d`, 2026-10-17, for G484(b).
 This is the executable contract, including its gaps. The design and future
 feature ownership are recorded in [G484](plans/decisions.md).

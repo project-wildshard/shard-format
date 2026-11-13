@@ -1,5 +1,7 @@
 # Registered streamed file families (G988 Z1)
 
+**What a shard may declare, and which engine host runs it:** [RUNTIME-CONTRACT.md](RUNTIME-CONTRACT.md).
+
 `@wildshard/shard-format/platformFileFamilies` registers a logical name pattern,
 one defining format schema and its existing reader module. Registration
 requires two real shard users and HOST-BAR's six tests, or Jake's explicit

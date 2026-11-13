@@ -22,12 +22,16 @@ Living doc: **how** this repo is built. What it does and why is
   - `ratchet.json`: the lint and format baseline (D29).
 - `src/cli/`: the `shard-format` CLI (old bin name `shardfile` kept): `validate <dir>`, `--version`,
   `--help`.
-- `src/tools/`: repo tooling in TypeScript (`format-ratchet.ts`).
+- `src/tools/`: repo tooling in TypeScript (`format-ratchet.ts`, and
+  `runtime-contract.ts`, which writes `docs/RUNTIME-CONTRACT.md`'s
+  tables).
 - `src/test/`: shared test helpers and `fixtures/` (a real product).
 - `src/scripts/`: template tooling (asks, md-wrap), plain JS.
 - `docs/SHARDFILE.md`, `docs/PLATFORM-FILE-FAMILIES.md`,
   `docs/SCRIPT-ABI.md`: the spec, as imported. Their links still point
   into singleplayer (`../scripts/...`, `api/SHARDFILE.md`).
+- `docs/RUNTIME-CONTRACT.md`: what a shard may declare and which engine
+  host runs it; its tables are generated and tested (SA19).
 
 ## The public contract (J55)
 
