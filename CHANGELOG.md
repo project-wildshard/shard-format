@@ -4,6 +4,16 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.4.8 (2026-11-13)
+
+- Every audio file under `/assets/music` or `/assets/sfx` now counts toward the shard's audio budget, not only `.m4a`
+  and `.wav`: a `.flac`, `.aiff` or `.mp3` counts, in any letter case, and so does any file whose bytes are audio,
+  whatever its name. A file that isn't audio, like `music.json`, still doesn't.
+- Those newly counted files can push a shard past the budget lines: AMBER over 6 MB, red over 10 MB.
+- A new red code, `audio-container`, names audio the format check can't read: FLAC, AIFF, Ogg, MP3, WebM, CAF or bytes
+  in no known container. Upload refuses a shard with one, so a stray `.flac` or `.mp3` that uploaded on v0.4.7 is
+  refused now. Ship AAC-LC in `.m4a`, as docs/audio.md says.
+
 ## v0.4.7 (2026-11-13)
 
 - The shard grid is now 7×7 (49 cells), up from 5×5: the 25 placed shards keep their cells in the middle and the new
