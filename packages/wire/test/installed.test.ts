@@ -56,7 +56,7 @@ function prepareConsumer(dir: string): string {
       private: true,
       type: 'module',
       dependencies: {
-        '@wildshard/wire': 'file:../wildshard-wire-0.0.0.tgz',
+        '@wildshard/wire': 'file:../wildshard-wire-0.1.0.tgz',
       },
       pnpm: { overrides: { valibot: 'file:../valibot-1.5.0.tgz' } },
     }),
@@ -71,7 +71,7 @@ function checkDependency(installed: string, consumer: string): void {
 }
 
 const IMPORT_CHECKS = [
-  "import assert from 'node:assert/strict'; import { WIRE_PACKAGE_VERSION } from '@wildshard/wire/version'; assert.equal(WIRE_PACKAGE_VERSION, '0.0.0')",
+  "import assert from 'node:assert/strict'; import { WIRE_PACKAGE_VERSION } from '@wildshard/wire/version'; assert.equal(WIRE_PACKAGE_VERSION, '0.1.0')",
   "import assert from 'node:assert/strict'; import { quantiseCommand } from '@wildshard/wire/command'; import { STEER_AXIS_CODEC } from '@wildshard/wire/fixed'; const value=0.5/127; const steer={keyX:value,keyY:0,stickX:0,stickY:0}; assert.equal(quantiseCommand({steer,yaw:0,pitch:0}).steer.keyX, STEER_AXIS_CODEC.decode(STEER_AXIS_CODEC.encode(value)))",
   "import assert from 'node:assert/strict'; import { NetActSchema } from '@wildshard/wire/netCommand'; import { PLAYER } from '@wildshard/wire/classes'; import { v0SchemaHash } from '@wildshard/wire/v0'; assert.equal(PLAYER.id, 1); assert.equal(NetActSchema.type, 'variant'); assert.equal(v0SchemaHash([PLAYER]) > 0, true)",
 ]
