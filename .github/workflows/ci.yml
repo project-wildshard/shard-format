@@ -105,7 +105,7 @@ jobs:
         env:
           WIRE_SHA: ${{ github.sha }}
         run: |
-          pnpm add "@wildshard/wire@github:project-wildshard/shardfile#$WIRE_SHA&path:/packages/wire"
+          pnpm add "@wildshard/wire@github:project-wildshard/shard-format#$WIRE_SHA&path:/packages/wire"
           pnpm install --frozen-lockfile
           node --input-type=module -e "import { WIRE_PACKAGE_VERSION } from '@wildshard/wire/version'; if (WIRE_PACKAGE_VERSION !== '0.0.0') throw new Error('Wrong wire package')"
           pnpm exec wire check

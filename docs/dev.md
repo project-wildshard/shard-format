@@ -47,18 +47,23 @@ Run from the repo root.
 ## Wire package workspace
 
 `packages/wire` is `@wildshard/wire`, a separate package beside the root
-`@wildshard/format`. It ships plain JavaScript so installed consumers
+`@wildshard/shard-format`. It ships plain JavaScript so installed consumers
 need no type-strip hook. Its source and tests have their own strict
 typecheck. The root format exports, runtime files and dependency targets
 stay intact. CI installs the exact Git subdirectory into engine and
 api-server:
-`github:project-wildshard/shardfile#<full-sha>&path:/packages/wire`.
+`github:project-wildshard/shard-format#<full-sha>&path:/packages/wire`.
 
 ## Changing the format
 
-This repo is the source of truth for `@wildshard/format`. Singleplayer
+This repo is the source of truth for `@wildshard/shard-format`. Singleplayer
 deleted its `src/format` when it switched to `v0.2.0` (MOVES.md step 7),
 which ended J81. Nothing edits format anywhere else.
+
+The repo and package were `shardfile` and `@wildshard/format` until
+meta J308 (2026-11-12). Schema ids such as
+`@wildshard/format/nativeAssembly#NativeAssemblySchema` keep the old
+spelling: they are strings other repos match on, not import paths.
 
 1. Change `src/format` here, with its tests. `pnpm check`, commit, push.
 2. Batch changes, then release:
@@ -81,19 +86,19 @@ The root stays thin: README.md and AGENTS.md (humans only), CLAUDE.md
 .editorconfig, `corpus/`, `docs/`, `project/`, `src/` and the dot dirs.
 Scratch goes in `tmp/<task>/` and is deleted when done.
 
-- `src/format/`: the `@wildshard/format` package, imported from
+- `src/format/`: the `@wildshard/shard-format` package, imported from
   singleplayer; its `exports` are in the root `package.json` (D30).
   `standards/` holds the globals it may use; `ratchet.json` is the
   D29 baseline.
-- `src/hook/`: `@wildshard/format/formatHook`, the strip-types hook
+- `src/hook/`: `@wildshard/shard-format/formatHook`, the strip-types hook
   every Node consumer installs before it imports format. Plain JS on
   purpose: as .ts, nothing could load it from `node_modules`.
 - `corpus/handwritten/`: Template 2 (J168), JSON held by hand and baked
   blobs, with no build. Its sections are edited here and packed with
-  `shardfile pack`; its blobs are frozen Blender output (J88). It ships
+  `shard-format pack`; its blobs are frozen Blender output (J88). It ships
   in `files`, so consumers can run it. Pinned as `blender-template`.
-- `src/cli/`: the `shardfile` CLI (`validate <dir|tar>`, `pack <dir>`,
-  `--version`, `--help`). `bin.mjs` is the installed entry: Node won't
+- `src/cli/`: the `shard-format` CLI (`validate <dir|tar>`, `pack <dir>`,
+  `--version`, `--help`); `shardfile` stays as a second bin name. `bin.mjs` is the installed entry: Node won't
   strip types under `node_modules`, so it installs the format hook
   first.
 - `src/tools/`: repo tooling in TypeScript (the format ratchet).

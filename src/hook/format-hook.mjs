@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { registerHooks, stripTypeScriptTypes } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
-// `@wildshard/format` ships raw TypeScript and Node will not strip types
+// `@wildshard/shard-format` ships raw TypeScript and Node will not strip types
 // inside node_modules (J53), so Node-run code loads it through this small
 // strip-types hook, applied only under `node_modules/@wildshard/` (J82).
 // A static import of a .ts module would link before the hook exists:

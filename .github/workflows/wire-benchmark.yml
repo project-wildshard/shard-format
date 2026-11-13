@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       source:
-        description: Exact 40-character shardfile commit to measure
+        description: Exact 40-character shard-format commit to measure
         required: true
         type: string
 
@@ -21,7 +21,7 @@ jobs:
       - name: Require an exact committed source
         run: |
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 2
-          printf 'Both fixed runs cover shardfile %s\n' "$SOURCE_SHA"
+          printf 'Both fixed runs cover shard-format %s\n' "$SOURCE_SHA"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.source }}

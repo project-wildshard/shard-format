@@ -24,7 +24,7 @@ describe('the shardfile CLI', (): void => {
     const run = cli(['--help'])
 
     assert.equal(run.status, 0)
-    assert.match(run.stdout, /^Usage: shardfile /u)
+    assert.match(run.stdout, /^Usage: shard-format /u)
   })
 
   it('rejects an unknown command with exit 1', (): void => {

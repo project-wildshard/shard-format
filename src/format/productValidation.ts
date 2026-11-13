@@ -26,7 +26,7 @@ import type { RecordingMeasure } from './audio-measure.ts';
  * only this package. It never executes script bytes: re-running admitted WASM (G491) is the execution proof, which
  * stays with the author CLI and the cook worker.
  *
- * Call `prepareAssetDecoders()` (`@wildshard/format/product`) once before validating; GLB costs need the decoder.
+ * Call `prepareAssetDecoders()` (`@wildshard/shard-format/product`) once before validating; GLB costs need the decoder.
  */
 
 /** Read access to one product folder. Paths are `/`-separated and relative to the product root. */

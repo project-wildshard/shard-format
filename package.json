@@ -1,10 +1,11 @@
 {
-  "name": "@wildshard/format",
+  "name": "@wildshard/shard-format",
   "version": "0.4.3",
   "private": true,
   "description": "The raw shardfile format: the spec, the validator and a validate CLI. The public, versioned contract every other repo builds on.",
   "type": "module",
   "bin": {
+    "shard-format": "./src/cli/bin.mjs",
     "shardfile": "./src/cli/bin.mjs"
   },
   "files": [

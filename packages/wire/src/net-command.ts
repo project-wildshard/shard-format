@@ -20,7 +20,7 @@ import type { GenericSchema } from 'valibot'
 // from a client are decoded first, then every command and act passes through
 // these schemas before the room queues it (MMO-REQUIREMENTS R3). The aim
 // carries world coordinates, as AimCommand does; the bounds keep a hostile
-// value out of the fixed tick. Moved here from `@wildshard/format/netCommand`
+// value out of the fixed tick. Moved here from `@wildshard/shard-format/netCommand`
 // (WIRE-STABILITY WR2), which re-exports it unchanged.
 
 const ZERO = 0

@@ -33,7 +33,7 @@ const StormSchema = v.strictObject({
   beds: v.strictObject({ group: id, every: n, rain: id, wind: id, range: v.tuple([n, n]) }),
 });
 const phase = v.picklist(['dawn', 'day', 'golden', 'dusk', 'night']);
-/** An hour clock's row (`@wildshard/format/dayCycle` DayClockRow). */
+/** An hour clock's row (`@wildshard/shard-format/dayCycle` DayClockRow). */
 const HourClockSchema = v.strictObject({ units: v.literal('hour'), start: n, sun: v.strictObject({ maxElevation: n, azimuthOffset: n }),
   schedule: v.pipe(v.array(v.strictObject({ phase, from: n, to: n, minutes: n })), v.minLength(1), v.maxLength(16)), pauseOnPin: v.boolean(),
   fixed: v.strictObject({ midday: n, golden: n, sunset: n, night: n }), presets: v.strictObject({ dawn: n, noon: n, dusk: n, night: n }) });

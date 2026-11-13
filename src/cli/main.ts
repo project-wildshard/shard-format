@@ -14,7 +14,7 @@ const NONE = 0
 // Arguments start after [node, script] in process.argv.
 const FIRST_CLI_ARG = 2
 
-const USAGE = `Usage: shardfile <command> [options]
+const USAGE = `Usage: shard-format <command> [options]
 
 Commands:
   validate <dir|tar>   Validate a built shardfile product, a folder or a
@@ -72,7 +72,7 @@ async function validate(operands: readonly string[]): Promise<number> {
   const [dir, ...extra] = operands
   if (dir === undefined || extra.length > NONE) {
     process.stderr.write(
-      `shardfile: validate takes one folder or tarball\n\n${USAGE}`,
+      `shard-format: validate takes one folder or tarball\n\n${USAGE}`,
     )
     return EXIT_USAGE
   }
@@ -82,7 +82,7 @@ async function validate(operands: readonly string[]): Promise<number> {
   } catch (error: unknown) {
     const reason = error instanceof Error ? error.message : String(error)
     process.stderr.write(
-      `shardfile: ${dir} is not a valid shardfile: ${reason}\n`,
+      `shard-format: ${dir} is not a valid shardfile: ${reason}\n`,
     )
     return EXIT_INVALID
   }
@@ -99,7 +99,7 @@ async function packReport(
     return EXIT_OK
   } catch (error: unknown) {
     const reason = error instanceof Error ? error.message : String(error)
-    process.stderr.write(`shardfile: ${dir} does not pack: ${reason}\n`)
+    process.stderr.write(`shard-format: ${dir} does not pack: ${reason}\n`)
     return EXIT_INVALID
   }
 }
@@ -107,7 +107,7 @@ async function packReport(
 async function pack(args: CliArgs): Promise<number> {
   const [dir, ...extra] = args.operands
   if (dir === undefined || extra.length > NONE) {
-    process.stderr.write(`shardfile: pack takes one folder\n\n${USAGE}`)
+    process.stderr.write(`shard-format: pack takes one folder\n\n${USAGE}`)
     return EXIT_USAGE
   }
   return await packReport(dir, args.out)
@@ -123,7 +123,9 @@ async function runCommand(args: CliArgs): Promise<number> {
   if (args.command === 'pack') {
     return await pack(args)
   }
-  process.stderr.write(`shardfile: unknown command ${args.command}\n\n${USAGE}`)
+  process.stderr.write(
+    `shard-format: unknown command ${args.command}\n\n${USAGE}`,
+  )
   return EXIT_USAGE
 }
 
@@ -141,6 +143,6 @@ async function main(argv: readonly string[]): Promise<number> {
 try {
   process.exitCode = await main(process.argv.slice(FIRST_CLI_ARG))
 } catch (error: unknown) {
-  process.stderr.write(`shardfile: ${String(error)}\n`)
+  process.stderr.write(`shard-format: ${String(error)}\n`)
   process.exitCode = EXIT_CRASH
 }

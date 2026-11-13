@@ -18,7 +18,7 @@ import type { ReleaseClock, ReleaseLock } from './release.ts'
 // reachable from HEAD; every earlier reachable release is checked for reuse.
 // Tag dates give the 14-day window; HEAD's commit date is "now", so a check
 // reads the same tomorrow. No release yet, or a copy installed outside the
-// shardfile checkout, means the rules have nothing to hold the lock to.
+// shard-format checkout, means the rules have nothing to hold the lock to.
 
 const LOCK_PATH = 'packages/wire/wire.lock.json'
 const MINOR_TAGS = 'wire-v*.*.0'
@@ -54,7 +54,7 @@ async function maybe(
 const lines = (text: string | undefined): readonly string[] =>
   (text ?? '').split('\n').filter((line: string): boolean => line !== '')
 
-/** True when `root` is this package inside the shardfile repo's own checkout, where releases are tagged. */
+/** True when `root` is this package inside the shard-format repo's own checkout, where releases are tagged. */
 async function inSourceRepo(root: string): Promise<boolean> {
   const top = await maybe(root, ['rev-parse', '--show-toplevel'])
   if (top === undefined) {

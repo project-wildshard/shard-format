@@ -40,7 +40,7 @@ The maps are `SCRIPT_V1_FEATURE_SIDES` and `SCRIPT_V2_LANE_SIDES` in
   binding. Pine's live product is the one exception: `SCRIPT_SIDE_GRANDFATHER`
   in `script-side-grandfather.ts` names it by slug, source hash and script id
   (`pine.life`, whose secret SS5 also runs on the server), and both validators
-  admit it with a warning (`warnings` on their result; `shardfile validate`
+  admit it with a warning (`warnings` on their result; `shard-format validate`
   prints it). Any other product, a new Pine upload included, is refused.
   SERVER-PARITY SS11 moves Pine's page half to a `view` row and deletes the
   entry;

@@ -1,7 +1,7 @@
 # shardfile: design
 
 Status: living 2026-11-05: src/format imported from singleplayer
-(re-imported from `1546ceedf8`); `shardfile validate` works; singleplayer
+(re-imported from `1546ceedf8`); `shard-format validate` works; singleplayer
 consumes it from `v0.2.0`.
 
 Living doc: **how** this repo is built. What it does and why is
@@ -9,7 +9,7 @@ Living doc: **how** this repo is built. What it does and why is
 
 ## Layout
 
-- `src/format/`: the `@wildshard/format` package, imported from
+- `src/format/`: the `@wildshard/shard-format` package, imported from
   `Raynos/project-wildshard-singleplayer` `src/format` (flat, ~320
   modules plus their vitest tests). Every relative import names its
   `.ts` file (J53), so it type-checks under `nodenext` and runs under
@@ -20,7 +20,7 @@ Living doc: **how** this repo is built. What it does and why is
   - `standards/node.d.ts`: the same names for Node hosts (the CLI and
     the tests), where Node's types lack them.
   - `ratchet.json`: the lint and format baseline (D29).
-- `src/cli/`: the `shardfile` CLI: `validate <dir>`, `--version`,
+- `src/cli/`: the `shard-format` CLI (old bin name `shardfile` kept): `validate <dir>`, `--version`,
   `--help`.
 - `src/tools/`: repo tooling in TypeScript (`format-ratchet.ts`).
 - `src/test/`: shared test helpers and `fixtures/` (a real product).
@@ -37,14 +37,14 @@ Schema export. Consumers import modules by name through the root
 index file: singleplayer forbids barrels (E434), and the entries keep
 the names singleplayer's code already imports.
 
-- `@wildshard/format/shardSchema`: `ShardfileSchema` (the whole
+- `@wildshard/shard-format/shardSchema`: `ShardfileSchema` (the whole
   shardfile), `parseShardfile`, `Shardfile`, `ShardfileFieldSchemas`.
-- `@wildshard/format/productValidation`: `validateShardfileProduct`
+- `@wildshard/shard-format/productValidation`: `validateShardfileProduct`
   over a built product folder, through two ports: `ProductFiles`
   (bounded reads, the path list) and `ProductValidationPorts` (SHA-256;
   optional verify cache, JSON Schema check, runtime import check).
-  Call `prepareAssetDecoders()` from `@wildshard/format/product` first.
-- `@wildshard/format/outputIndex`: the `shard.json` index and section
+  Call `prepareAssetDecoders()` from `@wildshard/shard-format/product` first.
+- `@wildshard/shard-format/outputIndex`: the `shard.json` index and section
   schemas.
 - The rest: one module per document family, each exporting its
   `*Schema` and parser.
@@ -54,7 +54,7 @@ tooling (`src/sdk/formatJsonSchema.ts`, `scripts/gen-format-schema.mjs`,
 `.wildshard/format/*.schema.json`). That stays there, for sharddev
 (P4); this repo does not depend on it.
 
-## `shardfile validate <dir>`
+## `shard-format validate <dir>`
 
 `src/cli/validate.ts` gives `validateShardfileProduct` Node ports:
 `node:crypto` SHA-256, reads bounded by the size the index declares,

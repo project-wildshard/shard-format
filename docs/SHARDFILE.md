@@ -206,7 +206,7 @@ safe zone keep HUD cyan `#8fe3ff`; `cyan`, `road`, `hud-cyan` and that hex are
 explicitly refused. New author projects and the template declare `sand`.
 Admitted shardfile metadata carries the accent into the existing manifest.
 
-Declared UI (`@wildshard/format/ui`, SF7f) is plain data the platform draws in
+Declared UI (`@wildshard/shard-format/ui`, SF7f) is plain data the platform draws in
 the shared HUD's own style and slots; a shard ships no DOM. Labels are 1–128 characters
 and render as text only; icons are engine icon ids (`lock`, `check`, `poi`, `you`,
 `map`, `pack`, `star`, `book`, `heart`, `pin`, `laurel`), never markup.
@@ -412,7 +412,7 @@ references; actual transformed geometry must fit the cell. These are render
 roots, never critical simulation roots or collider registrations. Missing `near`
 retains the ordinary far proxy without adding a default field to the product.
 
-`@wildshard/format/nearPlaceholder` defines the schema, roots and deduplicated
+`@wildshard/shard-format/nearPlaceholder` defines the schema, roots and deduplicated
 closure costs. Initial per-cell limits are 1 MB terrain plus 2 MB content,
 including persistent CPU/GPU dependencies; four cells reserve at most 12 MB.
 The complete playing/loading envelope still controls admission. Content limits
@@ -1125,7 +1125,7 @@ alias per spawn and rejects collisions with actor, item and director handles.
 All aliases count toward the one `serverBudget.entities` allowance.
 
 The `stalker` archetype (SF82) admits `pattern: 'skirmish'` with exactly the old flat `skirmisher` fields,
-bounds, ordered perception/strike checks and optional six-tick cadence. `@wildshard/format/brains` defines
+bounds, ordered perception/strike checks and optional six-tick cadence. `@wildshard/shard-format/brains` defines
 `StalkerSchema`, `parseStalker` and `stalkerPreset`; `@wildshard/sdk/brains` emits the validated row with
 `stalker(data)`. Full-factory rows and species catalogues (`archetype: 'stalker'`) canonicalize to the existing
 skirmisher native adapter, removing only the pattern and restoring the legacy kind and parsed key order.
@@ -1138,7 +1138,7 @@ The `guardian` archetype (SF82) also accepts an explicit `pattern`: `interior` o
 The flat fields, numeric bounds, cue ids, ordered-range checks and optional six-tick cadence are exactly those of
 the old `guardian` and `perch-hunter` rows. Cross-pattern fields and unknown patterns refuse. A `guardian` row without
 `pattern` keeps the existing interior spelling unchanged; the old `perch-hunter` spelling also keeps loading.
-`@wildshard/format/brains` defines `GuardianPatternsSchema`, `parseGuardianPattern` and `guardianPreset`;
+`@wildshard/shard-format/brains` defines `GuardianPatternsSchema`, `parseGuardianPattern` and `guardianPreset`;
 `@wildshard/sdk/brains` emits validated author data through `guardianPattern(data)`. Canonicalization removes only
 the pattern tag and restores the legacy row kind and parsed key order, preserving existing save-contract bytes.
 Both full-factory and species-catalogue hosts select the same native body ports as the old spelling. Interior floor,
@@ -1148,7 +1148,7 @@ refuse before callback registration. Pattern admission does not run a body or de
 The `grazer` archetype (SF82) selects a strict `pattern`: `wander-ram` or
 `circle-challenge`. Its flat fields, strike references, numeric bounds and optional
 six-tick `thinkDivisor` are exactly those of `ram-grazer` or `challenge-grazer`,
-respectively. No field from the other pattern is admitted. `@wildshard/format/grazers`
+respectively. No field from the other pattern is admitted. `@wildshard/shard-format/grazers`
 defines `GrazerSchema`, `parseGrazer` and the pure `grazerPreset` canonicalization;
 `@wildshard/sdk/grazers` emits the validated row through `grazer(data)`.
 The existing legacy row names remain admitted presets of this one policy host.
@@ -1172,7 +1172,7 @@ body work or random draws.
 The `diver` archetype (SF82) selects a strict `pattern`: `orbit`, `patrol` or
 `burst`. Its flat tuning, home, named strike and default six-tick `thinkDivisor`
 are exactly those of the corresponding historical flight row; fields from a
-different pattern refuse. `@wildshard/format/flyers` defines `DiverSchema`,
+different pattern refuse. `@wildshard/shard-format/flyers` defines `DiverSchema`,
 `parseDiver` and `diverPreset`; `@wildshard/sdk/flyers` emits the row through
 `diver(data)`. The shared policy preserves each pattern's state and contact laws.
 The pure canonicalization is also used by full-shard strike/home/flight admission
@@ -1211,7 +1211,7 @@ writes them: arena, health share per checkpoint, rise seconds, storm phases and 
 point, the storm's fog and blown-sand shells, and the toasts. A quest's runtime is declared as well
 (`@wildshard/game/plugin/quests`, for trusted runtime): `parseQuestGraph` names the interaction rows' command actor, their marks' step and the
 actions a row starts (`{ row, summon }` arms a boss). NPC contracts are defined by
-`@wildshard/format/npcs`: `NpcRowSchema`, `NpcMotionSchema`, and `NpcDialogueRowSchema`
+`@wildshard/shard-format/npcs`: `NpcRowSchema`, `NpcMotionSchema`, and `NpcDialogueRowSchema`
 share strict admission with the existing SDK and runtime parsers. Their generated JSON Schema
 documents retain every structural bound; figure, animation and dialogue ordering stay with their owners.
 Native quest bindings can also declare a `QuestNpcBindingSchema` row: NPC, talk label,
@@ -1226,7 +1226,7 @@ id before borrowing resources. Absent `questNpcs` preserves existing wire bytes;
 the native owner still supplies the models, materials and resource dressing.
 
 The optional `questHost` root composes native quest graphs without author
-callbacks. `@wildshard/format/questHost` admits its interactions, NPC spots,
+callbacks. `@wildshard/shard-format/questHost` admits its interactions, NPC spots,
 required body ids, bounded command routes and ordered data-only directors.
 Every durable flag must occur in `quests.flags`; it requires a hybrid bound
 quest owner. Omission preserves existing shardfile bytes. For example, with
@@ -1264,7 +1264,7 @@ kept one-shard law: perch/return/takeoff, altitude and phase-specific ready laws
 not expressed by the current generic diver/phased-flyer rows.
 
 Species catalogue rows may also declare a bounded `body` recipe
-(`CreatureBodyRecipeSchema` in `@wildshard/format/creatures`). `brains.body`
+(`CreatureBodyRecipeSchema` in `@wildshard/shard-format/creatures`). `brains.body`
 binds that declaration to an existing host-owned animal, its actual ground/flight
 motor, keeper RNG stream and either the keeper's real claim or an explicitly
 unlimited owner. It never spawns a body, draws RNG or introduces a clock. Ram,
@@ -1733,9 +1733,9 @@ three.js author project without drawing a frame.
 
 ### Format contracts (DS1.1 foundation)
 
-`@wildshard/format/edgeProfiles` defines the unchanged Valibot boundary contract: 256 or 257 finite height/colour samples and zero road height. The format workspace imports only Valibot; the loader imports its defining schema directly. The SDK package declaration copier and author-input audit include this layer. The migrated pure roots are all listed in the generated format API and JSON Schema inventory; material-dependent root composition remains pending DS1.4.
+`@wildshard/shard-format/edgeProfiles` defines the unchanged Valibot boundary contract: 256 or 257 finite height/colour samples and zero road height. The format workspace imports only Valibot; the loader imports its defining schema directly. The SDK package declaration copier and author-input audit include this layer. The migrated pure roots are all listed in the generated format API and JSON Schema inventory; material-dependent root composition remains pending DS1.4.
 
-The scoped input/knob/Debug wire contract is now defined by `@wildshard/format/plumbing`: both loader admission and SDK author validation consume it. Namespace ownership, duplicate IDs, touch-action references and Debug defaults retain their existing checks. `@wildshard/sdk/plumbing` is author-time Valibot parsing; it no longer calls a game module.
+The scoped input/knob/Debug wire contract is now defined by `@wildshard/shard-format/plumbing`: both loader admission and SDK author validation consume it. Namespace ownership, duplicate IDs, touch-action references and Debug defaults retain their existing checks. `@wildshard/sdk/plumbing` is author-time Valibot parsing; it no longer calls a game module.
 
 ### Generated format JSON Schema (DS1.1)
 
@@ -1743,7 +1743,7 @@ The scoped input/knob/Debug wire contract is now defined by `@wildshard/format/p
 (including edge profiles, plumbing, directors, movers, weapon and brain
 profiles) through `@wildshard/sdk/formatJsonSchema` and the pinned
 `@valibot/to-json-schema` converter. These ignored build outputs carry DO-NOT-EDIT
-provenance. Only the migrated `@wildshard/format` roots are included; the mixed
+provenance. Only the migrated `@wildshard/shard-format` roots are included; the mixed
 whole-shard contract still awaits extraction. No game or renderer is imported.
 
 The draft-2020-12 edge document expresses matching 256/257 sample counts with
@@ -1757,21 +1757,21 @@ messages cannot grant an override. The bridge identifies the actual defining
 schema objects. Regenerate with `node --import ./scripts/bake-loader.mjs
 scripts/gen-format-schema.mjs`; generated bytes are compared by the focused test.
 
-DS1.1: `@wildshard/format/{admissionLimits,version,state,preflight,json,commonsCosts}` now defines the renderer-neutral admission contracts. The author and loader use the same bounded plain-JSON, typed defaults, numeric state capacity and exact commons-cost checks. These modules import only Valibot and one another; parsing does not read assets or install a service.
+DS1.1: `@wildshard/shard-format/{admissionLimits,version,state,preflight,json,commonsCosts}` now defines the renderer-neutral admission contracts. The author and loader use the same bounded plain-JSON, typed defaults, numeric state capacity and exact commons-cost checks. These modules import only Valibot and one another; parsing does not read assets or install a service.
 
-DS1.1: the pure creature/brain, audio, ledger, director, migration, traversal, runtime declaration and sampled skin contracts now live in defining `@wildshard/format` modules. Their Valibot bounds, semantic checks and pure continuation transformations move verbatim; native hosts and renderer adapters remain in game. Public format schemas join the SF45 generated reference inventory automatically.
+DS1.1: the pure creature/brain, audio, ledger, director, migration, traversal, runtime declaration and sampled skin contracts now live in defining `@wildshard/shard-format` modules. Their Valibot bounds, semantic checks and pure continuation transformations move verbatim; native hosts and renderer adapters remain in game. Public format schemas join the SF45 generated reference inventory automatically.
 
-DS1.1: presentation metadata, exact mesh-collision declarations, script bindings/fields and named hooks are defined in `@wildshard/format`. Image URL resolution, native mesh-byte validation and script-host installation remain in game; all bounds and reference verdicts are unchanged.
+DS1.1: presentation metadata, exact mesh-collision declarations, script bindings/fields and named hooks are defined in `@wildshard/shard-format`. Image URL resolution, native mesh-byte validation and script-host installation remain in game; all bounds and reference verdicts are unchanged.
 
-DS1.1: terrain tile addressing, bounded water declarations and the immutable accent palette are defined in `@wildshard/format`. Game retains byte validation, fresh water motor bodies and HUD CSS mapping unchanged. Authors and loader consume the same defining Valibot contracts.
+DS1.1: terrain tile addressing, bounded water declarations and the immutable accent palette are defined in `@wildshard/shard-format`. Game retains byte validation, fresh water motor bodies and HUD CSS mapping unchanged. Authors and loader consume the same defining Valibot contracts.
 
-DS1.1: item/loadout declarations, target binding references and quest/dialogue graphs are defined in `@wildshard/format`. Game keeps item construction and collider activation unchanged. The frozen legacy quest type path infers its type from the single defining format schema.
+DS1.1: item/loadout declarations, target binding references and quest/dialogue graphs are defined in `@wildshard/shard-format`. Game keeps item construction and collider activation unchanged. The frozen legacy quest type path infers its type from the single defining format schema.
 
-DS1.1: numeric world rows, inert sketches, mover/entry declarations, native-ground references, HUD rows and client presentation bindings live in `@wildshard/format`. Engine runtime bounds remain independent. Native solver, terrain/GLB byte validation, draw and input ownership remain game/engine functions. Frozen legacy mover handles retain the original game path.
+DS1.1: numeric world rows, inert sketches, mover/entry declarations, native-ground references, HUD rows and client presentation bindings live in `@wildshard/shard-format`. Engine runtime bounds remain independent. Native solver, terrain/GLB byte validation, draw and input ownership remain game/engine functions. Frozen legacy mover handles retain the original game path.
 
-DS1.1: local checkpoint, lift rider, runtime measurements/declarations, skin rows and script-species/elite/weapon-hook declarations live in `@wildshard/format`. Native runtime admission, allocations, script hosts and playback remain in game. The wire calibration and weapon phase table are checked against the native owners; the skin clip narrowing is identity-only and grants no bridge to an unfamiliar author transform. Material and post graph contracts remain in game pending DS1.4.
+DS1.1: local checkpoint, lift rider, runtime measurements/declarations, skin rows and script-species/elite/weapon-hook declarations live in `@wildshard/shard-format`. Native runtime admission, allocations, script hosts and playback remain in game. The wire calibration and weapon phase table are checked against the native owners; the skin clip narrowing is identity-only and grants no bridge to an unfamiliar author transform. Material and post graph contracts remain in game pending DS1.4.
 
-DS1.1: `@wildshard/format/shardSections` defines root identity, requirements, budgets, simulation, author/server limits, file/tile inventories, library/critical roots, far proxy and spawn. Root composition retains every original default and native reference check. Material-dependent props/splats and look/post graphs remain in game for DS1.4. Native tile sizes and fixed wire cell bounds are equality-tested.
+DS1.1: `@wildshard/shard-format/shardSections` defines root identity, requirements, budgets, simulation, author/server limits, file/tile inventories, library/critical roots, far proxy and spawn. Root composition retains every original default and native reference check. Material-dependent props/splats and look/post graphs remain in game for DS1.4. Native tile sizes and fixed wire cell bounds are equality-tested.
 
 Pine's retained `generators/coatRecipes.ts`, `coatPixels.ts`, `coatFlap.ts` and `coatProducer.ts` author coat pages from data rows and committed rig assets in Node. The Pine program (`generators/coatPages.ts`, GR8 G35) paints each tier's lossless PNGs through `ctx.cached` and names them as product files (`models/creatures/<hull>[.phone].<kind>.<id>.coat.png`), the names the hull book's coats carry; a variant has a coat when the KTX2 table holds its `procedural:` key. No species registry, trusted runtime, game page or DOM is an authoring input. The SDK rig reader preserves rest channels and joint order, and the SDK raster reader/writer preserves RGBA.
 
@@ -1784,13 +1784,13 @@ DS1.3 scene intermediates retain skin joint order, inverse binds and mesh bind f
 DS1.3: audio Object3D declarations (`Cue`, `AmbienceZone`, `Score`) serialize the existing cue/mixer/score wire contract without audio services. The two pilot profiles remain byte-identical after scene JSON transport. `Portal` and `SocketLift` subclass `Entry` and emit the existing midpoint entry rows with their explicit cell-local floor/route/mover bindings. Their added fixtures on Template 1 and Pastel Plain pass the independently defining format schemas with identical bytes; no shipped entry behaviour is changed. Native clearance, portal transfer and lift ride proofs remain admission/host duties. Textures and physical/TSL material authoring remain DS1.4.
 
 
-SF81 DIR-1: director v2 stage rows are defined by `@wildshard/format/directorStages`, with a generated structural JSON Schema and mandatory defining semantic checks. The bounded when-language compiles to data; only the fixed eight actions above are admitted. Stage order and action order are authored state, not sorted identifiers. Initial admission, every observation and snapshot restore fail before cursor mutation. Existing v1 module/event contracts and their witness snapshots are unchanged. `DirectorStageLane` is the shared interpreter in `plugin/director`; native owners resolve source bindings and apply its returned actions.
+SF81 DIR-1: director v2 stage rows are defined by `@wildshard/shard-format/directorStages`, with a generated structural JSON Schema and mandatory defining semantic checks. The bounded when-language compiles to data; only the fixed eight actions above are admitted. Stage order and action order are authored state, not sorted identifiers. Initial admission, every observation and snapshot restore fail before cursor mutation. Existing v1 module/event contracts and their witness snapshots are unchanged. `DirectorStageLane` is the shared interpreter in `plugin/director`; native owners resolve source bindings and apply its returned actions.
 
 
 SF81 DIR-2: the author-only behaviour descriptor's optional `director` path selects the defining admitted v1 numeric or v2 boolean input contract for AS codegen. Authors import `inputs` and `clock` from `./wildshard-director`; no script reads observation offsets itself. v1 dots/hyphens become camelCase and ambiguous names refuse; v2 preserves names and authored order. Numeric observations are not coerced to booleans. Existing v1 wire bounds, module hashes, native clocks, event packing and snapshots remain unchanged. `wildshard build` regenerates the virtual module on each compilation and the pinned compiler produces the same shipped director bytes for all three existing users.
 
 
-SF81 DIR-3: optional `directors` is the defining `@wildshard/format/directorStages` root array. Omission remains omission, preserving other shards' existing wire bytes. Ordered guarded successor arrays supplement the original string `next`; every target and condition is admitted before installation. Flag rows must name flags already declared by the quest owner. Unsupported native bindings refuse instead of fabricating authority. A script hash identifies an immutable admitted AS handler; its native output events select authored actions without duplicating the script's scheduler. Scripted snapshots carry an explicit version-3 row cursor and refuse older continuations.
+SF81 DIR-3: optional `directors` is the defining `@wildshard/shard-format/directorStages` root array. Omission remains omission, preserving other shards' existing wire bytes. Ordered guarded successor arrays supplement the original string `next`; every target and condition is admitted before installation. Flag rows must name flags already declared by the quest owner. Unsupported native bindings refuse instead of fabricating authority. A script hash identifies an immutable admitted AS handler; its native output events select authored actions without duplicating the script's scheduler. Scripted snapshots carry an explicit version-3 row cursor and refuse older continuations.
 
 Trusted director owners can pass their actual `flags` object to
 `bindDirectorActions`. Without an explicit `read`, declared `flag:` inputs
@@ -1818,7 +1818,7 @@ stops for a hinge winch. An `always` trigger drives the waves policy or a static
 trigger retains the existing ride/call or permission-gated winch command. Unsupported key layouts,
 interpolation and trigger authorities refuse instead of silently approximating a clip.
 
-`@wildshard/format/moverMotion` defines these bounded authoring rows and their deterministic lowering.
+`@wildshard/shard-format/moverMotion` defines these bounded authoring rows and their deterministic lowering.
 Admission verifies that the admitted module hash and numeric inputs equal the row's lowering before
 physics allocates. Runtime consumes the lowered row through the existing single mover host: script
 fuel, guest memory, native body ownership and saved continuation stay unchanged. The descriptors are
@@ -1854,7 +1854,7 @@ Inactive tracks freeze, including pendulums; phase and activation live in the ex
 and therefore use the same guest, physics and host snapshot/restore fences. No scheduler is added.
 
 
-SF84's `@wildshard/format/modes` admits the following declarations:
+SF84's `@wildshard/shard-format/modes` admits the following declarations:
 zipline floor endpoints/sag/hang/flight; board-only updraft endpoints/width/lift;
 ride gait speeds; grapple selection/range/timing. `@wildshard/sdk/modes` provides
 ordinary three.js `Zipline`, `Updraft`, `Mount`, `Grapple` and `Ladder` objects.
@@ -1893,7 +1893,7 @@ that profile kind consumes it; no view/controller is inferred from a parse.
 A cone family reads light/heavy damage, cooldown, tags, move IDs, range and
 half-angle from the weapon row. `profile.slash.reachAllowance` extends that row's
 range at contact. The gust is a separate declared move; it keeps its own cooldown.
-`@wildshard/format/weaponProfiles` defines `ConeWeaponProfileSchema` and the
+`@wildshard/shard-format/weaponProfiles` defines `ConeWeaponProfileSchema` and the
 inferred `ConeWeaponProfile` type.
 For Sky's shipping fan the profile is:
 
@@ -1943,7 +1943,7 @@ SF85 WP-2 Nalati javelins: the numeric `thrown` declaration in `data/javelinProf
 
 ### Boss policy declarations (SF82 BR-2)
 
-`@wildshard/format/bossProfiles` defines `BossProfileSchema` and `parseBossProfile`.
+`@wildshard/shard-format/bossProfiles` defines `BossProfileSchema` and `parseBossProfile`.
 `BossOwnerRowSchema` binds a spawned or held profile to its native stage rows,
 actor identity, phase definition, record, victory fact and reward timing. The
 actor must match the definition; phases must match the profile's checkpoint
@@ -1992,7 +1992,7 @@ Trusted custom weapon families use `registerWeaponFamily` from `@wildshard/game/
 
 A trusted species catalogue may declare `{ archetype: "diver", data: { kind:
 "diver", pattern: "phased", ... } }`. The defining
-`@wildshard/format/phasedFlyers` profile retains the historical flyer's exact
+`@wildshard/shard-format/phasedFlyers` profile retains the historical flyer's exact
 phase altitudes, rest intervals, named dive/grounded strikes, finite movement
 bounds and encounter memory fields. `phasedDiverPreset` validates and resolves
 the original `phased-flyer` preset before `plugin/brain` binds page or headless
@@ -2100,17 +2100,17 @@ Use a finite interact command naming a declared target to prove its reachable sc
 
 Author bootstrap includes prove-mesa.ts. Its proveMesaOutpost requires all three native fleeing goats, a diving/hitting hawk, a gated scene-controlled beacon with an unlit control replay, visible native-bound client views and the exact equipped template spear (`generators/spear.ts`) asset/profile closure. Pass the actual built shard and admitted bytes, an entered browser page and a finite native approach tape; no teleport, caller evidence or optional gates. Run it beside validate and prove for the separate entry, budget, grid and Ledger gates. See [brief coverage](authoring/brief-coverage.md).
 
-G320 pure contract boundary: `@wildshard/format` is the bottom layer and imports only Valibot and its own defining modules. The engine may import these pure data contracts. `@wildshard/format/materialGraph` now defines the unchanged graph IR, admission limits, node vocabulary, cost calculation and `validateGraph`. Engine graph compilation and game material/post admission consume that one definition; material creation and rendered output are unchanged.
+G320 pure contract boundary: `@wildshard/shard-format` is the bottom layer and imports only Valibot and its own defining modules. The engine may import these pure data contracts. `@wildshard/shard-format/materialGraph` now defines the unchanged graph IR, admission limits, node vocabulary, cost calculation and `validateGraph`. Engine graph compilation and game material/post admission consume that one definition; material creation and rendered output are unchanged.
 
-G320: `@wildshard/format/materialFamilies` owns the verbatim pure family parameter schemas and their parsers, defaults, texture references and preset refusal checks. Renderers read those contracts directly. The old engine renderer-schema simulation exception is retired; format closures remain free of Three.js and DOM.
+G320: `@wildshard/shard-format/materialFamilies` owns the verbatim pure family parameter schemas and their parsers, defaults, texture references and preset refusal checks. Renderers read those contracts directly. The old engine renderer-schema simulation exception is retired; format closures remain free of Three.js and DOM.
 
-G320: `@wildshard/format/contentBounds` defines the immutable cell dimensions, entry widths and content caps. Engine `core/config` retains its public bindings to those same values and the same `CONTENT_CAPS` object, so existing runtime imports remain compatible. Authoring and validation import format directly.
+G320: `@wildshard/shard-format/contentBounds` defines the immutable cell dimensions, entry widths and content caps. Engine `core/config` retains its public bindings to those same values and the same `CONTENT_CAPS` object, so existing runtime imports remain compatible. Authoring and validation import format directly.
 
-G320: the pure AAC index, WMC1 collision and terrain-tile byte readers are defined in `@wildshard/format/{aacIndex,meshCollisionBytes,terrainTileBytes}`. Engine installation stays separate. Frozen runtime terrain imports keep `engine/world/terrainTileData`, whose public functions are the same format function objects, with no duplicate codec or legacy source edit.
+G320: the pure AAC index, WMC1 collision and terrain-tile byte readers are defined in `@wildshard/shard-format/{aacIndex,meshCollisionBytes,terrainTileBytes}`. Engine installation stays separate. Frozen runtime terrain imports keep `engine/world/terrainTileData`, whose public functions are the same format function objects, with no duplicate codec or legacy source edit.
 
-G320: `@wildshard/format/{scriptAbi,scriptAdmission,scriptLimits}` owns the numeric ABI, metered Wasm byte admission and immutable host caps. `contentCost`, `bakedTerrainBytes` and `waterWaves` define the original pure cost law, WSTR parser and swell rows. Native hosts, terrain sampling and rendered water remain engine code; retained runtime bindings are identical objects/functions. Author validation has no native host or terrain service dependency.
+G320: `@wildshard/shard-format/{scriptAbi,scriptAdmission,scriptLimits}` owns the numeric ABI, metered Wasm byte admission and immutable host caps. `contentCost`, `bakedTerrainBytes` and `waterWaves` define the original pure cost law, WSTR parser and swell rows. Native hosts, terrain sampling and rendered water remain engine code; retained runtime bindings are identical objects/functions. Author validation has no native host or terrain service dependency.
 
-G320: the complete pure shardfile/asset admission closure is defined by format: props/material/post contracts, GLB/image/cost readers and entry geometry checks share `@wildshard/format/shardSchema` and `assetAdmission`. Native installation and collider descriptor conversion remain game/engine code. Frozen portal/lift entry imports retain identical format function bindings; presentation URL construction remains game code. No look, pixel, clearance or transform rule changes. The SDK author compiler imports these format definitions directly.
+G320: the complete pure shardfile/asset admission closure is defined by format: props/material/post contracts, GLB/image/cost readers and entry geometry checks share `@wildshard/shard-format/shardSchema` and `assetAdmission`. Native installation and collider descriptor conversion remain game/engine code. Frozen portal/lift entry imports retain identical format function bindings; presentation URL construction remains game code. No look, pixel, clearance or transform rule changes. The SDK author compiler imports these format definitions directly.
 
 ## Config and generator boundary (OS-G2)
 
@@ -2143,7 +2143,7 @@ socket list does not satisfy either required joint. Both `wildshard build` and
 `wildshard validate` check the same defining contract before any view allocation:
 required names, exact joint order, one skinned primitive, named sockets and clips.
 The client registration guard uses the same `validateCreatureBones` law in
-`@wildshard/format/skinData`. Existing engine callers retain their public binding.
+`@wildshard/shard-format/skinData`. Existing engine callers retain their public binding.
 
 Admission is still not a rendered-view proof. Run the complete built product's
 `proveMesaOutpost` / `proveSceneClient` and `proveEquippedItemClient` against its
@@ -2154,7 +2154,7 @@ passing fixture just because its native gameplay works.
 
 `creatures.spawns[].home` is optional `{x, y, z, r}`: finite local coordinates within
 −250…250 and a positive radius at most 500. `CreatureHomeSchema` and
-`ShardCreatureHome` in `@wildshard/format/creatures` define the contract; JSON Schema
+`ShardCreatureHome` in `@wildshard/shard-format/creatures` define the contract; JSON Schema
 root `creatures.CreatureHome` exposes it. Omission preserves existing rows exactly.
 For orbit, patrol and burst divers the per-body home overrides the catalogue home
 before policy construction, so each body has its own initial angle and save fence.

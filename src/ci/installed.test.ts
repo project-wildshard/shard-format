@@ -43,7 +43,7 @@ function packToDir(): string {
 }
 
 function install(): string {
-  const unpacked = path.join(dir, 'app/node_modules/@wildshard/format')
+  const unpacked = path.join(dir, 'app/node_modules/@wildshard/shard-format')
   mkdirSync(unpacked, { recursive: true })
   shell('tar', ['-xzf', packToDir(), '-C', unpacked, '--strip-components', '1'])
   return unpacked
@@ -54,7 +54,7 @@ const APP = path.join(dir, 'app')
 const SHIPPED = path.join(PACKAGE, 'corpus/handwritten')
 const raw = readFileSync(path.join(PACKAGE, 'package.json'), 'utf8')
 const manifest = parse(ManifestSchema, JSON.parse(raw))
-const BIN = path.join(PACKAGE, manifest.bin['shardfile'] ?? 'no bin')
+const BIN = path.join(PACKAGE, manifest.bin['shard-format'] ?? 'no bin')
 for (const name of Object.keys(manifest.dependencies)) {
   symlinkSync(
     path.join(ROOT, 'node_modules', name),
@@ -85,12 +85,12 @@ test('every subpath a consumer can name loads', (): void => {
       file.endsWith('.ts'),
     )
     .map(([name]: readonly [string, string]): string =>
-      name.replace('.', '@wildshard/format'),
+      name.replace('.', '@wildshard/shard-format'),
     )
   const script = path.join(APP, 'imports.mjs')
   writeFileSync(
     script,
-    `import { installFormatHook } from '@wildshard/format/formatHook'
+    `import { installFormatHook } from '@wildshard/shard-format/formatHook'
 installFormatHook()
 for (const name of ${JSON.stringify(names)}) await import(name)
 `,

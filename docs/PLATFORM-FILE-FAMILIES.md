@@ -1,6 +1,6 @@
 # Registered streamed file families (G988 Z1)
 
-`@wildshard/format/platformFileFamilies` registers a logical name pattern,
+`@wildshard/shard-format/platformFileFamilies` registers a logical name pattern,
 one defining format schema and its existing reader module. Registration
 requires two real shard users and HOST-BAR's six tests, or Jake's explicit
 host approval. A familiar prefix or a schema label alone grants no credit:

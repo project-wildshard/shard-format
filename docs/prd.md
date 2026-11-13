@@ -21,9 +21,9 @@ The raw shardfile format: the spec, the validator and a validate CLI. The public
 - **R-1**: The shardfile spec (`shard.json`, file families, the script ABI) and `SHARDFILE_VERSION`
 - **R-2**: The validator: schema, hashes, budgets, admission rows
 - **R-3**: ~~The JSON Schema~~ Retired by J55: the valibot schemas in
-  `@wildshard/format` are the contract. A JSON Schema export comes back
+  `@wildshard/shard-format` are the contract. A JSON Schema export comes back
   only if editors or non-JS tools need one.
-- **R-4**: The `shardfile validate` CLI (format checks only)
+- **R-4**: The `shard-format validate` CLI (format checks only)
 
 ## Not this repo
 
