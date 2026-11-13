@@ -52,6 +52,16 @@ describe('issue code helpers', (): void => {
     assert.equal(issueCodeOf(near), 'file-mismatch')
   })
 
+  it('shadows a read-only code getter and leaves a frozen error as it is', (): void => {
+    const aborted = new DOMException('aborted', 'AbortError')
+    const frozen = Object.freeze(new Error('kept'))
+    assert.equal(tagIssue(aborted, 'archive-invalid'), aborted)
+    assert.equal(issueCodeOf(aborted), 'archive-invalid')
+    assert.equal(aborted.message, 'aborted')
+    assert.equal(tagIssue(frozen, 'archive-invalid'), frozen)
+    assert.equal(issueCodeOf(frozen), undefined)
+  })
+
   it("knows only the table's codes", (): void => {
     assert.equal(isIssueCode('perf-script-cpu'), true)
     assert.equal(isIssueCode('toString'), false)

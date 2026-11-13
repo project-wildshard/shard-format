@@ -225,9 +225,8 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
   coded('pack-invalid', (): void => { checkPacks(index, new Set(files.paths()), { readFile: files.read, readListed: read, verify, hash: ports.hash }); });
   const cook = readCook(index, read, ports.hash);
   for (const entry of index.runtime?.files ?? []) {
-    const check = ports.runtimeImports;
-    if (check === undefined) throw issueError('runtime-files', 'Copied runtime files need a runtime import checker');
-    coded('runtime-files', (): void => { check(entry.path, decoder().decode(read(entry))); });
+    if (ports.runtimeImports === undefined) throw issueError('runtime-files', 'Copied runtime files need a runtime import checker');
+    coded('runtime-files', (): void => { ports.runtimeImports?.(entry.path, decoder().decode(read(entry))); });
   }
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
   const shard = admitShardfileProduct(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts);

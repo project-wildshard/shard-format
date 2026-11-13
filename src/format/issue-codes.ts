@@ -195,10 +195,21 @@ function issueCodeOf(error: unknown): IssueCode | undefined {
   return isIssueCode(code) ? code : undefined
 }
 
-/** Give `error` this code unless it already carries one of the table's (a nearer tag); returns it. */
+/** Give `error` this code unless it already carries one of the table's (a nearer tag); returns it. An own property, so a
+ *  read-only `code` getter (a DOMException's) is shadowed rather than thrown on; an error that refuses even that (frozen)
+ *  is returned untouched, never replaced. */
 function tagIssue(error: unknown, code: IssueCode): unknown {
   if (error instanceof Error && issueCodeOf(error) === undefined) {
-    Object.assign(error, { code })
+    try {
+      Object.defineProperty(error, 'code', {
+        value: code,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      })
+    } catch {
+      // A frozen error keeps its own shape; the refusal still surfaces with its words.
+    }
   }
   return error
 }

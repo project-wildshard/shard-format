@@ -15,3 +15,5 @@
   a type consumers read. sharddev's switch from regexes to codes needs the next shard-format release.
 - `docs/VALIDATION-CODES.md` is generated whole from the table (`node src/tools/validation-codes.ts write`), one section
   per family; `src/tools/validation-codes.test.ts` fails on drift and on a code that is not kebab-case or listed twice.
+- Review (one `claude -p`): `Object.assign` threw on a DOMException's read-only `code` getter (a stream abort), which
+  replaced the refusal with a TypeError. `tagIssue` now defines an own property, and leaves a frozen error untouched.
