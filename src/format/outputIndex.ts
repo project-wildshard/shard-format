@@ -3,6 +3,8 @@ import { MAX_COOK_BYTES } from './cook-preparation.ts';
 import type { Ktx2DeviceCosts } from './ktx2Cost.ts';
 import { AdmissionLateSchema, lateLibraryRootsValid, type AdmissionLate } from './admissionLate.ts';
 import { AdmissionServerSchema, serverFilesExclusive, type AdmissionServer } from './admissionServer.ts';
+import { AudioWaiverSchema } from './audio-waiver.ts';
+import type { AudioWaiver } from './audio-waiver.ts';
 /** Versioned, renderer-free disk contract shared by the writer and network reader. */
 import { isOutputIndex, outputBlobPath } from './outputAddress.ts';
 import { OUTPUT_SECTIONS, assembleOutputTransport, isPlatformDataSection, type OutputHostSectionName } from './outputFields.ts';
@@ -31,7 +33,7 @@ const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['sp
 export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputIndexRows> & { readonly entries: { readonly [Key in keyof OutputIndexRows]-?: v.GenericSchema<OutputIndexRowsInput[Key], OutputIndexRows[Key]> } } = v.strictObject({
   format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.picklist(['0.2', '0.3']), version: v.literal(SHARDFILE_VERSION),
   identity: IdentitySchema, build: v.strictObject({ sourceHash: ShardHashSchema, validator: v.pipe(v.string(), v.minLength(1), v.maxLength(160)) }), requires: RequiresSchema,
-  admission: v.strictObject({ budgets: ShardfileFieldSchemas.budgets, serverBudget: ShardfileFieldSchemas.serverBudget, authorCaps: ShardfileFieldSchemas.authorCaps, critical: ShardfileFieldSchemas.critical, library: ShardfileFieldSchemas.library, late: v.exactOptional(AdmissionLateSchema), server: v.exactOptional(AdmissionServerSchema) }),
+  admission: v.strictObject({ budgets: ShardfileFieldSchemas.budgets, serverBudget: ShardfileFieldSchemas.serverBudget, authorCaps: ShardfileFieldSchemas.authorCaps, critical: ShardfileFieldSchemas.critical, library: ShardfileFieldSchemas.library, late: v.exactOptional(AdmissionLateSchema), server: v.exactOptional(AdmissionServerSchema), audioWaiver: v.exactOptional(AudioWaiverSchema) }),
   sections: v.pipe(v.array(section), v.maxLength(256)), schemas: v.pipe(v.array(v.strictObject(measuredFile)), v.maxLength(0)),
   files: v.pipe(v.array(fileSchema), v.maxLength(8192)), runtime: v.nullable(runtime),
   ktx2Costs: v.exactOptional(v.pipe(v.record(ShardHashSchema,v.strictObject({rgba:ShardNaturalSchema,astc:ShardNaturalSchema,bc7:ShardNaturalSchema})),v.check(rows=>Object.keys(rows).length<=8192,'bounded texture cost table'))),
@@ -172,6 +174,7 @@ interface OutputIndexRowsInputFields {
         library: unknown;
         late?: AdmissionLate;
         server?: AdmissionServer;
+        audioWaiver?: AudioWaiver;
     };
     sections: {
         name: string;
@@ -269,6 +272,7 @@ interface OutputIndexRowsFields {
         library: unknown;
         late?: AdmissionLate;
         server?: AdmissionServer;
+        audioWaiver?: AudioWaiver;
     };
     sections: {
         name: string;

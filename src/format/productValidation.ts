@@ -17,6 +17,8 @@ import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 import { assetStore, checkPacks, mountSharesBlob } from './product-reads.ts';
 import { assertSectionSides } from './feature-sides.ts';
 import { assertScriptSides } from './script-sides.ts';
+import { productRecordings } from './product-audio.ts';
+import type { RecordingMeasure } from './audio-measure.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -63,6 +65,8 @@ export interface ValidatedProduct {
   readonly scripts: ScriptAdmissionRows;
   /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
   readonly warnings: readonly string[];
+  /** AUDIO AU5: the shard's own recordings (audio mounts and non-commons `audio.recordings`), measured from their bytes. */
+  readonly audio: readonly RecordingMeasure[];
 }
 
 const decoder = (): TextDecoder => new TextDecoder('utf-8', { fatal: true });
@@ -197,5 +201,5 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
   const shard = admitShardfileProduct(assembleOutputShardfile(index, payloads), assets, ports.hash, 'warn', scripts);
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw new Error('Output sections differ from the declared source hash');
-  return { index, shard, assets, sections: payloads, scripts, warnings };
+  return { index, shard, assets, sections: payloads, scripts, warnings, audio: productRecordings({ cook, read: files.read, shard, assets }) };
 }
