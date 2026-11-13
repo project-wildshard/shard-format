@@ -217,4 +217,8 @@ interface MoverBakeFields {
         };
     })[];
 }
-export type MoverBake = { [Key in keyof MoverBakeFields]: MoverBakeFields[Key] };
+type MoverBake = { [Key in keyof MoverBakeFields]: MoverBakeFields[Key] };
+/** One local collider box of a mover (a `MoverData` row's `boxes` entry): centre, half extents and rotation. Shards
+ * name it from here, not engine's `physics/mover` (SHARD-COMPAT SI3). */
+type MoverBox = MoverData[number]['boxes'][number];
+export type { MoverBake, MoverBox };
