@@ -66,7 +66,9 @@ meta J308 (2026-11-12). Schema ids such as
 spelling: they are strings other repos match on, not import paths.
 
 1. Change `src/format` here, with its tests. `pnpm check`, commit, push.
-2. Batch changes, then release:
+2. Batch changes, then add the version's section to `CHANGELOG.md`
+   (1 to 5 plain-language bullets for authors, not commit subjects),
+   commit and push it, then release:
    `ASSISTED_BY=Claude-Code:<model> ../repo-kit/release.sh vX.Y.Z`.
 3. In singleplayer, set the tag in all four manifests (root, `src/game`,
    `src/sdk`, `src/commons`) and update `pnpm-lock.yaml` with pnpm
