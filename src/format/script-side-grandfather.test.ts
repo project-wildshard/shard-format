@@ -18,7 +18,8 @@ import type { ScriptSideProduct } from './script-side-grandfather.ts'
 import type { NamedJson } from './script-sides.ts'
 
 // SERVER-PARITY SS7 and SS11: Pine's live product is grandfathered with a warning until SS11 re-uploads it; any other
-// product with the pattern, a new Pine upload included, is still refused. Built products come from engine out/.
+// product with the pattern, a new Pine upload included, is still refused. Built products come from engine out/, and
+// their verdict walks every named JSON file (SS12's view return rows, `script-view-returns.test.ts`).
 
 type Json = Record<string, unknown>
 type Files = ReadonlyMap<string, Uint8Array>
@@ -81,7 +82,7 @@ function simLifeVerdict(
   ])
   const named: NamedJson = (name: string): unknown =>
     name === LIFE ? { program: { script: row } } : undefined
-  return scriptSideVerdict(sections, named, product)
+  return scriptSideVerdict(sections, { names: [], read: named }, product)
 }
 
 /** A built product's verdict, reading its sections, named JSON and identity from disk. */
@@ -99,10 +100,17 @@ function productVerdict(root: string): {
     const file = files.find((entry: Json): boolean => entry['name'] === name)
     return file === undefined ? undefined : readJson(root, file['path'])
   }
-  return scriptSideVerdict(sections, named, {
-    slug: String(pathOf(shard, ['identity', 'slug'])),
-    sourceHash: String(pathOf(shard, ['build', 'sourceHash'])),
-  })
+  const names = files.flatMap((entry: Json): string[] =>
+    entry['kind'] === 'json' ? [String(entry['name'])] : [],
+  )
+  return scriptSideVerdict(
+    sections,
+    { names, read: named },
+    {
+      slug: String(pathOf(shard, ['identity', 'slug'])),
+      sourceHash: String(pathOf(shard, ['build', 'sourceHash'])),
+    },
+  )
 }
 
 /** Every product folder in engine's out/ (none in shardfile's own CI). */

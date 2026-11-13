@@ -2,14 +2,22 @@
 // row says `sim` or `view` (`decisionScripts.ts`), and a `view` row writes no gameplay (a row rule there). Against the
 // whole product: a `sim` row that a page-only feature runs has no server half there, and a `view` row in `sim/scripts`
 // would run on the server's decision host. v1 sides and v2 lanes map onto SS2's side words (`feature-sides.ts`).
+// SS12 (`script-view-returns.ts`): a program that runs a `view` return row is refused anywhere but a page-only host.
 // oxlint-disable typescript/prefer-readonly-parameter-types -- OutputIndex and the byte arrays are only read
 import { CLIENT_FEATURE_SIDES } from './feature-sides.ts'
 import { parseNamedJson } from './json.ts'
 import { splitGrandfathered } from './script-side-grandfather.ts'
+import {
+  propOf,
+  rowsOf,
+  textOf,
+  viewReturnRefusals,
+} from './script-view-returns.ts'
 
 import type { FeatureSide } from './feature-sides.ts'
 import type { OutputIndex } from './outputIndex.ts'
 import type { ScriptSideProduct } from './script-side-grandfather.ts'
+import type { NamedFiles } from './script-view-returns.ts'
 import type { ScriptV1CommandName } from './scriptAbiV1.ts'
 import type { V2Lane } from './scriptFuelV2.ts'
 
@@ -70,31 +78,6 @@ interface UncheckedFiles {
     expected: string,
     whole: boolean,
   ) => boolean
-}
-
-/** An own property of a plain object, or `undefined`. */
-function propOf(value: unknown, key: string): unknown {
-  if (
-    typeof value !== 'object' ||
-    value === null ||
-    Array.isArray(value) ||
-    !Object.hasOwn(value, key)
-  ) {
-    return undefined
-  }
-  const found: unknown = Reflect.get(value, key)
-  return found
-}
-
-/** A string property, or `undefined`. */
-function textOf(value: unknown, key: string): string | undefined {
-  const text = propOf(value, key)
-  return typeof text === 'string' ? text : undefined
-}
-
-/** An array, or an empty list. */
-function rowsOf(value: unknown): readonly unknown[] {
-  return Array.isArray(value) ? value : []
 }
 
 /** The value at `keys` under `value`, or `undefined`. */
@@ -188,10 +171,11 @@ function serverViewRefusal(row: unknown): string[] {
   ]
 }
 
-/** Every side refusal in a product: its parsed sections, and a reader of its named JSON files. */
+/** Every side refusal in a product: its sections, a reader of its named JSON files and their names (SS12 reads each). */
 function scriptSideRefusals(
   sections: ReadonlyMap<string, unknown>,
   named: NamedJson,
+  names: readonly string[] = [],
 ): string[] {
   const features = rowsOf(propOf(sections.get('client/plan'), 'features'))
   const returns = rowsOf(sections.get('actors/return-scripts'))
@@ -201,14 +185,24 @@ function scriptSideRefusals(
   const decisions = rowsOf(sections.get('sim/scripts')).flatMap(
     (row: unknown): string[] => serverViewRefusal(row),
   )
-  return [...new Set([...hosted, ...decisions])]
+  const views = viewReturnRefusals(
+    sections,
+    { names, read: named },
+    PAGE_ONLY_PROGRAM_HOSTS,
+  )
+  return [...new Set([...hosted, ...decisions, ...views])]
 }
 
-/** A reader of the product's named JSON files that never throws and reads only bytes that match the index: a missing,
- *  resized, changed or malformed file is `undefined` here, and the inventory or its schema refuses it later. */
-function namedJsonReader(index: OutputIndex, files: UncheckedFiles): NamedJson {
+/** The product's named JSON files, by the index: their names, and a reader that never throws and reads only bytes that
+ *  match the index (a missing, resized, changed or malformed file is `undefined` here, and the inventory or its schema
+ *  refuses it later). */
+function namedJsonFiles(index: OutputIndex, files: UncheckedFiles): NamedFiles {
   const present = new Set(files.paths())
-  return (name: string): unknown => {
+  const names = index.files.flatMap(
+    (file: OutputIndex['files'][number]): string[] =>
+      file.kind === 'json' && file.name !== undefined ? [file.name] : [],
+  )
+  const read = (name: string): unknown => {
     const file = index.files.find(
       (entry: OutputIndex['files'][number]): boolean =>
         entry.kind === 'json' && entry.name === name,
@@ -226,15 +220,19 @@ function namedJsonReader(index: OutputIndex, files: UncheckedFiles): NamedJson {
       return undefined
     }
   }
+  return { names, read }
 }
 
 /** A product's side refusals, split: lines a grandfather entry covers become warnings, the rest stay refusals. */
 function scriptSideVerdict(
   sections: ReadonlyMap<string, unknown>,
-  named: NamedJson,
+  files: NamedFiles,
   product: ScriptSideProduct,
 ): { refused: string[]; warnings: string[] } {
-  return splitGrandfathered(scriptSideRefusals(sections, named), product)
+  return splitGrandfathered(
+    scriptSideRefusals(sections, files.read, files.names),
+    product,
+  )
 }
 
 /** Refuse a product whose scripts run on the wrong side, and return its grandfathered lines as warnings. Both
@@ -246,7 +244,7 @@ function assertScriptSides(
 ): string[] {
   const { refused, warnings } = scriptSideVerdict(
     sections,
-    namedJsonReader(index, files),
+    namedJsonFiles(index, files),
     { slug: index.identity.slug, sourceHash: index.build.sourceHash },
   )
   const [first, ...rest] = refused

@@ -46,20 +46,27 @@ The maps are `SCRIPT_V1_FEATURE_SIDES` and `SCRIPT_V2_LANE_SIDES` in
   prints it). Any other product, a new Pine upload included, is refused.
   SERVER-PARITY SS11 moves Pine's page half to a `view` row and deletes the
   entry;
-- a `view` row in `sim/scripts`, which only the server's decision host runs.
+- a `view` row in `sim/scripts`, which only the server's decision host runs;
+- a program (an object whose `script` names a `module`) that runs a `view`
+  `actors/return-scripts` row's module anywhere but a page-only host's
+  program path (SERVER-PARITY SS12), inline bytes or not. The server drops view
+  rows before it lends return modules (engine `serverReturnRows`, `1e99d663`),
+  so a server-read program would fail at install with `Missing admitted raw
+  return module loan`. Format cannot tell which named files the server reads,
+  so it admits a view row only where `PAGE_ONLY_PROGRAM_HOSTS` puts it. Only a
+  product with a view return row is walked.
 
 Both validators run the product checks (`script-sides.ts`) once the sections
 are read, on named files whose size and hash match the index.
 
 Open edges, for the rows that use `view`: a v1 `view` module belongs in the
-render library (`assetAdmission.ts` refuses it as critical), and engine's
-native loans (`nativeRuntimeLoans.ts`) still load every return row, so engine
-must skip `view` rows before a shard ships one. Engine's `DecisionScript.side`
-is the literal `'sim'`; the engine bump that takes this format narrows the
-`sim/scripts` and spawn rows it spreads into it (both are always `sim`).
-`practice.course` also runs a `sim` row on the page alone; it is cosmetic, and
-joins the page-only hosts once Nalati and Nine Dragon declare those rows
-`view`.
+render library (`assetAdmission.ts` refuses it as critical). Engine's native
+loans (`nativeRuntimeLoans.ts`) skip `view` rows since SS12 (`1e99d663`), and
+its `DecisionScript.side` stays the literal `'sim'`, narrowed by
+`simDecisionRow`. `practice.course` also runs a `sim` row on the page alone;
+it is cosmetic, and joins `PAGE_ONLY_PROGRAM_HOSTS` (path `practice.program`)
+in the same change that declares Nalati's and Nine Dragon's rows `view`, or
+the SS12 check refuses them.
 
 Use `buildDecisionScripts(project, rows, registries, options)` (or
 `compileDecisionScripts` with in-memory sources). It inspects all authored AS,
