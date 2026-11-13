@@ -70,6 +70,11 @@ function installed(args: readonly string[]): SpawnSyncReturns<string> {
 }
 
 test('the installed bin validates and packs the shipped Template 2', (): void => {
+  assert.equal(
+    manifest.bin['shardfile'],
+    manifest.bin['shard-format'],
+    'the old bin name stays (J308)',
+  )
   const tar = path.join(dir, 'installed.tar')
 
   const checked = installed(['validate', SHIPPED])

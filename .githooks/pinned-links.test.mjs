@@ -113,7 +113,7 @@ describe('pinned-links guard', () => {
   });
   test('a receipt that does not name the live link does not cover it', () => {
     const { box } = consumer({ live: true });
-    box.receipt({ lane: 'opus-link', reason: 'format only', expires: new Date(Date.now() + HOUR).toISOString(), links: { '@wildshard/shard-format': '/elsewhere' } });
+    box.receipt({ lane: 'opus-link', reason: 'format only', expires: new Date(Date.now() + HOUR).toISOString(), links: { '@wildshard/format': '/elsewhere' } });
     assert.equal(box.commit({ 'a.txt': 'a\n' }, MSG).status, 0);
     const result = box.push({ WS_LANE_NAME: 'opus-link' });
     assert.notEqual(result.status, 0);

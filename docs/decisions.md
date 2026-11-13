@@ -44,6 +44,8 @@ this repo's own decisions are D-numbers.
   so singleplayer's `@wildshard/format/<module>` imports work unchanged
   once it depends on this repo. Format's own modules import each other
   relatively, never by package name.
+  2026-11-12 (meta J308): renamed `@wildshard/shard-format`; consumers
+  may keep the old key as a pnpm alias until engine renames its imports.
 - **D31**: 2026-11-05: format's imported tests keep vitest
   (`pnpm test:format`); new tests use `node:test` (`pnpm test` runs every
   `*.test.ts` outside `src/format`).
