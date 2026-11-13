@@ -162,6 +162,7 @@
     "./immutable": "./src/format/immutable.ts",
     "./inputDeclarations": "./src/format/inputDeclarations.ts",
     "./islandLibrary": "./src/format/islandLibrary.ts",
+    "./issue-codes": "./src/format/issue-codes.ts",
     "./items": "./src/format/items.ts",
     "./json": "./src/format/json.ts",
     "./keyedSky": "./src/format/keyedSky.ts",

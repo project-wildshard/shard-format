@@ -1,5 +1,8 @@
+import { issueError } from './issue-codes.ts'
+
 import type { RecordingMeasure, RecordingRole } from './audio-measure.ts'
 import type { AudioWaiver } from './audio-waiver.ts'
+import type { IssueCodeOf } from './issue-codes.ts'
 
 // AUDIO AU5 (meta docs/plans/AUDIO-PLAN.md, J299): shardfile owns the audio
 // rules, and sharddev's `pack` and api-server's admission run this one check.
@@ -16,6 +19,8 @@ import type { AudioWaiver } from './audio-waiver.ts'
 type AudioLevel = 'green' | 'amber' | 'red'
 
 interface AudioFinding {
+  /** SHARD-AUTHORING SA41: the stable code (issue-codes.ts, docs/VALIDATION-CODES.md); `message` keeps its words. */
+  readonly code: IssueCodeOf<'audio'>
   readonly level: 'amber' | 'red'
   readonly rule: 'budget' | 'bitrate' | 'duration' | 'format' | 'waiver'
   readonly message: string
@@ -86,11 +91,16 @@ function formatProblem(
   const rate = String(row.sampleRate)
   if (row.codec === 'wav') {
     const message = `${row.url} is PCM WAV at ${rate} Hz; ship AAC-LC 48 kHz`
-    return { level: 'amber', rule: 'format', message }
+    return { code: 'audio-wav', level: 'amber', rule: 'format', message }
   }
   if (row.sampleRate !== AUDIO_RULES.sampleRate) {
     const message = `${row.url} is ${rate} Hz AAC; ship 48 kHz`
-    return { level: 'amber', rule: 'format', message }
+    return {
+      code: 'audio-sample-rate',
+      level: 'amber',
+      rule: 'format',
+      message,
+    }
   }
   return undefined
 }
@@ -99,11 +109,13 @@ function formatFinding(row: Readonly<RecordingMeasure>): AudioFinding[] {
   if (row.codec === 'unreadable') {
     const why = row.reason ?? 'unknown'
     const message = `${row.url} is not AAC-LC 48 kHz mono or stereo (${why})`
-    return [{ level: 'red', rule: 'format', message }]
+    return [{ code: 'audio-unreadable', level: 'red', rule: 'format', message }]
   }
   if (row.codec === 'aac' && row.reason !== undefined) {
     const message = `${row.url} is AAC outside the strict playback index (${row.reason})`
-    return [{ level: 'amber', rule: 'format', message }]
+    return [
+      { code: 'audio-strict-index', level: 'amber', rule: 'format', message },
+    ]
   }
   const problem = formatProblem(row)
   return problem === undefined ? [] : [problem]
@@ -114,7 +126,7 @@ function durationFinding(row: Readonly<RecordingMeasure>): AudioFinding[] {
     return []
   }
   const message = `${row.url} runs ${row.seconds.toFixed(ONE_DECIMAL)} s, over ${String(AUDIO_RULES.maxSeconds)} s`
-  return [{ level: 'red', rule: 'duration', message }]
+  return [{ code: 'audio-duration', level: 'red', rule: 'duration', message }]
 }
 
 function bitrateFinding(row: Readonly<RecordingMeasure>): AudioFinding[] {
@@ -124,7 +136,7 @@ function bitrateFinding(row: Readonly<RecordingMeasure>): AudioFinding[] {
   }
   const layout = row.channels === MONO ? 'mono' : 'stereo'
   const message = `${row.url} is ${row.kbps.toFixed(ONE_DECIMAL)} kbps ${layout} ${row.role}, over ${String(target)} kbps (+10%)`
-  return [{ level: 'amber', rule: 'bitrate', message }]
+  return [{ code: 'audio-bitrate', level: 'amber', rule: 'bitrate', message }]
 }
 
 function fileFindings(row: Readonly<RecordingMeasure>): AudioFinding[] {
@@ -156,17 +168,26 @@ function redBudget(input: Readonly<BudgetInput>): AudioFinding[] {
   const over = `${input.slug} holds ${mb(input.bytes)} of its own audio, over the ${mb(AUDIO_RULES.budgetRedBytes)} red line`
   const { waiver } = input
   if (waiver === undefined) {
-    return [{ level: 'red', rule: 'budget', message: over }]
+    return [
+      { code: 'audio-budget-red', level: 'red', rule: 'budget', message: over },
+    ]
   }
   const gap = waiverGap(waiver, input)
   if (gap === undefined) {
     const message = `${over}; waived until ${waiver.until} (${waiver.reason})`
-    return [{ level: 'amber', rule: 'budget', message }]
+    return [
+      { code: 'audio-budget-waived', level: 'amber', rule: 'budget', message },
+    ]
   }
   const named = `waiver for ${waiver.shard} until ${waiver.until} ${gap}`
   return [
-    { level: 'amber', rule: 'waiver', message: named },
-    { level: 'red', rule: 'budget', message: over },
+    {
+      code: 'audio-waiver-invalid',
+      level: 'amber',
+      rule: 'waiver',
+      message: named,
+    },
+    { code: 'audio-budget-red', level: 'red', rule: 'budget', message: over },
   ]
 }
 
@@ -178,7 +199,9 @@ function budgetFindings(input: Readonly<BudgetInput>): AudioFinding[] {
     return redBudget(input)
   }
   const message = `${input.slug} holds ${mb(input.bytes)} of its own audio, over the ${mb(AUDIO_RULES.budgetAmberBytes)} line`
-  return [{ level: 'amber', rule: 'budget', message }]
+  return [
+    { code: 'audio-budget-amber', level: 'amber', rule: 'budget', message },
+  ]
 }
 
 function levelOf(findings: readonly AudioFinding[]): AudioLevel {
@@ -255,7 +278,8 @@ function assertAudioAdmission(report: Readonly<AudioReport>): void {
     .filter((row: Readonly<AudioFinding>): boolean => row.level === 'red')
     .map((row: Readonly<AudioFinding>): string => row.message)
   if (red.length > NONE) {
-    throw new Error(
+    throw issueError(
+      'audio-refused',
       `Audio rules (AU5) refuse ${report.slug}: ${red.join('; ')}`,
     )
   }

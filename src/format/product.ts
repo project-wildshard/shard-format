@@ -18,9 +18,14 @@ import { SCRIPT_LIMITS } from './scriptLimits.ts';
 import { runtimeAccountedBytes } from "./runtimeCost.ts";
 import { MemoryAdmission } from './memoryAdmission.ts';
 import { nearPlaceholderRoots } from './nearPlaceholder.ts';
+import type { IssueCodeOf } from './issue-codes.ts';
+
 
 /** Actual costs derived from a bounded parser, never trusted from the author declaration. */
 import { isNavigationData, navigationCost } from './navigationBytes.ts';
+
+/** A performance issue's code and its metric words. */
+type Named = readonly [code: IssueCodeOf<'performance'>, metric: string];
 
 /** Admitted decoded CPU bytes, GPU bytes, triangle count and draw count charged to the asset budget. */
 export interface AssetCost { decoded: number; gpu: number; triangles: number; draws: number }
@@ -176,7 +181,10 @@ export interface PerformanceObservations {
   fuel: { p95: number; max: number; samples: number };
 }
 /** A report issue distinguishes tradeable memory targets from enforceable complete totals and execution budgets. */
-export interface PerformanceIssue { metric: string; actual: number; limit: number; severity: 'warning' | 'refusal' }
+export interface PerformanceIssue {
+  /** SHARD-AUTHORING SA41: the stable code (issue-codes.ts, docs/VALIDATION-CODES.md); `metric` keeps its words. */
+  code: IssueCodeOf<'performance'>; metric: string; actual: number; limit: number; severity: 'warning' | 'refusal';
+}
 /** Build-time estimates retain units, their scope, and the measured execution samples they use. */
 export interface PerformanceReport {
   slug: string; policy: 'refuse' | 'warn'; pass: boolean;
@@ -219,20 +227,20 @@ const near = (tile: Shardfile['tiles'][number], x: number, z: number): boolean =
 /** Cheap target grading before asset reads; format integrity and total-memory admission remain separate. */
 export function performanceTargetIssues(source: Shardfile, policy: 'refuse' | 'warn' = 'refuse'): PerformanceIssue[] {
   const issues: PerformanceIssue[] = [];
-  const check = (metric: string, actual: number, limit: number, provisional = false): void => {
-    if (actual > limit) issues.push({ metric, actual, limit, severity: provisional || policy === 'warn' ? 'warning' : 'refusal' });
+  const check = ([code, metric]: Named, actual: number, limit: number, provisional = false): void => {
+    if (actual > limit) issues.push({ code, metric, actual, limit, severity: provisional || policy === 'warn' ? 'warning' : 'refusal' });
   };
   const libraryAllowance = source.budgets.library.downloadAllowance ?? C.library.compressed;
-  check('library download budget bytes', source.budgets.library.compressed, libraryAllowance);
-  check('critical download budget bytes', source.budgets.sim.compressed, C.sim.compressed);
-  check('library download bytes', totals(source, reportCardClosure(source, source.library)).bytes, libraryAllowance);
-  check('critical download bytes', totals(source, reportCardClosure(source, source.critical)).bytes, C.sim.compressed);
+  check(['perf-library-download-budget', 'library download budget bytes'], source.budgets.library.compressed, libraryAllowance);
+  check(['perf-critical-download-budget', 'critical download budget bytes'], source.budgets.sim.compressed, C.sim.compressed);
+  check(['perf-library-download', 'library download bytes'], totals(source, reportCardClosure(source, source.library)).bytes, libraryAllowance);
+  check(['perf-critical-download', 'critical download bytes'], totals(source, reportCardClosure(source, source.critical)).bytes, C.sim.compressed);
   for (const tile of source.tiles) {
     const cap = tile.lod === 0 ? C.l0 : C.l1, id = `tile ${tile.lod}/${tile.x}/${tile.z}`;
-    check(`${id} download bytes`, tile.compressed, cap.compressed, true); check(`${id} draws`, tile.draws, cap.draws, true); check(`${id} triangles`, tile.triangles, cap.triangles, true);
+    check(['perf-tile-download', `${id} download bytes`], tile.compressed, cap.compressed, true); check(['perf-tile-draws', `${id} draws`], tile.draws, cap.draws, true); check(['perf-tile-triangles', `${id} triangles`], tile.triangles, cap.triangles, true);
   }
   if (source.far !== null) {
-    check('far download bytes', source.far.compressed, C.far.compressed); check('far draws', source.far.draws, C.far.draws); check('far triangles', source.far.triangles, C.far.triangles);
+    check(['perf-far-download', 'far download bytes'], source.far.compressed, C.far.compressed); check(['perf-far-draws', 'far draws'], source.far.draws, C.far.draws); check(['perf-far-triangles', 'far triangles'], source.far.triangles, C.far.triangles);
   }
   return issues;
 }
@@ -293,18 +301,18 @@ export function performanceReport(source: Shardfile, observations: PerformanceOb
   const commons = native.resident + Object.values(source.requires.commonsCosts).reduce((sum, row) => sum + row.decoded + row.gpu, 0);
   const worst = worstContentCost(source, commons), spawn = source.spawn;
   const memory = { near: nearbyContentCost(source, spawn.x, spawn.z, commons), worst, playingLimit: C.playing, loadingLimit: C.loading };
-  const issues: PerformanceIssue[] = memoryTargetWarnings(source).map(row => ({ metric: `${row.category} resident target (tradeable)`, actual: row.bytes, limit: row.target, severity: 'warning' }));
+  const issues: PerformanceIssue[] = memoryTargetWarnings(source).map(row => ({ code: 'perf-memory-target', metric: `${row.category} resident target (tradeable)`, actual: row.bytes, limit: row.target, severity: 'warning' }));
   issues.push(...performanceTargetIssues(source, policy));
-  const check = (metric: string, actual: number, limit: number): void => {
-    if (!Number.isFinite(actual) || actual < 0 || actual > limit) issues.push({ metric, actual, limit, severity: policy === 'warn' ? 'warning' : 'refusal' });
+  const check = ([code, metric]: Named, actual: number, limit: number): void => {
+    if (!Number.isFinite(actual) || actual < 0 || actual > limit) issues.push({ code, metric, actual, limit, severity: policy === 'warn' ? 'warning' : 'refusal' });
   };
-  if (native.unmeasuredViewAndDownload) check('native view/download measurement required', 1, 0);
-  if (source.runtime !== null && source.runtime.cost === undefined) check('native resident measurement required', 1, 0);
+  if (native.unmeasuredViewAndDownload) check(['perf-native-view-unmeasured', 'native view/download measurement required'], 1, 0);
+  if (source.runtime !== null && source.runtime.cost === undefined) check(['perf-native-resident-unmeasured', 'native resident measurement required'], 1, 0);
   // G433: while src/format/memoryGates.json is report-only the totals print as warnings and never refuse a build.
-  const total = (metric: string, actual: number, limit: number): void => {
-    if (MEMORY_GATES.reportOnly && actual > limit) issues.push({ metric: `${metric} (report-only, G433)`, actual, limit, severity: 'warning' }); else check(metric, actual, limit);
+  const total = ([code, metric]: Named, actual: number, limit: number): void => {
+    if (MEMORY_GATES.reportOnly && actual > limit) issues.push({ code, metric: `${metric} (report-only, G433)`, actual, limit, severity: 'warning' }); else check([code, metric], actual, limit);
   };
-  total('worst playing total bytes', worst.playing, C.playing); total('worst loading total bytes', worst.loading, C.loading);
+  total(['perf-playing-memory', 'worst playing total bytes'], worst.playing, C.playing); total(['perf-loading-memory', 'worst loading total bytes'], worst.loading, C.loading);
   const library = reportCardClosure(source, source.library), critical = reportCardClosure(source, source.critical);
   const tileRoots = source.tiles.flatMap(tile => tile.files), farRoots = source.far?.files ?? [], nearRoots = nearPlaceholderRoots(source.near);
   const playable = reportCardClosure(source, [...source.critical, ...source.library, ...farRoots, ...source.tiles.filter(tile => tile.lod === 1 || near(tile, spawn.x, spawn.z)).flatMap(tile => tile.files)]);
@@ -324,11 +332,11 @@ export function performanceReport(source: Shardfile, observations: PerformanceOb
   const graphs: PerformanceReport['graphs'] = [];
   const scriptLimit = Math.min(source.serverBudget.tickMicros, 1_000_000 / 60 / 4);
   for (const [group, data] of ([['scripts', observations.scripts], ['fuel', observations.fuel]] as const)) for (const [metric, value] of Object.entries(data)) {
-    if (!Number.isFinite(value) || value < 0) check(`invalid measured ${group}.${metric}`, value, 0);
+    if (!Number.isFinite(value) || value < 0) check(['perf-script-sample-invalid', `invalid measured ${group}.${metric}`], value, 0);
   }
-  check('script CPU p95 us/tick', observations.scripts.p95Micros, scriptLimit);
-  check('script fuel/tick', observations.fuel.max, SCRIPT_LIMITS.fuelPerTick);
-  if (observations.scripts.samples < 60 || observations.fuel.samples < 60) check('missing execution samples', 60, Math.min(observations.scripts.samples, observations.fuel.samples));
+  check(['perf-script-cpu', 'script CPU p95 us/tick'], observations.scripts.p95Micros, scriptLimit);
+  check(['perf-script-fuel', 'script fuel/tick'], observations.fuel.max, SCRIPT_LIMITS.fuelPerTick);
+  if (observations.scripts.samples < 60 || observations.fuel.samples < 60) check(['perf-script-samples-missing', 'missing execution samples'], 60, Math.min(observations.scripts.samples, observations.fuel.samples));
   // An explicit cold-network estimate, not a measured phone loading claim. The guide names both assumptions.
   const bytesPerSecond = 1_000_000, setupSeconds = 1;
   return { slug: source.identity.slug, policy, pass: !issues.some(issue => issue.severity === 'refusal'), native, memory, views, graphs, scripts: observations, download,

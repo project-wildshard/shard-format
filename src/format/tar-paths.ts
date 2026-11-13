@@ -2,6 +2,7 @@
 // a hostile path never reaches a disk, on any host a shard is unpacked on.
 
 import { SHARDFILE_ADMISSION_LIMITS } from './admissionLimits.ts'
+import { archiveError } from './issue-codes.ts'
 
 // `tar -C product .` adds directories, and a shard adds `shard.json` and
 // `validation.json`, to the files its index may list.
@@ -57,7 +58,7 @@ function folded(path: string): string {
 }
 
 function clash(path: string): Error {
-  return new Error(`tar: both a file and a folder: ${path}`)
+  return archiveError(`tar: both a file and a folder: ${path}`)
 }
 
 function claimParents(
@@ -81,7 +82,7 @@ function claimParents(
 function claimFile(claims: Readonly<TarClaims>, path: string): void {
   const key = folded(path)
   if (claims.files.has(key)) {
-    throw new Error(`tar: duplicate entry ${path}`)
+    throw archiveError(`tar: duplicate entry ${path}`)
   }
   if (claims.folders.has(key)) {
     throw clash(path)

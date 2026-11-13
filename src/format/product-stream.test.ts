@@ -6,6 +6,7 @@ import { brotliCompressSync, constants } from 'node:zlib'
 
 import { beforeAll, describe, expect, test } from 'vitest'
 
+import { issueCodeOf } from './issue-codes.ts'
 import { nodeStreamPorts } from './product-stream-node.ts'
 import { validateShardfileStream } from './product-stream.ts'
 import { prepareAssetDecoders } from './product.ts'
@@ -67,12 +68,18 @@ function memoryFiles(files: Files): ProductFiles {
   }
 }
 
+/** SHARD-AUTHORING SA41: a refusal as `[code] message`, so each comparison checks the code as well as the words. */
+function coded(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error)
+  return `[${issueCodeOf(error) ?? 'none'}] ${message}`
+}
+
 function verdict(run: () => unknown): string {
   try {
     run()
     return 'ok'
   } catch (error) {
-    return error instanceof Error ? error.message : String(error)
+    return coded(error)
   }
 }
 
@@ -97,7 +104,7 @@ async function streamVerdict(
     )
     return 'ok'
   } catch (error) {
-    return error instanceof Error ? error.message : String(error)
+    return coded(error)
   }
 }
 
@@ -325,6 +332,7 @@ describe('validateShardfileStream on the corpus', (): void => {
         validateShardfileProduct(memoryFiles(readTar(tar)), { hash: sha256 }),
       )
       expect(old).not.toBe('ok')
+      expect(old).not.toMatch(/^\[none\]/u)
       expect(old).not.toMatch(/source hash|Output hash/u)
       expect(await streamVerdict(brotli(tar), true)).toBe(old)
     },
@@ -338,6 +346,7 @@ describe('validateShardfileStream on the corpus', (): void => {
         validateShardfileProduct(memoryFiles(readTar(tar)), { hash: sha256 }),
       )
       expect(old).not.toBe('ok')
+      expect(old).not.toMatch(/^\[none\]/u)
       expect(await streamVerdict(brotli(tar), true)).toBe(old)
       expect(await streamVerdict(tar, false)).toBe(old)
     },
@@ -348,6 +357,7 @@ describe('validateShardfileStream on the corpus', (): void => {
     async (broken: Readonly<Uint8Array>): Promise<void> => {
       const old = verdict((): unknown => readTar(broken))
       expect(old).not.toBe('ok')
+      expect(old).not.toMatch(/^\[none\]/u)
       expect(await streamVerdict(broken, false)).toBe(old)
     },
   )
@@ -375,8 +385,9 @@ test('validateShardfileStream refuses a stored object that changed between its r
     nodeStreamPorts({ brotli: false }),
   ).then(
     (): string => 'ok',
-    (error: unknown): string =>
-      error instanceof Error ? error.message : String(error),
+    (error: unknown): string => coded(error),
   )
-  expect(verdictOf).toBe('stream: the stored object changed between reads')
+  expect(verdictOf).toBe(
+    '[stream-changed] stream: the stored object changed between reads',
+  )
 })

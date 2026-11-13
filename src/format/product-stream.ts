@@ -17,6 +17,7 @@
 
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
 import { assertSectionSides } from './feature-sides.ts'
+import { issueError, withIssueCode } from './issue-codes.ts'
 import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
 import {
   admitAssets,
@@ -143,7 +144,10 @@ function collect(ports: StreamValidationPorts): Readonly<{
       (keep && now + size > STREAM_KEPT_CAP) ||
       (!keep && size > STREAM_BLOB_CAP)
     ) {
-      throw new Error(`stream: member over the streaming cap: ${path}`)
+      throw issueError(
+        'stream-cap',
+        `stream: member over the streaming cap: ${path}`,
+      )
     }
     return keep || path.startsWith('blobs/')
   }
@@ -214,22 +218,30 @@ function readSections(
   replay: Readonly<Replay>,
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   index: OutputIndex,
-): { sections: Map<string, unknown>; warnings: string[] } {
+): Pick<StreamedProduct, 'sections' | 'warnings' | 'scripts'> {
   const payloads = new Map<string, unknown>()
   for (const entry of index.sections) {
-    const value = readCanonicalJson(listedBytes(replay, entry))
-    assertSectionSides(entry.name, value)
-    validateOutputSection(entry.name, value)
-    payloads.set(entry.name, value)
+    withIssueCode('section-invalid', (): void => {
+      const value = readCanonicalJson(listedBytes(replay, entry))
+      assertSectionSides(entry.name, value)
+      validateOutputSection(entry.name, value)
+      payloads.set(entry.name, value)
+    })
   }
-  const warnings = assertScriptSides(payloads, index, {
+  const sides = {
     paths: (): Iterable<string> => replay.members.keys(),
     read: (path: string): Uint8Array | undefined =>
       replay.members.get(path)?.bytes,
     verify: (bytes: Readonly<Uint8Array>, expected: string): boolean =>
       replay.hash(bytes) === expected,
-  })
-  return { sections: payloads, warnings }
+  }
+  const warnings = withIssueCode('script-side', (): string[] =>
+    assertScriptSides(payloads, index, sides),
+  )
+  const scripts = withIssueCode('script-admission', (): ScriptAdmissionRows =>
+    scriptAdmissionRows(payloads),
+  )
+  return { sections: payloads, warnings, scripts }
 }
 
 /** Stream-validate a stored shardfile object (see the file comment): `open` gives a fresh stream of it on each call.
@@ -246,9 +258,10 @@ async function validateShardfileStream(
     listed: new Set(['validation.json']),
     hash: ports.hash,
   }
-  const index = readIndex(replay)
-  const { sections, warnings } = readSections(replay, index)
-  const scripts = scriptAdmissionRows(sections)
+  const index = withIssueCode('index-invalid', (): OutputIndex =>
+    readIndex(replay),
+  )
+  const { sections, warnings, scripts } = readSections(replay, index)
   replayBeforePacks(replay, index, scripts)
   const before = admitBeforeAssets(index, sections, scripts)
   const later = await assetPasses({

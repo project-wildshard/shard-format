@@ -8,6 +8,8 @@
 // The packs are split into groups whose held bytes stay under a cap, and
 // each group takes its own read of the stored object.
 
+import { issueError } from './issue-codes.ts'
+
 import type { OutputIndex } from './outputIndex.ts'
 import type { StreamHasher } from './product-stream-tar.ts'
 
@@ -132,7 +134,10 @@ function packGroups(
         group.length === NEXT &&
         heldPeak([entryPaths(pack, paths)], order, sizes) > PACK_HOLD_CAP
       ) {
-        throw new Error(`stream: a pack over the streaming cap: ${pack.path}`)
+        throw issueError(
+          'stream-cap',
+          `stream: a pack over the streaming cap: ${pack.path}`,
+        )
       }
     }
   }

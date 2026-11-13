@@ -19,6 +19,7 @@ import { assertSectionSides } from './feature-sides.ts';
 import { assertScriptSides } from './script-sides.ts';
 import { productRecordings } from './product-audio.ts';
 import type { RecordingMeasure } from './audio-measure.ts';
+import { issueError, withIssueCode as coded } from './issue-codes.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -108,23 +109,23 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
 export function assertProductTargets(source: Shardfile, policy: 'warn' | 'refuse'): void {
   const issues = performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal');
   if (issues.length === 0) return;
-  throw new Error(issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
+  throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
 }
 
 /** Admit a whole shardfile's declared costs and its actual immutable bytes through the defining contracts. */
 export function admitShardfileProduct(input: unknown, assets: ReadonlyMap<string, Uint8Array>, hash: (bytes: Uint8Array) => string,
   policy: 'warn' | 'refuse' = 'refuse', scripts: ScriptAdmissionRows = []): Shardfile {
-  const source = parseShardfile(input);
-  preflightDeclaredCosts(source, offlineMemoryAdmission(policy));
-  assertProductTargets(source, policy);
-  return validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy), undefined, scripts);
+  const source = coded('shard-schema', (): Shardfile => parseShardfile(input));
+  coded('declared-costs', (): void => { preflightDeclaredCosts(source, offlineMemoryAdmission(policy)); });
+  coded('performance-targets', (): void => { assertProductTargets(source, policy); });
+  return coded('asset-admission', (): Shardfile => validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy), undefined, scripts));
 }
 
 /** Refuse world target rows that name items or quests the shardfile does not declare. */
 export function checkWorldTargets(source: Shardfile, input: unknown): void {
   if (input === undefined) return;
-  const errors = worldTargetRules(parseWorldTargets(input), source);
-  if (errors.length > 0) throw new Error(errors.join('; '));
+  const errors = coded('world-targets', (): string[] => worldTargetRules(parseWorldTargets(input), source));
+  if (errors.length > 0) throw issueError('world-targets', errors.join('; '));
 }
 
 function inspectBlob(file: OutputFile, bytes: Uint8Array, ports: ProductValidationPorts, script?: ScriptContract): void {
@@ -148,58 +149,89 @@ function inspectBlob(file: OutputFile, bytes: Uint8Array, ports: ProductValidati
   if ((['decoded', 'gpu', 'triangles', 'draws'] as const).some(key => cost[key] > file[key])) throw new Error('Output blob understates parsed costs');
 }
 
-/** Validate a built product folder with format alone: the index and section schemas, the exact inventory (no unlisted,
- *  missing or changed file), every hash and size, byte kinds against declared kinds and costs, KTX2 device costs, pack
- *  members, registered named JSON, budgets and admission, world targets and the declared source hash. A `client/plan`
- *  kind with no declared side (SERVER-PARITY SS2, `feature-sides.ts`) is refused by name before its section schema runs, and
- *  a script run on the wrong side (SS7, `script-sides.ts`) once the sections are read. */
-export function validateShardfileProduct(files: ProductFiles, ports: ProductValidationPorts): ValidatedProduct {
-  const verify = ports.verify ?? ((bytes: Uint8Array, expected: string): boolean => ports.hash(bytes) === expected);
-  const index = parseOutputIndex(readCanonicalJson(files.read('shard.json', limits.sourceBytes)));
-  const listed = new Set(['shard.json', 'validation.json']), payloads = new Map<string, unknown>(), { assets, keep } = assetStore(files.read, ports.readThrough === true);
-  const read = (entry: { path: string; hash: string; bytes: number }): Uint8Array => {
-    listed.add(entry.path);
-    const bytes = files.read(entry.path, entry.bytes);
-    if (bytes.length !== entry.bytes || !verify(bytes, entry.hash, true)) throw new Error(`Output hash or size mismatch: ${entry.path}`);
-    return bytes;
-  };
-  for (const entry of index.sections) { const value = readCanonicalJson(read(entry)); assertSectionSides(entry.name, value); validateOutputSection(entry.name, value); payloads.set(entry.name, value); } const warnings = assertScriptSides(payloads, index, { ...files, verify });
-  const scripts = scriptAdmissionRows(payloads), contracts = decisionModuleContracts(scripts, index.files);
-  for (const entry of index.files) {
-    const bytes = read({ path: entry.path, hash: entry.hash, bytes: entry.compressed });
-    inspectBlob(entry, bytes, ports, entry.kind === 'wasm' ? contracts.get(entry.hash) ?? { abi: 0 } : undefined);
-    keep(entry, bytes, index.requires.commons.includes(entry.hash));
+type ReadListed = (entry: Readonly<{ path: string; hash: string; bytes: number }>) => Uint8Array;
+
+/** Each section: listed, canonical, a declared side, its schema (`section-invalid`). */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
+function readSections(index: OutputIndex, read: ReadListed): Map<string, unknown> {
+  const payloads = new Map<string, unknown>();
+  for (const entry of index.sections) {
+    coded('section-invalid', (): void => { const value = readCanonicalJson(read(entry)); assertSectionSides(entry.name, value); validateOutputSection(entry.name, value); payloads.set(entry.name, value); });
   }
-  // J91: server files pass the same hash, size and schema checks; they stay out of the client's admitted assets
+  return payloads;
+}
+
+/** J91: server files pass the same hash, size and schema checks; they stay out of the client's admitted assets. Then the
+ *  declared KTX2 device costs against the verified bytes. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type and the admitted bytes, only read
+function checkServerAndKtx2(index: OutputIndex, read: ReadListed, assets: ReadonlyMap<string, Uint8Array>): void {
   for (const entry of index.admission.server ?? []) {
     const bytes = read(entry);
-    if (entry.kind === 'json') {
-      if (validatePlatformFile(entry.name, entry.schema, readCanonicalJson(bytes)) === undefined) throw new Error(`Unregistered named JSON: ${entry.name}`);
-    } else if (outputBlobKind('binary', bytes) !== entry.kind) throw new Error('Output blob bytes differ from their declared kind');
+    coded('server-file-invalid', (): void => {
+      if (entry.kind === 'json') {
+        if (validatePlatformFile(entry.name, entry.schema, readCanonicalJson(bytes)) === undefined) throw new Error(`Unregistered named JSON: ${entry.name}`);
+      } else if (outputBlobKind('binary', bytes) !== entry.kind) throw new Error('Output blob bytes differ from their declared kind');
+    });
   }
-  for (const [hash, cost] of Object.entries(index.ktx2Costs ?? {})) {
-    const bytes = assets.get(hash);
-    if (bytes === undefined || decoder().decode(validationSourceBytes(cost)) !== decoder().decode(validationSourceBytes(ktx2DeviceCosts(bytes)))) throw new Error('KTX2 device costs differ from verified bytes');
-  }
-  checkPacks(index, new Set(files.paths()), { readFile: files.read, readListed: read, verify, hash: ports.hash });
-  // C0 (J137): a mount passes the same hash and size checks as any listed file; nothing else may sit under `mounts/`.
-  const cook = index.cook === undefined ? undefined : readCookData(readCanonicalJson(read(index.cook)));
-  requireCookPreparation(index, cook, ports.hash);
-  if (cook !== undefined) {
-    for (const mount of cook.mounts) {
+  coded('ktx2-costs', (): void => {
+    for (const [hash, cost] of Object.entries(index.ktx2Costs ?? {})) {
+      const bytes = assets.get(hash);
+      if (bytes === undefined || decoder().decode(validationSourceBytes(cost)) !== decoder().decode(validationSourceBytes(ktx2DeviceCosts(bytes)))) throw new Error('KTX2 device costs differ from verified bytes');
+    }
+  });
+}
+
+/** C0 (J137): the cook file; a mount passes the same hash and size checks as any listed file (`cook-invalid`). */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
+function readCook(index: OutputIndex, read: ReadListed, hash: (bytes: Uint8Array) => string): ReturnType<typeof readCookData> | undefined {
+  return coded('cook-invalid', (): ReturnType<typeof readCookData> | undefined => {
+    const cook = index.cook === undefined ? undefined : readCookData(readCanonicalJson(read(index.cook)));
+    requireCookPreparation(index, cook, hash);
+    for (const mount of cook?.mounts ?? []) {
       if (!mountSharesBlob(mount, index.files)) {
         if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
         read(mount);
       }
     }
+    return cook;
+  });
+}
+
+/** Validate a built product folder with format alone: the index and section schemas, the exact inventory (no unlisted,
+ *  missing or changed file), every hash and size, byte kinds against declared kinds and costs, KTX2 device costs, pack
+ *  members, registered named JSON, budgets and admission, world targets and the declared source hash. A `client/plan`
+ *  kind with no declared side (SERVER-PARITY SS2, `feature-sides.ts`) is refused by name before its section schema runs, and
+ *  a script run on the wrong side (SS7, `script-sides.ts`) once the sections are read. A refusal carries the `code` of the
+ *  check that refused (SA41, `issue-codes.ts`). */
+export function validateShardfileProduct(files: ProductFiles, ports: ProductValidationPorts): ValidatedProduct {
+  const verify = ports.verify ?? ((bytes: Uint8Array, expected: string): boolean => ports.hash(bytes) === expected);
+  const index = coded('index-invalid', (): OutputIndex => parseOutputIndex(readCanonicalJson(files.read('shard.json', limits.sourceBytes))));
+  const listed = new Set(['shard.json', 'validation.json']), { assets, keep } = assetStore(files.read, ports.readThrough === true);
+  const read: ReadListed = (entry): Uint8Array => coded('file-mismatch', (): Uint8Array => {
+    listed.add(entry.path);
+    const bytes = files.read(entry.path, entry.bytes);
+    if (bytes.length !== entry.bytes || !verify(bytes, entry.hash, true)) throw new Error(`Output hash or size mismatch: ${entry.path}`);
+    return bytes;
+  });
+  const payloads = readSections(index, read), warnings = coded('script-side', (): string[] => assertScriptSides(payloads, index, { ...files, verify }));
+  const scripts = coded('script-admission', (): ScriptAdmissionRows => scriptAdmissionRows(payloads));
+  const contracts = coded('script-admission', (): ReturnType<typeof decisionModuleContracts> => decisionModuleContracts(scripts, index.files));
+  for (const entry of index.files) {
+    const bytes = read({ path: entry.path, hash: entry.hash, bytes: entry.compressed });
+    coded('blob-invalid', (): void => { inspectBlob(entry, bytes, ports, entry.kind === 'wasm' ? contracts.get(entry.hash) ?? { abi: 0 } : undefined); });
+    keep(entry, bytes, index.requires.commons.includes(entry.hash));
   }
+  checkServerAndKtx2(index, read, assets);
+  coded('pack-invalid', (): void => { checkPacks(index, new Set(files.paths()), { readFile: files.read, readListed: read, verify, hash: ports.hash }); });
+  const cook = readCook(index, read, ports.hash);
   for (const entry of index.runtime?.files ?? []) {
-    if (ports.runtimeImports === undefined) throw new Error('Copied runtime files need a runtime import checker');
-    ports.runtimeImports(entry.path, decoder().decode(read(entry)));
+    const check = ports.runtimeImports;
+    if (check === undefined) throw issueError('runtime-files', 'Copied runtime files need a runtime import checker');
+    coded('runtime-files', (): void => { check(entry.path, decoder().decode(read(entry))); });
   }
-  for (const path of files.paths()) if (!listed.has(path)) throw new Error(`Unlisted output file: ${path}`);
-  const shard = admitShardfileProduct(assembleOutputShardfile(index, payloads), assets, ports.hash, 'warn', scripts);
+  for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
+  const shard = admitShardfileProduct(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts);
   checkWorldTargets(shard, payloads.get('world/targets'));
-  if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw new Error('Output sections differ from the declared source hash');
+  if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
   return { index, shard, assets, sections: payloads, scripts, warnings, audio: productRecordings({ cook, read: files.read, shard, assets }) };
 }

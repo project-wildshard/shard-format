@@ -2,6 +2,7 @@
 // tarball's chunks with the same refusals, in bounded memory. Each regular
 // file is hashed as it streams; the caller says which files it wants whole.
 
+import { archiveError, withIssueCodeAsync } from './issue-codes.ts'
 import { BLOCK, padded } from './tar-fields.ts'
 import { MAX_ENTRIES, claimFile, claimFolder, newClaims } from './tar-paths.ts'
 import { readTarHeader } from './tar.ts'
@@ -95,7 +96,7 @@ async function assertEnd(reader: ChunkReader): Promise<number> {
     zero &&= isZero(piece)
   }
   if (rest < END_BLOCKS * BLOCK || !zero) {
-    throw new Error('tar: bad end-of-archive blocks')
+    throw archiveError('tar: bad end-of-archive blocks')
   }
   return rest
 }
@@ -127,10 +128,10 @@ async function readMember(
     ? new Uint8Array(entry.size)
     : undefined
   if ((await copyMember(reader, entry.size, { hasher, bytes })) < entry.size) {
-    throw new Error(`tar: truncated entry ${entry.path}`)
+    throw archiveError(`tar: truncated entry ${entry.path}`)
   }
   if (!isZero(await reader.read(padded(entry.size) - entry.size))) {
-    throw new Error(`tar: non-zero padding after ${entry.path}`)
+    throw archiveError(`tar: non-zero padding after ${entry.path}`)
   }
   return { size: entry.size, sha: hasher.digest(), bytes }
 }
@@ -144,7 +145,7 @@ async function walkEntry(
   const entry = readTarHeader(block)
   if (entry.type === DIRECTORY_TYPE) {
     if (entry.size !== START) {
-      throw new Error(`tar: directory with a size ${entry.path}`)
+      throw archiveError(`tar: directory with a size ${entry.path}`)
     }
     if (entry.path !== '') {
       claimFolder(walk.claims, entry.path)
@@ -160,13 +161,13 @@ async function walkEntry(
 async function nextBlock(reader: ChunkReader): Promise<Uint8Array> {
   const block = await reader.read(BLOCK)
   if (block.length < BLOCK) {
-    throw new Error('tar: truncated (no end-of-archive blocks)')
+    throw archiveError('tar: truncated (no end-of-archive blocks)')
   }
   return block
 }
 
-/** Walk a tarball once, refusing what `indexTar` refuses; resolves with its byte length. */
-async function walkTar(
+/** `walkTar`, before its refusals (a bad decode among them) take `archive-invalid`. */
+async function walkMembers(
   tar: AsyncIterable<Uint8Array>,
   ports: WalkPorts,
 ): Promise<number> {
@@ -181,11 +182,22 @@ async function walkTar(
       return offset + (await assertEnd(reader))
     }
     if (entries === MAX_ENTRIES) {
-      throw new Error(`tar: too many entries, over ${String(MAX_ENTRIES)}`)
+      throw archiveError(`tar: too many entries, over ${String(MAX_ENTRIES)}`)
     }
     // oxlint-disable-next-line eslint/no-await-in-loop -- a tarball's entries come in order
     offset += await walkEntry(reader, block, walk)
   }
+}
+
+/** Walk a tarball once, refusing what `indexTar` refuses; resolves with its byte length. */
+async function walkTar(
+  tar: AsyncIterable<Uint8Array>,
+  ports: WalkPorts,
+): Promise<number> {
+  return await withIssueCodeAsync(
+    'archive-invalid',
+    async (): Promise<number> => await walkMembers(tar, ports),
+  )
 }
 
 export type { StreamHasher, StreamMember, WalkPorts }

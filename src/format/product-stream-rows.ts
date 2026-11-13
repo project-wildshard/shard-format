@@ -1,3 +1,4 @@
+// oxlint-disable import/max-dependencies -- the old validator's steps, each from its defining module
 // `validateShardfileProduct`'s inventory steps, replayed over what one
 // streaming pass kept (API-CLOUDFLARE AC6a): each listed file's hash and
 // size, the blobs' facts, server files, KTX2 device costs, the cook and its
@@ -7,6 +8,7 @@
 
 import { cookMountPath, readCookData } from './cook-data.ts'
 import { requireCookPreparation } from './cook-preparation.ts'
+import { issueError, withIssueCode } from './issue-codes.ts'
 import { validatePlatformFile } from './platformFileFamilies.ts'
 import { mountSharesBlob } from './product-reads.ts'
 import { inspectFacts, ktx2Text } from './product-stream-facts.ts'
@@ -45,13 +47,19 @@ function readListed(
   replay.listed.add(entry.path)
   const member = replay.members.get(entry.path)
   if (member === undefined) {
-    throw new Error(`missing file: ${entry.path}`)
+    throw issueError('file-mismatch', `missing file: ${entry.path}`)
   }
   if (member.size > entry.bytes) {
-    throw new Error(`larger than its declared size: ${entry.path}`)
+    throw issueError(
+      'file-mismatch',
+      `larger than its declared size: ${entry.path}`,
+    )
   }
   if (member.size !== entry.bytes || member.sha !== entry.hash) {
-    throw new Error(`Output hash or size mismatch: ${entry.path}`)
+    throw issueError(
+      'file-mismatch',
+      `Output hash or size mismatch: ${entry.path}`,
+    )
   }
   return member
 }
@@ -63,7 +71,7 @@ function listedBytes(
 ): Uint8Array {
   const { bytes } = readListed(replay, entry)
   if (bytes === undefined) {
-    throw new Error(`stream: ${entry.path} was not kept`)
+    throw issueError('stream-miss', `stream: ${entry.path} was not kept`)
   }
   return bytes
 }
@@ -76,7 +84,11 @@ function replayFiles(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's row type, only read
   scripts: ScriptAdmissionRows,
 ): Map<string, KeptMember> {
-  const contracts = decisionModuleContracts(scripts, index.files)
+  const contracts = withIssueCode(
+    'script-admission',
+    (): ReturnType<typeof decisionModuleContracts> =>
+      decisionModuleContracts(scripts, index.files),
+  )
   const assets = new Map<string, KeptMember>()
   for (const entry of index.files) {
     const member = readListed(replay, {
@@ -84,13 +96,15 @@ function replayFiles(
       hash: entry.hash,
       bytes: entry.compressed,
     })
-    inspectFacts(
-      entry,
-      member,
-      entry.kind === 'wasm'
-        ? (contracts.get(entry.hash) ?? { abi: 0 })
-        : undefined,
-    )
+    withIssueCode('blob-invalid', (): void => {
+      inspectFacts(
+        entry,
+        member,
+        entry.kind === 'wasm'
+          ? (contracts.get(entry.hash) ?? { abi: 0 })
+          : undefined,
+      )
+    })
     assets.set(
       `${entry.commons === true ? 'commons:' : ''}${entry.hash}`,
       member,
@@ -111,34 +125,41 @@ function replayServerAndKtx2(
 ): void {
   for (const entry of index.admission.server ?? []) {
     const bytes = listedBytes(replay, entry)
-    if (entry.kind === 'json') {
-      if (
-        validatePlatformFile(
-          entry.name,
-          entry.schema,
-          readCanonicalJson(bytes),
-        ) === undefined
-      ) {
-        throw new Error(`Unregistered named JSON: ${entry.name}`)
+    withIssueCode('server-file-invalid', (): void => {
+      if (entry.kind === 'json') {
+        if (
+          validatePlatformFile(
+            entry.name,
+            entry.schema,
+            readCanonicalJson(bytes),
+          ) === undefined
+        ) {
+          throw new Error(`Unregistered named JSON: ${entry.name}`)
+        }
+      } else if (outputBlobKind('binary', bytes) !== entry.kind) {
+        throw new Error('Output blob bytes differ from their declared kind')
       }
-    } else if (outputBlobKind('binary', bytes) !== entry.kind) {
-      throw new Error('Output blob bytes differ from their declared kind')
-    }
+    })
   }
   for (const [hash, cost] of Object.entries(index.ktx2Costs ?? {})) {
-    const actual = ktx2Text(assets.get(hash))
+    const actual = withIssueCode('ktx2-costs', (): string | undefined =>
+      ktx2Text(assets.get(hash)),
+    )
     if (
       actual === undefined ||
       new TextDecoder().decode(validationSourceBytes(cost)) !== actual
     ) {
-      throw new Error('KTX2 device costs differ from verified bytes')
+      throw issueError(
+        'ktx2-costs',
+        'KTX2 device costs differ from verified bytes',
+      )
     }
   }
 }
 
-/** C0 (J137): the cook file, and each mount's hash and size. */
+/** The cook steps `replayCook` tags. */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
-function replayCook(replay: Readonly<Replay>, index: OutputIndex): void {
+function cookSteps(replay: Readonly<Replay>, index: OutputIndex): void {
   const cook =
     index.cook === undefined
       ? undefined
@@ -154,15 +175,26 @@ function replayCook(replay: Readonly<Replay>, index: OutputIndex): void {
   }
 }
 
+/** C0 (J137): the cook file, and each mount's hash and size. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
+function replayCook(replay: Readonly<Replay>, index: OutputIndex): void {
+  withIssueCode('cook-invalid', (): void => {
+    cookSteps(replay, index)
+  })
+}
+
 /** No copied runtime files (the Worker has no import checker) and no file the index does not list. */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
 function replayInventory(replay: Readonly<Replay>, index: OutputIndex): void {
   if ((index.runtime?.files ?? []).length > NONE) {
-    throw new Error('Copied runtime files need a runtime import checker')
+    throw issueError(
+      'runtime-files',
+      'Copied runtime files need a runtime import checker',
+    )
   }
   for (const path of replay.members.keys()) {
     if (!replay.listed.has(path)) {
-      throw new Error(`Unlisted output file: ${path}`)
+      throw issueError('unlisted-file', `Unlisted output file: ${path}`)
     }
   }
 }
@@ -191,7 +223,7 @@ function replayPacksToInventory(
     }
     const refusal = packs.get(pack.path)
     if (refusal !== undefined) {
-      throw new Error(refusal)
+      throw issueError('pack-invalid', refusal)
     }
   }
   replayCook(replay, index)

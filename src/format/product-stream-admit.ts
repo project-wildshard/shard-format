@@ -8,6 +8,7 @@ import {
   assetAdmission,
   preflightDeclaredCosts,
 } from './assetAdmission.ts'
+import { issueError, withIssueCode } from './issue-codes.ts'
 import { assembleOutputShardfile } from './outputIndex.ts'
 import { offlineMemoryAdmission } from './product.ts'
 import { assertProductTargets, checkWorldTargets } from './productValidation.ts'
@@ -26,9 +27,15 @@ function admitHead(
   index: OutputIndex,
   payloads: ReadonlyMap<string, unknown>,
 ): Shardfile {
-  const shard = parseShardfile(assembleOutputShardfile(index, payloads))
-  preflightDeclaredCosts(shard, offlineMemoryAdmission('warn'))
-  assertProductTargets(shard, 'warn')
+  const shard = withIssueCode('shard-schema', (): Shardfile =>
+    parseShardfile(assembleOutputShardfile(index, payloads)),
+  )
+  withIssueCode('declared-costs', (): void => {
+    preflightDeclaredCosts(shard, offlineMemoryAdmission('warn'))
+  })
+  withIssueCode('performance-targets', (): void => {
+    assertProductTargets(shard, 'warn')
+  })
   return shard
 }
 
@@ -44,7 +51,9 @@ function admitBeforeAssets(
   try {
     const head = admitHead(index, payloads)
     return {
-      admission: assetAdmission(head, offlineMemoryAdmission('warn'), scripts),
+      admission: withIssueCode('asset-admission', (): AssetAdmission =>
+        assetAdmission(head, offlineMemoryAdmission('warn'), scripts),
+      ),
       refusal: undefined,
     }
   } catch (error) {
@@ -63,18 +72,20 @@ function admitAssets(
   if (admission === undefined) {
     throw before.refusal
   }
-  admitCommonsBytes(admission, later.assets, hash)
-  const refused = later.fileErrors.find(
-    (error: string | undefined): boolean => error !== undefined,
-  )
-  if (refused !== undefined) {
-    throw new Error(refused)
-  }
-  return admitAfterFiles(
-    admission,
-    later.assets,
-    offlineMemoryAdmission('warn'),
-  )
+  return withIssueCode('asset-admission', (): Shardfile => {
+    admitCommonsBytes(admission, later.assets, hash)
+    const refused = later.fileErrors.find(
+      (error: string | undefined): boolean => error !== undefined,
+    )
+    if (refused !== undefined) {
+      throw new Error(refused)
+    }
+    return admitAfterFiles(
+      admission,
+      later.assets,
+      offlineMemoryAdmission('warn'),
+    )
+  })
 }
 
 /** `validateShardfileProduct`'s steps after the assets: the world targets and the source hash. */
@@ -93,7 +104,10 @@ function admitTail(
     product.hash(validationSourceBytes(shard)) !==
     product.index.build.sourceHash
   ) {
-    throw new Error('Output sections differ from the declared source hash')
+    throw issueError(
+      'source-hash',
+      'Output sections differ from the declared source hash',
+    )
   }
 }
 

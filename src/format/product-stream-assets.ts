@@ -13,6 +13,7 @@
 // (product-stream-packs.ts).
 
 import { admitFileBytes } from './assetAdmission.ts'
+import { issueError, withIssueCodeAsync } from './issue-codes.ts'
 import { StreamMissError } from './product-stream-miss.ts'
 import { packGroups, packPass } from './product-stream-packs.ts'
 import { walkTar } from './product-stream-tar.ts'
@@ -327,7 +328,10 @@ function streamedMember(
 ): void {
   state.seen += NEXT
   if (state.plan.members.get(path)?.sha !== found.sha) {
-    throw new Error('stream: the stored object changed between reads')
+    throw issueError(
+      'stream-changed',
+      'stream: the stored object changed between reads',
+    )
   }
   const { bytes } = found
   if (bytes !== undefined) {
@@ -366,7 +370,10 @@ async function oneRead(
     },
   })
   if (state.seen !== plan.members.size) {
-    throw new Error('stream: the stored object changed between reads')
+    throw issueError(
+      'stream-changed',
+      'stream: the stored object changed between reads',
+    )
   }
   return { peak: state.peak, verdicts: packs.finish() }
 }
@@ -411,7 +418,10 @@ function placedPaths(
     }
   }
   if (bytes > PLACED_HOLD_CAP) {
-    throw new Error('stream: the placed assets are over the streaming cap')
+    throw issueError(
+      'stream-cap',
+      'stream: the placed assets are over the streaming cap',
+    )
   }
   return keep
 }
@@ -442,9 +452,8 @@ function assetPlan(base: AssetPassInput): AssetPlan {
   }
 }
 
-/** The later reads: the asset checks and carried packs with the first group of left-out packs, then one read per
- *  further group. Without an admission (the shard failed before its bytes), only the packs. */
-async function assetPasses(base: AssetPassInput): Promise<AssetPasses> {
+/** `assetPasses`, before its refusals take `pack-invalid`. */
+async function passes(base: AssetPassInput): Promise<AssetPasses> {
   const plan = assetPlan(base)
   const order = [...plan.members.keys()]
   const sizes = new Map(
@@ -487,6 +496,15 @@ async function assetPasses(base: AssetPassInput): Promise<AssetPasses> {
     heldBytes,
     reads,
   }
+}
+
+/** The later reads: the asset checks and carried packs with the first group of left-out packs, then one read per
+ *  further group. Without an admission (the shard failed before its bytes), only the packs. */
+async function assetPasses(base: AssetPassInput): Promise<AssetPasses> {
+  return await withIssueCodeAsync(
+    'pack-invalid',
+    async (): Promise<AssetPasses> => await passes(base),
+  )
 }
 
 export type { AssetPassInput, AssetPasses, StoredSource }

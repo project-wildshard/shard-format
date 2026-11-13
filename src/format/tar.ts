@@ -7,6 +7,7 @@
 // same files always give the same bytes, because a tarball's hash is its
 // identity (J60): sorted paths, no directories, no times, no owners.
 
+import { archiveError } from './issue-codes.ts'
 import {
   BLOCK,
   CHECKSUM,
@@ -53,7 +54,7 @@ function text(block: Readonly<Uint8Array>, field: TarField): string {
 function octal(block: Readonly<Uint8Array>, field: TarField): number {
   const digits = text(block, field).trim()
   if (!/^[0-7]+$/u.test(digits)) {
-    throw new Error('tar: bad octal field')
+    throw archiveError('tar: bad octal field')
   }
   return Number.parseInt(digits, OCTAL)
 }
@@ -78,7 +79,7 @@ function entryPath(block: Readonly<Uint8Array>): string {
   const trimmed =
     block[TYPE_AT] === DIRECTORY_CODE ? relative.replace(/\/$/u, '') : relative
   if (full.startsWith('/') || trimmed === '' || badPath(trimmed)) {
-    throw new Error(`tar: bad path ${JSON.stringify(full)}`)
+    throw archiveError(`tar: bad path ${JSON.stringify(full)}`)
   }
   return trimmed
 }
@@ -91,11 +92,11 @@ interface Header {
 
 function header(block: Readonly<Uint8Array>): Header {
   if (text(block, MAGIC) !== 'ustar' || !checksumOk(block)) {
-    throw new Error('tar: not a ustar header')
+    throw archiveError('tar: not a ustar header')
   }
   const type = String.fromCodePoint(block[TYPE_AT] ?? NUL)
   if (!REGULAR_TYPES.has(type) && type !== DIRECTORY_TYPE) {
-    throw new Error(`tar: unsupported entry type ${JSON.stringify(type)}`)
+    throw archiveError(`tar: unsupported entry type ${JSON.stringify(type)}`)
   }
   return { path: entryPath(block), type, size: octal(block, SIZE) }
 }
@@ -104,7 +105,7 @@ function header(block: Readonly<Uint8Array>): Header {
 function assertPadding(source: TarSource, offset: number, path: string): void {
   const length = padded(offset) - offset
   if (length > START && !isZero(source.read(offset, length))) {
-    throw new Error(`tar: non-zero padding after ${path}`)
+    throw archiveError(`tar: non-zero padding after ${path}`)
   }
 }
 
@@ -134,10 +135,10 @@ function readEntry(offset: number, reading: Readonly<Reading>): number {
   const entry = header(source.read(offset, BLOCK))
   const start = offset + BLOCK
   if (entry.type === DIRECTORY_TYPE && entry.size !== START) {
-    throw new Error(`tar: directory with a size ${entry.path}`)
+    throw archiveError(`tar: directory with a size ${entry.path}`)
   }
   if (start + entry.size > source.length) {
-    throw new Error(`tar: truncated entry ${entry.path}`)
+    throw archiveError(`tar: truncated entry ${entry.path}`)
   }
   recordEntry(entry, start, reading)
   return start + padded(entry.size)
@@ -145,11 +146,11 @@ function readEntry(offset: number, reading: Readonly<Reading>): number {
 
 function assertEnd(source: TarSource, offset: number): void {
   if (source.length - offset < END_BLOCKS * BLOCK) {
-    throw new Error('tar: bad end-of-archive blocks')
+    throw archiveError('tar: bad end-of-archive blocks')
   }
   for (let at = offset; at < source.length; at += END_CHUNK) {
     if (!isZero(source.read(at, Math.min(END_CHUNK, source.length - at)))) {
-      throw new Error('tar: bad end-of-archive blocks')
+      throw archiveError('tar: bad end-of-archive blocks')
     }
   }
 }
@@ -157,7 +158,7 @@ function assertEnd(source: TarSource, offset: number): void {
 function firstBlock(source: TarSource, offset: number): Readonly<Uint8Array> {
   const block = source.read(offset, BLOCK)
   if (block.length < BLOCK) {
-    throw new Error('tar: truncated (no end-of-archive blocks)')
+    throw archiveError('tar: truncated (no end-of-archive blocks)')
   }
   return block
 }
@@ -176,7 +177,7 @@ function indexTar(source: TarSource): ReadonlyMap<string, TarEntry> {
       return reading.files
     }
     if (entries === MAX_ENTRIES) {
-      throw new Error(`tar: too many entries, over ${MAX_ENTRIES}`)
+      throw archiveError(`tar: too many entries, over ${MAX_ENTRIES}`)
     }
     offset = readEntry(offset, reading)
   }
