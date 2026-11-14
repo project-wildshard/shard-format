@@ -53,8 +53,8 @@ import { MigrationsSchema, migrationRules } from './migrations.ts';
 import { skinLookRules } from './skinAssets.ts';
 import { MaterialsSchema, FamilyLooksSchema, MaterialCurvesSchema, TextureSamplersSchema, materialExists, materialTextureRefs, materialGraphRules, materialCurveRules, textureSamplerRules } from './materials.ts';
 import { PostStackSchema, postStackRules } from './postStack.ts';
-import { LookBloomSchema, LookLightSchema } from './look-light.ts';
-import type { LookBloom, LookBloomInput, LookLight, LookLightInput } from './look-light.ts';
+import { LookBloomSchema, LookLightSchema, LookToneSchema } from './look-light.ts';
+import type { LookBloom, LookBloomInput, LookLight, LookLightInput, LookTone } from './look-light.ts';
 
 const channel = v.pipe(finite, v.minValue(0), v.maxValue(1));
 const colour = v.tuple([channel, channel, channel]);
@@ -62,7 +62,7 @@ const unsigned = v.pipe(finite, v.minValue(0));
 const key: v.GenericSchema<DayKeyRowsInput, DayKeyRows> = v.strictObject({ time: channel, sky: v.strictObject({ zenith: colour, horizon: colour }), fog: v.strictObject({ colour, density: unsigned, near: v.optional(unsigned), far: v.optional(unsigned) }), sun: v.strictObject({ colour, intensity: unsigned }), ambient: v.strictObject({ sky: colour, ground: colour, intensity: unsigned }) });
 const day: v.GenericSchema<DayRowsInput, DayRows> = v.strictObject({ minutes: v.pipe(finite, v.minValue(1), v.maxValue(1440)), start: channel, maxElevation: v.pipe(finite, v.minValue(0), v.maxValue(90)), azimuth: v.pipe(finite, v.minValue(-180), v.maxValue(180)) });
 const lookBloom = v.exactOptional(LookBloomSchema);
-const lookGrade = v.strictObject({ exposure: finite, saturation: v.pipe(finite, v.minValue(0)), contrast: v.pipe(finite, v.minValue(0)), lut: v.nullable(ref), bloom: lookBloom });
+const lookGrade = v.strictObject({ exposure: finite, saturation: v.pipe(finite, v.minValue(0)), contrast: v.pipe(finite, v.minValue(0)), lut: v.nullable(ref), bloom: lookBloom, tone: v.exactOptional(LookToneSchema) });
 /** A colour LUT file's exact wire size: 33³ RGBA8 (the engine's render/lut format). */
 export const LOOK_LUT_BYTES: number = 33 ** 3 * 4;
 const rawSchema: v.GenericSchema<ShardfileRowsInput, ShardfileRows> & { readonly entries: { readonly [Key in keyof ShardfileRows]-?: v.GenericSchema<ShardfileRowsInput[Key], ShardfileRows[Key]> } } = v.strictObject({
@@ -184,7 +184,7 @@ export interface Shardfile {
     samplers?: v.InferOutput<typeof TextureSamplersSchema>;
     post?: v.InferOutput<typeof PostStackSchema>;
     light?: LookLight;
-    grade: { exposure: number; saturation: number; contrast: number; lut: string | null; bloom?: LookBloom };
+    grade: { exposure: number; saturation: number; contrast: number; lut: string | null; bloom?: LookBloom; tone?: LookTone };
     clock: 'engine';
     day?: v.InferOutput<typeof day> | undefined;
     dayOverride: number | null;
@@ -397,6 +397,7 @@ interface ShardfileRowsInputFields {
             contrast: v.InferInput<typeof finite>;
             lut: (v.InferInput<typeof ref>) | null;
             bloom?: LookBloomInput;
+            tone?: LookTone;
         };
         clock: 'engine';
         day?: DayRowsInput | undefined;
@@ -471,6 +472,7 @@ interface ShardfileRowsFields {
             contrast: v.InferOutput<typeof finite>;
             lut: (v.InferOutput<typeof ref>) | null;
             bloom?: LookBloom;
+            tone?: LookTone;
         };
         clock: 'engine';
         day?: DayRows | undefined;

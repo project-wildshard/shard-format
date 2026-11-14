@@ -8,6 +8,15 @@
  *   per metre above it. It adds to the day keys' distance fog, so a shard can drop that to 0 and keep mist only low.
  * - `pools`: warm light pools on the ground under lamps, drawn as one additive decal draw (no dynamic light per lamp):
  *   a disc of `radius` metres at each `at` point, in `colour` × `intensity`.
+ * - `lamps` (meta TEMPLATES-CLEANROOM B2): real point lights for lanterns, tent lamps and fires, at most 16, each at
+ *   `at` in linear `colour` × `intensity` (candela), out to `distance` metres with physical (2) decay, no shadow.
+ * - `bounce` (B2): a warm fill from the ground: one shadowless directional light from the anti-sun heading, lifted
+ *   by `lift` (0 level, 1 straight up), in linear `colour` × `intensity`.
+ * - `environment` (B2): sky-derived ambient: an environment filtered once from the look's own sky (its keys' zenith
+ *   and horizon) over a `ground` colour (linear), lighting every PBR surface at `intensity`.
+ *
+ * `look.grade.tone` (B2) picks the display curve: `agx` (absent: the engine's AgX, as before) or `neutral` (Khronos PBR
+ * Neutral, which keeps saturated albedo saturated).
  *
  * Plain data and checks, no three.js. Absent keys stay absent (no filled default), so a product built before these keys
  * parses to the same bytes and keeps its source hash.
@@ -21,6 +30,7 @@ import {
   minLength,
   minValue,
   number,
+  picklist,
   pipe,
   strictObject,
   tuple,
@@ -48,6 +58,13 @@ const POOL_INTENSITY_MAX = 4
 const POOL_RADIUS_MIN = 0.1
 const POOL_RADIUS_MAX = 20
 const BLOOM_INTENSITY_MAX = 4
+/** At most this many lamps in one look (real point lights: each costs every lit draw a light loop step). */
+const LOOK_LIGHT_LAMPS_MAX = 16
+const LAMP_INTENSITY_MAX = 100
+const LAMP_DISTANCE_MIN = 0.1
+const LAMP_DISTANCE_MAX = 50
+const BOUNCE_INTENSITY_MAX = 4
+const ENVIRONMENT_INTENSITY_MAX = 4
 
 /** Contact shadows: the engine's screen-space AO at this intensity and world radius (metres). */
 interface LookAo {
@@ -73,13 +90,36 @@ interface LookPools {
   radius: number
   at: Point[]
 }
+/** One lamp: a point light at `at`, `colour` × `intensity` (candela), out to `distance` metres, decay 2, no shadow. */
+interface LookLamp {
+  at: Point
+  colour: Rgb
+  intensity: number
+  distance: number
+}
+/** A warm fill from the ground: a shadowless directional light from the anti-sun heading, lifted by `lift`. */
+interface LookBounce {
+  colour: Rgb
+  intensity: number
+  lift: number
+}
+/** Sky-derived ambient: the look's sky over a `ground` colour, filtered once, at `intensity`. */
+interface LookEnvironment {
+  intensity: number
+  ground: Rgb
+}
 /** `look.light`: each setting off when absent. */
 interface LookLight {
   ao?: LookAo
   rim?: LookRim
   heightFog?: LookHeightFog
   pools?: LookPools
+  lamps?: LookLamp[]
+  bounce?: LookBounce
+  environment?: LookEnvironment
 }
+/** `look.grade.tone`: the display curve; absent is the engine's AgX. */
+type LookTone = 'agx' | 'neutral'
 /** `look.grade.bloom`: the engine bloom's intensity and luminance threshold. */
 interface LookBloom {
   intensity: number
@@ -119,13 +159,42 @@ const LookPoolsSchema: GenericSchema<LookPools, LookPools> = strictObject({
   radius: range(POOL_RADIUS_MIN, POOL_RADIUS_MAX),
   at: pipe(array(point), minLength(FULL), maxLength(LOOK_LIGHT_POOLS_MAX)),
 })
+const LookLampSchema: GenericSchema<LookLamp, LookLamp> = strictObject({
+  at: point,
+  colour,
+  intensity: range(NONE, LAMP_INTENSITY_MAX),
+  distance: range(LAMP_DISTANCE_MIN, LAMP_DISTANCE_MAX),
+})
+const LookLampsSchema: GenericSchema<LookLamp[], LookLamp[]> = pipe(
+  array(LookLampSchema),
+  minLength(FULL),
+  maxLength(LOOK_LIGHT_LAMPS_MAX),
+)
+const LookBounceSchema: GenericSchema<LookBounce, LookBounce> = strictObject({
+  colour,
+  intensity: range(NONE, BOUNCE_INTENSITY_MAX),
+  lift: range(NONE, FULL),
+})
+const LookEnvironmentSchema: GenericSchema<LookEnvironment, LookEnvironment> =
+  strictObject({
+    intensity: range(NONE, ENVIRONMENT_INTENSITY_MAX),
+    ground: colour,
+  })
 /** `look.light`: the optional light and post settings. */
 const LookLightSchema: GenericSchema<LookLight, LookLight> = strictObject({
   ao: exactOptional(LookAoSchema),
   rim: exactOptional(LookRimSchema),
   heightFog: exactOptional(LookHeightFogSchema),
   pools: exactOptional(LookPoolsSchema),
+  lamps: exactOptional(LookLampsSchema),
+  bounce: exactOptional(LookBounceSchema),
+  environment: exactOptional(LookEnvironmentSchema),
 })
+/** `look.grade.tone`: absent is AgX, as before. */
+const LookToneSchema: GenericSchema<LookTone, LookTone> = picklist([
+  'agx',
+  'neutral',
+])
 /** `look.grade.bloom`: absent is no bloom, as before. */
 const LookBloomSchema: GenericSchema<LookBloom, LookBloom> = strictObject({
   intensity: range(NONE, BLOOM_INTENSITY_MAX),
@@ -133,21 +202,30 @@ const LookBloomSchema: GenericSchema<LookBloom, LookBloom> = strictObject({
 })
 
 export {
+  LOOK_LIGHT_LAMPS_MAX,
   LOOK_LIGHT_POOLS_MAX,
   LookAoSchema,
   LookBloomSchema,
+  LookBounceSchema,
+  LookEnvironmentSchema,
   LookHeightFogSchema,
+  LookLampSchema,
   LookLightSchema,
   LookPoolsSchema,
   LookRimSchema,
+  LookToneSchema,
 }
 export type {
   LookAo,
   LookBloom,
   LookBloomInput,
+  LookBounce,
+  LookEnvironment,
   LookHeightFog,
+  LookLamp,
   LookLight,
   LookLightInput,
   LookPools,
   LookRim,
+  LookTone,
 }

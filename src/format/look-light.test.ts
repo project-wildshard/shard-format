@@ -85,3 +85,65 @@ test('out-of-range or unknown light settings are refused', (): void => {
   expect((): unknown => read(look({ light: { sparkle: true } }))).toThrow()
   expect((): unknown => read(look({}, { bloom: { intensity: 1 } }))).toThrow()
 })
+
+// Meta TEMPLATES-CLEANROOM B2: what Brasscap's cleanroom needs and look.json could not say: real lamps, a warm bounce,
+// sky-derived ambient and the Neutral display curve. Each absent is off, as before.
+
+test('lamps, bounce and environment each parse on their own', (): void => {
+  const lamp = {
+    at: [1, 2, -3],
+    colour: [1, 0.4, 0.06],
+    intensity: 4,
+    distance: 7,
+  }
+  expect(read(look({ light: { lamps: [lamp] } })).light?.lamps).toEqual([lamp])
+  expect(
+    read(
+      look({
+        light: {
+          bounce: { colour: [1, 0.28, 0.16], intensity: 0.35, lift: 0.25 },
+        },
+      }),
+    ).light?.bounce?.lift,
+  ).toBe(0.25)
+  expect(
+    read(
+      look({
+        light: { environment: { intensity: 0.5, ground: [1, 0.25, 0.1] } },
+      }),
+    ).light?.environment?.intensity,
+  ).toBe(0.5)
+})
+
+test('grade.tone picks agx or neutral, and is absent by default', (): void => {
+  expect(read(look({}, { tone: 'neutral' })).grade.tone).toBe('neutral')
+  expect(read(look({}, { tone: 'agx' })).grade.tone).toBe('agx')
+  expect('tone' in read(look()).grade).toBe(false)
+})
+
+test('out-of-range lamps, bounce, environment or tone are refused', (): void => {
+  const lamp = { at: [0, 1, 0], colour: [1, 1, 1], intensity: 4, distance: 7 }
+  expect((): unknown => read(look({ light: { lamps: [] } }))).toThrow()
+  expect((): unknown =>
+    read(
+      look({
+        light: { lamps: Array.from({ length: 17 }, (): object => lamp) },
+      }),
+    ),
+  ).toThrow()
+  expect((): unknown =>
+    read(look({ light: { lamps: [{ ...lamp, distance: 0 }] } })),
+  ).toThrow()
+  expect((): unknown =>
+    read(look({ light: { lamps: [{ ...lamp, shadow: true }] } })),
+  ).toThrow()
+  expect((): unknown =>
+    read(
+      look({ light: { bounce: { colour: [1, 1, 1], intensity: 1, lift: 2 } } }),
+    ),
+  ).toThrow()
+  expect((): unknown =>
+    read(look({ light: { environment: { intensity: 9, ground: [0, 0, 0] } } })),
+  ).toThrow()
+  expect((): unknown => read(look({}, { tone: 'aces' }))).toThrow()
+})
