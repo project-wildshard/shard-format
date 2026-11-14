@@ -8,3 +8,7 @@
 - `performanceTargetIssues` keeps the `perf-tile-draws` code (sharddev's refusal table names it) but checks
   `viewDraws(tiles, tile)`: the fine tiles near a tile's centre at their reported draws, an upper bound. The tiles' `draws`
   rows stay as the compiler reports them.
+
+- opus-ss4c: the push hit the src/format lint ratchet (the AP8 lines raised magic-number, curly and
+  export counts), so `VIEW_DRAWS` and `viewDraws` moved to their own lint-clean `view-draws.ts`
+  (exported as `./viewDraws`) and `contentBounds.ts` went back as it was.

@@ -369,6 +369,7 @@
     "./validationReceipt": "./src/format/validationReceipt.ts",
     "./version": "./src/format/version.ts",
     "./vertexWear": "./src/format/vertexWear.ts",
+    "./viewDraws": "./src/format/view-draws.ts",
     "./viewProgram": "./src/format/viewProgram.ts",
     "./voicePatches": "./src/format/voicePatches.ts",
     "./water": "./src/format/water.ts",

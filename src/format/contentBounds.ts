@@ -36,12 +36,7 @@ export const ENGINE_BASE_BYTES: number = 250 * 1024 * 1024;
 export const MEMORY_GATES: Readonly<{ reportOnly: boolean; explorerMB: number; loadingMB: number; }> = Object.freeze({
   reportOnly: memoryGates.mode === 'report-only', explorerMB: memoryGates.explorerMB, loadingMB: memoryGates.loadingMB,
 });
-/** SHARD-SOURCE AP8: one view's whole-frame draws per tier (shadow and post passes included; the phone figure is the
- *  engine's EP10 limit). Engines draw a material once across resident tiles, so a view's draws, not a tile's, are capped:
- *  the tile `draws` rows stay as the counts a compiler reports, summed over the tiles near a view as an upper bound. */
-export const VIEW_DRAWS: { readonly phone: 150; readonly desktop: 400 } = { phone: 150, desktop: 400 } as const;
-
-/** Provisional phone content caps; shadow draws count in each draw cap (a tile's `draws` cap is retired for VIEW_DRAWS). */
+/** Provisional phone content caps; shadow draws count in each draw cap. */
 export const CONTENT_CAPS: { readonly l0: { readonly size: 62.5; readonly resident: number; readonly compressed: number; readonly triangles: 40000; readonly draws: 8; }; readonly l1: { readonly size: 125; readonly resident: number; readonly compressed: number; readonly triangles: 10000; readonly draws: 2; }; readonly far: { readonly resident: number; readonly compressed: 1000000; readonly triangles: 8000; readonly draws: 1; }; readonly library: { readonly resident: number; readonly compressed: number; }; readonly sim: { readonly resident: number; readonly compressed: number; }; readonly engineBase: number; readonly playing: number; readonly loading: number; readonly l0Count: 40; readonly l1Count: 32; readonly farCount: 9; readonly simCount: 4; readonly libraryCount: 4; readonly overlap: number; readonly residentFactor: 1.11; readonly nearRadius: 150; readonly shadowRadius: 80; readonly pitch: 562.5; } = {
   l0: { size: 62.5, resident: 4 * CONTENT_MB, compressed: 0.3 * CONTENT_MB, triangles: 40_000, draws: 8 },
   l1: { size: 125, resident: 2 * CONTENT_MB, compressed: 0.2 * CONTENT_MB, triangles: 10_000, draws: 2 },

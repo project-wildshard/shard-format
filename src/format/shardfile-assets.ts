@@ -12,7 +12,8 @@ import { journalImageRefs } from './compendiumRows.ts';
 import type { Shardfile } from "./shardSchema.ts";
 import type { ShardTerrain } from "./terrain.ts";
 import { worstContentCost, memoryTargetWarnings, nearbyContentCost } from "./budget.ts";
-import { CONTENT_CAPS as C, MEMORY_GATES, VIEW_DRAWS } from './contentBounds.ts';
+import { CONTENT_CAPS as C, MEMORY_GATES } from './contentBounds.ts';
+import { VIEW_DRAWS, viewDraws } from './view-draws.ts';
 import { DEFAULT_GRAPH_BUDGET } from "./materialGraph.ts";
 import { SCRIPT_LIMITS } from './scriptLimits.ts';
 import { runtimeAccountedBytes } from "./runtimeCost.ts";
@@ -224,14 +225,6 @@ const near = (tile: Shardfile['tiles'][number], x: number, z: number): boolean =
   return dx * dx + dz * dz <= C.nearRadius ** 2;
 };
 
-/** SHARD-SOURCE AP8: the draws of a view from fine tile `from`: every fine tile near its centre at its reported draws (an
- *  upper bound: engines draw a material once across tiles). */
-export function viewDraws(tiles: readonly Shardfile['tiles'][number][], from: Shardfile['tiles'][number]): number {
-  const box = from.drawBounds ?? from.bounds, x = (box.min[0] + box.max[0]) / 2, z = (box.min[2] + box.max[2]) / 2;
-  let draws = 0; for (const tile of tiles) if (tile.lod === 0 && near(tile, x, z)) draws += tile.draws;
-  return draws;
-}
-
 /** Cheap target grading before asset reads; format integrity and total-memory admission remain separate. */
 export function performanceTargetIssues(source: Shardfile, policy: 'refuse' | 'warn' = 'refuse'): PerformanceIssue[] {
   const issues: PerformanceIssue[] = [];
@@ -246,7 +239,7 @@ export function performanceTargetIssues(source: Shardfile, policy: 'refuse' | 'w
   for (const tile of source.tiles) {
     const cap = tile.lod === 0 ? C.l0 : C.l1, id = `tile ${tile.lod}/${tile.x}/${tile.z}`;
     check(['perf-tile-download', `${id} download bytes`], tile.compressed, cap.compressed, true); check(['perf-tile-triangles', `${id} triangles`], tile.triangles, cap.triangles, true);
-    if (tile.lod === 0) check(['perf-tile-draws', `view at ${id} draws`], viewDraws(source.tiles, tile), VIEW_DRAWS.phone, true);
+    check(['perf-tile-draws', `view at ${id} draws`], viewDraws(source.tiles, tile), VIEW_DRAWS.phone, true);
   }
   if (source.far !== null) {
     check(['perf-far-download', 'far download bytes'], source.far.compressed, C.far.compressed); check(['perf-far-draws', 'far draws'], source.far.draws, C.far.draws); check(['perf-far-triangles', 'far triangles'], source.far.triangles, C.far.triangles);
