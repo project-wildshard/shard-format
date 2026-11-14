@@ -45,6 +45,7 @@
     "./arenaRoomDocument": "./src/format/arenaRoomDocument.ts",
     "./arenaScriptRows": "./src/format/arenaScriptRows.ts",
     "./arenaView": "./src/format/arenaView.ts",
+    "./assemblyHosts": "./src/format/assembly-hosts.ts",
     "./assetAdmission": "./src/format/assetAdmission.ts",
     "./audio": "./src/format/audio.ts",
     "./audioBank": "./src/format/audioBank.ts",

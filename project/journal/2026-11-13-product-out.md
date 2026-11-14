@@ -16,3 +16,10 @@
   first try renamed the first two and the Pine pins test caught both.
 - A breaking release: v0.5.0, so engine's `^0.4.9` keeps v0.4.x until
   SA25 bumps it with its own codemod.
+
+- SA20 rides the same release: `assembly-hosts.ts` names the two hosts
+  shard data reads (`proveTerrainEntries`, `clamp`) and `assemblyRefIssues`
+  lists any `$ref` that still names a module path. No engine code evaluates
+  those `$ref`s (engine reads `server/native-assembly.json` and calls
+  `proveTerrainEntries` itself), so there is no engine resolver to change;
+  the data half is driftwood and nalati, in the revision pass.

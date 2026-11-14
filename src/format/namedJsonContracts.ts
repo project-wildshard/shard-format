@@ -82,7 +82,7 @@ export const HEADLESS_ASSEMBLY_JSON_SCHEMA: { $schema: string; type: string; add
       ] } } } },
   },
   properties: { version: { const: 1 }, modules: { type: 'object', propertyNames: {
-    type: 'string', pattern: '^(?:@wildshard/[a-z]+/|src/(?:shards|game|engine|sdk)/)[A-Za-z0-9_./-]+$',
+    type: 'string', pattern: '^src/(?:shards|game|engine|sdk)/[A-Za-z0-9_./-]+$',
   }, additionalProperties: { type: 'array', maxItems: 256, uniqueItems: true, items: { $ref: '#/definitions/key' } } },
   constants: { $ref: '#/definitions/value' }, prepare: { $ref: '#/definitions/rows' }, install: { $ref: '#/definitions/installRows' },
   level: { $ref: '#/definitions/value' }, ports: { $ref: '#/definitions/value' }, entries: { $ref: '#/definitions/value' } },
