@@ -112,23 +112,42 @@ const { post: _post, ...bakeLook } = section('look/look.json')[
 ] as Record<string, unknown>
 // TEMPLATES-CLEANROOM B2's look additions (lamps, bounce, environment, grade.tone) draw only; a sharddev on an older
 // format refuses them, and the cook never reads them, so the bake look leaves them out like the post.
+// M4.12's (format 0.5.1) shadow, motes, vignette and bloom radius likewise.
 const {
   lamps: _lamps,
   bounce: _bounce,
   environment: _environment,
+  shadow: _shadow,
+  motes: _motes,
   ...bakeLight
 } = (bakeLook['light'] ?? {}) as Record<string, unknown>
-const { tone: _tone, ...bakeGrade } = (bakeLook['grade'] ?? {}) as Record<
+const {
+  tone: _tone,
+  vignette: _vignette,
+  bloom: bakeBloom,
+  ...bakeGradeRest
+} = (bakeLook['grade'] ?? {}) as Record<string, unknown>
+const { radius: _radius, ...bloomRest } = (bakeBloom ?? {}) as Record<
   string,
   unknown
 >
+const bakeGrade =
+  bakeBloom === undefined
+    ? bakeGradeRest
+    : { ...bakeGradeRest, bloom: bloomRest }
 json('look.json', { ...bakeLook, light: bakeLight, grade: bakeGrade })
 json('state.json', section('state/state.json')['state'])
 json('hooks.json', section('sim/hooks.json')['hooks'])
 json('sim.json', authoredSim)
+// The sharddev package was `@wildshard/sharddev` and is `@wildshard/sdk` since its v0.2 rename; import whichever it is.
+const sdk = (
+  JSON.parse(readFileSync(join(sharddev, 'package.json'), 'utf8')) as {
+    name: string
+  }
+).name
 writeFileSync(
   join(project, 'shard.config.ts'),
-  `import { emptyShardfile } from '@wildshard/sharddev/author';
+  `import { emptyShardfile } from '${sdk}/author';
 import identity from './identity.json' with { type: 'json' };
 import look from './look.json' with { type: 'json' };
 import state from './state.json' with { type: 'json' };
