@@ -67,26 +67,40 @@ const range = (low: number, high: number): GenericSchema<number, number> =>
 const unit = range(NONE, FULL)
 const rate = range(NONE, MOTION_RATE_MAX)
 
-const SurfaceBlendSchema: GenericSchema<'opaque' | 'alpha', 'opaque' | 'alpha'> =
-  picklist(['opaque', 'alpha'])
-const SurfaceSwaySchema: GenericSchema<SurfaceSway, SurfaceSway> = strictObject({
-  rate: range(NONE, SWAY_RATE_MAX),
-  direction: tuple([range(-FULL, FULL), range(-FULL, FULL)]),
-})
-const UvScrollSchema: GenericSchema<[number, number], [number, number]> = tuple([
-  range(-UV_SCROLL_MAX, UV_SCROLL_MAX),
-  range(-UV_SCROLL_MAX, UV_SCROLL_MAX),
-])
-const CardMotionSchema: GenericSchema<CardMotion, CardMotion> = variant('kind', [
-  strictObject({ kind: literal('pulse'), rate, amount: range(NONE, PULSE_AMOUNT_MAX) }),
-  strictObject({ kind: literal('drift'), rate, radius: range(NONE, DRIFT_RADIUS_MAX) }),
-  strictObject({
-    kind: literal('rise'),
-    rate,
-    height: range(NONE, RISE_HEIGHT_MAX),
-    spread: range(NONE, RISE_SPREAD_MAX),
-  }),
-])
+const SurfaceBlendSchema: GenericSchema<
+  'opaque' | 'alpha',
+  'opaque' | 'alpha'
+> = picklist(['opaque', 'alpha'])
+const SurfaceSwaySchema: GenericSchema<SurfaceSway, SurfaceSway> = strictObject(
+  {
+    rate: range(NONE, SWAY_RATE_MAX),
+    direction: tuple([range(-FULL, FULL), range(-FULL, FULL)]),
+  },
+)
+const UvScrollSchema: GenericSchema<[number, number], [number, number]> = tuple(
+  [range(-UV_SCROLL_MAX, UV_SCROLL_MAX), range(-UV_SCROLL_MAX, UV_SCROLL_MAX)],
+)
+const CardMotionSchema: GenericSchema<CardMotion, CardMotion> = variant(
+  'kind',
+  [
+    strictObject({
+      kind: literal('pulse'),
+      rate,
+      amount: range(NONE, PULSE_AMOUNT_MAX),
+    }),
+    strictObject({
+      kind: literal('drift'),
+      rate,
+      radius: range(NONE, DRIFT_RADIUS_MAX),
+    }),
+    strictObject({
+      kind: literal('rise'),
+      rate,
+      height: range(NONE, RISE_HEIGHT_MAX),
+      spread: range(NONE, RISE_SPREAD_MAX),
+    }),
+  ],
+)
 
 /** PBR `blend`: absent is opaque. */
 const surfaceBlend: ExactOptionalSchema<
@@ -94,25 +108,35 @@ const surfaceBlend: ExactOptionalSchema<
   undefined
 > = exactOptional(SurfaceBlendSchema)
 /** PBR `opacity`: the alpha blend's scale; absent 1. */
-const surfaceOpacity: ExactOptionalSchema<GenericSchema<number, number>, undefined> =
-  exactOptional(unit)
+const surfaceOpacity: ExactOptionalSchema<
+  GenericSchema<number, number>,
+  undefined
+> = exactOptional(unit)
 /** PBR `depthOffset`: polygon offset factor and units. */
-const surfaceDepthOffset: ExactOptionalSchema<GenericSchema<number, number>, undefined> =
-  exactOptional(range(-DEPTH_OFFSET_MAX, DEPTH_OFFSET_MAX))
+const surfaceDepthOffset: ExactOptionalSchema<
+  GenericSchema<number, number>,
+  undefined
+> = exactOptional(range(-DEPTH_OFFSET_MAX, DEPTH_OFFSET_MAX))
 /** PBR `sway`. */
-const surfaceSway: ExactOptionalSchema<GenericSchema<SurfaceSway, SurfaceSway>, undefined> =
-  exactOptional(SurfaceSwaySchema)
+const surfaceSway: ExactOptionalSchema<
+  GenericSchema<SurfaceSway, SurfaceSway>,
+  undefined
+> = exactOptional(SurfaceSwaySchema)
 /** PBR `uvScroll`. */
 const surfaceUvScroll: ExactOptionalSchema<
   GenericSchema<[number, number], [number, number]>,
   undefined
 > = exactOptional(UvScrollSchema)
 /** Emissive `card`. */
-const emissiveCard: ExactOptionalSchema<GenericSchema<true, true>, undefined> =
-  exactOptional(literal(true))
+const emissiveCard: ExactOptionalSchema<
+  GenericSchema<true, true>,
+  undefined
+> = exactOptional(literal(true))
 /** Emissive `motion`. */
-const emissiveMotion: ExactOptionalSchema<GenericSchema<CardMotion, CardMotion>, undefined> =
-  exactOptional(CardMotionSchema)
+const emissiveMotion: ExactOptionalSchema<
+  GenericSchema<CardMotion, CardMotion>,
+  undefined
+> = exactOptional(CardMotionSchema)
 
 /** The vertex channel a swaying surface reads (GLB application attribute `_SWAY`, one float, metres). */
 const SWAY_CHANNEL = '_SWAY'
