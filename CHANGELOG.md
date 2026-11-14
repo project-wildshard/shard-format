@@ -4,6 +4,15 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.4.10 (2026-11-13)
+
+- A look can now light its props for real: `look.light.lamps` places up to 16 point lights (lanterns, tent lamps,
+  campfires), `look.light.bounce` adds a warm fill from the ground opposite the sun, and `look.light.environment` lights
+  every surface from the look's own sky over a ground colour. Each is off when you leave it out.
+- `look.grade.tone` picks the display curve: `neutral` keeps saturated colours saturated, `agx` (or leaving it out) is
+  the engine's curve as before.
+- Brasscap Mesa uses all four, ported from its cleanroom: warmer, deeper, with lit lanterns and fires.
+
 ## v0.4.9 (2026-11-13)
 
 - A shard's named place sets (`world.sets` and `world.bind-sets`) now count as view-only: they list placed models for
