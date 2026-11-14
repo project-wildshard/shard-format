@@ -63,20 +63,40 @@ const rootFiles = readdirSync(ROOT);
 const uses = tool => Object.values(scripts).some(script => new RegExp(`(?:^|[\\s/'"])${tool}(?:[\\s'"]|$)`, 'u').test(script))
   || rootFiles.some(name => name.startsWith(`${tool}.config.`));
 
+/** A plant older than this is a run that was killed before its `after`; no guard run takes this long. */
+const STALE_MS = 60 * 60 * 1000;
+const removePlant = () => {
+  if (plant !== '' && basename(plant).startsWith('ds11-guard-')) rmSync(join(ROOT, plant), {recursive: true, force: true});
+};
+/** Interrupted (Ctrl-C, a hook's timeout): take the plant away, then die of the same signal. @param {NodeJS.Signals} signal */
+const onSignal = signal => { removePlant(); process.kill(process.pid, signal); };
+
 before(() => {
   if (ownGuard) return;
+  // Plant only where Git ignores it. Linters, formatters and test runners skip what .gitignore lists, so in a checkout
+  // without /.worktrees/ a plant would be seen by another agent's lint or tests running beside this one.
+  const ignored = run('git', ['check-ignore', '-q', '--', `${WORKTREES}/ds11-guard-probe/zz-guard.ts`]);
+  assert.equal(ignored.status, 0, '.gitignore lacks /.worktrees/, so nothing is planted: a plant would be visible to the checkout\'s tools');
   const parent = join(ROOT, WORKTREES);
   if (!existsSync(parent)) { mkdirSync(parent); madeParent = true; }
   // Only a real folder of this checkout: a linked .worktrees/ would send the plant, and its removal, elsewhere.
   assert.ok(lstatSync(parent).isDirectory() && realpathSync(parent) === join(ROOT, WORKTREES), `${parent} is not a plain folder of this checkout`);
+  // A killed run's plant, never a live run's (those are younger than an hour).
+  for (const name of readdirSync(parent)) {
+    if (name.startsWith('ds11-guard-') && Date.now() - statSync(join(parent, name)).mtimeMs > STALE_MS) rmSync(join(parent, name), {recursive: true, force: true});
+  }
   plant = relative(ROOT, mkdtempSync(join(parent, 'ds11-guard-')));
+  process.once('SIGINT', onSignal);
+  process.once('SIGTERM', onSignal);
   for (const [path, body] of Object.entries(FILES)) {
     mkdirSync(dirname(join(ROOT, plant, path)), {recursive: true});
     writeFileSync(join(ROOT, plant, path), body);
   }
 });
 after(() => {
-  if (plant !== '' && basename(plant).startsWith('ds11-guard-')) rmSync(join(ROOT, plant), {recursive: true, force: true});
+  removePlant();
+  process.off('SIGINT', onSignal);
+  process.off('SIGTERM', onSignal);
   // Only the parent this run made, and only while empty.
   if (madeParent) { try { rmdirSync(join(ROOT, WORKTREES)); } catch { /* Someone else's worktree is in it now. */ } }
 });
@@ -161,7 +181,11 @@ describe('a planted plan worktree is invisible to the parent checkout', {skip: o
     const words = command => [...command.matchAll(/'([^']*)'|"([^"]*)"|(\S+)/gu)].map(part => part[1] ?? part[2] ?? part[3] ?? '');
     let commands = 0;
     for (const [name, script] of Object.entries(scripts)) {
-      for (const command of script.split(/&&|\|\||;|\|/u)) {
+      // Split on shell operators outside quotes only: a quoted glob may hold `|` (an extglob, `src/!(format|ci)/**`).
+      const quoted = /** @type {string[]} */ ([]);
+      const masked = script.replaceAll(/'[^']*'|"[^"]*"/gu, part => `\u0000${quoted.push(part) - 1}\u0000`);
+      const commandsOf = masked.split(/&&|\|\||;|\|/u).map(part => part.replaceAll(/\u0000(\d+)\u0000/gu, (_, at) => quoted[Number(at)] ?? ''));
+      for (const command of commandsOf) {
         const argv = words(command.trim());
         if (argv[0] !== 'node' || !argv.includes('--test')) continue;
         commands++;
