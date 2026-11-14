@@ -4,6 +4,20 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.0 (2026-11-13)
+
+- The word *product* is gone from the package: every import path and name that said it now says shard file. A tool
+  that imported `@wildshard/shard-format/product` imports `/shardfileAssets`; `/productValidation` is
+  `/shardfileValidation` (`validateShardfileFolder`), `/productStream` is `/shardfileStream`, `/productAudio` is
+  `/shardfileAudio`, `/product-reads` is `/shardfile-reads` and `/directorProduct` is `/directorDocument`.
+- Shard files do not change: a shard file that passed v0.4.10 passes v0.5.0, and the director schema id inside them
+  keeps its old spelling.
+- A headless assembly names engine functions by host, not by module path: `{"$ref": ["host", "proveTerrainEntries"]}`
+  replaces `["@wildshard/engine/game/plugin/mover", "proveTerrainEntries"]`. `assemblyRefIssues` from
+  `/assemblyHosts` lists every module path or unknown host left in one, and the schema no longer takes an engine module
+  as a `modules` key.
+- The prepare refusal now says `wildshard prepare <folder>`, as the CLI does.
+
 ## v0.4.10 (2026-11-13)
 
 - A look can now light its props for real: `look.light.lamps` places up to 16 point lights (lanterns, tent lamps,
