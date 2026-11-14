@@ -4,6 +4,16 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.1 (2026-11-13)
+
+- A pond can now reflect: a pool's `surface` asks for a planar mirror of the scene (desktop) or a sky-only reflection,
+  with its own deep tint, Fresnel and ripples. Leave it out and the pool draws as before.
+- A look can soften its sun shadows (`look.light.shadow`: strength, blur radius, normal bias) and fill the air with
+  fireflies, sparks or dust (`look.light.motes`).
+- Lamps can glow and flicker: each lamp may add a halo, a flicker and its own light falloff (`decay`).
+- `look.grade` gains `tone: 'aces'` (the filmic curve the cleanrooms use), an optional `vignette` and a bloom
+  `radius`.
+
 ## v0.5.0 (2026-11-13)
 
 - The word *product* is gone from the package: every import path and name that said it now says shard file. A tool
