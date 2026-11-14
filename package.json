@@ -242,6 +242,8 @@
     "./postGraphLook": "./src/format/postGraphLook.ts",
     "./postStack": "./src/format/postStack.ts",
     "./look-light": "./src/format/look-light.ts",
+    "./look-render": "./src/format/look-render.ts",
+    "./pool-surface": "./src/format/pool-surface.ts",
     "./practiceCourseRows": "./src/format/practiceCourseRows.ts",
     "./preflight": "./src/format/preflight.ts",
     "./presentation": "./src/format/presentation.ts",

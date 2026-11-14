@@ -18,6 +18,9 @@
  * `look.grade.tone` (B2) picks the display curve: `agx` (absent: the engine's AgX, as before) or `neutral` (Khronos PBR
  * Neutral, which keeps saturated albedo saturated).
  *
+ * `look.light.shadow` and `motes`, a lamp's `decay`, `halo` and `flicker`, `grade.vignette`, `grade.bloom.radius` and
+ * `tone: 'aces'` (meta TEMPLATES-CLEANROOM M4) are in `look-render.ts`.
+ *
  * Plain data and checks, no three.js. Absent keys stay absent (no filled default), so a product built before these keys
  * parses to the same bytes and keeps its source hash.
  */
@@ -36,6 +39,20 @@ import {
   tuple,
 } from 'valibot'
 
+import {
+  LookMotesSchema,
+  LookShadowSchema,
+  lampDecay,
+  lampFlicker,
+  lampHalo,
+} from './look-render.ts'
+
+import type {
+  LookLampFlicker,
+  LookLampHalo,
+  LookMotes,
+  LookShadow,
+} from './look-render.ts'
 import type { GenericSchema } from 'valibot'
 
 type Rgb = [number, number, number]
@@ -96,6 +113,9 @@ interface LookLamp {
   colour: Rgb
   intensity: number
   distance: number
+  decay?: number
+  halo?: LookLampHalo
+  flicker?: LookLampFlicker
 }
 /** A warm fill from the ground: a shadowless directional light from the anti-sun heading, lifted by `lift`. */
 interface LookBounce {
@@ -117,13 +137,16 @@ interface LookLight {
   lamps?: LookLamp[]
   bounce?: LookBounce
   environment?: LookEnvironment
+  shadow?: LookShadow
+  motes?: LookMotes
 }
 /** `look.grade.tone`: the display curve; absent is the engine's AgX. */
-type LookTone = 'agx' | 'neutral'
+type LookTone = 'agx' | 'neutral' | 'aces'
 /** `look.grade.bloom`: the engine bloom's intensity and luminance threshold. */
 interface LookBloom {
   intensity: number
   threshold: number
+  radius?: number
 }
 type LookLightInput = LookLight
 type LookBloomInput = LookBloom
@@ -164,6 +187,9 @@ const LookLampSchema: GenericSchema<LookLamp, LookLamp> = strictObject({
   colour,
   intensity: range(NONE, LAMP_INTENSITY_MAX),
   distance: range(LAMP_DISTANCE_MIN, LAMP_DISTANCE_MAX),
+  decay: lampDecay,
+  halo: lampHalo,
+  flicker: lampFlicker,
 })
 const LookLampsSchema: GenericSchema<LookLamp[], LookLamp[]> = pipe(
   array(LookLampSchema),
@@ -189,16 +215,20 @@ const LookLightSchema: GenericSchema<LookLight, LookLight> = strictObject({
   lamps: exactOptional(LookLampsSchema),
   bounce: exactOptional(LookBounceSchema),
   environment: exactOptional(LookEnvironmentSchema),
+  shadow: exactOptional(LookShadowSchema),
+  motes: exactOptional(LookMotesSchema),
 })
 /** `look.grade.tone`: absent is AgX, as before. */
 const LookToneSchema: GenericSchema<LookTone, LookTone> = picklist([
   'agx',
   'neutral',
+  'aces',
 ])
 /** `look.grade.bloom`: absent is no bloom, as before. */
 const LookBloomSchema: GenericSchema<LookBloom, LookBloom> = strictObject({
   intensity: range(NONE, BLOOM_INTENSITY_MAX),
   threshold: range(NONE, FULL),
+  radius: exactOptional(range(NONE, FULL)),
 })
 
 export {

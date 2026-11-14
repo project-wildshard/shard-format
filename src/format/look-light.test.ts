@@ -115,7 +115,7 @@ test('lamps, bounce and environment each parse on their own', (): void => {
   ).toBe(0.5)
 })
 
-test('grade.tone picks agx or neutral, and is absent by default', (): void => {
+test('grade.tone picks agx, neutral or aces, and is absent by default', (): void => {
   expect(read(look({}, { tone: 'neutral' })).grade.tone).toBe('neutral')
   expect(read(look({}, { tone: 'agx' })).grade.tone).toBe('agx')
   expect('tone' in read(look()).grade).toBe(false)
@@ -145,5 +145,89 @@ test('out-of-range lamps, bounce, environment or tone are refused', (): void => 
   expect((): unknown =>
     read(look({ light: { environment: { intensity: 9, ground: [0, 0, 0] } } })),
   ).toThrow()
-  expect((): unknown => read(look({}, { tone: 'aces' }))).toThrow()
+  expect((): unknown => read(look({}, { tone: 'filmic' }))).toThrow()
+})
+
+// Meta TEMPLATES-CLEANROOM M4: the sun's shadow look, lamp decay, halo and flicker, motes, ACES, vignette, bloom radius.
+const m4Lamp = {
+  at: [0, 2, 0],
+  colour: [1, 0.6, 0.3],
+  intensity: 4,
+  distance: 6,
+}
+const m4Motes = {
+  count: 10,
+  min: [0, 0, 0],
+  max: [1, 1, 1],
+  colour: [1, 1, 1],
+  gain: 1,
+  size: 0.1,
+}
+const m4Look = (): object =>
+  look(
+    {
+      light: {
+        shadow: { intensity: 0.62, radius: 6, normalBias: 0.03 },
+        motes: { ...m4Motes, count: 160 },
+        lamps: [
+          m4Lamp,
+          {
+            ...m4Lamp,
+            decay: 1.5,
+            halo: { size: 1.2, opacity: 0.5 },
+            flicker: { rate: 8, amount: 0.15 },
+          },
+        ],
+      },
+    },
+    {
+      tone: 'aces',
+      vignette: { offset: 0.3, darkness: 0.4 },
+      bloom: { intensity: 0.4, threshold: 0.9, radius: 0.55 },
+    },
+  )
+
+test('shadow, motes and the new lamp fields parse', (): void => {
+  const parsed = read(m4Look())
+  expect(parsed.light?.shadow).toEqual({
+    intensity: 0.62,
+    radius: 6,
+    normalBias: 0.03,
+  })
+  expect(parsed.light?.motes?.count).toBe(160)
+  expect('decay' in (parsed.light?.lamps?.[0] ?? {})).toBe(false)
+  expect(parsed.light?.lamps?.[1]?.halo).toEqual({ size: 1.2, opacity: 0.5 })
+})
+
+test('aces, the vignette and the bloom radius parse, absent keys stay absent', (): void => {
+  const parsed = read(m4Look())
+  expect(parsed.grade.tone).toBe('aces')
+  expect(parsed.grade.vignette).toEqual({ offset: 0.3, darkness: 0.4 })
+  expect(parsed.grade.bloom?.radius).toBe(0.55)
+  expect('vignette' in read(look()).grade).toBe(false)
+})
+
+test('out-of-range shadow or motes are refused', (): void => {
+  expect((): unknown =>
+    read(
+      look({ light: { shadow: { intensity: 2, radius: 1, normalBias: 0 } } }),
+    ),
+  ).toThrow()
+  expect((): unknown =>
+    read(look({ light: { motes: { ...m4Motes, min: [2, 0, 0] } } })),
+  ).toThrow()
+  expect((): unknown =>
+    read(look({ light: { motes: { ...m4Motes, count: 1.5 } } })),
+  ).toThrow()
+})
+
+test('out-of-range lamp fields, vignette or tone are refused', (): void => {
+  expect((): unknown =>
+    read(look({ light: { lamps: [{ ...m4Lamp, decay: 3 }] } })),
+  ).toThrow()
+  expect((): unknown =>
+    read(look({ light: { lamps: [{ ...m4Lamp, halo: { size: 1 } }] } })),
+  ).toThrow()
+  expect((): unknown => read(look({}, { vignette: { offset: 0.3 } }))).toThrow()
+  expect((): unknown => read(look({}, { tone: 'reinhard' }))).toThrow()
 })

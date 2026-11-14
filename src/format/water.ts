@@ -1,4 +1,6 @@
 import * as v from 'valibot';
+import { PoolSurfaceSchema } from './pool-surface.ts';
+import type { PoolSurface } from './pool-surface.ts';
 
 const coord = v.pipe(v.number(), v.finite(), v.minValue(-250), v.maxValue(250));
 export const WaterBodyIdSchema: v.GenericSchema<WaterBodyIdInput, WaterBodyId> = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u), v.maxLength(128));
@@ -30,8 +32,9 @@ const dryEntries = v.optional(v.pipe(v.array(v.picklist(['north', 'east', 'south
 export const StreamWaterSchema: v.SchemaWithPipe<readonly [v.StrictObjectSchema<{ readonly id: v.GenericSchema<StreamWaterRowsInput['id'], StreamWaterRows['id']>; readonly kind: v.GenericSchema<StreamWaterRowsInput['kind'], StreamWaterRows['kind']>; readonly width: v.GenericSchema<StreamWaterRowsInput['width'], StreamWaterRows['width']>; readonly points: v.GenericSchema<StreamWaterRowsInput['points'], StreamWaterRows['points']>; readonly levels: v.OptionalSchema<v.GenericSchema<Exclude<StreamWaterRowsInput['levels'], undefined>, Exclude<StreamWaterRows['levels'], undefined>>, undefined>; readonly dryEntries: v.OptionalSchema<v.GenericSchema<Exclude<StreamWaterRowsInput['dryEntries'], undefined>, Exclude<StreamWaterRows['dryEntries'], undefined>>, undefined>; }, undefined>, v.CheckAction<{ [K in keyof StreamWaterRows]: StreamWaterRows[K] }, 'stream fits cell, has nonzero segments and declares its live levels'>]> = v.pipe(v.strictObject({ id, kind: v.literal('stream'), width: v.pipe(coord, v.minValue(0.01), v.maxValue(100)), points: v.pipe(v.array(streamPoint), v.minLength(2), v.maxLength(128)), levels, dryEntries }), v.check((s) => s.points.every((p, i) => {
   const prev = s.points[i - 1]; return (p.under === undefined || s.levels?.[p.under] !== undefined) && Math.abs(p.x) + s.width / 2 <= 250 && Math.abs(p.z) + s.width / 2 <= 250 && (prev === undefined || p.x !== prev.x || p.z !== prev.z);
 }), 'stream fits cell, has nonzero segments and declares its live levels'));
+const poolSurface = v.exactOptional(PoolSurfaceSchema);
 export const WaterBodySchema: v.GenericSchema<WaterBodyRowsInput, WaterBodyRows> = v.variant('kind', [
-  v.strictObject({ id, kind: v.literal('pool'), level: coord, shape: v.variant('kind', [circle, polygon]), dryEntries }),
+  v.strictObject({ id, kind: v.literal('pool'), level: coord, shape: v.variant('kind', [circle, polygon]), dryEntries, surface: poolSurface }),
   v.strictObject({ id: v.literal('sea'), kind: v.literal('sea'), level: coord, waves: v.boolean(), dryEntries }),
   StreamWaterSchema,
 ]);
@@ -124,6 +127,7 @@ export type WaterBodyRowsInput = ({
         ])[];
     });
     dryEntries?: ('north' | 'east' | 'south' | 'west')[] | undefined;
+    surface?: PoolSurface;
 }) | ({
     id: 'sea';
     kind: 'sea';
@@ -148,6 +152,7 @@ export type WaterBodyRows = ({
         ])[];
     });
     dryEntries?: ('north' | 'east' | 'south' | 'west')[] | undefined;
+    surface?: PoolSurface;
 }) | ({
     id: 'sea';
     kind: 'sea';
