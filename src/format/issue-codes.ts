@@ -76,7 +76,7 @@ const PERFORMANCE_CODES = {
   'perf-tile-download':
     "A tile's download bytes are over its LOD cap (provisional: a warning).",
   'perf-tile-draws':
-    "A tile's draws are over its LOD cap (provisional: a warning).",
+    "The fine tiles near a view draw more than a phone view's budget (VIEW_DRAWS; provisional: a warning).",
   'perf-tile-triangles':
     "A tile's triangles are over its LOD cap (provisional: a warning).",
   'perf-far-download': "The far view's download bytes are over the limit.",

@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.7 (2026-11-14)
+
+- A tile's draws no longer have their own 8-draw cap: engines now draw each material once across nearby tiles, so the
+  report checks a whole view instead, every fine tile near it against `VIEW_DRAWS` (150 on a phone, 400 on a desktop).
+
 ## v0.5.6 (2026-11-14)
 
 - The Brasscap Mesa example shard is now a real build of a pinned `shard-brasscap` commit
