@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.6 (2026-11-14)
+
+- The Brasscap Mesa example shard is now a real build of a pinned `shard-brasscap` commit
+  (`corpus/exports/brasscap-mesa/`), not a hand-written source here, and the package ships that folder in its place.
+- `node src/tools/brasscap-export.ts` rebuilds it from a pinned commit (`--check` compares), and shard-format still
+  has no three.js dependency.
+
 ## v0.5.5 (2026-11-14)
 
 - A look can paint its own sky: `look.sky` is an unlit material graph (written in TSL) that the engine draws on its
