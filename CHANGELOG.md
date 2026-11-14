@@ -8,13 +8,10 @@ docs/dev.md says.
 
 - A tile's draws no longer have their own 8-draw cap: engines now draw each material once across nearby tiles, so the
   report checks a whole view instead, every fine tile near it against `VIEW_DRAWS` (150 on a phone, 400 on a desktop).
-
-## v0.5.6 (2026-11-14)
-
 - The Brasscap Mesa example shard is now a real build of a pinned `shard-brasscap` commit
   (`corpus/exports/brasscap-mesa/`), not a hand-written source here, and the package ships that folder in its place.
 - `node src/tools/brasscap-export.ts` rebuilds it from a pinned commit (`--check` compares), and shard-format still
-  has no three.js dependency.
+  has no three.js dependency. (0.5.6 was never published; its notes ride here.)
 
 ## v0.5.5 (2026-11-14)
 
