@@ -17,6 +17,8 @@ docs/dev.md says.
   `/assemblyHosts` lists every module path or unknown host left in one (a check for authors and tools; validation does
   not run it yet), and the schema no longer takes an engine module as a `modules` key.
 - The prepare refusal now says `wildshard prepare <folder>`, as the CLI does.
+- A habitat's canopy (`sim/population-metadata.json` `trees` and `tops`) may hold any number of trees up to 4,096,
+  one top per tree, not exactly 155: Nalati's page now plants 146, and its server habitat can follow.
 
 ## v0.4.10 (2026-11-13)
 

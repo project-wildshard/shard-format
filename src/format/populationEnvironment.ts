@@ -6,15 +6,17 @@ import { ForagerContinuation } from './ambientLife.ts';
 const finite = v.pipe(v.number(), v.finite());
 const key = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
 const point = v.strictObject({ x: finite, z: finite });
-/** G1004/G872: this approved single-user native input has exactly 155 authored
- * canopy entries and at most six ledges. A changed source count refuses until
- * this contract is reviewed; the original author/native count checks remain. */
-export const PopulationHabitatSchema:v.GenericSchema<PopulationHabitatRows,PopulationHabitatRows>=v.strictObject({
-  trees:v.pipe(v.array(v.tuple([finite,finite,v.pipe(finite,v.minValue(0))])),v.length(155)),
-  tops:v.pipe(v.array(finite),v.length(155)),
+/** The habitat's canopy (one top height per tree) and at most six ledges. G1004/G872 pinned the canopy at exactly 155
+ * rows, Nalati's frozen capture; its page now plants 146 (SERVER-PARITY SS10b), so the count follows the shard's own
+ * forest: any number up to 4096, one top per tree. */
+const HabitatRows=v.strictObject({
+  trees:v.pipe(v.array(v.tuple([finite,finite,v.pipe(finite,v.minValue(0))])),v.maxLength(4096)),
+  tops:v.pipe(v.array(finite),v.maxLength(4096)),
   ledges:v.pipe(v.array(v.strictObject({x:finite,y:finite,z:finite,r:v.pipe(finite,v.minValue(0))})),v.maxLength(6)),
   marmots:ForagerContinuation,
 });
+const oneTopPerTree=(rows:{readonly trees:readonly unknown[];readonly tops:readonly unknown[]}):boolean=>rows.tops.length===rows.trees.length;
+export const PopulationHabitatSchema:v.GenericSchema<PopulationHabitatRows,PopulationHabitatRows>=v.pipe(HabitatRows,v.check<PopulationHabitatRows,string>(oneTopPerTree,'Habitat needs one canopy top per tree'));
 export interface PopulationHabitatRows {
   trees:[number,number,number][];tops:number[];ledges:{x:number;y:number;z:number;r:number}[];
   marmots:v.InferOutput<typeof ForagerContinuation>;
