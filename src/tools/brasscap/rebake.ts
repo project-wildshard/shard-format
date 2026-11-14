@@ -358,6 +358,54 @@ function packFor(
   return target
 }
 
+/** The corpus pack that held the most of the gone blobs: the pack a packless cook's new blobs replace. */
+function replacedPack(
+  packs: readonly PackRow[],
+  gone: ReadonlySet<string>,
+): PackRow | undefined {
+  const lost = (pack: PackRow): number =>
+    pack.entries.filter((entry): boolean => gone.has(entry.hash)).length
+  return packs.toSorted((left, right): number => lost(right) - lost(left))[0]
+}
+
+/** Gone blobs leave every pack; each new blob joins one, at the cooked size or its compressed size. */
+function placeAdded({
+  packs,
+  cookedPacks,
+  gone,
+  added,
+}: {
+  packs: readonly PackRow[]
+  cookedPacks: readonly PackRow[]
+  gone: ReadonlySet<string>
+  added: readonly FileRow[]
+}): void {
+  const cookedBytes = new Map(
+    cookedPacks.flatMap((pack): [string, number][] =>
+      pack.entries.map((entry): [string, number] => [entry.hash, entry.bytes]),
+    ),
+  )
+  const replaced = replacedPack(packs, gone)
+  for (const pack of packs)
+    pack.entries = pack.entries.filter(
+      (entry): boolean => !gone.has(entry.hash),
+    )
+  for (const row of added) {
+    const home = cookedPacks.find((pack): boolean =>
+      pack.entries.some((entry): boolean => entry.hash === row.hash),
+    )
+    const members = new Set(home?.entries.map((entry): string => entry.hash))
+    const target = cookedPacks.length === 0 ? replaced : packFor(packs, members)
+    if ((cookedPacks.length > 0 && home === undefined) || target === undefined)
+      throw new Error(`no cooked pack holds ${row.hash}`)
+    target.entries.push({
+      hash: row.hash,
+      bytes: cookedBytes.get(row.hash) ?? row.compressed,
+      offset: 0,
+    })
+  }
+}
+
 /** Settles shard.json after a --write (LF2-2): the changed blobs' rows swap in `files` and the critical
  *  list, blobs no section names any more are dropped, the sim budget and server memory move by the
  *  critical blobs' change (the budget is their sum, plus fixed headroom), and `shardfile pack` measures
@@ -365,7 +413,7 @@ function packFor(
 function settle(after: Set<string>): void {
   const cooked = JSON.parse(
       readFileSync(join(out, 'shard.json'), 'utf8'),
-    ) as Index,
+    ) as Omit<Index, 'packs'> & { packs?: PackRow[] },
     indexPath = join(stage, 'shard.json')
   const index = JSON.parse(readFileSync(indexPath, 'utf8')) as Index
   const authored = readdirSync(join(stage, 'sections'), {
@@ -409,30 +457,15 @@ function settle(after: Set<string>): void {
       .map((row): string => row.hash),
   ].toSorted()
   // Packs list their members: gone blobs leave every pack, and each new blob joins the pack that shares
-  // the most members with the cooked pack holding it, at the cooked size.
-  const cookedBytes = new Map(
-    cooked.packs.flatMap((pack): [string, number][] =>
-      pack.entries.map((entry): [string, number] => [entry.hash, entry.bytes]),
-    ),
-  )
-  for (const pack of index.packs)
-    pack.entries = pack.entries.filter(
-      (entry): boolean => !gone.has(entry.hash),
-    )
-  for (const row of added) {
-    const home = cooked.packs.find((pack): boolean =>
-      pack.entries.some((entry): boolean => entry.hash === row.hash),
-    )
-    const members = new Set(home?.entries.map((entry): string => entry.hash))
-    const target = packFor(index.packs, members)
-    if (home === undefined || target === undefined)
-      throw new Error(`no cooked pack holds ${row.hash}`)
-    target.entries.push({
-      hash: row.hash,
-      bytes: cookedBytes.get(row.hash) ?? row.compressed,
-      offset: 0,
-    })
-  }
+  // the most members with the cooked pack holding it, at the cooked size. Since S5 a sharddev product holds
+  // no packs (engine cooks them from the upload), so a new blob then joins the corpus pack that lost the most
+  // of the gone blobs (the one it replaces), at its compressed size; `shardfile pack` re-measures every pack.
+  placeAdded({
+    packs: index.packs,
+    cookedPacks: cooked.packs ?? [],
+    gone,
+    added,
+  })
   // Offsets run on from 0 and a pack's size is its members' (format outputIndex I5); pack hashes it.
   for (const pack of index.packs) {
     let end = 0
