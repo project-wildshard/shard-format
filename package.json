@@ -107,6 +107,7 @@
     "./director": "./src/format/director.ts",
     "./detail-layer": "./src/format/detail-layer.ts",
     "./pbr-emissive": "./src/format/pbr-emissive.ts",
+    "./scene-render": "./src/format/scene-render.ts",
     "./directorDocument": "./src/format/directorDocument.ts",
     "./directorStages": "./src/format/directorStages.ts",
     "./directorWhen": "./src/format/directorWhen.ts",
