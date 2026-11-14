@@ -9,3 +9,5 @@
 - Then the coordinator's gate patch (M4.12, the gate 50/50: three dark-wood straps and five iron studs a leaf, from the
   cleanroom's `world.js:507-508`) went through the fixed rebake: 5 blobs in, 5 out, sim budget +5496 compressed,
   +90992 resident; `canyon.glb` and `props.glb` regenerated. SS3 moves this corpus to `shard-brasscap` later.
+- Commit 2 (the gate): canyon.ts's straps and studs, the regenerated sources and the rebaked corpus, kept apart from
+  the rebake fix so the fix stands alone.

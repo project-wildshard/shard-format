@@ -1915,20 +1915,23 @@ function gateDoors(): void {
         [pw - 0.035, k % 2 === li % 2 ? 4.6 : 4.48, 0.22],
         [0x7a4a2b, 0x6b4026, 0x845232][(k + li) % 3]!,
       )
-    for (const y of [0.85, 3.35])
+    // M4.12 (the gate 50/50): the cleanroom's straps and studs (brasscap-cleanroom src/world.js:507-508): three
+    // dark-wood straps across each leaf, five iron studs on each.
+    for (const y of [0.55, 2.2, 3.85]) {
+      door.box(
+        [(x0 + x1) / 2, y, front + 0.03],
+        [x1 - x0 - 0.12, 0.25, 0.07],
+        0x5e3420,
+      )
       metal(() => {
-        g.box(
-          [(x0 + x1) / 2, y, front + 0.03],
-          [x1 - x0 - 0.12, 0.28, 0.06],
-          0x3a3330,
-        )
-        for (let k = 0; k < 4; k++)
+        for (let k = 0; k < 5; k++)
           g.box(
-            [x0 + 0.3 + ((x1 - x0 - 0.6) * k) / 3, y + 0.09, front + 0.08],
-            [0.09, 0.09, 0.05],
-            0x7a7068,
+            [x0 + 0.28 + ((x1 - x0 - 0.56) * k) / 4, y + 0.075, front + 0.1],
+            [0.1, 0.1, 0.05],
+            0x3a3432,
           )
       })
+    }
     // The back: two rails and a brace from the hinge side's foot to the meeting side's top rail.
     for (const y of [1.0, 3.2])
       door.box(
@@ -1968,15 +1971,24 @@ function gateDetail(): void {
   g.box([2, beamY, zf], [12.4, 0.42, 0.5], 0x7a4a2b, 0, 0x8a5a36)
   beam(g, [-3.33, 3.7, zf], [-2.05, beamY, zf], 0.22, 0x6b4026)
   beam(g, [7.33, 3.7, zf], [6.05, beamY, zf], 0.22, 0x6b4026)
-  // The GATE sign on the crossbeam, raised cream letters on a board facing the canyon (+z, read left to right).
-  const sy = beamY + 0.42,
-    bz = zf + 0.16
-  g.box([2, sy, bz], [2.3, 0.8, 0.1], 0x9a6a40)
-  for (const y0 of [sy - 0.03, sy + 0.76])
-    g.box([2, y0, bz + 0.05], [2.46, 0.08, 0.06], 0x5e3a22)
-  for (const x0 of [0.81, 3.19])
-    g.box([x0, sy, bz + 0.05], [0.08, 0.84, 0.06], 0x5e3a22)
-  const unit = 0.11,
+  // M4.12 (meta SHARD-SOURCE-PLAN, the gate 50/50): the cleanroom's sign (brasscap-cleanroom src/world.js:497-500)
+  // on engine's crossbeam: a dark board stood on two iron rods above the beam, a plank panel in a dark edge, and big
+  // cream letters facing the canyon (+z, read left to right).
+  const top = beamY + 0.42,
+    sy = top + 0.42,
+    bz = zf + 0.05
+  metal(() => {
+    for (const x of [0.7, 3.3]) g.box([x, top, bz], [0.08, 0.5, 0.08], 0x3a3432)
+  })
+  g.box([2, sy, bz], [3.4, 1.15, 0.12], 0x5e3420)
+  g.box([2, sy + 0.075, bz + 0.065], [3.2, 1.0, 0.04], 0x7a4426)
+  for (const y0 of [sy + 0.075, sy + 1.0])
+    g.box([2, y0, bz + 0.09], [3.2, 0.075, 0.05], 0x4a2414)
+  for (const x0 of [0.4375, 3.5625])
+    g.box([x0, sy + 0.075, bz + 0.09], [0.075, 1.0, 0.05], 0x4a2414)
+  for (const y0 of [sy + 0.33, sy + 0.58, sy + 0.83])
+    g.box([2, y0, bz + 0.086], [3.05, 0.02, 0.01], 0x6a3a20)
+  const unit = 0.13,
     pitch = 4.1,
     word = 'GATE',
     left = 2 - ((word.length * pitch - 1.1) * unit) / 2
@@ -1987,10 +1999,10 @@ function gateDetail(): void {
         dv = ((v1 - v0) / len) * 0.35
       const p = (u: number, v: number): V3 => [
         left + (i * pitch + u) * unit,
-        sy + 0.13 + v * unit,
-        bz + 0.09,
+        sy + 0.25 + v * unit,
+        bz + 0.11,
       ]
-      beam(g, p(u0 - du, v0 - dv), p(u1 + du, v1 + dv), 0.075, 0xf0dcae)
+      beam(g, p(u0 - du, v0 - dv), p(u1 + du, v1 + dv), 0.085, 0xf4dcae)
     }
   // The lantern hung under the crossbeam, right of centre.
   beam(g, [4.2, beamY, zf + 0.1], [4.2, beamY - 0.3, zf + 0.1], 0.025, 0x2f2a28)
