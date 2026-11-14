@@ -105,6 +105,7 @@
     "./declaredQuestPage": "./src/format/declaredQuestPage.ts",
     "./deviceMemoryCost": "./src/format/deviceMemoryCost.ts",
     "./director": "./src/format/director.ts",
+    "./detail-layer": "./src/format/detail-layer.ts",
     "./directorDocument": "./src/format/directorDocument.ts",
     "./directorStages": "./src/format/directorStages.ts",
     "./directorWhen": "./src/format/directorWhen.ts",
