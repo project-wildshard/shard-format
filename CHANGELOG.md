@@ -10,12 +10,12 @@ docs/dev.md says.
   that imported `@wildshard/shard-format/product` imports `/shardfileAssets`; `/productValidation` is
   `/shardfileValidation` (`validateShardfileFolder`), `/productStream` is `/shardfileStream`, `/productAudio` is
   `/shardfileAudio`, `/product-reads` is `/shardfile-reads` and `/directorProduct` is `/directorDocument`.
-- Shard files do not change: a shard file that passed v0.4.10 passes v0.5.0, and the director schema id inside them
-  keeps its old spelling.
+- Shard files do not change: a shard file that passed v0.4.10 passes v0.5.0 unless its headless assembly keys an
+  `@wildshard/` module under `modules` (none does today), and the director schema id inside them keeps its old spelling.
 - A headless assembly names engine functions by host, not by module path: `{"$ref": ["host", "proveTerrainEntries"]}`
   replaces `["@wildshard/engine/game/plugin/mover", "proveTerrainEntries"]`. `assemblyRefIssues` from
-  `/assemblyHosts` lists every module path or unknown host left in one, and the schema no longer takes an engine module
-  as a `modules` key.
+  `/assemblyHosts` lists every module path or unknown host left in one (a check for authors and tools; validation does
+  not run it yet), and the schema no longer takes an engine module as a `modules` key.
 - The prepare refusal now says `wildshard prepare <folder>`, as the CLI does.
 
 ## v0.4.10 (2026-11-13)

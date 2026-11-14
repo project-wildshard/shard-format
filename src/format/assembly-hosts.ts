@@ -14,7 +14,7 @@ const ASSEMBLY_HOSTS: Readonly<Record<string, string>> = Object.freeze({
 /** The head of a host `$ref`: `["host", <name>, ...path]`. */
 const ASSEMBLY_HOST_HEAD = 'host'
 
-const MODULE_PATH = /^@|\//u
+const MODULE_PATH = /^(?:@|src\/|\.{1,2}\/)/u
 
 function refIssue(ref: readonly unknown[], where: string): string | undefined {
   const [head, name] = ref
