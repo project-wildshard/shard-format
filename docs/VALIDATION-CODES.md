@@ -60,7 +60,7 @@ finding. Match the code, never the message: messages may be reworded, codes are 
 | `perf-library-download` | The library closure's download bytes are over the allowance. |
 | `perf-critical-download` | The critical closure's download bytes are over the limit. |
 | `perf-tile-download` | A tile's download bytes are over its LOD cap (provisional: a warning). |
-| `perf-tile-draws` | A tile's draws are over its LOD cap (provisional: a warning). |
+| `perf-tile-draws` | The fine tiles near a view draw more than a phone view's budget (VIEW_DRAWS; provisional: a warning). |
 | `perf-tile-triangles` | A tile's triangles are over its LOD cap (provisional: a warning). |
 | `perf-far-download` | The far view's download bytes are over the limit. |
 | `perf-far-draws` | The far view's draws are over the limit. |
