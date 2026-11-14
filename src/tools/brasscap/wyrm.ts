@@ -39,18 +39,18 @@ import { parseGlbData } from '../../format/glbCost.ts'
 type V3 = readonly [number, number, number]
 type Hex = number
 
-// LF2-8: lighter than BM-5's, so the Wyrm reads warm against the low sun behind it, not dark.
-const SAND = 0xe2b47a,
-  SAND_SHADE = 0xc99a5e,
-  TERRA = 0xd0693c,
-  TERRA_SHADE = 0xb1532e,
-  TERRA_LIGHT = 0xe08a58,
-  CREAM = 0xf4e6c4,
+// M4.13: the cleanroom's palette (brasscap-cleanroom src/actors.js wyrm(), src/world.js PAL.sand).
+const SAND = 0xdf825a,
+  SAND_SHADE = 0xcf6c4a,
+  BODY_RUST = 0xb9532f,
+  PLATE = 0xd77446,
+  SPIKE = 0xe8d6b0,
+  TOOTH = 0xf2e6c8,
   CREAM_SHADE = 0xdcc79c,
+  THROAT = 0x2a120c,
   MAW = 0x4a1c12,
-  MAW_DEEP = 0x6e2a14,
-  GULLET = 0xfff27a,
-  GULLET_DEEP = 0xffb02e
+  GULLET = 0xffc040,
+  GULLET_DEEP = 0xff8a1e
 
 /** Joint indices, in the skin's joint order. */
 const BODY = 0,
@@ -82,8 +82,9 @@ function ringAt(c: V3, t: V3, r: number, sides: number): Vec[] {
  */
 const LEAN = [0, 0.06, 0.16, 0.32, 0.52, 0.78, 1.04, 1.3] as const
 const HEAD_LEAN = 1.62
-const SEGMENT = 0.235
-const RADII = [0.5, 0.5, 0.49, 0.47, 0.46, 0.45, 0.45, 0.48, 0.56] as const
+const SEGMENT = 0.215
+/** M4.13: fat in the middle and at the head, as the cleanroom's worm swells. */
+const RADII = [0.44, 0.48, 0.52, 0.55, 0.57, 0.58, 0.58, 0.57, 0.56] as const
 /**
  * Seen from the front the arch would be a straight column, so it also sweeps across: the base sits off to -x and the
  * body swings back over the mound's centre as it rises, the maw centred (the curve of `t2-15`).
@@ -380,78 +381,126 @@ function cone(at: V3, tip: V3, r: number, hex: Hex, joint: number): void {
   mesh.tri(base[0]!, base[1]!, base[2]!, hex, joint, centre)
 }
 
+/** A hex shifted lighter or darker by up to `amount` (0..1), the same every run for the same `k`. */
+function vary(hex: Hex, amount: number, k: number): Hex {
+  const f =
+    1 + ((Math.abs(Math.sin(k * 12.9898) * 43758.5453) % 1) * 2 - 1) * amount
+  const c = (v: number): number => Math.min(255, Math.max(0, Math.round(v * f)))
+  return (
+    c(Math.floor(hex / 0x10000) % 256) * 0x10000 +
+    c(Math.floor(hex / 0x100) % 256) * 0x100 +
+    c(hex % 256)
+  )
+}
+
+/** The maw's flared head (M4.13): its mouth radius, and how far the funnel runs back along the mouth's axis. */
+const MAW_R = 0.7
+const MAW_BACK = 0.34
+/** Segments per spine segment: the cleanroom's worm has 14 plated rings; this arch has 8 spans, two plates each. */
+const PLATES = 2
+
+/** Whether face `face` of a `sides`-gon ring round the mouth sits below its axis (the jaw's side). */
+const lower = (face: number, sides: number): boolean =>
+  Math.sin(((face + 0.5) / sides) * Math.PI * 2) > 1e-6
+
+/**
+ * M4.13 (meta SHARD-SOURCE-PLAN): brasscap-cleanroom `src/actors.js` `wyrm()` on this rig. Plated segments, rust and
+ * terracotta in turn, each narrowing to a step at its seam, with a cream dorsal spike; the head a wide flared funnel
+ * with a rust lip and twelve cream teeth pointing in, a near-black throat and the glowing core deep in it (the
+ * `Gullet` part). The arch, joints and clips are BM-5's (LF2-8).
+ */
 function wyrm(): void {
   // The sand mound it bursts from (on `body`, so it sinks with it on death only a little).
   mesh.ring(1.2, 0.86, 0, 0.16, SAND, SAND_SHADE, BODY, false)
   mesh.ring(0.86, 0.56, 0.16, 0.3, SAND, SAND_SHADE, BODY, true)
-  // Plated segments along the arch: terracotta, each running a little into the next so a bend never opens a gap.
+  // Plates: each spine span cut in two, alternating rust and terracotta, every face a shade of its plate.
+  let plate = 0
   for (let k = 0; k < 8; k++) {
-    const a = SPINE[k]!,
-      b = add(SPINE[k + 1]!, TANGENT[k + 1]!, k === 7 ? 0 : 0.04)
-    frustum(
-      a,
-      TANGENT[k]!,
-      RADII[k]!,
-      b,
-      k === 7 ? MOUTH_T : TANGENT[k + 1]!,
-      RADII[k + 1]!,
-      TERRA,
-      TERRA_SHADE,
-      ownerOf(k),
-    )
-  }
-  // A raised plate rim over every joint of the arch (lighter terracotta, as the targets' plates catch the light), and
-  // a cream spine on the back of most.
-  for (let k = 1; k < 8; k++) {
-    const c = SPINE[k]!,
-      t = TANGENT[k]!,
-      r = RADII[k]! + 0.04
-    frustum(
-      add(c, t, -0.05),
-      t,
-      r,
-      add(c, t, 0.05),
-      t,
-      r,
-      TERRA_LIGHT,
-      TERRA,
-      ownerOf(k),
-    )
-    if (k >= 2) {
-      const back: V3 = [0, front(t)[1] * -1, front(t)[2] * -1]
-      cone(
-        add(c, back, r - 0.02),
-        add(add(c, back, r + 0.2), t, -0.1),
-        0.06,
-        CREAM,
+    for (let h = 0; h < PLATES; h++) {
+      const t0 = h / PLATES,
+        t1 = (h + 1) / PLATES,
+        lerp = (a: V3, b: V3, t: number): Vec => [
+          a[0] + (b[0] - a[0]) * t,
+          a[1] + (b[1] - a[1]) * t,
+          a[2] + (b[2] - a[2]) * t,
+        ],
+        a = lerp(SPINE[k]!, SPINE[k + 1]!, t0),
+        last = k === 7 && h === PLATES - 1,
+        b = add(
+          lerp(SPINE[k]!, SPINE[k + 1]!, t1),
+          TANGENT[k + 1]!,
+          last ? 0 : 0.03,
+        ),
+        ta = lerp(TANGENT[k]!, TANGENT[k + 1]!, t0),
+        tb = last ? MOUTH_T : lerp(TANGENT[k]!, TANGENT[k + 1]!, t1),
+        ra = RADII[k]! + (RADII[k + 1]! - RADII[k]!) * t0,
+        rb = RADII[k]! + (RADII[k + 1]! - RADII[k]!) * t1,
+        hex = plate % 2 === 0 ? PLATE : BODY_RUST
+      frustum(
+        a,
+        ta,
+        ra,
+        b,
+        tb,
+        rb * 0.9,
+        hex,
+        vary(hex, 0.1, plate),
         ownerOf(k),
+        9,
       )
+      // A cream dorsal spike on the back of each plate but the first two and the head's.
+      if (k >= 1 && !last) {
+        const mid = lerp(a, b, 0.5),
+          tm = lerp(ta, tb, 0.5),
+          back: V3 = [0, -front(tm)[1], -front(tm)[2]],
+          r = (ra + rb) / 2
+        cone(
+          add(mid, back, r - 0.03),
+          add(add(mid, back, r + 0.2), tm, -0.06),
+          0.065,
+          SPIKE,
+          ownerOf(k),
+        )
+      }
+      plate++
     }
   }
-  // The maw: a cream rim, a dark throat narrowing inward, and the yellow gullet at its end.
+  // The head: a flared funnel from the last plate out to the mouth, rust, its lower half the jaw's.
   frustum(
-    add(RIM, MOUTH_T, -0.03),
+    add(RIM, MOUTH_T, -MAW_BACK),
     MOUTH_T,
-    0.6,
-    add(RIM, MOUTH_T, 0.05),
+    RADII[8] * 0.95,
+    add(RIM, MOUTH_T, 0.02),
     MOUTH_T,
-    0.56,
-    CREAM,
-    CREAM_SHADE,
-    // The rim's lower half (faces centred below the mouth's axis) is the jaw's lip.
-    (face: number): number =>
-      Math.sin(((face + 1) / 8) * Math.PI * 2) > 1e-6 ? JAW : HEAD,
+    MAW_R,
+    PLATE,
+    vary(PLATE, 0.12, 3),
+    HEAD,
+    10,
   )
+  // The lip round the mouth: a rust band whose lower faces ride the jaw.
+  frustum(
+    add(RIM, MOUTH_T, 0),
+    MOUTH_T,
+    MAW_R + 0.08,
+    add(RIM, MOUTH_T, 0.09),
+    MOUTH_T,
+    MAW_R + 0.02,
+    BODY_RUST,
+    vary(BODY_RUST, 0.1, 7),
+    (face: number): number => (lower(face, 10) ? JAW : HEAD),
+    10,
+  )
+  // The throat: near-black, narrowing in to the glowing core. Inward normals, wound from a point behind the gullet.
   const throat: readonly (readonly [number, number, Hex, Hex])[] = [
-    [0.05, 0.52, MAW, MAW_DEEP],
-    [-0.12, 0.34, MAW_DEEP, MAW],
-    [-0.26, 0.23, GULLET_DEEP, GULLET_DEEP],
-    [-0.3, 0.17, GULLET, GULLET],
+    [0.04, MAW_R - 0.03, THROAT, MAW],
+    [-0.14, 0.42, MAW, THROAT],
+    [-0.3, 0.3, GULLET_DEEP, GULLET_DEEP],
+    [-0.34, 0.26, GULLET, GULLET],
   ]
   for (let i = 0; i + 1 < throat.length; i++) {
     const [d0, r0, hex, shade] = throat[i]!,
       [d1, r1] = throat[i + 1]!
-    // Inward normals: the throat's faces are wound out from a point deep behind the gullet.
     const ring0 = ringAt(add(RIM, MOUTH_T, d0), MOUTH_T, r0, 8),
       ring1 = ringAt(add(RIM, MOUTH_T, d1), MOUTH_T, r1, 8),
       deep = add(RIM, MOUTH_T, -1.2)
@@ -468,9 +517,9 @@ function wyrm(): void {
       )
     }
   }
-  const gullet = ringAt(add(RIM, MOUTH_T, -0.3), MOUTH_T, 0.17, 8),
-    core = add(RIM, MOUTH_T, -0.3)
-  // The gullet's cap is the `Gullet` part, drawn in the look's `glow` (TE-ENG10).
+  const gullet = ringAt(add(RIM, MOUTH_T, -0.34), MOUTH_T, 0.26, 8),
+    core = add(RIM, MOUTH_T, -0.28)
+  // The core's cap is the `Gullet` part, drawn in the look's `glow` (TE-ENG10).
   mesh.glowing = true
   for (let s = 0; s < 8; s++)
     mesh.tri(
@@ -482,14 +531,20 @@ function wyrm(): void {
       add(RIM, MOUTH_T, -1.2),
     )
   mesh.glowing = false
-  // Eight cream teeth round the rim, pointing in and forward; the lower four ride the jaw.
-  for (let i = 0; i < 8; i++) {
-    const a = ((i + 0.5) / 8) * Math.PI * 2,
+  // Twelve cream teeth round the lip, pointing in and a little out of the mouth; the lower six ride the jaw.
+  for (let i = 0; i < 12; i++) {
+    const a = ((i + 0.5) / 12) * Math.PI * 2,
       n = front(MOUTH_T),
       out = add(add([0, 0, 0], SIDE, Math.cos(a)), n, Math.sin(a)),
-      at = add(add(RIM, out, 0.5), MOUTH_T, 0.03),
-      tip = add(add(RIM, out, 0.34), MOUTH_T, 0.17)
-    cone(at, tip, 0.06, CREAM_SHADE, Math.sin(a) > 0 ? JAW : HEAD)
+      at = add(add(RIM, out, MAW_R - 0.02), MOUTH_T, 0.05),
+      tip = add(add(RIM, out, MAW_R - 0.27), MOUTH_T, 0.13)
+    cone(
+      at,
+      tip,
+      0.055,
+      i % 2 === 0 ? TOOTH : CREAM_SHADE,
+      Math.sin(a) > 0 ? JAW : HEAD,
+    )
   }
 }
 
@@ -839,7 +894,7 @@ export function buildWyrm(): Buffer {
         pbrMetallicRoughness: {
           baseColorFactor: [1, 1, 1, 1],
           metallicFactor: 0.05,
-          roughnessFactor: 0.8,
+          roughnessFactor: 0.7,
         },
       },
       {
@@ -847,7 +902,7 @@ export function buildWyrm(): Buffer {
         pbrMetallicRoughness: {
           baseColorFactor: [1, 1, 1, 1],
           metallicFactor: 0.05,
-          roughnessFactor: 0.8,
+          roughnessFactor: 0.7,
         },
       },
     ],
@@ -908,7 +963,7 @@ export function buildWyrmSkin(glb: Buffer): Buffer {
         family: 'pbr',
         metalness: 0.05,
         occlusion: 0,
-        roughness: 0.8,
+        roughness: 0.7,
         vertexColours: true,
       },
       materials: { Gullet: 'glow' },

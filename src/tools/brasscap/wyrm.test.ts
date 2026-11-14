@@ -194,7 +194,7 @@ describe('the Brasscap Dust Wyrm generator (BM-5)', (): void => {
       )
       if (bin[jointAt + v * 4] === 3) jaw++
     }
-    // The rim's three faces below the mouth's axis (6 triangles) and the four lower teeth (16).
-    assert.equal(jaw / 3, 22)
+    // M4.13: the lip's five faces below the mouth's axis (10 triangles) and the six lower teeth (24).
+    assert.equal(jaw / 3, 34)
   })
 })

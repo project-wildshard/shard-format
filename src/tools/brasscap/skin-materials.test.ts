@@ -135,7 +135,7 @@ function source(glb: Buffer, materials?: unknown) {
 describe('skin binding materials (TE-ENG10)', (): void => {
   it("draws the bandit's eye and the Wyrm's gullet as a second GLB part, mapped to the look's glow", (): void => {
     for (const [glb, skinOf, part, corners] of [
-      [buildBandit(), buildBanditSkin, 'Eye', 36],
+      [buildBandit(), buildBanditSkin, 'Eye', 48],
       [buildWyrm(), buildWyrmSkin, 'Gullet', 24],
     ] as const) {
       const length = glb.readUInt32LE(12),
