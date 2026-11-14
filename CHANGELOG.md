@@ -4,6 +4,15 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.4 (2026-11-14)
+
+- A PBR surface can be see-through (`blend: 'alpha'`, `opacity`), sit just off a wall as a decal (`depthOffset`), sway in
+  the wind (`sway`, its reach per vertex in a `_SWAY` channel) or scroll its map (`uvScroll`).
+- An unlit surface can be blended over what is behind it (`blend: 'alpha'`) and drawn as camera-facing cards
+  (`card: true`, corners in a `_CORNER` channel): flames, glows, fireflies and sparks.
+- A card can move on its own with no shard code: `motion` pulses it (a flame), drifts it round its seat (fireflies) or
+  lifts and fades it (sparks). Leave these keys out and everything draws as before.
+
 ## v0.5.3 (2026-11-13)
 
 - A PBR surface can glow on its own: `emissive` (a colour) and `emissiveIntensity` light lamp glass, candles or coins
