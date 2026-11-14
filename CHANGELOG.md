@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.3 (2026-11-13)
+
+- A PBR surface can glow on its own: `emissive` (a colour) and `emissiveIntensity` light lamp glass, candles or coins
+  while the sun and lamps still light them. Leave them out and the surface draws as before.
+
 ## v0.5.2 (2026-11-13)
 
 - A PBR surface can carry a procedural `detail` layer: world-space mottling, fine grain, bumps and moss on its tops,

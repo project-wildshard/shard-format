@@ -7,3 +7,4 @@
   so `look-light.ts` and `water.ts` stay under the lint caps. All keys are exactOptional: no default is filled,
   older shard files parse to the same bytes.
 - 0.5.2: a PBR surface's procedural detail layer (world-space mottling, grain, bumps, moss on tops), J338's procedural route to the cleanroom's canvas textures: no bytes, no UVs.
+- 0.5.3 (opus-mossrender2): a PBR surface's own glow, `emissive` + `emissiveIntensity` (three's MeshStandardMaterial emissive), for the cleanroom's lit lamp glass that stays lit by the sun; exactOptional, absent keys keep the bytes.
