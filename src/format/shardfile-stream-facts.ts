@@ -8,17 +8,17 @@
 import { parseNamedJson } from './json.ts'
 import { ktx2DeviceCosts } from './ktx2Cost.ts'
 import { validatePlatformFile } from './platformFileFamilies.ts'
-import { assetCost } from './product.ts'
-import { outputBlobExtension, outputBlobKind } from './productValidation.ts'
 import {
   registeredJsonContract,
   validateRegisteredJson,
 } from './registeredJson.ts'
+import { assetCost } from './shardfile-assets.ts'
+import { outputBlobExtension, outputBlobKind } from './shardfileValidation.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { OutputFile } from './outputIndex.ts'
-import type { AssetCost } from './product.ts'
 import type { ScriptContract } from './scriptContract.ts'
+import type { AssetCost } from './shardfile-assets.ts'
 
 /** A computed value, or the message of the refusal computing it threw: thrown later, in the old validator's order. */
 type Outcome<Value> =

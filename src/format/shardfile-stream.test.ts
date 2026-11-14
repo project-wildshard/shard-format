@@ -7,17 +7,17 @@ import { brotliCompressSync, constants } from 'node:zlib'
 import { beforeAll, describe, expect, test } from 'vitest'
 
 import { issueCodeOf } from './issue-codes.ts'
-import { nodeStreamPorts } from './product-stream-node.ts'
-import { validateShardfileStream } from './product-stream.ts'
-import { prepareAssetDecoders } from './product.ts'
-import { validateShardfileProduct } from './productValidation.ts'
+import { prepareAssetDecoders } from './shardfile-assets.ts'
+import { nodeStreamPorts } from './shardfile-stream-node.ts'
+import { validateShardfileStream } from './shardfile-stream.ts'
+import { validateShardfileFolder } from './shardfileValidation.ts'
 import { indexTar, readTar, writeTar } from './tar.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
-import type { ProductFiles } from './productValidation.ts'
+import type { ShardfileFiles } from './shardfileValidation.ts'
 
-// API-CLOUDFLARE AC6a: the streaming validator gives validateShardfileProduct's verdict, refusal for refusal, on the
-// handwritten corpus and its mutations. product-stream-pins.test.ts runs the real pins.
+// API-CLOUDFLARE AC6a: the streaming validator gives validateShardfileFolder's verdict, refusal for refusal, on the
+// handwritten corpus and its mutations. shardfile-stream-pins.test.ts runs the real pins.
 
 type Files = ReadonlyMap<string, Readonly<Uint8Array>>
 type Mutation = readonly [name: string, mutate: () => Files]
@@ -52,7 +52,7 @@ function corpusFiles(): Files {
   return files
 }
 
-function memoryFiles(files: Files): ProductFiles {
+function memoryFiles(files: Files): ShardfileFiles {
   return {
     read: (file: string, maxBytes: number): Uint8Array => {
       const bytes = files.get(file)
@@ -302,7 +302,7 @@ describe('validateShardfileStream on the corpus', (): void => {
   test('passes the corpus complete, with its index and stored hash, as the old validator does', async (): Promise<void> => {
     const tar = writeTar(files)
     const stored = brotli(tar)
-    const old = validateShardfileProduct(memoryFiles(readTar(tar)), {
+    const old = validateShardfileFolder(memoryFiles(readTar(tar)), {
       hash: sha256,
     })
     const result = await validateShardfileStream(
@@ -329,7 +329,7 @@ describe('validateShardfileStream on the corpus', (): void => {
     async (_name: string, mutate: () => Files): Promise<void> => {
       const tar = writeTar(mutate())
       const old = verdict((): unknown =>
-        validateShardfileProduct(memoryFiles(readTar(tar)), { hash: sha256 }),
+        validateShardfileFolder(memoryFiles(readTar(tar)), { hash: sha256 }),
       )
       expect(old).not.toBe('ok')
       expect(old).not.toMatch(/^\[none\]/u)
@@ -343,7 +343,7 @@ describe('validateShardfileStream on the corpus', (): void => {
     async (_name: string, mutate: () => Files): Promise<void> => {
       const tar = writeTar(mutate())
       const old = verdict((): unknown =>
-        validateShardfileProduct(memoryFiles(readTar(tar)), { hash: sha256 }),
+        validateShardfileFolder(memoryFiles(readTar(tar)), { hash: sha256 }),
       )
       expect(old).not.toBe('ok')
       expect(old).not.toMatch(/^\[none\]/u)

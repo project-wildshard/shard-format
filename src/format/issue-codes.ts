@@ -5,7 +5,7 @@
 // part of the contract and keep their words.
 //
 // Where the code is:
-// - a validator refusal (`validateShardfileProduct`, `validateShardfileStream`, `readTar`): `error.code` on the thrown
+// - a validator refusal (`validateShardfileFolder`, `validateShardfileStream`, `readTar`): `error.code` on the thrown
 //   Error, its message unchanged. The validators tag by the check that refused; a more specific code set nearer the
 //   throw wins. A code that is not the table's (Node's `ENOENT` from a host's file port,
 //   `ERR_ENCODING_INVALID_ENCODED_DATA` from bad UTF-8) is replaced: such codes differ by host, and the message keeps

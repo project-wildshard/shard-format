@@ -1,7 +1,7 @@
 // Immutable wire bytes: one stable JSON encoding and the SHA-256 that names
 // it, shared by engine's host/immutable and the sdk (SHARD-COMPAT SI1). A
 // Node host module, not the portable library: tsconfig.lib.json leaves it
-// out, and only this module and product-stream-node.ts import `node:`.
+// out, and only this module and shardfile-stream-node.ts import `node:`.
 
 // oxlint-disable-next-line import/no-nodejs-modules -- author tools hash exact immutable wire bytes
 import { createHash } from 'node:crypto'

@@ -7,16 +7,19 @@ import { beforeAll, describe, expect, test } from 'vitest'
 
 import { assertAudioAdmission, audioReport } from './audio-rules.ts'
 import { issueCodeOf, issueCodeRows } from './issue-codes.ts'
-import { performanceReport, prepareAssetDecoders } from './product.ts'
-import { validateShardfileProduct } from './productValidation.ts'
+import { performanceReport, prepareAssetDecoders } from './shardfile-assets.ts'
+import { validateShardfileFolder } from './shardfileValidation.ts'
 import { readTar, writeTar } from './tar.ts'
 
 import type { RecordingMeasure } from './audio-measure.ts'
 import type { AudioReport } from './audio-rules.ts'
 import type { IssueCode, IssueFamily } from './issue-codes.ts'
-import type { ProductFiles, ValidatedProduct } from './productValidation.ts'
+import type {
+  ShardfileFiles,
+  ValidatedShardfile,
+} from './shardfileValidation.ts'
 
-// SHARD-AUTHORING SA41: every issue carries a code from the one table, in its family. product-stream.test.ts checks
+// SHARD-AUTHORING SA41: every issue carries a code from the one table, in its family. shardfile-stream.test.ts checks
 // that both validators give the same code and words for each refusal; here, the code each check gives.
 
 type Files = ReadonlyMap<string, Uint8Array>
@@ -55,7 +58,7 @@ function corpusFiles(): Files {
 }
 
 /** A host port as the CLI's: a missing file is Node's ENOENT. */
-function memoryFiles(files: Files): ProductFiles {
+function memoryFiles(files: Files): ShardfileFiles {
   return {
     read: (file: string, maxBytes: number): Uint8Array => {
       const bytes = files.get(file)
@@ -86,8 +89,8 @@ function refusal(run: () => unknown): Refusal {
   throw new Error('no refusal')
 }
 
-function validated(files: Files): ValidatedProduct {
-  return validateShardfileProduct(memoryFiles(files), { hash: sha256 })
+function validated(files: Files): ValidatedShardfile {
+  return validateShardfileFolder(memoryFiles(files), { hash: sha256 })
 }
 
 function without(files: Files, name: string): Files {

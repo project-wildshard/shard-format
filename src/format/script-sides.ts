@@ -16,7 +16,7 @@ import {
 
 import type { FeatureSide } from './feature-sides.ts'
 import type { OutputIndex } from './outputIndex.ts'
-import type { ScriptSideProduct } from './script-side-grandfather.ts'
+import type { ScriptSideShardfile } from './script-side-grandfather.ts'
 import type { NamedFiles } from './script-view-returns.ts'
 import type { ScriptV1CommandName } from './scriptAbiV1.ts'
 import type { V2Lane } from './scriptFuelV2.ts'
@@ -69,7 +69,7 @@ const PAGE_ONLY_PROGRAM_HOSTS: ReadonlyMap<string, readonly string[]> = new Map(
 type NamedJson = (name: string) => unknown
 
 /** The product files a validator reads before its inventory pass, and its hash check (`whole` as in
- *  `ProductValidationPorts.verify`). */
+ *  `ShardfileValidationPorts.verify`). */
 interface UncheckedFiles {
   readonly read: (path: string, bytes: number) => Uint8Array | undefined
   readonly paths: () => Iterable<string>
@@ -227,7 +227,7 @@ function namedJsonFiles(index: OutputIndex, files: UncheckedFiles): NamedFiles {
 function scriptSideVerdict(
   sections: ReadonlyMap<string, unknown>,
   files: NamedFiles,
-  product: ScriptSideProduct,
+  product: ScriptSideShardfile,
 ): { refused: string[]; warnings: string[] } {
   return splitGrandfathered(
     scriptSideRefusals(sections, files.read, files.names),

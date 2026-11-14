@@ -3,13 +3,13 @@
 
 /** The product a validator is admitting: its slug and declared source hash. Both validators check that hash against
  *  the admitted sections before they return, so a forged index cannot borrow a grandfathered product's. */
-interface ScriptSideProduct {
+interface ScriptSideShardfile {
   readonly slug: string
   readonly sourceHash: string
 }
 
 /** One live product admitted with a warning in place of a script side refusal. */
-interface GrandfatheredScript extends ScriptSideProduct {
+interface GrandfatheredScript extends ScriptSideShardfile {
   /** The script id the refusal names. */
   readonly script: string
   /** Why it still passes, and the row that removes it. */
@@ -29,7 +29,7 @@ const SCRIPT_SIDE_GRANDFATHER: readonly GrandfatheredScript[] = []
 /** The grandfather entry that covers one refusal line of this product, or `undefined`. */
 function grandfatherFor(
   line: string,
-  product: ScriptSideProduct,
+  product: ScriptSideShardfile,
 ): GrandfatheredScript | undefined {
   return SCRIPT_SIDE_GRANDFATHER.find(
     (entry: GrandfatheredScript): boolean =>
@@ -42,7 +42,7 @@ function grandfatherFor(
 /** A product's side refusal lines, split: lines a grandfather entry covers become warnings, the rest stay refusals. */
 function splitGrandfathered(
   lines: readonly string[],
-  product: ScriptSideProduct,
+  product: ScriptSideShardfile,
 ): { refused: string[]; warnings: string[] } {
   const refused: string[] = []
   const warnings: string[] = []
@@ -58,4 +58,4 @@ function splitGrandfathered(
 }
 
 export { SCRIPT_SIDE_GRANDFATHER, splitGrandfathered }
-export type { GrandfatheredScript, ScriptSideProduct }
+export type { GrandfatheredScript, ScriptSideShardfile }

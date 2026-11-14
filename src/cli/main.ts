@@ -2,7 +2,7 @@
 import { parseArgs } from 'node:util'
 
 import { packFolder } from './pack.ts'
-import { summary, validateProduct } from './validate.ts'
+import { summary, validateShardfile } from './validate.ts'
 import { readVersion } from './version.ts'
 
 const EXIT_OK = 0
@@ -77,7 +77,7 @@ async function validate(operands: readonly string[]): Promise<number> {
     return EXIT_USAGE
   }
   try {
-    process.stdout.write(`${summary(await validateProduct(dir))}\n`)
+    process.stdout.write(`${summary(await validateShardfile(dir))}\n`)
     return EXIT_OK
   } catch (error: unknown) {
     const reason = error instanceof Error ? error.message : String(error)

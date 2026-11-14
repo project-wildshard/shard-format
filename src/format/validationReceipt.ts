@@ -9,7 +9,7 @@ export interface ValidationReceipt {
   residentBytes?:number;
 }
 /** Lookup of a build-stamped number, not a client cost/preflight calculation. */
-export function builtProductResidency(sourceHash:string):number|undefined{
+export function builtShardfileResidency(sourceHash:string):number|undefined{
   const rows:unknown=typeof __SHARDFILE_VERDICTS__==='object'?__SHARDFILE_VERDICTS__:null;
   if(!Array.isArray(rows))return undefined;
   for(const item of rows){
@@ -19,7 +19,7 @@ export function builtProductResidency(sourceHash:string):number|undefined{
   return undefined;
 }
 /** Static post cost is validated with the published graph bytes, never recosted at entry. */
-export function builtProductPostCost(sourceHash:string):PostStackCost|undefined{
+export function builtShardfilePostCost(sourceHash:string):PostStackCost|undefined{
   const rows:unknown=typeof __SHARDFILE_VERDICTS__==='object'?__SHARDFILE_VERDICTS__:null;
   if(!Array.isArray(rows))return undefined;
   for(const item of rows){

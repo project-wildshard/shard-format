@@ -187,7 +187,7 @@ function programMountValid(
     mount?.hash !== digest(validationSourceBytes(cook.programs))
   ) {
     throw new Error(
-      `stale GLSL program mount: run wildshard prepare <product-dir> --base <exact-preview-url> (${index.identity.slug})`,
+      `stale GLSL program mount: run wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`,
     )
   }
 }
@@ -211,7 +211,7 @@ function requireCookPreparation(
     | undefined,
   digest: (bytes: Readonly<Uint8Array>) => string,
 ): void {
-  const fix = `wildshard prepare <product-dir> --base <exact-preview-url> (${index.identity.slug})`
+  const fix = `wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`
   if (index.sdk === '0.2' && cook?.version !== VERSION) {
     return
   }

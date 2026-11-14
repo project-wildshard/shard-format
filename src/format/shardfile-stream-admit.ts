@@ -1,4 +1,4 @@
-// `admitShardfileProduct`'s steps around `validateShardfileAssets` for the
+// `admitShardfileFolder`'s steps around `validateShardfileAssets` for the
 // streaming validator (API-CLOUDFLARE AC6a): the schema, declared costs and
 // targets before it; the world targets and the source hash after it.
 
@@ -10,18 +10,21 @@ import {
 } from './assetAdmission.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { assembleOutputShardfile } from './outputIndex.ts'
-import { offlineMemoryAdmission } from './product.ts'
-import { assertProductTargets, checkWorldTargets } from './productValidation.ts'
+import { offlineMemoryAdmission } from './shardfile-assets.ts'
+import {
+  assertShardfileTargets,
+  checkWorldTargets,
+} from './shardfileValidation.ts'
 import { parseShardfile } from './shardSchema.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { AssetAdmission } from './assetAdmission.ts'
 import type { OutputIndex } from './outputIndex.ts'
-import type { AssetPasses } from './product-stream-assets.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
+import type { AssetPasses } from './shardfile-stream-assets.ts'
 import type { Shardfile } from './shardSchema.ts'
 
-/** `admitShardfileProduct`'s steps before `validateShardfileAssets`: the schema, declared costs and targets. */
+/** `admitShardfileFolder`'s steps before `validateShardfileAssets`: the schema, declared costs and targets. */
 function admitHead(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   index: OutputIndex,
@@ -34,13 +37,13 @@ function admitHead(
     preflightDeclaredCosts(shard, offlineMemoryAdmission('warn'))
   })
   withIssueCode('performance-targets', (): void => {
-    assertProductTargets(shard, 'warn')
+    assertShardfileTargets(shard, 'warn')
   })
   return shard
 }
 
 /** The shard's head and its asset admission's first steps, or the refusal they gave: thrown only after the packs, the
- *  cook and the inventory, as `validateShardfileProduct` orders them. */
+ *  cook and the inventory, as `validateShardfileFolder` orders them. */
 function admitBeforeAssets(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   index: OutputIndex,
@@ -88,7 +91,7 @@ function admitAssets(
   })
 }
 
-/** `validateShardfileProduct`'s steps after the assets: the world targets and the source hash. */
+/** `validateShardfileFolder`'s steps after the assets: the world targets and the source hash. */
 function admitTail(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   shard: Shardfile,

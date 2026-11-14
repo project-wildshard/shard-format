@@ -52,7 +52,7 @@ export function graphFileJson(hash: string, file: (hash: string) => Uint8Array |
  * preset reference or a missing or invalid file.
  */
 export function materialGraphIr(entry: MaterialEntry, file: (hash: string) => Uint8Array | undefined): GraphIr {
-  if (entry.family !== 'graph' || !('file' in entry)) throw new Error('material graph IR needs a graph file (a built product carries no inline graph)');
+  if (entry.family !== 'graph' || !('file' in entry)) throw new Error('material graph IR needs a graph file (a built shard file carries no inline graph)');
   const checked = validateGraph(graphFileJson(entry.file, file), { trustedBudget: true });
   if (!checked.ok) throw new Error(`material graph file ${entry.file}: ${checked.errors.join('; ')}`);
   return checked.graph;

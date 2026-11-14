@@ -10,26 +10,26 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 
-import { prepareAssetDecoders } from '../format/product.ts'
-import { validateShardfileProduct } from '../format/productValidation.ts'
 import { receiptResidencyShortfall } from '../format/receipt-cost.ts'
+import { prepareAssetDecoders } from '../format/shardfile-assets.ts'
+import { validateShardfileFolder } from '../format/shardfileValidation.ts'
 import { readTar } from '../format/tar.ts'
 
 import type {
-  ProductFiles,
-  ValidatedProduct,
-} from '../format/productValidation.ts'
+  ShardfileFiles,
+  ValidatedShardfile,
+} from '../format/shardfileValidation.ts'
 
 // `shardfile validate <dir|tar>`: format validation of a built product, as a
 // folder or as the tarball a host takes (P1 F3 (a)): schema, inventory, hashes, sizes, costs, budgets and
 // admission rows. It never runs script bytes; that is the execution proof
 // in sharddev and the cook worker.
 //
-// Format's ProductFiles port is synchronous, so the reads here are too.
+// Format's ShardfileFiles port is synchronous, so the reads here are too.
 // A read is bounded by the size the index declares, and an unlisted file
 // is refused without being read.
 
-interface ProductSummary {
+interface ValidationSummary {
   readonly slug: string
   readonly revision: number
   readonly sections: number
@@ -53,12 +53,12 @@ function regularFile(root: string, file: string): string {
   let target = root
   for (const part of file.split('/')) {
     target = path.resolve(target, part)
-    // oxlint-disable-next-line node/no-sync -- ProductFiles.read is synchronous
+    // oxlint-disable-next-line node/no-sync -- ShardfileFiles.read is synchronous
     if (lstatSync(target).isSymbolicLink()) {
       throw new Error(`symlinks are refused: ${file}`)
     }
   }
-  // oxlint-disable-next-line node/no-sync -- ProductFiles.read is synchronous
+  // oxlint-disable-next-line node/no-sync -- ShardfileFiles.read is synchronous
   if (!lstatSync(target).isFile()) {
     throw new Error(`not a regular file: ${file}`)
   }
@@ -66,27 +66,27 @@ function regularFile(root: string, file: string): string {
 }
 
 function boundedRead(file: string, maxBytes: number): Uint8Array {
-  // oxlint-disable-next-line node/no-sync -- ProductFiles.read is synchronous
+  // oxlint-disable-next-line node/no-sync -- ShardfileFiles.read is synchronous
   const fd = openSync(file, 'r')
   try {
-    // oxlint-disable-next-line node/no-sync -- ProductFiles.read is synchronous
+    // oxlint-disable-next-line node/no-sync -- ShardfileFiles.read is synchronous
     const { size } = fstatSync(fd)
     if (size > maxBytes) {
       throw new Error(`larger than its declared size: ${file}`)
     }
     const bytes = new Uint8Array(size)
-    // oxlint-disable-next-line node/no-sync -- ProductFiles.read is synchronous
+    // oxlint-disable-next-line node/no-sync -- ShardfileFiles.read is synchronous
     readSync(fd, bytes, START, size, START)
     return bytes
   } finally {
-    // oxlint-disable-next-line node/no-sync -- ProductFiles.read is synchronous
+    // oxlint-disable-next-line node/no-sync -- ShardfileFiles.read is synchronous
     closeSync(fd)
   }
 }
 
 /** Every non-directory entry, symlinks included, as `/`-separated paths. */
 function productPaths(root: string): string[] {
-  // oxlint-disable-next-line node/no-sync -- ProductFiles.paths is synchronous
+  // oxlint-disable-next-line node/no-sync -- ShardfileFiles.paths is synchronous
   const entries = readdirSync(root, { recursive: true, withFileTypes: true })
   const kept = entries.filter(
     (entry: Readonly<{ isDirectory: () => boolean }>): boolean =>
@@ -100,7 +100,7 @@ function productPaths(root: string): string[] {
   )
 }
 
-function productFiles(root: string): ProductFiles {
+function shardfileFiles(root: string): ShardfileFiles {
   return {
     read: (file: string, maxBytes: number): Uint8Array =>
       boundedRead(regularFile(root, file), maxBytes),
@@ -111,7 +111,7 @@ function productFiles(root: string): ProductFiles {
 /** A product already in memory: an unpacked tarball, or `pack`'s result. */
 function memoryFiles(
   files: ReadonlyMap<string, Readonly<Uint8Array>>,
-): ProductFiles {
+): ShardfileFiles {
   return {
     read: (file: string, maxBytes: number): Uint8Array => {
       const bytes = files.get(file)
@@ -130,14 +130,14 @@ function memoryFiles(
 /** A product already in memory, validated with format alone. */
 async function validateInMemory(
   files: ReadonlyMap<string, Readonly<Uint8Array>>,
-): Promise<ValidatedProduct> {
+): Promise<ValidatedShardfile> {
   await prepareAssetDecoders()
-  return validateShardfileProduct(memoryFiles(files), { hash: sha256 })
+  return validateShardfileFolder(memoryFiles(files), { hash: sha256 })
 }
 
 /** The receipt's JSON, or why it can't be read. */
 function readReceipt(
-  files: ProductFiles,
+  files: ShardfileFiles,
 ): Readonly<{ receipt: unknown }> | string {
   try {
     const bytes = files.read(RECEIPT, RECEIPT_BYTES)
@@ -150,7 +150,7 @@ function readReceipt(
 /** The receipt's figures, or why they can't be read. A receipt is evidence
  *  the validator never reads, so a bad one warns rather than refuses. */
 function receiptWarnings(
-  files: ProductFiles,
+  files: ShardfileFiles,
   shortfall: (receipt: unknown) => string | undefined,
 ): readonly string[] {
   if (![...files.paths()].includes(RECEIPT)) {
@@ -164,20 +164,20 @@ function receiptWarnings(
   return found === undefined ? [] : [found]
 }
 
-function targetFiles(target: string): ProductFiles {
+function targetFiles(target: string): ShardfileFiles {
   // oxlint-disable-next-line node/no-sync -- read before the sync validator
   if (lstatSync(target).isFile()) {
     // oxlint-disable-next-line node/no-sync -- read before the sync validator
     return memoryFiles(readTar(readFileSync(target)))
   }
-  return productFiles(target)
+  return shardfileFiles(target)
 }
 
 /** Validates the built product at `target` with format alone. */
-async function validateProduct(target: string): Promise<ProductSummary> {
+async function validateShardfile(target: string): Promise<ValidationSummary> {
   await prepareAssetDecoders()
   const files = targetFiles(path.resolve(target))
-  const valid = validateShardfileProduct(files, { hash: sha256 })
+  const valid = validateShardfileFolder(files, { hash: sha256 })
   // A memory figure below the product's own files (Brasscap rev 3: 2,930,740
   // over 4,670,827) warns rather than refuses while a pinned product still
   // carries one; `pack` restamps it.
@@ -197,7 +197,7 @@ async function validateProduct(target: string): Promise<ProductSummary> {
 }
 
 /** One line for a product that passed, then one `warning:` line for each of its warnings. */
-function summary(product: ProductSummary): string {
+function summary(product: ValidationSummary): string {
   const counts = `${String(product.sections)} sections, ${String(product.assets)} assets`
   const ok = `ok ${product.slug} r${String(product.revision)}: ${counts}, source ${product.sourceHash}`
   return [
@@ -206,5 +206,11 @@ function summary(product: ProductSummary): string {
   ].join('\n')
 }
 
-export type { ProductSummary }
-export { memoryFiles, productFiles, summary, validateInMemory, validateProduct }
+export type { ValidationSummary }
+export {
+  memoryFiles,
+  shardfileFiles,
+  summary,
+  validateInMemory,
+  validateShardfile,
+}

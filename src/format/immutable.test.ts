@@ -92,9 +92,9 @@ test('only the Node host modules import node:', (): void => {
     .filter((file: string): boolean =>
       readFileSync(new URL(file, dir), 'utf8').includes("from 'node:"),
     )
-  expect(hosts.toSorted()).toEqual(['immutable.ts', 'product-stream-node.ts'])
+  expect(hosts.toSorted()).toEqual(['immutable.ts', 'shardfile-stream-node.ts'])
   const lib = readFileSync(new URL('tsconfig.lib.json', dir), 'utf8')
-  expect(lib).toContain('"product-stream-node.ts", "immutable.ts"')
+  expect(lib).toContain('"shardfile-stream-node.ts", "immutable.ts"')
 })
 
 test('parseShardfileField admits one field with its defining schema', (): void => {

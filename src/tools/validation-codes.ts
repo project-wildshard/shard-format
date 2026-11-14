@@ -16,7 +16,7 @@ const EXIT_USAGE = 2
 const FAMILIES: readonly (readonly [IssueFamily, string])[] = [
   [
     'validate',
-    '`validateShardfileProduct`, `validateShardfileStream` and `readTar`: `error.code` on the thrown Error.',
+    '`validateShardfileFolder`, `validateShardfileStream` and `readTar`: `error.code` on the thrown Error.',
   ],
   [
     'stream',

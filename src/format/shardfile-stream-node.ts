@@ -9,8 +9,8 @@ import { Readable, pipeline } from 'node:stream'
 // oxlint-disable-next-line import/no-nodejs-modules -- a Node and Workers host adapter
 import { createBrotliDecompress } from 'node:zlib'
 
-import type { StreamHasher } from './product-stream-tar.ts'
-import type { StreamValidationPorts } from './product-stream.ts'
+import type { StreamHasher } from './shardfile-stream-tar.ts'
+import type { StreamValidationPorts } from './shardfile-stream.ts'
 
 function sha256(bytes: Readonly<Uint8Array>): string {
   return createHash('sha256').update(bytes).digest('hex')

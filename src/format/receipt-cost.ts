@@ -2,9 +2,9 @@
 import { preflightDeclaredCosts } from './assetAdmission.ts'
 import { structuralGridEvidence } from './gridReadiness.ts'
 import { postStackCost } from './postStack.ts'
-import { offlineMemoryAdmission } from './product.ts'
+import { offlineMemoryAdmission } from './shardfile-assets.ts'
 import {
-  productWireBytes,
+  shardfileWireBytes,
   publishedSourceResidency,
 } from './sourceResidency.ts'
 
@@ -59,7 +59,7 @@ function receiptResidencyShortfall(
   shard: Shardfile,
 ): string | undefined {
   const stamped = stampedResidency(receipt)
-  const wire = productWireBytes(shard)
+  const wire = shardfileWireBytes(shard)
   if (stamped === undefined || stamped >= wire) {
     return undefined
   }

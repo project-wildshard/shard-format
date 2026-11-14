@@ -990,7 +990,7 @@
    "unicorn(number-literal-case)": 1,
    "unicorn(numeric-separators-style)": 3
   },
-  "src/format/directorProduct.ts": {
+  "src/format/directorDocument.ts": {
    "eslint(id-length)": 1,
    "eslint(no-magic-numbers)": 2,
    "import(consistent-type-specifier-style)": 3,
@@ -3032,7 +3032,7 @@
    "import(group-exports)": 6,
    "import(no-namespace)": 1
   },
-  "src/format/product.ts": {
+  "src/format/shardfile-assets.ts": {
    "eslint(capitalized-comments)": 1,
    "eslint(complexity)": 3,
    "eslint(curly)": 73,
@@ -3065,7 +3065,7 @@
    "unicorn(no-null)": 2,
    "unicorn(numeric-separators-style)": 1
   },
-  "src/format/productValidation.ts": {
+  "src/format/shardfileValidation.ts": {
    "eslint(curly)": 29,
    "eslint(max-params)": 2,
    "eslint(max-statements)": 2,
@@ -5206,7 +5206,7 @@
   "src/format/declaredQuestPage.ts",
   "src/format/deviceMemoryCost.ts",
   "src/format/director.ts",
-  "src/format/directorProduct.ts",
+  "src/format/directorDocument.ts",
   "src/format/directorStages.ts",
   "src/format/directorWhen.ts",
   "src/format/discovery-values.test.ts",
@@ -5370,8 +5370,8 @@
   "src/format/preflight.ts",
   "src/format/presentation-row-declarations.test.ts",
   "src/format/presentation.ts",
-  "src/format/product.ts",
-  "src/format/productValidation.ts",
+  "src/format/shardfile-assets.ts",
+  "src/format/shardfileValidation.ts",
   "src/format/propMaterials.ts",
   "src/format/props.ts",
   "src/format/quest-step-declarations.test.ts",

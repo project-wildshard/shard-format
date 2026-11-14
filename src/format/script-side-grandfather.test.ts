@@ -5,17 +5,17 @@ import path from 'node:path'
 
 import { beforeAll, describe, expect, test } from 'vitest'
 
-import { nodeStreamPorts } from './product-stream-node.ts'
-import { validateShardfileStream } from './product-stream.ts'
-import { prepareAssetDecoders } from './product.ts'
-import { validateShardfileProduct } from './productValidation.ts'
 import { SCRIPT_SIDE_GRANDFATHER } from './script-side-grandfather.ts'
 import { scriptSideVerdict } from './script-sides.ts'
+import { prepareAssetDecoders } from './shardfile-assets.ts'
+import { nodeStreamPorts } from './shardfile-stream-node.ts'
+import { validateShardfileStream } from './shardfile-stream.ts'
+import { validateShardfileFolder } from './shardfileValidation.ts'
 import { writeTar } from './tar.ts'
 
-import type { ProductFiles } from './productValidation.ts'
-import type { ScriptSideProduct } from './script-side-grandfather.ts'
+import type { ScriptSideShardfile } from './script-side-grandfather.ts'
 import type { NamedJson } from './script-sides.ts'
+import type { ShardfileFiles } from './shardfileValidation.ts'
 
 // SERVER-PARITY SS7 and SS11: Pine's old live product was grandfathered with a warning until SS11 re-uploaded it (Pine
 // revision 4, `page.life` on the view row `pine.ambient`); the list is now empty, so every product with the pattern, the
@@ -33,7 +33,7 @@ const PINE = path.join(ENGINE_OUT, 'pine-hollow')
 const LIFE = 'actors/page-life.json'
 const PINE_LINE = `sim script pine.life runs in page-only feature page.life (${LIFE}), which no server host runs`
 /** Pine's old live product (revision 2, `f45e25f2`), the one product the list grandfathered until SS11. */
-const PINE_OLD: ScriptSideProduct = {
+const PINE_OLD: ScriptSideShardfile = {
   slug: 'pine-hollow',
   sourceHash:
     'a255585456ff289330fc0a8f7b417b67dca608ebeebcec59b676a7b361f79c15',
@@ -74,7 +74,7 @@ function pathOf(value: unknown, keys: readonly string[]): unknown {
 /** The verdict on a page.life feature running a `sim` row `id` (its own copy), in `product`. */
 function simLifeVerdict(
   id: string,
-  product: ScriptSideProduct,
+  product: ScriptSideShardfile,
 ): { refused: string[]; warnings: string[] } {
   const row = { id, side: 'sim' }
   const sections = new Map<string, unknown>([
@@ -144,7 +144,7 @@ function pineFiles(): Map<string, Uint8Array> {
   return files
 }
 
-function memoryFiles(files: Files): ProductFiles {
+function memoryFiles(files: Files): ShardfileFiles {
   return {
     paths: (): Iterable<string> => files.keys(),
     read: (file: string, maxBytes: number): Uint8Array => {
@@ -237,7 +237,7 @@ describe('pinned products in engine out/', (): void => {
     async (): Promise<void> => {
       const head = pineFiles()
       const old = verdict((): unknown =>
-        validateShardfileProduct(memoryFiles(head), { hash: sha256 }),
+        validateShardfileFolder(memoryFiles(head), { hash: sha256 }),
       )
       expect(old).not.toMatch(/Script side/u)
       expect(await streamVerdict(head)).not.toMatch(/Script side/u)

@@ -15,11 +15,11 @@ import path from 'node:path'
 import { after, describe, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { prepareAssetDecoders } from '../format/product.ts'
-import { validateShardfileProduct } from '../format/productValidation.ts'
 import { receiptCost } from '../format/receipt-cost.ts'
+import { prepareAssetDecoders } from '../format/shardfile-assets.ts'
+import { validateShardfileFolder } from '../format/shardfileValidation.ts'
 import {
-  productWireBytes,
+  shardfileWireBytes,
   publishedSourceResidency,
 } from '../format/sourceResidency.ts'
 import { readTar } from '../format/tar.ts'
@@ -78,13 +78,13 @@ describe('shardfile pack restamps a receipt', (): void => {
     await packFolder(stale('restamped'), out)
     const files = readTar(readFileSync(out))
     await prepareAssetDecoders()
-    const product = validateShardfileProduct(memoryFiles(files), {
+    const product = validateShardfileFolder(memoryFiles(files), {
       hash: sha256,
     })
     const receipt = receiptOf(files)
     const resident = publishedSourceResidency(product.shard)
 
-    assert.ok(resident > productWireBytes(product.shard))
+    assert.ok(resident > shardfileWireBytes(product.shard))
     assert.deepEqual(receipt, {
       ...receipt,
       ...receiptCost(product.shard, product.assets),

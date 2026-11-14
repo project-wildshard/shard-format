@@ -11,7 +11,7 @@
 import { issueError } from './issue-codes.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
-import type { StreamHasher } from './product-stream-tar.ts'
+import type { StreamHasher } from './shardfile-stream-tar.ts'
 
 type Pack = NonNullable<OutputIndex['packs']>[number]
 

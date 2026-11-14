@@ -1,51 +1,51 @@
 // oxlint-disable eslint/max-statements, import/max-dependencies -- the old validator's steps in its order
-// API-CLOUDFLARE AC6a: `validateShardfileProduct` over a stream, for a host
+// API-CLOUDFLARE AC6a: `validateShardfileFolder` over a stream, for a host
 // with no disk and no synchronous reads (the API Worker: 128 MB, `node:zlib`,
 // no WebAssembly compiled from bytes). The first read of the stored object
 // takes its SHA-256, its decoding (Brotli, a host port), a strict ustar walk
 // and every member's SHA-256 and size. Blobs are checked as they stream and
-// only their facts kept (product-stream-facts.ts); JSON, Wasm and every file
+// only their facts kept (shardfile-stream-facts.ts); JSON, Wasm and every file
 // outside `blobs/`, `mounts/` and `packs/` are kept whole. Then the old
 // validator's steps run in its order, so a refusal is the one it gives (its
 // message may differ only for a blob whose declared kind contradicts its path).
 //
 // AC6a2: `validateShardfileAssets`' byte checks and the pack checks read
 // assets by hash in any order (153 MB of blobs on the 327 MB pin), so they
-// take a second read of the stored object (product-stream-assets.ts), and a
-// further read per group of left-out packs (product-stream-packs.ts). Hence
+// take a second read of the stored object (shardfile-stream-assets.ts), and a
+// further read per group of left-out packs (shardfile-stream-packs.ts). Hence
 // `open`: a host passes a function that opens the stored object afresh.
 
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
 import { assertSectionSides } from './feature-sides.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
+import { assertScriptSides } from './script-sides.ts'
+import { scriptAdmissionRows } from './scriptContract.ts'
+import { prepareAssetDecoders } from './shardfile-assets.ts'
 import {
   admitAssets,
   admitBeforeAssets,
   admitTail,
-} from './product-stream-admit.ts'
-import { assetPasses } from './product-stream-assets.ts'
-import { blobFacts } from './product-stream-facts.ts'
+} from './shardfile-stream-admit.ts'
+import { assetPasses } from './shardfile-stream-assets.ts'
+import { blobFacts } from './shardfile-stream-facts.ts'
 import {
   listedBytes,
   replayBeforePacks,
   replayPacksToInventory,
-} from './product-stream-rows.ts'
-import { walkTar } from './product-stream-tar.ts'
-import { prepareAssetDecoders } from './product.ts'
-import { readCanonicalJson } from './productValidation.ts'
-import { assertScriptSides } from './script-sides.ts'
-import { scriptAdmissionRows } from './scriptContract.ts'
+} from './shardfile-stream-rows.ts'
+import { walkTar } from './shardfile-stream-tar.ts'
+import { readCanonicalJson } from './shardfileValidation.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
-import type { StoredSource } from './product-stream-assets.ts'
-import type { KeptMember, Replay } from './product-stream-rows.ts'
+import type { ScriptAdmissionRows } from './scriptContract.ts'
+import type { StoredSource } from './shardfile-stream-assets.ts'
+import type { KeptMember, Replay } from './shardfile-stream-rows.ts'
 import type {
   StreamHasher,
   StreamMember,
   WalkPorts,
-} from './product-stream-tar.ts'
-import type { ScriptAdmissionRows } from './scriptContract.ts'
+} from './shardfile-stream-tar.ts'
 import type { Shardfile } from './shardSchema.ts'
 
 /** The host services a streaming validation needs. */
@@ -61,7 +61,7 @@ interface StreamValidationPorts {
 }
 
 /** What one streaming validation found. */
-interface StreamedProduct {
+interface StreamedShardfile {
   /** SHA-256 and byte length of the stored object, before decoding. */
   readonly hash: string
   readonly bytes: number
@@ -73,7 +73,7 @@ interface StreamedProduct {
   readonly scripts: ScriptAdmissionRows
   /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
   readonly warnings: readonly string[]
-  /** True only when every check `validateShardfileProduct` runs has run: always, since AC6a2. */
+  /** True only when every check `validateShardfileFolder` runs has run: always, since AC6a2. */
   readonly complete: boolean
   /** The checks still to run, by name, while `complete` is false: none, since AC6a2. */
   readonly pending: readonly string[]
@@ -196,7 +196,7 @@ async function walkStored(
   }
 }
 
-/** `shard.json`, read as `validateShardfileProduct` reads it: bounded, canonical, then parsed. */
+/** `shard.json`, read as `validateShardfileFolder` reads it: bounded, canonical, then parsed. */
 function readIndex(replay: Readonly<Replay>): OutputIndex {
   const shardJson = replay.members.get('shard.json')
   if (shardJson === undefined) {
@@ -218,7 +218,7 @@ function readSections(
   replay: Readonly<Replay>,
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   index: OutputIndex,
-): Pick<StreamedProduct, 'sections' | 'warnings' | 'scripts'> {
+): Pick<StreamedShardfile, 'sections' | 'warnings' | 'scripts'> {
   const payloads = new Map<string, unknown>()
   for (const entry of index.sections) {
     withIssueCode('section-invalid', (): void => {
@@ -245,11 +245,11 @@ function readSections(
 }
 
 /** Stream-validate a stored shardfile object (see the file comment): `open` gives a fresh stream of it on each call.
- *  Rejects with the refusal `validateShardfileProduct` would give first. */
+ *  Rejects with the refusal `validateShardfileFolder` would give first. */
 async function validateShardfileStream(
   open: StoredSource,
   ports: StreamValidationPorts,
-): Promise<StreamedProduct> {
+): Promise<StreamedShardfile> {
   // GLB costs need the meshopt decoder before any blob streams (Codex review: a cold start refused valid GLBs).
   await prepareAssetDecoders()
   const walked = await walkStored(await open(), ports)
@@ -292,6 +292,6 @@ async function validateShardfileStream(
   }
 }
 
-export type { StoredSource } from './product-stream-assets.ts'
-export type { StreamValidationPorts, StreamedProduct }
+export type { StoredSource } from './shardfile-stream-assets.ts'
+export type { StreamValidationPorts, StreamedShardfile }
 export { STREAM_BLOB_CAP, STREAM_KEPT_CAP, validateShardfileStream }

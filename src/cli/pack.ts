@@ -6,11 +6,11 @@ import {
   assembleOutputShardfile,
   parseOutputIndex,
 } from '../format/outputIndex.ts'
-import { packFromMembers } from '../format/product-reads.ts'
 import { receiptCost } from '../format/receipt-cost.ts'
+import { packFromMembers } from '../format/shardfile-reads.ts'
 import { writeTar } from '../format/tar.ts'
 import { validationSourceBytes } from '../format/validationReceipt.ts'
-import { productFiles, validateInMemory } from './validate.ts'
+import { shardfileFiles, validateInMemory } from './validate.ts'
 
 // `shardfile pack <dir>`: a folder a person holds becomes a tarball, with
 // format alone (J168). An author edits a section and packs: what the sections
@@ -98,7 +98,7 @@ function jsonOf(bytes: Readonly<Uint8Array>): unknown {
 }
 
 function readFolder(dir: string): Files {
-  const product = productFiles(dir)
+  const product = shardfileFiles(dir)
   const kept = [...product.paths()].filter(
     (file: string): boolean => !file.startsWith(PACKS),
   )

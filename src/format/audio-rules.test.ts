@@ -16,7 +16,7 @@ import {
   isoDay,
 } from './audio-rules.ts'
 import { AudioWaiverSchema } from './audio-waiver.ts'
-import { productRecordings } from './product-audio.ts'
+import { shardfileRecordings } from './shardfile-audio.ts'
 
 import type { RecordingMeasure } from './audio-measure.ts'
 import type { AudioFinding, AudioReport } from './audio-rules.ts'
@@ -528,7 +528,7 @@ function mountedProduct(): { rows: RecordingMeasure[]; expected: number } {
       return { url, path, hash: path, bytes: files.get(path)?.length ?? 0 }
     }),
   }
-  const rows = productRecordings({
+  const rows = shardfileRecordings({
     cook,
     read: (path: string): Uint8Array => files.get(path) ?? new Uint8Array(),
     shard: { audio: {} },
@@ -551,7 +551,7 @@ describe('audio mounts', (): void => {
     expect(isRecordingMount('/assets/sfx/a/hit.flac', json)).toBe(true)
     expect(isRecordingMount('/assets/baked/a/hit.flac', flac(8))).toBe(false)
   })
-  test('productRecordings measures every audio mount, and skips music.json', (): void => {
+  test('shardfileRecordings measures every audio mount, and skips music.json', (): void => {
     const { rows, expected } = mountedProduct()
     expect(rows.map((one): string => `${one.url} ${one.container}`)).toEqual([
       '/assets/music/a/a.m4a mp4',

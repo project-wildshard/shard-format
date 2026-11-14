@@ -1,6 +1,6 @@
 /** Bounded GLB byte admission shared by build validation and runtime entry.
  * No product/schema graph is initialized to admit an equipment or skin model. */
-import type { AssetCost } from './product.ts';
+import type { AssetCost } from './shardfile-assets.ts';
 import { glbBuffers, prepareGlbBuffers } from './glbBuffers.ts';
 import { glbImageCost } from './glbImages.ts';
 import { visitGlbGeometry, type GlbVertex } from './glbTriangles.ts';

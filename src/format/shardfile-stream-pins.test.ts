@@ -5,10 +5,10 @@ import path from 'node:path'
 
 import { describe, expect, test } from 'vitest'
 
-import { nodeStreamPorts } from './product-stream-node.ts'
-import { validateShardfileStream } from './product-stream.ts'
-import { prepareAssetDecoders } from './product.ts'
-import { validateShardfileProduct } from './productValidation.ts'
+import { prepareAssetDecoders } from './shardfile-assets.ts'
+import { nodeStreamPorts } from './shardfile-stream-node.ts'
+import { validateShardfileStream } from './shardfile-stream.ts'
+import { validateShardfileFolder } from './shardfileValidation.ts'
 import { readTar } from './tar.ts'
 
 // API-CLOUDFLARE AC6a on the real pins (engine test/pins/shardfiles.json) from the local cache: the 12 MB median, the
@@ -52,7 +52,7 @@ describe.each(PIN_RUNS)('the %s pin', (_name: string, hash: string): void => {
     async (): Promise<void> => {
       await prepareAssetDecoders()
       const files = readTar(readFileSync(file))
-      const old = validateShardfileProduct(
+      const old = validateShardfileFolder(
         {
           read: (name: string): Uint8Array =>
             files.get(name) ?? new Uint8Array(),
@@ -81,7 +81,7 @@ describe('the Pine revision 4 pin (live)', (): void => {
     async (): Promise<void> => {
       await prepareAssetDecoders()
       const files = readTar(readFileSync(file))
-      const old = validateShardfileProduct(
+      const old = validateShardfileFolder(
         {
           read: (name: string): Uint8Array =>
             files.get(name) ?? new Uint8Array(),
@@ -111,7 +111,7 @@ describe.each(PINE_OLD_PINS)(
         await prepareAssetDecoders()
         const files = readTar(readFileSync(file))
         expect((): unknown =>
-          validateShardfileProduct(
+          validateShardfileFolder(
             {
               read: (name: string): Uint8Array =>
                 files.get(name) ?? new Uint8Array(),

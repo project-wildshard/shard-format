@@ -1,5 +1,5 @@
 // oxlint-disable import/max-dependencies -- the old validator's steps, each from its defining module
-// `validateShardfileProduct`'s inventory steps, replayed over what one
+// `validateShardfileFolder`'s inventory steps, replayed over what one
 // streaming pass kept (API-CLOUDFLARE AC6a): each listed file's hash and
 // size, the blobs' facts, server files, KTX2 device costs, the cook and its
 // mounts, and no unlisted file. The order and the messages are the old ones.
@@ -10,16 +10,16 @@ import { cookMountPath, readCookData } from './cook-data.ts'
 import { requireCookPreparation } from './cook-preparation.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { validatePlatformFile } from './platformFileFamilies.ts'
-import { mountSharesBlob } from './product-reads.ts'
-import { inspectFacts, ktx2Text } from './product-stream-facts.ts'
-import { outputBlobKind, readCanonicalJson } from './productValidation.ts'
 import { decisionModuleContracts } from './scriptContract.ts'
+import { mountSharesBlob } from './shardfile-reads.ts'
+import { inspectFacts, ktx2Text } from './shardfile-stream-facts.ts'
+import { outputBlobKind, readCanonicalJson } from './shardfileValidation.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
-import type { FactsMember } from './product-stream-facts.ts'
-import type { StreamMember } from './product-stream-tar.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
+import type { FactsMember } from './shardfile-stream-facts.ts'
+import type { StreamMember } from './shardfile-stream-tar.ts'
 
 /** One tar member after the walk. */
 type KeptMember = FactsMember & StreamMember

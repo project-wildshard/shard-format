@@ -2,7 +2,7 @@ import type { ShardEntryways } from './entryways.ts';
 import type { ShardProps } from './props.ts';
 import type { ShardWater } from './water.ts';
 import { entryFootprints, clipEntryPolygon, obstructsEntry, type EntryVertex, type EntryFootprint } from './entryGeometry.ts';
-import { PropExtent, visitGlbTriangles } from './product.ts';
+import { PropExtent, visitGlbTriangles } from './shardfile-assets.ts';
 import { glbPoint, glbTransform } from './glbTriangles.ts';
 import { WAVES } from './waterWaves.ts';
 

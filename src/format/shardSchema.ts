@@ -9,7 +9,7 @@ import { CELL_ABOVE, CELL_BELOW, CHUNK_HALF, CONTENT_CAPS } from './contentBound
 import { jsonDataNodes } from './json.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 import { preflightShardfile } from './preflight.ts';
-import { preflightAssetGraph } from './product.ts';
+import { preflightAssetGraph } from './shardfile-assets.ts';
 import { SHARDFILE_VERSION } from './version.ts';
 import { UiSchema, uiRules } from './ui.ts';
 import { scriptBindingRules } from './scripts.ts';

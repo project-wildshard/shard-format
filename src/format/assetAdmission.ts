@@ -1,11 +1,11 @@
-import { acceptsProductCost, textureLibrarySource } from './deviceMemoryCost.ts';
+import { acceptsShardfileCost, textureLibrarySource } from './deviceMemoryCost.ts';
 import { admitScriptContract, decisionModuleContracts, type ScriptAdmissionRows } from './scriptContract.ts';
 import type { TextureTranscodeSupport } from './contentBounds.ts';
 import { admitScript } from './scriptAdmission.ts';
 import { SCRIPT_LIMITS } from './scriptLimits.ts';
 import { worstContentCost } from './budget.ts';
 import { parseShardfile, type Shardfile } from './shardSchema.ts';
-import { assetCost, validateTerrainAssets, validatePropDrawBounds, preflightAssetGraph, type PropExtent } from './product.ts';
+import { assetCost, validateTerrainAssets, validatePropDrawBounds, preflightAssetGraph, type PropExtent } from './shardfile-assets.ts';
 import type { MemoryAdmission } from './memoryAdmission.ts';
 
 import { validateMeshCollisionAssets } from './meshCollisionAssets.ts';
@@ -63,11 +63,11 @@ function preflightDeclaredCosts(source: Shardfile, memory?: MemoryAdmission): { 
   }
   const resident = Object.values(commons).reduce((total, cost) => total + cost.decoded + cost.gpu, 0);
   const worst = worstContentCost(source, resident);
-  if (!acceptsProductCost(memory, source, 'declared', worst)) throw new Error(`declared worst-location total exceeds envelope: ${worst.playing}`);
+  if (!acceptsShardfileCost(memory, source, 'declared', worst)) throw new Error(`declared worst-location total exceeds envelope: ${worst.playing}`);
   return { commons, worst };
 }
 
-/** One `validateShardfileAssets` run's state between its steps. The streaming validator (`product-stream-assets.ts`,
+/** One `validateShardfileAssets` run's state between its steps. The streaming validator (`shardfile-stream-assets.ts`,
  *  API-CLOUDFLARE AC6a2) runs `admitFileBytes` per file as its bytes stream past, then the rest in this order. */
 interface AssetAdmission {
   readonly shard: Shardfile;
@@ -248,7 +248,7 @@ function admitAfterFiles(state: AssetAdmission, assets: ReadonlyMap<string, Uint
   if (clientModules.size + new Set(scripts.filter(row => row.side === 'view').map(row => row.module)).size > SCRIPT_LIMITS.instances || clientMemory > SCRIPT_LIMITS.memoryBytes || libraryResident > s.budgets.library.resident) throw new Error('client script memory or view budget understated or above host cap');
   if (libraryResident + sketchResident > s.budgets.library.resident) throw new Error('compendium sketch raster budget understated');
   const cost = worstContentCost(textureLibrarySource(s, assets, textures), commons);
-  if (!acceptsProductCost(memory, s, 'actual', cost)) throw new Error(`worst-location total exceeds envelope: ${cost.playing}`);
+  if (!acceptsShardfileCost(memory, s, 'actual', cost)) throw new Error(`worst-location total exceeds envelope: ${cost.playing}`);
   validateNavigationAssets(s, assets);
   validateNativeGround(s, assets);
   validateEntrywayTerrain(s, assets);

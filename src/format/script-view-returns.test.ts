@@ -4,15 +4,15 @@ import { existsSync, readFileSync } from 'node:fs'
 
 import { beforeAll, describe, expect, test } from 'vitest'
 
-import { nodeStreamPorts } from './product-stream-node.ts'
-import { validateShardfileStream } from './product-stream.ts'
-import { prepareAssetDecoders } from './product.ts'
-import { validateShardfileProduct } from './productValidation.ts'
 import { viewReturnRefusals } from './script-view-returns.ts'
+import { prepareAssetDecoders } from './shardfile-assets.ts'
+import { nodeStreamPorts } from './shardfile-stream-node.ts'
+import { validateShardfileStream } from './shardfile-stream.ts'
+import { validateShardfileFolder } from './shardfileValidation.ts'
 import { writeTar } from './tar.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
-import type { ProductFiles } from './productValidation.ts'
+import type { ShardfileFiles } from './shardfileValidation.ts'
 
 // SERVER-PARITY SS12 (engine 1e99d663): the server never loads a `view` return row (`serverReturnRows`), so a program
 // that runs one anywhere the server may read it fails at install (`Missing admitted raw return module loan`). Only a
@@ -199,7 +199,7 @@ function driftwoodViewHead(): Files {
   return files
 }
 
-function memoryFiles(files: Files): ProductFiles {
+function memoryFiles(files: Files): ShardfileFiles {
   return {
     paths: (): Iterable<string> => files.keys(),
     read: (file: string, maxBytes: number): Uint8Array => {
@@ -220,7 +220,7 @@ async function verdicts(files: Files): Promise<string[]> {
   const messages: string[] = []
   for (const run of [
     (): unknown =>
-      validateShardfileProduct(memoryFiles(files), { hash: sha256 }),
+      validateShardfileFolder(memoryFiles(files), { hash: sha256 }),
     async (): Promise<unknown> =>
       await validateShardfileStream(
         (): AsyncIterable<Uint8Array> => single(writeTar(files)),

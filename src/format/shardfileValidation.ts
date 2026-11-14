@@ -10,14 +10,14 @@ import { isTerrainTileData } from './terrainTileBytes.ts';
 import { parseImageAsset } from './stillImage.ts';
 import { parseWorldTargets, worldTargetRules } from './worldTargets.ts';
 import { parseShardfile, type Shardfile } from './shardSchema.ts';
-import { assetCost, offlineMemoryAdmission, performanceTargetIssues } from './product.ts';
+import { assetCost, offlineMemoryAdmission, performanceTargetIssues } from './shardfile-assets.ts';
 import { preflightDeclaredCosts, validateShardfileAssets } from './assetAdmission.ts';
 import { validationSourceBytes } from './validationReceipt.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
-import { assetStore, checkPacks, mountSharesBlob } from './product-reads.ts';
+import { assetStore, checkPacks, mountSharesBlob } from './shardfile-reads.ts';
 import { assertSectionSides } from './feature-sides.ts';
 import { assertScriptSides } from './script-sides.ts';
-import { productRecordings } from './product-audio.ts';
+import { shardfileRecordings } from './shardfile-audio.ts';
 import type { RecordingMeasure } from './audio-measure.ts';
 import { issueError, withIssueCode as coded } from './issue-codes.ts';
 
@@ -27,11 +27,11 @@ import { issueError, withIssueCode as coded } from './issue-codes.ts';
  * only this package. It never executes script bytes: re-running admitted WASM (G491) is the execution proof, which
  * stays with the author CLI and the cook worker.
  *
- * Call `prepareAssetDecoders()` (`@wildshard/shard-format/product`) once before validating; GLB costs need the decoder.
+ * Call `prepareAssetDecoders()` (`@wildshard/shard-format/shardfileAssets`) once before validating; GLB costs need the decoder.
  */
 
 /** Read access to one product folder. Paths are `/`-separated and relative to the product root. */
-export interface ProductFiles {
+export interface ShardfileFiles {
   /** The bytes of one regular file, refusing symlinks and anything larger than `maxBytes`. */
   readonly read: (path: string, maxBytes: number) => Uint8Array;
   /** Every non-directory entry under the root (symlinks and special files included, so they are refused as unlisted). */
@@ -39,7 +39,7 @@ export interface ProductFiles {
 }
 
 /** The host services format validation needs but does not own. */
-export interface ProductValidationPorts {
+export interface ShardfileValidationPorts {
   /** Lowercase hex SHA-256 of exact bytes. */
   readonly hash: (bytes: Uint8Array) => string;
   /** Whether bytes have the expected hash; `whole` marks a complete inventory file a caller may remember. Default: `hash`. */
@@ -55,7 +55,7 @@ export interface ProductValidationPorts {
 }
 
 /** A product that passed format validation. */
-export interface ValidatedProduct {
+export interface ValidatedShardfile {
   readonly index: OutputIndex;
   readonly shard: Shardfile;
   /** Admitted bytes by hash (`commons:<hash>` for pinned commons). */
@@ -106,18 +106,18 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
 }
 
 /** Refuse the declared targets a policy treats as refusals, before any byte is read or executed. */
-export function assertProductTargets(source: Shardfile, policy: 'warn' | 'refuse'): void {
+export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse'): void {
   const issues = performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal');
   if (issues.length === 0) return;
   throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
 }
 
 /** Admit a whole shardfile's declared costs and its actual immutable bytes through the defining contracts. */
-export function admitShardfileProduct(input: unknown, assets: ReadonlyMap<string, Uint8Array>, hash: (bytes: Uint8Array) => string,
+export function admitShardfileFolder(input: unknown, assets: ReadonlyMap<string, Uint8Array>, hash: (bytes: Uint8Array) => string,
   policy: 'warn' | 'refuse' = 'refuse', scripts: ScriptAdmissionRows = []): Shardfile {
   const source = coded('shard-schema', (): Shardfile => parseShardfile(input));
   coded('declared-costs', (): void => { preflightDeclaredCosts(source, offlineMemoryAdmission(policy)); });
-  coded('performance-targets', (): void => { assertProductTargets(source, policy); });
+  coded('performance-targets', (): void => { assertShardfileTargets(source, policy); });
   return coded('asset-admission', (): Shardfile => validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy), undefined, scripts));
 }
 
@@ -128,7 +128,7 @@ export function checkWorldTargets(source: Shardfile, input: unknown): void {
   if (errors.length > 0) throw issueError('world-targets', errors.join('; '));
 }
 
-function inspectBlob(file: OutputFile, bytes: Uint8Array, ports: ProductValidationPorts, script?: ScriptContract): void {
+function inspectBlob(file: OutputFile, bytes: Uint8Array, ports: ShardfileValidationPorts, script?: ScriptContract): void {
   const contract = file.name === undefined ? undefined : registeredJsonContract(file.name);
   if (contract !== undefined && (file.kind !== 'json' || file.jsonSchema === undefined)) throw new Error('Registered JSON requires its defining schema');
   if (file.jsonSchema !== undefined) {
@@ -203,7 +203,7 @@ function readCook(index: OutputIndex, read: ReadListed, hash: (bytes: Uint8Array
  *  kind with no declared side (SERVER-PARITY SS2, `feature-sides.ts`) is refused by name before its section schema runs, and
  *  a script run on the wrong side (SS7, `script-sides.ts`) once the sections are read. A refusal carries the `code` of the
  *  check that refused (SA41, `issue-codes.ts`). */
-export function validateShardfileProduct(files: ProductFiles, ports: ProductValidationPorts): ValidatedProduct {
+export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileValidationPorts): ValidatedShardfile {
   const verify = ports.verify ?? ((bytes: Uint8Array, expected: string): boolean => ports.hash(bytes) === expected);
   const index = coded('index-invalid', (): OutputIndex => parseOutputIndex(readCanonicalJson(files.read('shard.json', limits.sourceBytes))));
   const listed = new Set(['shard.json', 'validation.json']), { assets, keep } = assetStore(files.read, ports.readThrough === true);
@@ -229,8 +229,8 @@ export function validateShardfileProduct(files: ProductFiles, ports: ProductVali
     coded('runtime-files', (): void => { ports.runtimeImports?.(entry.path, decoder().decode(read(entry))); });
   }
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
-  const shard = admitShardfileProduct(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts);
+  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts);
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
-  return { index, shard, assets, sections: payloads, scripts, warnings, audio: productRecordings({ cook, read: files.read, shard, assets }) };
+  return { index, shard, assets, sections: payloads, scripts, warnings, audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
 }

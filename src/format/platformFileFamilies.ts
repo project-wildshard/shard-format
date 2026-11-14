@@ -57,7 +57,7 @@ import { PageLifeSchema } from './pageLife.ts';
 import { ChapterDirectorSchema, ChapterWakeSchema } from './chapterDirector.ts';
 import { QuestPageInteractionsSchema } from './questInteractions.ts';
 import { QuestServiceActionsSchema, QuestHintRowsSchema, CarriedQuestSchema } from './questSteps.ts';
-import { DirectorProductSchema } from './directorProduct.ts';
+import { DirectorDocumentSchema } from './directorDocument.ts';
 import { NativeAssemblySchema, NativeAssemblyDataSchema, NATIVE_ASSEMBLY_SCHEMA, NATIVE_ASSEMBLY_DATA_SCHEMA } from './nativeAssembly.ts';
 import { QuestPanelCatalogueSchema } from './panelTemplate.ts';
 import { ForestWeatherSchema } from './forestWeather.ts';
@@ -224,7 +224,8 @@ export const PLATFORM_FILE_FAMILIES: readonly PlatformFileFamily[] = [
     source: '@wildshard/format/questInteractions#QuestPageInteractionsSchema', reader: 'src/game/quest/pageComposition.ts' },
   { pattern: /^quests\/services\.json$/u, schema: QuestServiceActionsSchema,
     source: '@wildshard/format/questSteps#QuestServiceActionsSchema', reader: 'src/game/quest/effects.ts' },
-  { pattern: /^directors\/main\.json$/u, schema: DirectorProductSchema,
+  // SA23: the source string is shard file data (each file's `jsonSchema.$comment`), so it keeps the old module name.
+  { pattern: /^directors\/main\.json$/u, schema: DirectorDocumentSchema,
     source: '@wildshard/format/directorProduct#DirectorProductSchema', reader: 'src/game/plugin/director.ts' },
   { pattern: /^quests\/panels\.json$/u, schema: QuestPanelCatalogueSchema,
     source: '@wildshard/format/panelTemplate#QuestPanelCatalogueSchema', reader: 'src/game/ui/dataPanels.ts' },

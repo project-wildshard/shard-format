@@ -43,11 +43,11 @@ the names singleplayer's code already imports.
 
 - `@wildshard/shard-format/shardSchema`: `ShardfileSchema` (the whole
   shardfile), `parseShardfile`, `Shardfile`, `ShardfileFieldSchemas`.
-- `@wildshard/shard-format/productValidation`: `validateShardfileProduct`
-  over a built product folder, through two ports: `ProductFiles`
-  (bounded reads, the path list) and `ProductValidationPorts` (SHA-256;
+- `@wildshard/shard-format/shardfileValidation`: `validateShardfileFolder`
+  over a built shard file folder, through two ports: `ShardfileFiles`
+  (bounded reads, the path list) and `ShardfileValidationPorts` (SHA-256;
   optional verify cache, JSON Schema check, runtime import check).
-  Call `prepareAssetDecoders()` from `@wildshard/shard-format/product` first.
+  Call `prepareAssetDecoders()` from `@wildshard/shard-format/shardfileAssets` first.
 - `@wildshard/shard-format/outputIndex`: the `shard.json` index and section
   schemas.
 - The rest: one module per document family, each exporting its
@@ -60,7 +60,7 @@ tooling (`src/sdk/formatJsonSchema.ts`, `scripts/gen-format-schema.mjs`,
 
 ## `shard-format validate <dir>`
 
-`src/cli/validate.ts` gives `validateShardfileProduct` Node ports:
+`src/cli/validate.ts` gives `validateShardfileFolder` Node ports:
 `node:crypto` SHA-256, reads bounded by the size the index declares,
 symlinks and special files refused, an unlisted file refused without
 being read. Exit 0 prints `ok <slug> r<revision>: ...`; exit 3 is an
@@ -96,7 +96,7 @@ checked. Cook metadata is capped at 8 MiB for the new producer version.
 `cookPreparationBytes` canonically binds every header field except the
 cook pointer itself, plus the complete mount inventory and renderer digest. The producer hashes
 that value; admission and cook recompute it before using any lists. A stale
-value refuses with `wildshard prepare <product-dir> --base <exact-preview-url>`.
+value refuses with `wildshard prepare <folder> --base <exact-preview-url>`.
 No browser is launched by format or by the VPS cook.
 The version-2 prototype remains readable as legacy sdk 0.2; new sdk 0.3
 requires version 3, so a missing renderer agreement names regeneration.

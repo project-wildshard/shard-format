@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { mountSharesBlob, packFromMembers } from '../format/product-reads.ts'
+import { mountSharesBlob, packFromMembers } from '../format/shardfile-reads.ts'
 
 const utf8 = new TextEncoder()
 const files = new Map([

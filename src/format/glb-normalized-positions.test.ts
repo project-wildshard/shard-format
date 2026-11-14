@@ -2,7 +2,11 @@ import { readFileSync } from 'node:fs'
 
 import { expect, test } from 'vitest'
 
-import { parseGlb, prepareAssetDecoders, visitGlbTriangles } from './product.ts'
+import {
+  parseGlb,
+  prepareAssetDecoders,
+  visitGlbTriangles,
+} from './shardfile-assets.ts'
 
 import type { GlbVertex } from './glbTriangles.ts'
 

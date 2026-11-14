@@ -27,7 +27,7 @@ import {
 } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-import { assetCost } from '../../format/product.ts'
+import { assetCost } from '../../format/shardfile-assets.ts'
 import { buildBandit, buildBanditSkin } from './bandit.ts'
 import { buildRifle } from './rifle.ts'
 import { buildWyrm, buildWyrmSkin } from './wyrm.ts'

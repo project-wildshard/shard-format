@@ -8,8 +8,8 @@ import { after } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 import { memoryFiles } from '../../cli/validate.ts'
-import { prepareAssetDecoders } from '../../format/product.ts'
-import { validateShardfileProduct } from '../../format/productValidation.ts'
+import { prepareAssetDecoders } from '../../format/shardfile-assets.ts'
+import { validateShardfileFolder } from '../../format/shardfileValidation.ts'
 
 // Template 2, as these tests hold it: the real folder, the real bin, a temp
 // folder that goes when the file's tests end.
@@ -39,7 +39,7 @@ async function validateHere(
   files: ReadonlyMap<string, Readonly<Uint8Array>>,
 ): Promise<void> {
   await prepareAssetDecoders()
-  validateShardfileProduct(memoryFiles(files), { hash: sha256 })
+  validateShardfileFolder(memoryFiles(files), { hash: sha256 })
 }
 
 export { ROOT, TEMPLATE_2, cli, scratch, sha256, validateHere }

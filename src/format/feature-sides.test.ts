@@ -12,14 +12,14 @@ import {
   assertSectionSides,
   unsidedKinds,
 } from './feature-sides.ts'
-import { nodeStreamPorts } from './product-stream-node.ts'
-import { validateShardfileStream } from './product-stream.ts'
-import { prepareAssetDecoders } from './product.ts'
-import { validateShardfileProduct } from './productValidation.ts'
+import { prepareAssetDecoders } from './shardfile-assets.ts'
+import { nodeStreamPorts } from './shardfile-stream-node.ts'
+import { validateShardfileStream } from './shardfile-stream.ts'
+import { validateShardfileFolder } from './shardfileValidation.ts'
 import { writeTar } from './tar.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
-import type { ProductFiles } from './productValidation.ts'
+import type { ShardfileFiles } from './shardfileValidation.ts'
 
 // SERVER-PARITY SS2: every client/plan feature kind and world.assembly stage kind has a side, and both validators
 // refuse a product that names a kind without one.
@@ -60,7 +60,7 @@ function folderFiles(root: string): Map<string, Uint8Array> {
   return files
 }
 
-function memoryFiles(files: Files): ProductFiles {
+function memoryFiles(files: Files): ShardfileFiles {
   return {
     paths: (): Iterable<string> => files.keys(),
     read: (file: string, maxBytes: number): Uint8Array => {
@@ -92,7 +92,7 @@ function relisted(files: Files, file: string, bytes: Uint8Array): Files {
   ])
 }
 
-/** The corpus with its client/plan edited and `shard.json` relisting it (packs dropped, as product-stream.test does). */
+/** The corpus with its client/plan edited and `shard.json` relisting it (packs dropped, as shardfile-stream.test does). */
 function planEdited(files: Files, change: (plan: Json) => void): Files {
   const file = 'sections/client/plan.json'
   const plan = parsed(files.get(file))
@@ -229,7 +229,7 @@ describe('both validators', (): void => {
   test('admit the handwritten corpus', async (): Promise<void> => {
     expect(
       verdict((): unknown =>
-        validateShardfileProduct(memoryFiles(corpus), { hash: sha256 }),
+        validateShardfileFolder(memoryFiles(corpus), { hash: sha256 }),
       ),
     ).toBe('ok')
     expect(await streamVerdict(corpus)).toBe('ok')
@@ -241,7 +241,7 @@ describe('both validators', (): void => {
       ;(plan['features'] as Json[]).push({ kind: 'world.made-up' })
     })
     const old = verdict((): unknown =>
-      validateShardfileProduct(memoryFiles(files), { hash: sha256 }),
+      validateShardfileFolder(memoryFiles(files), { hash: sha256 }),
     )
     expect(old).toBe(
       'Unsided content kind (no view, both or server entry): client/plan world.made-up',

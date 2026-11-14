@@ -10,19 +10,19 @@
 // Wasm stay from the first read. A later check that asks for any other file
 // is refused, never answered from a guess (StreamMissError): the corpus and pin
 // tests prove no check does. Packs the reads' groups need come with them
-// (product-stream-packs.ts).
+// (shardfile-stream-packs.ts).
 
 import { admitFileBytes } from './assetAdmission.ts'
 import { issueError, withIssueCodeAsync } from './issue-codes.ts'
-import { StreamMissError } from './product-stream-miss.ts'
-import { packGroups, packPass } from './product-stream-packs.ts'
-import { walkTar } from './product-stream-tar.ts'
+import { StreamMissError } from './shardfile-stream-miss.ts'
+import { packGroups, packPass } from './shardfile-stream-packs.ts'
+import { walkTar } from './shardfile-stream-tar.ts'
 
 import type { AssetAdmission } from './assetAdmission.ts'
 import type { OutputIndex } from './outputIndex.ts'
-import type { PackPass, PackVerdicts } from './product-stream-packs.ts'
-import type { KeptMember } from './product-stream-rows.ts'
-import type { StreamHasher, StreamMember } from './product-stream-tar.ts'
+import type { PackPass, PackVerdicts } from './shardfile-stream-packs.ts'
+import type { KeptMember } from './shardfile-stream-rows.ts'
+import type { StreamHasher, StreamMember } from './shardfile-stream-tar.ts'
 
 /** A stored object to read again: each call opens a fresh stream from its start. */
 type StoredSource = () =>

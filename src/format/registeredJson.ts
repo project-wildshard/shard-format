@@ -46,7 +46,7 @@ import { CaveFileSchema, CaveInteriorSchema } from './caveInterior.ts';
 import * as v from 'valibot';
 import { NativePopulationRowsSchema, parseNativePopulationRows, TamingPoseFileSchema } from './populationRoster.ts';
 import { EliteFeatureSchema, parseEliteFeature } from './eliteFeature.ts';
-import { DirectorProductSchema } from './directorProduct.ts';
+import { DirectorDocumentSchema } from './directorDocument.ts';
 import { AudioSceneSchema } from './audioScene.ts';
 import { KitFigureCardsSchema } from './questFigures.ts';
 import {SceneBuffersSchema,parseSceneBuffers} from './sceneBuffers.ts';
@@ -128,7 +128,7 @@ export interface RegisteredJsonContracts {
   readonly 'world/dressing-phone.json':{readonly schema:typeof SceneDressingSchema;readonly source:'@wildshard/format/sceneDressing#SceneDressingSchema'};
   readonly 'world/building-sites.json':{readonly schema:typeof LivingPageSitesSchema;readonly source:'@wildshard/format/forestPage#LivingPageSitesSchema'};
   readonly 'models/shape-book.json':{readonly schema:typeof FixedDrawRowsSchema;readonly source:'@wildshard/format/fixedDraws#FixedDrawRowsSchema'};
-  readonly 'directors/main.json':{readonly schema:typeof DirectorProductSchema;readonly source:'@wildshard/format/directorProduct#DirectorProductSchema'};
+  readonly 'directors/main.json':{readonly schema:typeof DirectorDocumentSchema;readonly source:'@wildshard/format/directorProduct#DirectorProductSchema'};
   readonly 'scenes/cascade.json':{readonly schema:typeof WorldSceneSchema;readonly source:'@wildshard/format/clientChannels#WorldSceneSchema'};
   readonly 'scenes/cove.json':{readonly schema:typeof WorldSceneSchema;readonly source:'@wildshard/format/clientChannels#WorldSceneSchema'};
   readonly 'scenes/hibiscus.json':{readonly schema:typeof WorldSceneSchema;readonly source:'@wildshard/format/clientChannels#WorldSceneSchema'};
@@ -250,7 +250,7 @@ export const REGISTERED_JSON:RegisteredJsonContracts = {
   'world/dressing-phone.json':{schema:SceneDressingSchema,source:'@wildshard/format/sceneDressing#SceneDressingSchema'},
   'world/building-sites.json':{schema:LivingPageSitesSchema,source:'@wildshard/format/forestPage#LivingPageSitesSchema'},
   'models/shape-book.json':{schema:FixedDrawRowsSchema,source:'@wildshard/format/fixedDraws#FixedDrawRowsSchema'},
-  'directors/main.json':{schema:DirectorProductSchema,source:'@wildshard/format/directorProduct#DirectorProductSchema'},
+  'directors/main.json':{schema:DirectorDocumentSchema,source:'@wildshard/format/directorProduct#DirectorProductSchema'},
   'scenes/cascade.json':{schema:WorldSceneSchema,source:'@wildshard/format/clientChannels#WorldSceneSchema'},
   'scenes/cove.json':{schema:WorldSceneSchema,source:'@wildshard/format/clientChannels#WorldSceneSchema'},
   'scenes/hibiscus.json':{schema:WorldSceneSchema,source:'@wildshard/format/clientChannels#WorldSceneSchema'},
@@ -476,7 +476,7 @@ export function validateRegisteredJson(name:string,value:unknown):void {
     case 'world/weather-observations.json':v.parse(ForestWeatherObservationSchema,value);break;
     case 'look/post.json':parsePostGraphDocument(value);break;
     case 'people/cards.json':v.parse(KitFigureCardsSchema,value);break;
-    case 'directors/main.json':v.parse(DirectorProductSchema,value);break;
+    case 'directors/main.json':v.parse(DirectorDocumentSchema,value);break;
     case 'actors/roster.json':parseNativePopulationRows(value);break;
     case 'actors/elites.json':parseEliteFeature(value);break;
     case 'sim/keeper.json':v.parse(PopulationKeeperRowsSchema,value);break;

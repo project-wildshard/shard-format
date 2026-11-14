@@ -16,7 +16,7 @@ finding. Match the code, never the message: messages may be reworded, codes are 
 
 ## validate
 
-`validateShardfileProduct`, `validateShardfileStream` and `readTar`: `error.code` on the thrown Error.
+`validateShardfileFolder`, `validateShardfileStream` and `readTar`: `error.code` on the thrown Error.
 
 | Code | Meaning |
 |---|---|

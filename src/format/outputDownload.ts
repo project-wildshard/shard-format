@@ -29,6 +29,6 @@ export function readOutputDownloadIndex(input: unknown): OutputDownloadIndex {
     packs: v.exactOptional(v.pipe(v.array(v.object({ ...measured, entries: v.pipe(v.array(v.object({ hash, offset: bytes, bytes })), v.maxLength(8192)) })), v.maxLength(64))),
   }), input);
   const paths = ['shard.json', 'validation.json', ...index.sections.map(row => row.path), ...index.schemas.map(row => row.path), ...index.files.map(row => row.path)];
-  if (new Set(paths).size !== paths.length) throw new Error('Duplicate product download path');
+  if (new Set(paths).size !== paths.length) throw new Error('Duplicate shard file download path');
   return index;
 }

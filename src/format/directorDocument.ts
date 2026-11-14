@@ -5,7 +5,7 @@ import { DirectorStagesSchema, type DirectorStagesData, type DirectorStagesDataI
 /** Complete existing director document shared by authored native director hosts.
  * Binary loading, declaration/hash agreement, ownership and fuel remain the
  * installing host's admission responsibilities. */
-export const DirectorProductSchema: v.GenericSchema<DirectorProductInput, DirectorProduct> = v.strictObject({
+export const DirectorDocumentSchema: v.GenericSchema<DirectorDocumentInput, DirectorDocument> = v.strictObject({
   declaration: DirectorSchema,
   module: v.strictObject({ module: v.string(), bytes: v.string(),
     file: v.exactOptional(v.pipe(v.string(), v.minLength(1), v.maxLength(240))) }),
@@ -13,7 +13,7 @@ export const DirectorProductSchema: v.GenericSchema<DirectorProductInput, Direct
 });
 
 /** Authored transport envelope before director-stage defaults are admitted. */
-export interface DirectorProductInput {
+export interface DirectorDocumentInput {
   declaration: DirectorData;
   module: { module: string; bytes: string; file?: string };
   stages: DirectorStagesDataInput;
@@ -22,6 +22,6 @@ export interface DirectorProductInput {
 }
 
 /** Structurally admitted document; not permission to install its native module. */
-export interface DirectorProduct extends Omit<DirectorProductInput, 'stages'> {
+export interface DirectorDocument extends Omit<DirectorDocumentInput, 'stages'> {
   stages: DirectorStagesData;
 }

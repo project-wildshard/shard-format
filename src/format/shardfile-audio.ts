@@ -20,8 +20,8 @@ import type { Shardfile } from './shardSchema.ts'
 // section's non-commons `recordings` blobs. Commons recordings are shared, so
 // they are not the shard's own.
 
-/** What `productRecordings` reads from a validated product. */
-interface ProductAudioInput {
+/** What `shardfileRecordings` reads from a validated product. */
+interface ShardfileAudioInput {
   readonly cook: CookData | undefined
   readonly read: (path: string, maxBytes: number) => Uint8Array
   readonly shard: Readonly<{
@@ -33,9 +33,9 @@ interface ProductAudioInput {
 const COMMONS = 'commons:'
 
 /** Every own recording in a validated product, measured from its bytes. */
-function productRecordings(
+function shardfileRecordings(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's row types and a read port, only read
-  input: Readonly<ProductAudioInput>,
+  input: Readonly<ShardfileAudioInput>,
 ): RecordingMeasure[] {
   const mounts = (input.cook?.mounts ?? [])
     .filter((mount: Readonly<CookMount>): boolean =>
@@ -58,7 +58,7 @@ function productRecordings(
 
 /** The product's audio against AU5's rules, its waiver read from `admission.audioWaiver`. A red report refuses only at
  *  upload (`assertAudioAdmission`); pack prints it. `today` decides whether the waiver is still in date. */
-function productAudioReport(
+function shardfileAudioReport(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's row types, only read
   product: Readonly<{ index: OutputIndex; audio: readonly RecordingMeasure[] }>,
   today: Readonly<Date>,
@@ -71,5 +71,5 @@ function productAudioReport(
   })
 }
 
-export type { ProductAudioInput }
-export { productAudioReport, productRecordings }
+export type { ShardfileAudioInput }
+export { shardfileAudioReport, shardfileRecordings }

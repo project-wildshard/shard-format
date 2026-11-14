@@ -5,7 +5,7 @@ import type { MemoryAdmission } from './memoryAdmission.ts';
 import { parseKtx2, ktx2DeviceGpu, type Ktx2DeviceCosts } from './ktx2Cost.ts';
 
 /** Apply the existing total-memory policy to declared or measured costs. */
-export function acceptsProductCost(memory: MemoryAdmission | undefined, source: Shardfile, stage: 'declared' | 'actual', cost: ReturnType<typeof worstContentCost>): boolean {
+export function acceptsShardfileCost(memory: MemoryAdmission | undefined, source: Shardfile, stage: 'declared' | 'actual', cost: ReturnType<typeof worstContentCost>): boolean {
   if (memory === undefined) return cost.playing <= C.playing && cost.loading <= C.loading;
   return memory.accept({ stage, owner: source.identity.slug, id: `${source.identity.slug}:worst-location`,
     claimedBytes: cost.accounted, accountedBytes: cost.accounted, playingBytes: cost.playing, loadingBytes: cost.loading });
@@ -13,7 +13,7 @@ export function acceptsProductCost(memory: MemoryAdmission | undefined, source: 
 
 /** Reapply the current trusted memory policy to a previously validated exact declaration. */
 export function acceptValidatedCost(source: Shardfile, cost: ReturnType<typeof worstContentCost>, memory?: MemoryAdmission): void {
-  if (!acceptsProductCost(memory, source, 'declared', cost)) throw new Error(`declared worst-location total exceeds envelope: ${cost.playing}`);
+  if (!acceptsShardfileCost(memory, source, 'declared', cost)) throw new Error(`declared worst-location total exceeds envelope: ${cost.playing}`);
 }
 
 /** Device cost projection after byte admission; source ceilings retain their full RGBA fallback. A KTX2 file's declared

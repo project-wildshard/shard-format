@@ -62,7 +62,7 @@ export function parseOutputDescriptorIndex(input: unknown): OutputIndex | null {
 }
 function parseOutputIndexRows(input: unknown): OutputIndex {
   const index = v.parse(OutputIndexSchema, input);
-  if (index.sdk === '0.3' && index.cook === undefined) { throw new Error(`Missing cook preparation: run wildshard prepare <product-dir> --base <exact-preview-url> (${index.identity.slug})`); }
+  if (index.sdk === '0.3' && index.cook === undefined) { throw new Error(`Missing cook preparation: run wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`); }
   if (index.sdk === '0.3' && index.cook !== undefined && index.cook.bytes > MAX_COOK_BYTES) { throw new Error('Cook preparation exceeds byte cap'); }
   const paths = new Set(['shard.json', 'validation.json']), names = new Set<string>();
   if (index.ktx2Costs !== undefined) {

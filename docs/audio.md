@@ -32,7 +32,7 @@ file.
 ## Where the check runs
 
 One check owns the rules, AU5's (row AU5 of meta `docs/plans/AUDIO-PLAN.md`): `audioReport` in
-`src/format/audio-rules.ts`, fed by `productRecordings` in `src/format/product-audio.ts` (it measures each recording
+`src/format/audio-rules.ts`, fed by `shardfileRecordings` in `src/format/shardfile-audio.ts` (it measures each recording
 from its bytes in `src/format/audio-measure.ts`, no ffmpeg).
 
 - `wildshard build <folder>` (sharddev) prints the report after validation: one `audio green|AMBER` total line, then one
@@ -160,7 +160,7 @@ bytes cost one download. Use that.
   with the engine. Name a sound from it by its catalogue path; don't copy its bytes into your shard source. A copy you
   mount counts against your budget, because the check counts every own `/assets/music/` and `/assets/sfx/` mount.
 - **`audio.recordings` bindings:** a `commons:<sha256>` reference is shared, not yours, so it is not in your budget
-  (`productRecordings` skips it). See the `audio.recordings` paragraph in [SHARDFILE.md](SHARDFILE.md).
+  (`shardfileRecordings` skips it). See the `audio.recordings` paragraph in [SHARDFILE.md](SHARDFILE.md).
 
 **AU5 check:** `audioReport` dedupes by hash before it sums the budget, so sharing shows up as fewer bytes in the `audio
 …` total line.
