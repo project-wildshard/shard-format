@@ -1,6 +1,6 @@
 {
   "name": "@wildshard/shard-format",
-  "version": "0.4.10",
+  "version": "0.5.0",
   "description": "The raw shardfile format: the spec, the validator and a validate CLI. The public, versioned contract every other repo builds on.",
   "license": "UNLICENSED",
   "repository": {
