@@ -110,7 +110,19 @@ json(
 const { post: _post, ...bakeLook } = section('look/look.json')[
   'look'
 ] as Record<string, unknown>
-json('look.json', bakeLook)
+// TEMPLATES-CLEANROOM B2's look additions (lamps, bounce, environment, grade.tone) draw only; a sharddev on an older
+// format refuses them, and the cook never reads them, so the bake look leaves them out like the post.
+const {
+  lamps: _lamps,
+  bounce: _bounce,
+  environment: _environment,
+  ...bakeLight
+} = (bakeLook['light'] ?? {}) as Record<string, unknown>
+const { tone: _tone, ...bakeGrade } = (bakeLook['grade'] ?? {}) as Record<
+  string,
+  unknown
+>
+json('look.json', { ...bakeLook, light: bakeLight, grade: bakeGrade })
 json('state.json', section('state/state.json')['state'])
 json('hooks.json', section('sim/hooks.json')['hooks'])
 json('sim.json', authoredSim)

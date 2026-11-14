@@ -26,8 +26,9 @@ import { buildRifle } from '../tools/brasscap/rifle.ts'
 const BRASSCAP = path.join(ROOT, 'corpus/brasscap-mesa')
 const CODE = /\.(?:ts|tsx|js|mjs|cjs|py)$/u
 const BLOB = /^blobs\/[a-z\d]+\/(?<hash>[\da-f]{64})\.[a-z\d]+$/u
-/** Still a low sunset sun: LF2-3 raised it to 16 degrees, so the canyon's faces catch it. */
-const MAX_SUN_DEGREES = 20
+/** A low afternoon sun: LF2-3 raised it to 16 degrees, so the canyon's faces catch it; TEMPLATES-CLEANROOM B2 set the
+ *  cleanroom's 39 (31.7 at the look's hour), ahead-left down the canyon, so the mesas' tops light and their faces shade. */
+const MAX_SUN_DEGREES = 45
 const GLB_JSON_AT = 20
 const GLB_JSON_LENGTH_AT = 12
 const L0_TILES = 64
