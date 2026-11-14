@@ -1,0 +1,8 @@
+{
+  "about": "SS4 (J342): corpus/exports/brasscap-mesa/ is `wildshard build` of this shard-brasscap commit, written by node src/tools/brasscap-export.ts. Do not edit it by hand: change shard-brasscap, then re-export.",
+  "repo": "https://github.com/project-wildshard/shard-brasscap",
+  "commit": "34751535e1c70f107b2352d911ac900cc08feb55",
+  "folder": "corpus/exports/brasscap-mesa",
+  "files": 200,
+  "tree": "59741f8cc496cf38aa6d6aaebd9363651ba1d41da2fe9b1e8bc3f7b0722e5589"
+}

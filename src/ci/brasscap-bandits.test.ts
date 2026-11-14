@@ -16,16 +16,22 @@ import {
 } from 'valibot'
 
 import { ROOT } from '../test/helpers/corpus.ts'
-import { buildBandit, buildBanditSkin } from '../tools/brasscap/bandit.ts'
-import { CAMPS } from '../tools/brasscap/canyon.ts'
 
 // BM-4 (meta TEMPLATE-E2E-PLAN): three camps of tin bandits on pursue brains.
 // Each camp is a step of BM-6's `brasscap.mesa` quest. The gate is its own
 // untracked quest: clearing all three camps completes it, its hook scene
 // sets the gate's shared field, and the gate panel's collider drops on it.
 
-const BRASSCAP = path.join(ROOT, 'corpus/brasscap-mesa')
+const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+/** The canyon GLB's camp empties at the pinned commit (shard-brasscap tools/canyon.ts). */
+const CAMPS: readonly (readonly [string, readonly [number, number, number]])[] =
+  [
+    ['camp.1', [-14, 0, -28]],
+    ['camp.2', [13.5, 6, -34]],
+    ['camp.3', [18.4, 0, -50.5]],
+  ]
 const BANDIT = 'brasscap.bandit'
+const SkinFileSchema = object({ row: object({ id: string(), file: string() }) })
 const PER_CAMP = 3
 /** How far a bandit may stand from its camp's empty. LF2-2's side canyon puts
  *  camp 3's first bandit 6.4 m from `camp.3`, up the slot toward the gate. */
@@ -170,15 +176,17 @@ function banditSkin(): string | undefined {
 }
 
 test('BM-4: the bandit draws as its generated skin', (): void => {
-  const bytes = buildBandit()
-  const glb = sha256(bytes)
-  const skin = sha256(buildBanditSkin(bytes))
-  assert.equal(banditSkin(), skin)
-  const { library } = parse(IndexSchema, section('shard.json')).admission
-  const held = [`glb/${glb}.glb`, `json/${skin}.json`].filter(
-    (file: string): boolean => existsSync(path.join(BRASSCAP, 'blobs', file)),
+  const skin = banditSkin() ?? ''
+  const skinPath = path.join(BRASSCAP, 'blobs/json', `${skin}.json`)
+  const { row } = parse(
+    SkinFileSchema,
+    JSON.parse(readFileSync(skinPath, 'utf8')),
   )
-  assert.equal(held.length, 2)
+  assert.equal(row.id, BANDIT)
+  const glb = row.file
+  const glbBytes = readFileSync(path.join(BRASSCAP, 'blobs/glb', `${glb}.glb`))
+  assert.equal(sha256(glbBytes), glb)
+  const { library } = parse(IndexSchema, section('shard.json')).admission
   assert.ok(library.includes(glb) && library.includes(skin))
 })
 

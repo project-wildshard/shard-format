@@ -16,21 +16,28 @@ import {
 } from 'valibot'
 
 import { ROOT, TEMPLATE_2, cli, scratch } from '../test/helpers/corpus.ts'
-import { buildCanyon } from '../tools/brasscap/canyon.ts'
-import { buildRifle } from '../tools/brasscap/rifle.ts'
+import { listFiles, treeHash } from '../tools/brasscap-export.ts'
 
 // BM-2 (meta TEMPLATE-E2E-PLAN): Brasscap Mesa is Template 2's own product, a
 // sibling of Template 1's folder: BM-1's canyon baked once into tiles,
 // collision and the far mesh, under a sunset. Raw data only, no shared bytes.
+// SS4 (meta SHARD-SOURCE-PLAN, J342): its source lives in shard-brasscap; this
+// folder is the export of one pinned commit (src/tools/brasscap-export.ts).
 
-const BRASSCAP = path.join(ROOT, 'corpus/brasscap-mesa')
+const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+const PIN = path.join(ROOT, 'corpus/exports/brasscap-mesa.pin.json')
+/** The canyon GLB's named empties at the pinned commit (shard-brasscap tools/canyon.ts). */
+const MARKS: ReadonlyMap<string, readonly number[]> = new Map([
+  ['spawn', [-1.6, 0.35, 2.6]],
+  ['rack', [-2.2, 1.12, -0.92]],
+  ['target.1', [2.5, 1.55, -9.88]],
+  ['target.2', [-3.5, 1.55, -13.88]],
+])
 const CODE = /\.(?:ts|tsx|js|mjs|cjs|py)$/u
 const BLOB = /^blobs\/[a-z\d]+\/(?<hash>[\da-f]{64})\.[a-z\d]+$/u
 /** A low afternoon sun: LF2-3 raised it to 16 degrees, so the canyon's faces catch it; TEMPLATES-CLEANROOM B2 set the
  *  cleanroom's 39 (31.7 at the look's hour), ahead-left down the canyon, so the mesas' tops light and their faces shade. */
 const MAX_SUN_DEGREES = 45
-const GLB_JSON_AT = 20
-const GLB_JSON_LENGTH_AT = 12
 const L0_TILES = 64
 
 const Num = number()
@@ -46,9 +53,6 @@ const Sun = object({ colour: array(Num) })
 const Key = object({ sun: Sun })
 const Look = object({ day: Day, keys: array(Key) })
 const LookSchema = object({ look: Look })
-const Translation = optional(array(Num))
-const GlbNode = object({ name: string(), translation: Translation })
-const GlbSchema = object({ nodes: array(GlbNode) })
 const Light = object({ damage: Num })
 const View = object({ asset: optional(string()) })
 const ItemRow = object({
@@ -147,20 +151,6 @@ type Body = Readonly<{
   at: readonly number[]
 }>
 
-function canyonMarks(): ReadonlyMap<string, Mark> {
-  const glb = buildCanyon()
-  const length = glb.readUInt32LE(GLB_JSON_LENGTH_AT)
-  const json = glb.subarray(GLB_JSON_AT, GLB_JSON_AT + length).toString('utf8')
-  const scene = parse(GlbSchema, JSON.parse(json))
-  return new Map(
-    scene.nodes.map(
-      (
-        node: Readonly<{ name: string; translation?: Mark }>,
-      ): readonly [string, Mark] => [node.name, node.translation],
-    ),
-  )
-}
-
 function leverRow(): Lever {
   const { items } = parse(ItemsSchema, section('sections/combat/items.json'))
   const row = items.rows.find(
@@ -207,35 +197,28 @@ function postHp(mark: Mark): number | undefined {
 // and each target post holds a body one round downs.
 test('BM-3: the lever-action is admitted and its rack takes it', (): void => {
   const lever = leverRow()
-  const hash = createHash('sha256').update(buildRifle()).digest('hex')
-  assert.equal(lever.asset, hash, 'the held model is rifle.ts output')
-  assert.ok(existsSync(path.join(BRASSCAP, `blobs/glb/${hash}.glb`)))
+  const hash = lever.asset ?? ''
+  const glb = path.join(BRASSCAP, `blobs/glb/${hash}.glb`)
+  assert.ok(existsSync(glb), 'the held model ships')
+  assert.equal(
+    createHash('sha256').update(readFileSync(glb)).digest('hex'),
+    hash,
+  )
   const { admission } = parse(IndexSchema, section('shard.json'))
   assert.ok(admission.library.includes(hash), 'in the render library')
-  assert.deepEqual(takeAt(lever.id), canyonMarks().get('rack'))
+  assert.deepEqual(takeAt(lever.id), MARKS.get('rack'))
 })
 
 test('BM-3: each target post holds a body one round downs', (): void => {
   const { damage } = leverRow()
-  const marks = canyonMarks()
   for (const name of ['target.1', 'target.2']) {
-    const hp = postHp(marks.get(name))
+    const hp = postHp(MARKS.get(name))
     assert.ok(hp !== undefined && hp <= damage, `${name} falls to one round`)
   }
 })
 
 test('spawn is the canyon GLB spawn empty', (): void => {
-  const glb = buildCanyon()
-  const length = glb.readUInt32LE(GLB_JSON_LENGTH_AT)
-  const scene = parse(
-    GlbSchema,
-    JSON.parse(
-      glb.subarray(GLB_JSON_AT, GLB_JSON_AT + length).toString('utf8'),
-    ),
-  )
-  const mark = scene.nodes.find(
-    (node: Readonly<{ name: string }>): boolean => node.name === 'spawn',
-  )?.translation
+  const mark = MARKS.get('spawn')
   const { spawn } = parse(SpawnSchema, section('sections/world/spawn.json'))
   const axes = ['x', 'y', 'z'].map(
     (axis: string): number | undefined => spawn[axis],
@@ -248,4 +231,50 @@ test('the look is a sunset: a low, warm sun', (): void => {
   assert.ok(look.day.maxElevation <= MAX_SUN_DEGREES)
   const [red = 0, , blue = 1] = look.keys[0]?.sun.colour ?? []
   assert.ok(red > blue, 'a warm sunset sun')
+})
+
+test('SS4: the folder is the pinned export, byte for byte', (): void => {
+  const pin = parse(
+    object({ commit: string(), files: Num, tree: string() }),
+    JSON.parse(readFileSync(PIN, 'utf8')),
+  )
+  assert.match(pin.commit, /^[\da-f]{40}$/u)
+  assert.equal(listFiles(BRASSCAP).length, pin.files)
+  assert.equal(
+    treeHash(BRASSCAP),
+    pin.tree,
+    'corpus/exports/brasscap-mesa was edited by hand: re-run node src/tools/brasscap-export.ts',
+  )
+})
+
+const DEPENDENCY_FIELDS = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+] as const
+const Manifest = record(string(), unknown())
+const Dependencies = optional(record(string(), string()), {})
+
+/** The `three` entries in one package.json, by dependency field. */
+function threeIn(manifest: string): readonly string[] {
+  const text = readFileSync(path.join(ROOT, manifest), 'utf8')
+  const json = parse(Manifest, JSON.parse(text))
+  return DEPENDENCY_FIELDS.filter(
+    (field: string): boolean =>
+      parse(Dependencies, json[field])['three'] !== undefined,
+  )
+}
+
+test('SS4: three is in no shard-format package.json', (): void => {
+  const packages = readdirSync(path.join(ROOT, 'packages')).map(
+    (name: string): string => `packages/${name}/package.json`,
+  )
+  const manifests = ['package.json', ...packages].filter(
+    (file: string): boolean => existsSync(path.join(ROOT, file)),
+  )
+  assert.ok(manifests.length > 1)
+  for (const manifest of manifests) {
+    assert.deepEqual(threeIn(manifest), [], manifest)
+  }
 })

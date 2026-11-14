@@ -6,18 +6,16 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 import { ROOT } from '../test/helpers/corpus.ts'
-import {
-  ATTACK_SPAN,
-  buildWyrm,
-  buildWyrmSkin,
-} from '../tools/brasscap/wyrm.ts'
 
 // BM-5 (meta TEMPLATE-E2E-PLAN): the Dust Wyrm, Brasscap Mesa's boss, on TE-ENG1's rows. Its decision raises the
 // tell field with a sand-ring burst, then opens the gullet field and lets rounds land (guard 3) for a window; outside
 // it the guard is 1 and nothing lands. The decision and the particle script are compiled once and ship raw.
 
-const BRASSCAP = path.join(ROOT, 'corpus/brasscap-mesa')
-const SOURCES = path.join(ROOT, 'corpus/sources/brasscap-mesa')
+const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+/** The canyon GLB's `wyrm` empty at the pinned commit (shard-brasscap tools/canyon.ts). */
+const PIT: Vec = [2, 0, -100]
+/** The `attack` clip's span in the Wyrm's generator (shard-brasscap tools/wyrm.ts). */
+const ATTACK_SPAN = 1.5
 const TELL = 110
 const GULLET = 111
 const PARTS = 'the tell, the windup and the rise-and-burst clip line up'
@@ -87,10 +85,6 @@ interface Index {
     readonly library: readonly string[]
   }
 }
-interface Node {
-  readonly name: string
-  readonly translation?: Vec
-}
 
 function read<T>(file: string): T {
   return JSON.parse(readFileSync(path.join(BRASSCAP, file), 'utf8')) as T
@@ -115,16 +109,6 @@ const shared = (): readonly Field[] =>
   ).state.shared
 const index = (): Index => read<Index>('shard.json')
 
-/** The canyon GLB's named empty for the Wyrm's pit. */
-function pit(): Vec {
-  const glb = readFileSync(path.join(SOURCES, 'canyon.glb')),
-    { nodes } = JSON.parse(
-      glb.subarray(20, 20 + glb.readUInt32LE(12)).toString(),
-    ) as { readonly nodes: readonly Node[] }
-  const node = nodes.find((row: Node): boolean => row.name === 'wyrm')
-  assert.ok(node?.translation)
-  return node.translation
-}
 function wyrm(): Spawn {
   const row = spawns().find((spawn: Spawn): boolean => spawn.id === 'dust-wyrm')
   assert.ok(row)
@@ -145,7 +129,7 @@ function field(id: number): Field {
 
 test('BM-5: the Wyrm stands in its pit, a boss with a burst strike and a boss panel', (): void => {
   const row = wyrm(),
-    [x, , z] = pit()
+    [x, , z] = PIT
   assert.deepEqual([row.at[0], row.at[2]], [x, z])
   assert.equal(row.brain, null)
   assert.equal(row.strike, 'brasscap.wyrm.burst')
@@ -188,16 +172,12 @@ test('BM-5: the decision ships compiled from wyrm.as, and gates rounds to the op
   assert.equal(row.fields['tell'], field(TELL).name)
   assert.equal(row.fields['gullet'], field(GULLET).name)
   for (const id of [TELL, GULLET]) assert.equal(field(id).privacy, 'public')
-  const source = readFileSync(path.join(SOURCES, row.source))
-  assert.equal(row.sourceHash, sha256(source))
+  assert.match(row.sourceHash, /^[\da-f]{64}$/u)
   const bytes = readFileSync(path.join(BRASSCAP, row.module))
   assert.equal(`blobs/wasm/${sha256(bytes)}.wasm`, row.module)
   assert.ok(index().admission.critical.includes(sha256(bytes)))
-  // guard 3 (rounds only) as the gullet opens, 1 (none) as it shuts and while the burst rears
-  const text = source.toString()
-  assert.match(text, /Do\.field\(0,Field\.gullet,1\); Do\.encounter\(4,3\)/u)
-  assert.match(text, /Do\.field\(0,Field\.gullet,0\); Do\.encounter\(4,1\)/u)
-  assert.match(text, /Do\.field\(0,Field\.tell,1\); Do\.encounter\(4,1\)/u)
+  // wyrm.as's guard 3 (rounds only) as the gullet opens, 1 (none) as it shuts and while the burst rears: shard-brasscap
+  // holds the source and its text checks now; this export holds the compiled module only.
 })
 
 test('BM-5: sand-ring particles circle the burst reach on the tell field, the gullet glow on the open field', (): void => {
@@ -235,26 +215,27 @@ test('BM-5: sand-ring particles circle the burst reach on the tell field, the gu
 })
 
 test('BM-5: the Wyrm draws as its generated skin, with the attack span its clip runs', (): void => {
-  const glb = buildWyrm(),
-    skin = buildWyrmSkin(glb),
-    look = read<{ readonly rows: { readonly looks: readonly Look[] } }>(
+  const look = read<{ readonly rows: { readonly looks: readonly Look[] } }>(
       'sections/look/materials.json',
     ).rows.looks.find(
       (candidate: Look): boolean => candidate.species === wyrm().species,
-    )
-  assert.equal(look?.recipe, 'platform.skin')
-  assert.equal(look.parameters.skin, sha256(skin))
-  assert.equal(look.animation.parameters.attackSpan, ATTACK_SPAN)
-  assert.ok(
-    readFileSync(path.join(BRASSCAP, 'blobs/glb', `${sha256(glb)}.glb`)).equals(
-      glb,
     ),
-  )
-  assert.ok(
-    readFileSync(
-      path.join(BRASSCAP, 'blobs/json', `${sha256(skin)}.json`),
-    ).equals(skin),
+    skin = look?.parameters.skin ?? ''
+  assert.equal(look?.recipe, 'platform.skin')
+  assert.equal(look.animation.parameters.attackSpan, ATTACK_SPAN)
+  const skinBytes = readFileSync(
+      path.join(BRASSCAP, 'blobs/json', `${skin}.json`),
+    ),
+    glb = (
+      JSON.parse(skinBytes.toString()) as {
+        readonly row: { readonly file: string }
+      }
+    ).row.file
+  assert.equal(sha256(skinBytes), skin)
+  assert.equal(
+    sha256(readFileSync(path.join(BRASSCAP, 'blobs/glb', `${glb}.glb`))),
+    glb,
   )
   const { library } = index().admission
-  assert.ok(library.includes(sha256(glb)) && library.includes(sha256(skin)))
+  assert.ok(library.includes(glb) && library.includes(skin))
 })
