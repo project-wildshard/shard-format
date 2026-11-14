@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.5 (2026-11-14)
+
+- A look can paint its own sky: `look.sky` is an unlit material graph (written in TSL) that the engine draws on its
+  sky dome in place of the two-colour gradient, so bands, a sun glow, clouds and stars are the shard's own.
+- The look's environment is filtered from that same sky, so ponds and shiny surfaces reflect the painted sky. Leave
+  `look.sky` out and the dome draws as before.
+
 ## v0.5.4 (2026-11-14)
 
 - A PBR surface can be see-through (`blend: 'alpha'`, `opacity`), sit just off a wall as a decal (`depthOffset`), sway in

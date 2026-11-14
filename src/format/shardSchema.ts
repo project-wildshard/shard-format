@@ -51,8 +51,10 @@ import { AccentSchema } from './accent.ts';
 import { MapSchema, PresentationSchema } from './presentation.ts';
 import { MigrationsSchema, migrationRules } from './migrations.ts';
 import { skinLookRules } from './skinAssets.ts';
-import { MaterialsSchema, FamilyLooksSchema, MaterialCurvesSchema, TextureSamplersSchema, materialExists, materialTextureRefs, materialGraphRules, materialCurveRules, textureSamplerRules } from './materials.ts';
+import { MaterialsSchema, FamilyLooksSchema, MaterialCurvesSchema, TextureSamplersSchema, materialExists, materialTextureRefs, materialGraphRules, materialCurveRules, textureSamplerRules, graphBindingSources } from './materials.ts';
 import { PostStackSchema, postStackRules } from './postStack.ts';
+import { LookSkySchema, lookSkyRules } from './look-sky.ts';
+import type { LookSky, LookSkyInput } from './look-sky.ts';
 import { LookBloomSchema, LookLightSchema, LookToneSchema } from './look-light.ts';
 import { LookVignetteSchema } from './look-render.ts';
 import type { LookBloom, LookBloomInput, LookLight, LookLightInput, LookTone } from './look-light.ts';
@@ -76,7 +78,7 @@ const rawSchema: v.GenericSchema<ShardfileRowsInput, ShardfileRows> & { readonly
   map: v.exactOptional(MapSchema),
   requires: RequiresSchema,
   budgets: BudgetsSchema,
-  look: v.strictObject({ families: names, materials: v.optional(MaterialsSchema, {}), familyLooks: v.optional(FamilyLooksSchema, {}), curves: v.exactOptional(MaterialCurvesSchema), samplers: v.exactOptional(TextureSamplersSchema), post: v.exactOptional(PostStackSchema), light: v.exactOptional(LookLightSchema), grade: lookGrade, clock: v.literal('engine'), day: v.optional(day), dayOverride: v.nullable(channel), keys: v.pipe(v.array(key), v.maxLength(64)) }),
+  look: v.strictObject({ families: names, materials: v.optional(MaterialsSchema, {}), familyLooks: v.optional(FamilyLooksSchema, {}), curves: v.exactOptional(MaterialCurvesSchema), samplers: v.exactOptional(TextureSamplersSchema), post: v.exactOptional(PostStackSchema), sky: v.exactOptional(LookSkySchema), light: v.exactOptional(LookLightSchema), grade: lookGrade, clock: v.literal('engine'), day: v.optional(day), dayOverride: v.nullable(channel), keys: v.pipe(v.array(key), v.maxLength(64)) }),
   sim: SimSchema,
   state: StateSchema,
   migrations: v.optional(MigrationsSchema, []),
@@ -185,6 +187,7 @@ export interface Shardfile {
     curves?: v.InferOutput<typeof MaterialCurvesSchema>;
     samplers?: v.InferOutput<typeof TextureSamplersSchema>;
     post?: v.InferOutput<typeof PostStackSchema>;
+    sky?: LookSky;
     light?: LookLight;
     grade: { exposure: number; saturation: number; contrast: number; lut: string | null; bloom?: LookBloom; tone?: LookTone; vignette?: LookVignette };
     clock: 'engine';
@@ -252,7 +255,7 @@ export function shardfileRules(s: Shardfile): string[] {
   errors.push(...stateRules(s.state));
   if ((s.clientChannels?.length ?? 0) > 0 && !pageOwner && s.runtime?.binds?.includes('clientChannels') !== true) errors.push('native visual channels require their declared page or runtime owner');
   if (s.runtime?.binds?.includes('state') === true && (s.state.player.length > 0 || s.state.shared.some((field) => field.privacy !== 'host' && !(field.privacy === 'public' && field.type !== 'string' && (s.runtime?.spawns?.bosses.length ?? 0) > 0)))) errors.push('runtime-bound state supports host fields and retained-actor numeric fields');
-  errors.push(...materialGraphRules(s), ...materialCurveRules(s), ...textureSamplerRules(s.look, s.files), ...postStackRules(s));
+  errors.push(...materialGraphRules(s), ...materialCurveRules(s), ...textureSamplerRules(s.look, s.files), ...postStackRules(s), ...lookSkyRules(s.look.sky?.graph, graphBindingSources(s)));
   const materialRefs = materialTextureRefs(s.look.materials), libraryClosure = new Set<string>();
   const libraryPending = [...s.library];
   while (libraryPending.length > 0) {
@@ -392,6 +395,7 @@ interface ShardfileRowsInputFields {
         curves?: v.InferInput<typeof MaterialCurvesSchema>;
         samplers?: v.InferInput<typeof TextureSamplersSchema>;
         post?: v.InferInput<typeof PostStackSchema>;
+        sky?: LookSkyInput;
         light?: LookLightInput;
         grade: {
             exposure: v.InferInput<typeof finite>;
@@ -468,6 +472,7 @@ interface ShardfileRowsFields {
         curves?: v.InferOutput<typeof MaterialCurvesSchema>;
         samplers?: v.InferOutput<typeof TextureSamplersSchema>;
         post?: v.InferOutput<typeof PostStackSchema>;
+        sky?: LookSky;
         light?: LookLight;
         grade: {
             exposure: v.InferOutput<typeof finite>;
