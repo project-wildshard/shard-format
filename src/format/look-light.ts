@@ -195,11 +195,14 @@ const LookPoolsSchema: GenericSchema<LookPools, LookPools> = strictObject({
 })
 const ACTOR_ID_MAX = 128
 const BONE_NAME_MAX = 64
+const actorId = pipe(
+  string(),
+  regex(/^[a-z][a-z0-9.:-]*$/u),
+  maxLength(ACTOR_ID_MAX),
+)
+const boneName = pipe(string(), minLength(FULL), maxLength(BONE_NAME_MAX))
 const LookLampFollowSchema: GenericSchema<LookLampFollow, LookLampFollow> =
-  strictObject({
-    actor: pipe(string(), regex(/^[a-z][a-z0-9.:-]*$/u), maxLength(ACTOR_ID_MAX)),
-    bone: exactOptional(pipe(string(), minLength(FULL), maxLength(BONE_NAME_MAX))),
-  })
+  strictObject({ actor: actorId, bone: exactOptional(boneName) })
 const LookLampSchema: GenericSchema<LookLamp, LookLamp> = strictObject({
   at: point,
   follow: exactOptional(LookLampFollowSchema),
