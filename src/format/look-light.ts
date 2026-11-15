@@ -8,7 +8,8 @@
  *   per metre above it. It adds to the day keys' distance fog, so a shard can drop that to 0 and keep mist only low.
  * - `pools`: warm light pools on the ground under lamps, drawn as one additive decal draw (no dynamic light per lamp):
  *   a disc of `radius` metres at each `at` point, in `colour` × `intensity`.
- * - `lamps` (meta TEMPLATES-CLEANROOM B2): real point lights for lanterns, tent lamps and fires, at most 16, each at
+ * - `lamps` (meta TEMPLATES-CLEANROOM B2): real point lights for lanterns, tent lamps and fires, at most 256 (SHARD-SOURCE
+ *   AP28; the engine lights the nearest `LOOK_LIGHT_LIT_MAX` each frame, 4 on a phone), each at
  *   `at` in linear `colour` × `intensity` (candela), out to `distance` metres with physical (2) decay, no shadow.
  * - `bounce` (B2): a warm fill from the ground: one shadowless directional light from the anti-sun heading, lifted
  *   by `lift` (0 level, 1 straight up), in linear `colour` × `intensity`.
@@ -77,8 +78,10 @@ const POOL_INTENSITY_MAX = 4
 const POOL_RADIUS_MIN = 0.1
 const POOL_RADIUS_MAX = 20
 const BLOOM_INTENSITY_MAX = 4
-/** At most this many lamps in one look (real point lights: each costs every lit draw a light loop step). */
-const LOOK_LIGHT_LAMPS_MAX = 16
+/** At most this many lamps in one look (SHARD-SOURCE AP28: authored; only the nearest `LOOK_LIGHT_LIT_MAX` light). */
+const LOOK_LIGHT_LAMPS_MAX = 256
+/** At most this many lamps light a frame (real point lights: each costs every lit draw a light loop step). */
+const LOOK_LIGHT_LIT_MAX = 16
 const LAMP_INTENSITY_MAX = 100
 const LAMP_DISTANCE_MIN = 0.1
 const LAMP_DISTANCE_MAX = 50
@@ -255,6 +258,7 @@ const LookBloomSchema: GenericSchema<LookBloom, LookBloom> = strictObject({
 
 export {
   LOOK_LIGHT_LAMPS_MAX,
+  LOOK_LIGHT_LIT_MAX,
   LOOK_LIGHT_POOLS_MAX,
   LookAoSchema,
   LookBloomSchema,

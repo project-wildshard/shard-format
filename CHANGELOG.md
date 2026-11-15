@@ -4,11 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
-## Unreleased
+## v0.5.9 (2026-11-15)
 
 - A lamp can follow a creature: `look.light.lamps[].follow` names an actor by its spawn id (and optionally one of its
   bones), and the lamp's `at` becomes its offset there, so a boss's eyes and core light the ground as it moves. Engines
   that predate it refuse a shard that uses it.
+- A look may hold up to 256 lamps (it was 16). An engine lights the nearest 16 each frame (4 on a phone), so a long
+  street of lanterns lights as you walk it.
 
 ## v0.5.8 (2026-11-15)
 

@@ -127,7 +127,7 @@ test('out-of-range lamps, bounce, environment or tone are refused', (): void => 
   expect((): unknown =>
     read(
       look({
-        light: { lamps: Array.from({ length: 17 }, (): object => lamp) },
+        light: { lamps: Array.from({ length: 257 }, (): object => lamp) },
       }),
     ),
   ).toThrow()
@@ -271,4 +271,21 @@ test('a lamp may follow an actor, or a bone of it', (): void => {
       }),
     ),
   ).toThrow()
+})
+
+// SHARD-SOURCE AP28: a street of lamps; the engine lights the nearest 16 of them each frame.
+test('a look holds up to 256 lamps', (): void => {
+  const lamp = {
+    at: [0, 3, 0],
+    colour: [1, 0.6, 0.3],
+    intensity: 3,
+    distance: 8,
+  }
+  const street = Array.from({ length: 256 }, (_unused, index): object => ({
+    ...lamp,
+    at: [index * 4, 3, 0],
+  }))
+  expect(read(look({ light: { lamps: street } })).light?.lamps).toHaveLength(
+    256,
+  )
 })
