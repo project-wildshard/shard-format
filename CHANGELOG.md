@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.10 (2026-11-15)
+
+- A map POI can stay out of respawning: `manifest.pois[].respawn: false` means a fallen player never comes back there
+  (a boss pit), while every other POI still is a place to come back to. Leave it out and nothing changes.
+
 ## v0.5.9 (2026-11-15)
 
 - A lamp can follow a creature: `look.light.lamps[].follow` names an actor by its spawn id (and optionally one of its
