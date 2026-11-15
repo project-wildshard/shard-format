@@ -127,7 +127,7 @@ test('SubagentStop kills the lane\'s own processes and nothing else', { skip: !d
 
   // 2. A wait past WS_AUTOCLEAN_MAX_WAIT_MIN no longer defers: the shell and the lane's processes go.
   assert.equal((await run(HOOK, [], payload, { WS_AUTOCLEAN_MAX_WAIT_MIN: '0' })).code, 0);
-  assert.equal(await alive(inWorktree), false, 'sleeper in the worktree is killed');
+  assert.equal(await alive(inWorktree), false, `sleeper in the worktree is killed; hook log:\n${readFileSync(logPath, 'utf8')}`);
   assert.equal(await alive(orphanInTmp), false, 'orphan in tmp/<lane> is killed');
   assert.equal(await alive(shell), false, 'the background shell is killed');
   assert.equal(await alive(outside), true, 'a process outside every lane root is untouched');
