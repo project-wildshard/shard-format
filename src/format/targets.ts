@@ -30,6 +30,8 @@ export const TargetsSchema: v.GenericSchema<ShardTargetsInput, ShardTargets> = v
 
 /** A declared lever-action (TE-ENG2) is the one weapon an item scene may name: its action 3 takes it from a rack, 4 reloads it. */
 const LEVER_FAMILY = 'kit.lever';
+/** A melee weapon an item scene takes off its rack (action 3), TEMPLATE-E2E TC-E4. */
+const MELEE_FAMILY = 'kit.melee', RACK_TAKE = 3;
 /** Each row's id. */
 function idsOf(rows: readonly Readonly<{ id: string }>[]): Set<string> {
   const out = new Set<string>();
@@ -122,7 +124,7 @@ export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput
   errors.push(...spentRules(targets, shard.hooks.conditions));
   if (targets.panels.length > 0 && shard.sim.bindings.length === 0) errors.push('target fields require script bindings');
   const actions = targets.itemActions ?? [], fields = targets.itemFields ?? [];
-  if (new Set(actions.map((row) => row.scene)).size !== actions.length || actions.some((row) => !scenes.has(row.scene) || !shard.items.rows.some((item) => item.id === row.item && (item.kind === 'tool' || item.family === LEVER_FAMILY)))) errors.push('declared item action scenes');
+  if (new Set(actions.map((row) => row.scene)).size !== actions.length || actions.some((row) => !scenes.has(row.scene) || !shard.items.rows.some((item) => item.id === row.item && (item.kind === 'tool' || item.family === LEVER_FAMILY || item.family === MELEE_FAMILY && row.action === RACK_TAKE)))) errors.push('declared item action scenes');
   if (new Set(fields.map((row) => row.fieldId)).size !== fields.length || fields.some((row) => {
     const field = shard.state.player.find((entry) => entry.id === row.fieldId);
     return !projects(shard.items.rows, row) || field === undefined || field.privacy === 'host' || field.type !== (row.property === 'fuel' ? 'f64' : 'bool') || (field.min ?? 0) > 0 || (field.max ?? 1) < 1;

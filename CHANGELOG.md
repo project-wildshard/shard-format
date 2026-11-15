@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.8 (2026-11-15)
+
+- A rack can hand over a melee weapon: an item scene's take (`targets.itemActions`, action 3) may name a `kit.melee`
+  weapon, so a sword waits on its rack until the player takes it. Any other action on a melee weapon is still refused.
+- A creature spawn can come back: `creatures.spawns[].respawn` is the seconds (1 to 3600) after its death that its
+  body returns at its `at`. Leave it out and the body stays dead, as before.
+
 ## v0.5.7 (2026-11-14)
 
 - A tile's draws no longer have their own 8-draw cap: engines now draw each material once across nearby tiles, so the

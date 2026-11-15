@@ -29,9 +29,25 @@ test('an item scene may take a kit.lever weapon', (): void => {
     'declared item action scenes',
   )
 })
+// TEMPLATE-E2E TC-E4 (J361): a rack's take (action 3) may hand over a melee weapon; any other action on one is refused.
+test('an item scene may take a kit.melee weapon off its rack, and only take it', (): void => {
+  // oxlint-disable-next-line unicorn/no-null -- The rule's props argument is null when a shard has no props.
+  expect(targetRules(targets, shard('kit.melee'), null)).not.toContain(
+    'declared item action scenes',
+  )
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- The rule reads only the item action rows here.
+  const reload = {
+    ...targets,
+    itemActions: [{ scene: 'rack.take', item: 'weapon.rifle', action: 4 }],
+  } as unknown as Targets
+  // oxlint-disable-next-line unicorn/no-null -- The rule's props argument is null when a shard has no props.
+  expect(targetRules(reload, shard('kit.melee'), null)).toContain(
+    'declared item action scenes',
+  )
+})
 test('an item scene still refuses any other weapon', (): void => {
   // oxlint-disable-next-line unicorn/no-null -- The rule's props argument is null when a shard has no props.
-  expect(targetRules(targets, shard('kit.melee'), null)).toContain(
+  expect(targetRules(targets, shard('kit.whip'), null)).toContain(
     'declared item action scenes',
   )
 })
