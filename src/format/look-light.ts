@@ -35,6 +35,8 @@ import {
   number,
   picklist,
   pipe,
+  regex,
+  string,
   strictObject,
   tuple,
 } from 'valibot'
@@ -107,9 +109,18 @@ interface LookPools {
   radius: number
   at: Point[]
 }
+/**
+ * SHARD-SOURCE AP24a: a lamp that rides an actor (a creature or boss by its spawn id) or one of its rig's bones. Its `at`
+ * is then an offset in that actor's (or bone's) frame, applied each frame; with no actor in the world the lamp is dark.
+ */
+interface LookLampFollow {
+  actor: string
+  bone?: string
+}
 /** One lamp: a point light at `at`, `colour` × `intensity` (candela), out to `distance` metres, decay 2, no shadow. */
 interface LookLamp {
   at: Point
+  follow?: LookLampFollow
   colour: Rgb
   intensity: number
   distance: number
@@ -182,8 +193,16 @@ const LookPoolsSchema: GenericSchema<LookPools, LookPools> = strictObject({
   radius: range(POOL_RADIUS_MIN, POOL_RADIUS_MAX),
   at: pipe(array(point), minLength(FULL), maxLength(LOOK_LIGHT_POOLS_MAX)),
 })
+const ACTOR_ID_MAX = 128
+const BONE_NAME_MAX = 64
+const LookLampFollowSchema: GenericSchema<LookLampFollow, LookLampFollow> =
+  strictObject({
+    actor: pipe(string(), regex(/^[a-z][a-z0-9.:-]*$/u), maxLength(ACTOR_ID_MAX)),
+    bone: exactOptional(pipe(string(), minLength(FULL), maxLength(BONE_NAME_MAX))),
+  })
 const LookLampSchema: GenericSchema<LookLamp, LookLamp> = strictObject({
   at: point,
+  follow: exactOptional(LookLampFollowSchema),
   colour,
   intensity: range(NONE, LAMP_INTENSITY_MAX),
   distance: range(LAMP_DISTANCE_MIN, LAMP_DISTANCE_MAX),

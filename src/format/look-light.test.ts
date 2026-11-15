@@ -231,3 +231,14 @@ test('out-of-range lamp fields, vignette or tone are refused', (): void => {
   expect((): unknown => read(look({}, { vignette: { offset: 0.3 } }))).toThrow()
   expect((): unknown => read(look({}, { tone: 'reinhard' }))).toThrow()
 })
+
+// SHARD-SOURCE AP24a: a lamp that rides an actor or one of its bones; `at` is then its offset there. Absent is a fixed lamp.
+test('a lamp may follow an actor, or a bone of it', (): void => {
+  const lamp = { at: [0, 0.2, 0.3], colour: [1, 0.3, 0.1], intensity: 6, distance: 9 }
+  const eyes = { ...lamp, follow: { actor: 'boss.warden', bone: 'head' } }
+  const core = { ...lamp, follow: { actor: 'boss.warden' } }
+  expect(read(look({ light: { lamps: [eyes, core] } })).light?.lamps).toEqual([eyes, core])
+  expect((): unknown => read(look({ light: { lamps: [{ ...lamp, follow: { actor: 'Boss Warden' } }] } }))).toThrow()
+  expect((): unknown => read(look({ light: { lamps: [{ ...lamp, follow: { actor: 'boss.warden', bone: '' } }] } }))).toThrow()
+  expect((): unknown => read(look({ light: { lamps: [{ ...lamp, follow: { actor: 'boss.warden', spin: 1 } }] } }))).toThrow()
+})
