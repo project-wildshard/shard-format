@@ -3,7 +3,8 @@
 import * as v from 'valibot';
 import { WIRE_CELL, WIRE_TILE_SIZES } from './wireLimits.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
-import { SHARDFILE_VERSION } from './version.ts';
+import { SHARDFILE_VERSIONS } from './version.ts';
+import type { ShardfileVersion } from './version.ts';
 import { RuntimeCostSchema } from './runtimeCost.ts';
 import { CommonsCostsSchema } from './commonsCosts.ts';
 import { ScriptBindingsSchema } from './scripts.ts';
@@ -35,7 +36,7 @@ const tileCount = (2 * CHUNK_HALF / WIRE_TILE_SIZES.l0) ** 2 + (2 * CHUNK_HALF /
 /** Stable authored shard identity and deterministic seed. */
 export const IdentitySchema: v.GenericSchema<ShardIdentityInput, ShardIdentity> = v.strictObject({ slug: name, name: v.pipe(v.string(), v.minLength(1), v.maxLength(limits.idCharacters)), author: v.pipe(v.string(), v.minLength(1), v.maxLength(limits.idCharacters)), revision: positive, seed: ShardNaturalSchema });
 /** Wire revision, capabilities and exact commons declarations. */
-export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ sdk: v.literal(SHARDFILE_VERSION), capabilities: ShardNamesSchema, commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
+export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ sdk: v.picklist(SHARDFILE_VERSIONS), capabilities: ShardNamesSchema, commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
 /** Authored compressed and resident ceilings. */
 export const BudgetsSchema: v.GenericSchema<ShardBudgetsInput, ShardBudgets> = v.strictObject({
   /** Reviewed whole-client floor retained when an opaque runtime becomes declared data. */
@@ -216,7 +217,7 @@ interface ShardIdentityFields {
 }
 export type ShardIdentity = { [Key in keyof ShardIdentityFields]: ShardIdentityFields[Key] };
 interface ShardRequiresInputFields {
-    sdk: (typeof SHARDFILE_VERSION);
+    sdk: ShardfileVersion;
     capabilities: ShardNamesInput;
     commons: (ShardHashInput)[];
     commonsWire?: Record<string, ShardNaturalInput> | undefined;
@@ -224,7 +225,7 @@ interface ShardRequiresInputFields {
 }
 export type ShardRequiresInput = { [Key in keyof ShardRequiresInputFields]: ShardRequiresInputFields[Key] };
 interface ShardRequiresFields {
-    sdk: (typeof SHARDFILE_VERSION);
+    sdk: ShardfileVersion;
     capabilities: ShardNames;
     commons: (ShardHash)[];
     commonsWire: Record<string, ShardNatural>;

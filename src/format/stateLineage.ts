@@ -3,7 +3,7 @@ import { assertMigrationCompatibility } from './migrations.ts';
 import { StateSchema } from './state.ts';
 import type { Shardfile } from './shardSchema.ts';
 import { isJsonDataWithFileSchemas } from './json.ts';
-import { SHARDFILE_VERSION } from './version.ts';
+import { SHARDFILE_VERSIONS } from './version.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 
 const identity = v.object({ slug: v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u)),
@@ -17,7 +17,7 @@ const path = v.pipe(v.string(), v.maxLength(240), v.regex(/^(?:[a-zA-Z0-9_-][a-z
 const measured = { path, hash: v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u)),
   bytes: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(Number.MAX_SAFE_INTEGER)) };
 const inventory = v.object({ format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.literal('0.2'),
-  version: v.literal(SHARDFILE_VERSION), identity,
+  version: v.picklist(SHARDFILE_VERSIONS), identity,
   sections: v.pipe(v.array(v.strictObject({ ...measured, name: v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9-]*\/[a-zA-Z][a-zA-Z0-9_-]*$/u)),
     schema: v.pipe(v.string(), v.maxLength(240)) })), v.maxLength(256)),
   schemas: v.pipe(v.array(v.strictObject(measured)), v.maxLength(128)) });

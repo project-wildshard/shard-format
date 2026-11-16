@@ -15,7 +15,8 @@ import { ClientPlanRuntimeSchema } from './runtime.ts';
 import { RuntimeSpawnsSchema } from './runtimeSpawns.ts';
 import { RowsSchema } from './rows.ts';
 import { ShardHashSchema, ShardNaturalSchema, IdentitySchema, RequiresSchema, FilesSchema, type ShardIdentityInput, type ShardRequiresInput, type ShardReferencesInput, type ShardIdentity, type ShardRequires, type ShardReferences } from './shardSections.ts';
-import { SHARDFILE_VERSION } from './version.ts';
+import { SHARDFILE_VERSIONS } from './version.ts';
+import type { ShardfileVersion } from './version.ts';
 import { isJsonData, isJsonDataWithFileSchemas } from './json.ts';
 import { clientOwnershipRules } from './clientOwnership.ts';
 import { PLATFORM_DATA_SECTIONS } from './platformDataSections.ts';
@@ -31,7 +32,7 @@ const fileSchema = v.strictObject({ ...costs, path, kind: v.picklist(['glb', 'kt
 const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['spawns']).entries, trust: v.literal('first-party'), files: v.pipe(v.array(v.strictObject({ ...measuredFile, lines: ShardNaturalSchema })), v.maxLength(0)), lines: v.literal(0) });
 /** Format 2 inventories every emitted byte except its index and validation receipt. */
 export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputIndexRows> & { readonly entries: { readonly [Key in keyof OutputIndexRows]-?: v.GenericSchema<OutputIndexRowsInput[Key], OutputIndexRows[Key]> } } = v.strictObject({
-  format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.picklist(['0.2', '0.3']), version: v.literal(SHARDFILE_VERSION),
+  format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.picklist(['0.2', '0.3']), version: v.picklist(SHARDFILE_VERSIONS),
   identity: IdentitySchema, build: v.strictObject({ sourceHash: ShardHashSchema, validator: v.pipe(v.string(), v.minLength(1), v.maxLength(160)) }), requires: RequiresSchema,
   admission: v.strictObject({ budgets: ShardfileFieldSchemas.budgets, serverBudget: ShardfileFieldSchemas.serverBudget, authorCaps: ShardfileFieldSchemas.authorCaps, critical: ShardfileFieldSchemas.critical, library: ShardfileFieldSchemas.library, late: v.exactOptional(AdmissionLateSchema), server: v.exactOptional(AdmissionServerSchema), audioWaiver: v.exactOptional(AudioWaiverSchema) }),
   sections: v.pipe(v.array(section), v.maxLength(256)), schemas: v.pipe(v.array(v.strictObject(measuredFile)), v.maxLength(0)),
@@ -158,7 +159,7 @@ interface OutputIndexRowsInputFields {
     format: "wildshard.shardfile";
     formatVersion: 2;
     sdk: "0.2" | "0.3";
-    version: "0.1";
+    version: ShardfileVersion;
     identity: ShardIdentityInput;
     build: {
         sourceHash: string;
@@ -256,7 +257,7 @@ interface OutputIndexRowsFields {
     format: "wildshard.shardfile";
     formatVersion: 2;
     sdk: "0.2" | "0.3";
-    version: "0.1";
+    version: ShardfileVersion;
     identity: ShardIdentity;
     build: {
         sourceHash: string;

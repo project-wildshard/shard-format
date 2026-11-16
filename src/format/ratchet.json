@@ -4681,11 +4681,6 @@
    "unicorn(numeric-separators-style)": 1,
    "unicorn(prefer-at)": 1
   },
-  "src/format/version.ts": {
-   "eslint(curly)": 2,
-   "eslint(no-magic-numbers)": 1,
-   "import(group-exports)": 2
-  },
   "src/format/vertexWear.ts": {
    "eslint(id-length)": 1,
    "eslint(no-magic-numbers)": 15,
@@ -5484,7 +5479,6 @@
   "src/format/uniformRows.ts",
   "src/format/validation-source.test.ts",
   "src/format/validationReceipt.ts",
-  "src/format/version.ts",
   "src/format/vertexWear.ts",
   "src/format/viewProgram.ts",
   "src/format/voicePatches.ts",

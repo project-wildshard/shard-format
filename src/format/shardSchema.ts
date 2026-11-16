@@ -13,7 +13,8 @@ import { jsonDataNodes } from './json.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 import { preflightShardfile } from './preflight.ts';
 import { preflightAssetGraph } from './shardfile-assets.ts';
-import { SHARDFILE_VERSION } from './version.ts';
+import { SHARDFILE_VERSIONS } from './version.ts';
+import type { ShardfileVersion } from './version.ts';
 import { UiSchema, uiRules } from './ui.ts';
 import { scriptBindingRules } from './scripts.ts';
 import { RowsSchema } from './rows.ts';
@@ -75,7 +76,7 @@ const lookGrade = v.strictObject({ exposure: finite, saturation: v.pipe(finite, 
 /** A colour LUT file's exact wire size: 33³ RGBA8 (the engine's render/lut format). */
 export const LOOK_LUT_BYTES: number = 33 ** 3 * 4;
 const rawSchema: v.GenericSchema<ShardfileRowsInput, ShardfileRows> & { readonly entries: { readonly [Key in keyof ShardfileRows]-?: v.GenericSchema<ShardfileRowsInput[Key], ShardfileRows[Key]> } } = v.strictObject({
-  version: v.literal(SHARDFILE_VERSION),
+  version: v.picklist(SHARDFILE_VERSIONS),
   accent: AccentSchema,
   identity: IdentitySchema,
   presentation: v.exactOptional(PresentationSchema),
@@ -132,7 +133,7 @@ export const ShardfileFieldSchemas: { readonly [Key in keyof Shardfile]-?: v.Gen
 /** Public parsed output, independently named by section. The unchanged schema
  * is checked against this interface, so consumers need not expand its input tree. */
 export interface Shardfile {
-  version: typeof SHARDFILE_VERSION;
+  version: ShardfileVersion;
   accent: v.InferOutput<typeof AccentSchema>;
   identity: v.InferOutput<typeof IdentitySchema>;
   presentation?: v.InferOutput<typeof PresentationSchema>;
@@ -398,7 +399,7 @@ export { parseShardfile, parseShardfileField };
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 interface ShardfileRowsInputFields {
-    version: (typeof SHARDFILE_VERSION);
+    version: ShardfileVersion;
     accent: v.InferInput<typeof AccentSchema>;
     identity: v.InferInput<typeof IdentitySchema>;
     presentation?: v.InferInput<typeof PresentationSchema>;
@@ -476,7 +477,7 @@ interface ShardfileRowsInputFields {
 }
 export type ShardfileRowsInput = { [Key in keyof ShardfileRowsInputFields]: ShardfileRowsInputFields[Key] };
 interface ShardfileRowsFields {
-    version: (typeof SHARDFILE_VERSION);
+    version: ShardfileVersion;
     accent: v.InferOutput<typeof AccentSchema>;
     identity: v.InferOutput<typeof IdentitySchema>;
     presentation?: v.InferOutput<typeof PresentationSchema>;
