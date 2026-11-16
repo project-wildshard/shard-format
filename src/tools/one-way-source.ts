@@ -1,4 +1,5 @@
 import { execFile, spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { once } from 'node:events'
 import type { Dirent } from 'node:fs'
 import { readdir, readFile } from 'node:fs/promises'
@@ -26,9 +27,10 @@ const LINE_FEED = 10
 function sourcePath(name: string): boolean {
   return (
     /\.(?:[cm]?[jt]sx?|json|md)$/u.test(name) &&
-    (name.startsWith('src/') ||
-      name.startsWith('docs/') ||
-      /^[^/]+\.md$/u.test(name))
+    (/^(?:src\/|docs\/|packages\/[^/]+\/(?:src|docs)\/)/u.test(name) ||
+      /^packages\/[^/]+\/[^/]+\.md$/u.test(name) ||
+      /^[^/]+\.md$/u.test(name) ||
+      name === 'test/pins/shardfiles.json')
   )
 }
 
@@ -81,11 +83,16 @@ class BlobReader {
 
   public read(hash: string): string {
     const size = this.size(hash)
-    const text = this.bytes
-      .subarray(this.offset, this.offset + size)
-      .toString('utf8')
+    const bytes = this.bytes.subarray(this.offset, this.offset + size)
+    const digest = createHash('sha1')
+      .update(`blob ${String(size)}\0`)
+      .update(bytes)
+      .digest('hex')
+    if (digest !== hash) {
+      throw new Error('Pinned source blob hash differs')
+    }
     this.offset += size + NEXT
-    return text
+    return bytes.toString('utf8')
   }
 }
 
@@ -153,7 +160,8 @@ async function workingFiles(root: string): Promise<readonly SourceFile[]> {
             relative === '' ? entry.name : `${relative}/${entry.name}`
           if (
             entry.isDirectory() &&
-            (relative !== '' || ['src', 'docs', 'corpus'].includes(entry.name))
+            (/^(?:src|docs|corpus)(?:\/|$)/u.test(name) ||
+              /^packages(?:\/[^/]+(?:\/(?:src|docs)(?:\/.*)?)?)?$/u.test(name))
           ) {
             return await walk(name)
           }
