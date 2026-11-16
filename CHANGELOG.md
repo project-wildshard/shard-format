@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.10.0 (2026-11-16)
+
+- A look can hang lanterns, signs and banners that swing: `look.light.swings` holds up to 32 of them.
+- Each swing has a pivot, a rate, a lean in the wind and a reach at which a passing body bumps it.
+- A lamp can name its swing so its light moves with the lantern; surfaces and glow cards use the `_SWING` channel.
+- Shards using these fields need an engine that implements them; older engines may refuse them.
+
 ## v0.9.0 (2026-11-16)
 
 - Shards from the preceding additive format remain readable without rebuilding their signed files.
