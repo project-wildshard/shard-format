@@ -189,5 +189,14 @@ async function workingFiles(root: string): Promise<readonly SourceFile[]> {
   )
 }
 
-export { revisionFiles, workingFiles }
+/** Locate a sibling checkout through Git's common directory, including worktrees. */
+async function siblingRoot(
+  root: string,
+  sibling: 'engine' | 'sharddev',
+): Promise<string> {
+  const result = await git('git', ['-C', root, 'rev-parse', '--git-common-dir'])
+  return path.resolve(root, result.stdout.trim(), '..', '..', sibling)
+}
+
+export { revisionFiles, siblingRoot, workingFiles }
 export type { SourceFile }

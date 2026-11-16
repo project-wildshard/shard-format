@@ -1,7 +1,7 @@
 # One way: M1 inventory and ceilings
 
 > Written by: Codex
-> State: pinned baseline, 2026-11-15. OF1a built; OF1b wires the CI comparison.
+> State: pinned baseline and CI ratchet built, 2026-11-15; M1 land pending.
 
 There is one shard format. `src/tools/one-way-baseline.json` records exact
 source revisions, product archive hashes and byte counts, corpus JSON digests,
@@ -94,4 +94,13 @@ Keep source ids and product identities reviewable. On a source-pin change,
 collect that exact revision and compare it against the existing ceilings.
 Lower a ceiling after its removal row passes; never increase it to pass.
 Update corpus JSON identities alongside the corpus source change.
-OF1b adds the normal check, CI wiring and both fault drills.
+The normal Node test discovery includes one-way.test.ts. CI reads these
+source ids and checks out both snapshots into lane scratch before the check.
+Local worktrees find sibling checkouts through Git's common directory.
+WS_ONE_WAY_ENGINE_ROOT and WS_ONE_WAY_SDK_ROOT override their locations;
+WS_ONE_WAY_ENGINE_REVISION and WS_ONE_WAY_SDK_REVISION select branch proofs.
+The comparison rejects any rise, unrecorded product pin or corpus identity.
+Both fault drills use committed temporary Git snapshots, and each planted
+change fails only its own counter. Advance the source ids to completed M1
+branch commits before landing; the audit input is deliberately frozen until
+that reviewed update.

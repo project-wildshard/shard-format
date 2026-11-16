@@ -56,7 +56,34 @@ jobs:
           echo "$sum  $RUNNER_TEMP/shellcheck.tar.xz" | sha256sum -c -
           tar -xJf "$RUNNER_TEMP/shellcheck.tar.xz" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/shellcheck-v0.11.0" >> "$GITHUB_PATH"
+      - name: Read one-way source pins
+        id: one-way
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync } from 'node:fs';
+          import baseline from './src/tools/one-way-baseline.json' with { type: 'json' };
+          import { scratchDir } from './scripts/scratch-dir.mjs';
+          scratchDir('codex-te2e', 'Pinned one-way source inputs');
+          appendFileSync(process.env.GITHUB_OUTPUT, `engine=${baseline.engineRevision}\nsdk=${baseline.sdkRevision}\n`);
+          JS
+      - name: Check out the inventoried engine
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: project-wildshard/engine
+          ref: ${{ steps.one-way.outputs.engine }}
+          path: tmp/codex-te2e/one-way/engine
+          persist-credentials: false
+      - name: Check out the inventoried SDK
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: project-wildshard/sharddev
+          ref: ${{ steps.one-way.outputs.sdk }}
+          path: tmp/codex-te2e/one-way/sharddev
+          persist-credentials: false
       - run: pnpm check
+        env:
+          WS_ONE_WAY_ENGINE_ROOT: ${{ github.workspace }}/tmp/codex-te2e/one-way/engine
+          WS_ONE_WAY_SDK_ROOT: ${{ github.workspace }}/tmp/codex-te2e/one-way/sharddev
       - run: pnpm test:hooks
       - run: pnpm test:ci
 

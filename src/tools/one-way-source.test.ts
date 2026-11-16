@@ -6,6 +6,7 @@ import { afterEach, test } from 'node:test'
 import { promisify } from 'node:util'
 
 import { scratchDir } from '../../scripts/scratch-dir.mjs'
+import { countRises, sourceCounts } from './one-way-counts.ts'
 import { revisionFiles, workingFiles } from './one-way-source.ts'
 
 import type { SourceFile } from './one-way-source.ts'
@@ -111,4 +112,70 @@ test('reads current format sources and corpus while ignoring build output', asyn
       left.localeCompare(right),
     ),
   )
+})
+
+async function commitNew(
+  root: string,
+  file: string,
+  text: string,
+): Promise<string> {
+  await writeFile(path.join(root, file), text)
+  await execute('git', ['-C', root, 'add', file])
+  await execute('git', [
+    '-C',
+    root,
+    '-c',
+    'user.name=Fixture',
+    '-c',
+    'user.email=fixture@example.invalid',
+    'commit',
+    '--quiet',
+    '-m',
+    'test: plant inventory fault',
+    '--',
+    file,
+  ])
+  const result = await execute('git', ['-C', root, 'rev-parse', 'HEAD'])
+  return result.stdout.trim()
+}
+async function engineCounts(
+  root: string,
+  revision: string,
+): Promise<Readonly<Record<string, number>>> {
+  return sourceCounts({
+    engine: await revisionFiles(root, revision),
+    format: [],
+    sdk: [],
+    kinds: [],
+  })
+}
+function refusesGrowth(
+  baseline: Readonly<Record<string, number>>,
+  current: Readonly<Record<string, number>>,
+  expected: string,
+): void {
+  const rises = countRises(baseline, current)
+  assert.deepEqual(rises, [expected])
+  assert.throws((): void => {
+    assert.deepEqual(rises, [])
+  })
+}
+
+test('temporary Git snapshots refuse each planted pointer and doc wording independently', async (): Promise<void> => {
+  const root = await fixture()
+  const original = await engineCounts(root, await pin(root))
+  const pointerRevision = await commitNew(
+    root,
+    'src/extra.ts',
+    'export const gridShardfile = "fixture"\n',
+  )
+  const pointer = await engineCounts(root, pointerRevision)
+  refusesGrowth(original, pointer, 'engine.grid-pointer-references: 0 -> 1')
+  const wordingRevision = await commitNew(
+    root,
+    'docs/extra.md',
+    ['trus', 'ted'].join(''),
+  )
+  const wording = await engineCounts(root, wordingRevision)
+  refusesGrowth(pointer, wording, 'engine.retired-vocabulary: 0 -> 1')
 })
