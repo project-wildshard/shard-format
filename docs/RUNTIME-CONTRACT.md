@@ -160,6 +160,16 @@ row cannot also declare a legacy glyph. Older glyph rows remain accepted
 until ONE-FORMAT OF31c2 replaces their producer and runtime path; this
 schema addition alone does not enable image rendering in an older engine.
 
+A gameplay species row may declare the boolean `capExempt`. It is absent
+from look-only metadata. Strike rows and melee swings may declare `debris`
+with a required `default` effect and up to 64 unique `overrides`. Each
+override names a target species row id and an `effect`. Effects declare
+`surface` (`shell`, `wood` or `sand`), integer `count` from 0 to 64,
+`atFeet` and `sparks` booleans. Complete row/program catalogues and full
+item admission reject unknown target species ids; standalone strikes
+check syntax without inventing a catalogue. Runtime support and older
+source conversion remain ONE-FORMAT OF31d2 and OF31d3.
+
 ## 2. `client/plan` kinds
 
 `client/plan` is `{ "version": 1, "features": [ … ] }`, at most 64 features. Each feature's `kind` picks one

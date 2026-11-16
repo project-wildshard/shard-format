@@ -1,3 +1,5 @@
+import { StrikeDebrisSchema } from './strike-debris.ts';
+import type { StrikeDebrisPolicy } from './strike-debris.ts';
 import * as v from 'valibot';
 import { isJsonData } from './json.ts';
 import { ClientChannelsSchema, ClientChannelInputsSchema, ClientChannelPropertySchema } from './clientChannels.ts';
@@ -9,9 +11,9 @@ const duration = v.pipe(seconds, v.minValue(0.000001));
 const count = v.pipe(scalar, v.integer(), v.maxValue(1024));
 const slots = v.pipe(count, v.minValue(1));
 const probability = v.pipe(scalar, v.maxValue(1));
-const swing = v.pipe(v.strictObject({ windup: seconds, slashEnd: duration, total: duration, damage: scalar,
+const swing: v.GenericSchema<MeleeSwingRows> = v.pipe(v.strictObject({ debris: v.exactOptional(StrikeDebrisSchema), windup: seconds, slashEnd: duration, total: duration, damage: scalar,
   stagger: v.exactOptional(scalar), sweep: v.exactOptional(v.pipe(v.number(), v.finite(), v.minValue(-10000), v.maxValue(10000))), reach: v.exactOptional(positive) }),
-  v.check(row => row.windup <= row.slashEnd && row.slashEnd <= row.total, 'Ordered native swing phases'));
+  v.check<MeleeSwingRows, 'Ordered native swing phases'>((row: Readonly<Pick<MeleeSwingRows, 'windup' | 'slashEnd' | 'total'>>): boolean => row.windup <= row.slashEnd && row.slashEnd <= row.total, 'Ordered native swing phases'));
 const flight = v.strictObject({ gravity: scalar, drag: scalar, windCoupling: scalar });
 const cone = v.strictObject({ degrees: scalar, radius: v.picklist(['linear', 'sqrt']), axisScale: v.picklist([1, 2]) });
 
@@ -300,6 +302,7 @@ export const HeldBowFileSchema: v.GenericSchema<HeldBowFileRowsInput, HeldBowFil
 
 
 /** Admitted data contracts, independent of validator implementation metadata. */
+interface MeleeSwingRows { windup: number; slashEnd: number; total: number; damage: number; stagger?: number; sweep?: number; reach?: number; debris?: StrikeDebrisPolicy; }
 export type MeleeWeaponProfileRowsInput = MeleeWeaponProfileRows;
 interface MeleeWeaponProfileRowsFields {
     family: 'melee';
@@ -310,46 +313,7 @@ interface MeleeWeaponProfileRowsFields {
     comboGap: number;
     chainLag: number;
     heavyCharge: number;
-    moves: {
-        combo: ({
-            windup: number;
-            slashEnd: number;
-            total: number;
-            damage: number;
-            stagger?: number;
-            sweep?: number;
-            reach?: number;
-        })[];
-        heavy: {
-            windup: number;
-            slashEnd: number;
-            total: number;
-            damage: number;
-            stagger?: number;
-            sweep?: number;
-            reach?: number;
-        };
-        passes?: {
-            left: {
-                windup: number;
-                slashEnd: number;
-                total: number;
-                damage: number;
-                stagger?: number;
-                sweep?: number;
-                reach?: number;
-            };
-            right: {
-                windup: number;
-                slashEnd: number;
-                total: number;
-                damage: number;
-                stagger?: number;
-                sweep?: number;
-                reach?: number;
-            };
-        };
-    };
+    moves: { combo: MeleeSwingRows[]; heavy: MeleeSwingRows; passes?: {left: MeleeSwingRows; right: MeleeSwingRows}; };
     mounted?: {
         reach: number;
         cooldown: number;

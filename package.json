@@ -397,6 +397,7 @@
     "./worldScenes": "./src/format/worldScenes.ts",
     "./worldTargets": "./src/format/worldTargets.ts",
     "./worldUpdates": "./src/format/worldUpdates.ts",
+    "./strikeDebris": "./src/format/strike-debris.ts",
     "./harvestRows": "./src/format/harvest-rows.ts"
   },
   "engines": {

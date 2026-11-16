@@ -5,7 +5,7 @@ import { SkinClipNameSchema } from './skinData.ts';
 import { ClientChannelsSchema, NumericPoseSchema } from './clientChannels.ts';
 import { RidingPresentationSchema } from './riding.ts';
 
-const lookMetadata = v.omit(SpeciesSchema, ['harvest']);
+const lookMetadata = v.omit(SpeciesSchema, ['harvest', 'capExempt']);
 const text=v.pipe(v.string(),v.minLength(1),v.maxLength(4096)),number=v.pipe(v.number(),v.finite()),rgb=v.tuple([number,number,number]);
 const fur = v.object({ texSeed: number, tex: v.object({ contrast: number, grizzle: number, normalStrength: number,
   bristle: number, strandLen: number, root: number }), roughness: number, sheen: number, sheenColor: rgb,
@@ -130,7 +130,7 @@ export const DirectedSpeciesSchema: v.GenericSchema<DirectedSpeciesRowsInput, Di
 });
 
 /** Admitted data contracts, independent of validator implementation metadata. */
-export type HullSpeciesRowsInput = Omit<v.InferInput<typeof SpeciesSchema>, 'harvest' | keyof ({
+export type HullSpeciesRowsInput = Omit<v.InferInput<typeof SpeciesSchema>, 'harvest' | 'capExempt' | keyof ({
     fur: {
         texSeed: number;
         tex: {
@@ -369,7 +369,7 @@ export type HullSpeciesRowsInput = Omit<v.InferInput<typeof SpeciesSchema>, 'har
         };
     };
 };
-export type HullSpeciesRows = Omit<v.InferOutput<typeof SpeciesSchema>, 'harvest' | keyof ({
+export type HullSpeciesRows = Omit<v.InferOutput<typeof SpeciesSchema>, 'harvest' | 'capExempt' | keyof ({
     fur: {
         texSeed: number;
         tex: {

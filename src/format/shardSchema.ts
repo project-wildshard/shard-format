@@ -1,3 +1,5 @@
+import type { StrikeDebrisPolicy } from './strike-debris.ts';
+import { strikeDebrisCatalogueRules } from './strike-debris.ts';
 import { harvestSpeciesRules } from './harvest-rows.ts';
 import { AdmissionLateSchema, lateLibraryRootsValid } from './admissionLate.ts';
 import { ManifestMetadataSchema } from './minimap.ts';
@@ -297,6 +299,15 @@ export function shardfileRules(s: Shardfile): string[] {
   errors.push(...nativeGroundRules(s), ...navigationRules(s));
   errors.push(...targetRules(s.targets, s, { panels: s.props?.panels ?? [], colliders: [...s.props?.colliders ?? [], ...s.meshCollision?.panels ?? []], models: s.props?.models ?? [] }));
   errors.push(...itemRules(s.items, s.sim.scripts));
+  const debrisStrikes: Readonly<{debris?: StrikeDebrisPolicy}>[] = [];
+  for (const row of s.items.rows) {
+    if (row.kind === 'weapon' && row.profile?.family === 'melee') {
+      const { moves } = row.profile;
+      debrisStrikes.push(...moves.combo, moves.heavy);
+      if (moves.passes !== undefined) { debrisStrikes.push(moves.passes.left, moves.passes.right); }
+    }
+  }
+  errors.push(...strikeDebrisCatalogueRules({ strikes: debrisStrikes, species: s.rows.species }));
   const harvestItems = new Set((s.items.catalogue ?? []).map((row: Readonly<{ id: string }>): string => row.id));
   errors.push(...harvestSpeciesRules(s.rows.species, harvestItems));
   if (s.migrations.some(step => step.equipmentSlots?.some(rename => !s.items.rows.some(row => row.kind === 'weapon' && row.slot === rename.to)))) errors.push('migration equipment slots resolve declared weapons');

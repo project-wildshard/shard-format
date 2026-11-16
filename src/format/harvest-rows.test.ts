@@ -139,7 +139,7 @@ test('drop admission bounds total delivery, ids and selectors without callbacks'
   ).toBe(true)
 })
 
-test('the real hull-book section strips gameplay harvest declarations from look metadata', (): void => {
+test('the real hull-book section strips gameplay declarations from look metadata', (): void => {
   const rgb = [0.5, 0.5, 0.5]
   const definition = {
     id: creature.id,
@@ -147,6 +147,7 @@ test('the real hull-book section strips gameplay harvest declarations from look 
     label: creature.label,
     variants: creature.variants,
     harvest: [{ item: 'unregistered', count: 1, variants: ['absent'] }],
+    capExempt: true,
     fur: {
       texSeed: 1,
       tex: {
@@ -183,6 +184,9 @@ test('the real hull-book section strips gameplay harvest declarations from look 
   expect(Object.hasOwn(looked.definitions['fixture'] ?? {}, 'harvest')).toBe(
     false,
   )
+  expect(Object.hasOwn(looked.definitions['fixture'] ?? {}, 'capExempt')).toBe(
+    false,
+  )
 })
 
 test('build-only look metadata refuses gameplay harvest declarations', (): void => {
@@ -207,4 +211,10 @@ test('build-only look metadata refuses gameplay harvest declarations', (): void 
     rows: [{ ...look, metadata: { ...metadata, harvest: drops } }],
   }
   expect((): unknown => parse(SpeciesLookBookSchema, wrong)).toThrow('harvest')
+  expect((): unknown =>
+    parse(SpeciesLookBookSchema, {
+      ...valid,
+      rows: [{ ...look, metadata: { ...metadata, capExempt: true } }],
+    }),
+  ).toThrow('capExempt')
 })
