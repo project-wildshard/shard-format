@@ -247,6 +247,7 @@
     "./postGraphDocument": "./src/format/postGraphDocument.ts",
     "./postGraphLook": "./src/format/postGraphLook.ts",
     "./postStack": "./src/format/postStack.ts",
+    "./look-details": "./src/format/look-details.ts",
     "./look-light": "./src/format/look-light.ts",
     "./look-render": "./src/format/look-render.ts",
     "./pool-surface": "./src/format/pool-surface.ts",

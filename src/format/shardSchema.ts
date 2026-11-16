@@ -58,6 +58,8 @@ import type { LookSky, LookSkyInput } from './look-sky.ts';
 import { LookBloomSchema, LookLightSchema, LookToneSchema } from './look-light.ts';
 import { LookVignetteSchema } from './look-render.ts';
 import type { LookBloom, LookBloomInput, LookLight, LookLightInput, LookTone } from './look-light.ts';
+import { LookDetailsSchema, detailLayerRules } from './look-details.ts';
+import type { LookDetail } from './look-details.ts';
 import type { LookVignette } from './look-render.ts';
 
 const channel = v.pipe(finite, v.minValue(0), v.maxValue(1));
@@ -78,7 +80,7 @@ const rawSchema: v.GenericSchema<ShardfileRowsInput, ShardfileRows> & { readonly
   map: v.exactOptional(MapSchema),
   requires: RequiresSchema,
   budgets: BudgetsSchema,
-  look: v.strictObject({ families: names, materials: v.optional(MaterialsSchema, {}), familyLooks: v.optional(FamilyLooksSchema, {}), curves: v.exactOptional(MaterialCurvesSchema), samplers: v.exactOptional(TextureSamplersSchema), post: v.exactOptional(PostStackSchema), sky: v.exactOptional(LookSkySchema), light: v.exactOptional(LookLightSchema), grade: lookGrade, clock: v.literal('engine'), day: v.optional(day), dayOverride: v.nullable(channel), keys: v.pipe(v.array(key), v.maxLength(64)) }),
+  look: v.strictObject({ families: names, materials: v.optional(MaterialsSchema, {}), familyLooks: v.optional(FamilyLooksSchema, {}), curves: v.exactOptional(MaterialCurvesSchema), samplers: v.exactOptional(TextureSamplersSchema), post: v.exactOptional(PostStackSchema), sky: v.exactOptional(LookSkySchema), light: v.exactOptional(LookLightSchema), details: v.exactOptional(LookDetailsSchema), grade: lookGrade, clock: v.literal('engine'), day: v.optional(day), dayOverride: v.nullable(channel), keys: v.pipe(v.array(key), v.maxLength(64)) }),
   sim: SimSchema,
   state: StateSchema,
   migrations: v.optional(MigrationsSchema, []),
@@ -189,6 +191,7 @@ export interface Shardfile {
     post?: v.InferOutput<typeof PostStackSchema>;
     sky?: LookSky;
     light?: LookLight;
+    details?: LookDetail[];
     grade: { exposure: number; saturation: number; contrast: number; lut: string | null; bloom?: LookBloom; tone?: LookTone; vignette?: LookVignette };
     clock: 'engine';
     day?: v.InferOutput<typeof day> | undefined;
@@ -304,6 +307,7 @@ export function shardfileRules(s: Shardfile): string[] {
     try { validatePropsReferences(s.props, s); } catch { errors.push('declared prop references'); }
     if (!materialExists(s.look.materials, s.props.family)) errors.push('declared prop material');
   }
+  errors.push(...detailLayerRules(s.look.details, s.look.materials));
   if (Math.abs(s.spawn.x) > CHUNK_HALF || Math.abs(s.spawn.z) > CHUNK_HALF || s.spawn.y < -CELL_BELOW || s.spawn.y > CELL_ABOVE) errors.push('player spawn in cell');
   const conditions = new Set(s.hooks.conditions.map((row) => row.id)), scenes = new Set(s.hooks.scenes.map((row) => row.id));
   const inputConditions = [...(s.plumbing?.input.flatMap(row => [row.when, row.hiddenWhen]) ?? []), ...s.items.contexts.map(row => row.extra?.hiddenWhen)];
@@ -397,6 +401,7 @@ interface ShardfileRowsInputFields {
         post?: v.InferInput<typeof PostStackSchema>;
         sky?: LookSkyInput;
         light?: LookLightInput;
+        details?: LookDetail[];
         grade: {
             exposure: v.InferInput<typeof finite>;
             saturation: v.InferInput<typeof finite>;
@@ -474,6 +479,7 @@ interface ShardfileRowsFields {
         post?: v.InferOutput<typeof PostStackSchema>;
         sky?: LookSky;
         light?: LookLight;
+        details?: LookDetail[];
         grade: {
             exposure: v.InferOutput<typeof finite>;
             saturation: v.InferOutput<typeof finite>;
