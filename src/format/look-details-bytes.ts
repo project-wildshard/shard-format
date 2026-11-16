@@ -1,74 +1,54 @@
 /**
- * The byte checks behind `look.details` (meta SHARD-SOURCE AP32a): base64 sizes, a pure base64 decoder, and the faults in a
- * layer's card mesh. Plain arithmetic, so the same checks run in the browser, the Worker and Node.
+ * The binary files behind `look.details` (meta SHARD-SOURCE AP32a), kept binary (engine G649: never base64). Plain
+ * arithmetic over bytes, so the same checks run in the browser, the Worker, the cook and Node.
+ *
+ * - A card mesh file: little-endian, no header: `vertices` × f32 xyz positions, `vertices` × f32 xyz normals, `vertices` ×
+ *   f32 uv, then `triangles` × three u16 indices. Its length is exactly `32 × vertices + 6 × triangles` bytes.
+ * - A mask file: one u8 per region cell, row by row from the low corner.
+ * - A heights file: one u16 little-endian per region cell, the same order.
  */
 
-/** A layer's card mesh, base64 little-endian. */
+/** A layer's card mesh: a binary file (by hash) and its counts. */
 interface LookDetailMesh {
-  readonly positions: string
-  readonly normals: string
-  readonly uvs: string
-  readonly indices?: string
+  readonly file: string
+  readonly vertices: number
+  readonly triangles: number
+}
+/** A layer's three files, as bytes. */
+interface LookDetailFiles {
+  readonly mesh: Readonly<Uint8Array>
+  readonly mask: Readonly<Uint8Array>
+  readonly heights: Readonly<Uint8Array>
+}
+/** The parts of a layer row its files are checked against. */
+interface DetailFileRow {
+  readonly id: string
+  readonly mesh: LookDetailMesh
+  readonly region: { readonly columns: number; readonly rows: number }
+}
+/** A card mesh's attribute views over its file's bytes. */
+interface LookDetailMeshViews {
+  readonly positions: Float32Array
+  readonly normals: Float32Array
+  readonly uvs: Float32Array
+  readonly indices: Uint16Array
 }
 
 /** At most this many triangles in one layer's card mesh. */
 const DETAIL_MESH_TRIANGLES_MAX = 2000
+/** At most this many vertices in one layer's card mesh. */
+const DETAIL_MESH_VERTICES_MAX = 6000
 const NONE = 0
 const ONE = 1
-const BINARY = 2
-const F32_XYZ_BYTES = 12
-const F32_UV_BYTES = 8
-const U16_BYTES = 2
-const TRIANGLE_INDEX_BYTES = 6
-const TRIANGLE_VERTICES = 3
-const QUAD_CHARS = 4
-const QUAD_BYTES = 3
-const SEXTET = 64
-const OCTET = 256
-const SEXTET_BITS = 6
-const OCTET_BITS = 8
-const PAIR_SPARE_BITS = SEXTET_BITS * BINARY - OCTET_BITS
-const PADDING = /[=]+$/u
-const ALPHABET =
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+const XYZ = 3
+const UV = 2
+const TRIANGLE = 3
+const F32 = 4
+const U16 = 2
 
-/** The byte length a padded base64 string decodes to. */
-function base64Bytes(text: string): number {
-  const padding = text.length - text.replace(PADDING, '').length
-  return (text.length / QUAD_CHARS) * QUAD_BYTES - padding
-}
-
-/** Byte `index` of the bit stream the sextets spell. */
-function byteAt(sextets: readonly number[], index: number): number {
-  const bit = index * OCTET_BITS
-  const first = Math.floor(bit / SEXTET_BITS)
-  const pair =
-    (sextets[first] ?? NONE) * SEXTET + (sextets[first + ONE] ?? NONE)
-  return (
-    Math.floor(pair / BINARY ** (PAIR_SPARE_BITS - (bit % SEXTET_BITS))) % OCTET
-  )
-}
-
-/** Decode padded base64 to bytes (pure arithmetic, so it runs in any host). */
-function decodeBase64(text: string): Uint8Array {
-  const sextets = Array.from(
-    text.replace(PADDING, ''),
-    (char: string): number => ALPHABET.indexOf(char),
-  )
-  return Uint8Array.from(
-    { length: base64Bytes(text) },
-    (_unused: unknown, index: number): number => byteAt(sextets, index),
-  )
-}
-
-/** True when any u16 in `bytes` is `vertices` or more. */
-function indexPast(bytes: Readonly<Uint8Array>, vertices: number): boolean {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  let past = false
-  for (let offset = NONE; offset < bytes.length; offset += U16_BYTES) {
-    past ||= view.getUint16(offset, true) >= vertices
-  }
-  return past
+/** The exact byte length of a card mesh file with these counts. */
+function detailMeshBytes(vertices: number, triangles: number): number {
+  return vertices * (XYZ + XYZ + UV) * F32 + triangles * TRIANGLE * U16
 }
 
 /** The messages whose condition holds. */
@@ -78,69 +58,76 @@ function faultsOf(checks: readonly (readonly [boolean, string])[]): string[] {
     .map((entry: readonly [boolean, string]): string => entry[ONE])
 }
 
-/** The triangles in a mesh and its index faults. */
-function indexFaults(
-  id: string,
+/** A fresh aligned copy of `length` bytes from `offset`. */
+function aligned(
+  bytes: Readonly<Uint8Array>,
+  offset: number,
+  length: number,
+): ArrayBuffer {
+  return bytes.slice(offset, offset + length).buffer
+}
+
+/** The card mesh's attribute views (copied, so any byte offset works). */
+function detailMeshViews(
+  bytes: Readonly<Uint8Array>,
   mesh: LookDetailMesh,
-  vertices: number,
-): { readonly triangles: number; readonly faults: string[] } {
-  if (mesh.indices === undefined) {
-    const loose = vertices % TRIANGLE_VERTICES !== NONE
-    return {
-      faults: faultsOf([
-        [loose, `detail ${id}: a triangle list has a multiple of 3 vertices`],
-      ]),
-      triangles: vertices / TRIANGLE_VERTICES,
-    }
-  }
-  const bytes = decodeBase64(mesh.indices)
-  if (bytes.length === NONE || bytes.length % TRIANGLE_INDEX_BYTES !== NONE) {
-    return {
-      faults: [`detail ${id}: indices are whole u16 triangles`],
-      triangles: NONE,
-    }
-  }
-  const past = indexPast(bytes, vertices)
+): LookDetailMeshViews {
+  const xyz = mesh.vertices * XYZ * F32
+  const uv = mesh.vertices * UV * F32
   return {
-    faults: faultsOf([[past, `detail ${id}: an index past the last vertex`]]),
-    triangles: bytes.length / TRIANGLE_INDEX_BYTES,
+    indices: new Uint16Array(
+      aligned(bytes, xyz + xyz + uv, mesh.triangles * TRIANGLE * U16),
+    ),
+    normals: new Float32Array(aligned(bytes, xyz, xyz)),
+    positions: new Float32Array(aligned(bytes, NONE, xyz)),
+    uvs: new Float32Array(aligned(bytes, xyz + xyz, uv)),
   }
 }
 
-/** The faults in one layer's card mesh, or none. */
-function meshFaults(id: string, mesh: LookDetailMesh): string[] {
-  const positions = base64Bytes(mesh.positions)
-  const vertices = positions / F32_XYZ_BYTES
-  const indexed = indexFaults(id, mesh, vertices)
-  const triangles = Math.floor(indexed.triangles)
-  return [
-    ...faultsOf([
-      [
-        positions === NONE || positions % F32_XYZ_BYTES !== NONE,
-        `detail ${id}: positions are whole f32 xyz triples`,
-      ],
-      [
-        base64Bytes(mesh.normals) !== positions,
-        `detail ${id}: one normal per vertex`,
-      ],
-      [
-        base64Bytes(mesh.uvs) !== vertices * F32_UV_BYTES,
-        `detail ${id}: one uv per vertex`,
-      ],
-      [
-        triangles > DETAIL_MESH_TRIANGLES_MAX,
-        `detail ${id}: ${String(triangles)} card triangles, at most ${String(DETAIL_MESH_TRIANGLES_MAX)}`,
-      ],
-    ]),
-    ...indexed.faults,
-  ]
+/** True when any index is `vertices` or more. */
+function indexPast(indices: Readonly<Uint16Array>, vertices: number): boolean {
+  return indices.some((index: number): boolean => index >= vertices)
+}
+
+/** The faults in one layer's files against its mesh counts and region grid, or none. */
+function detailFileFaults(
+  row: DetailFileRow,
+  files: LookDetailFiles,
+): string[] {
+  const { id, mesh } = row
+  const cells = row.region.columns * row.region.rows
+  const meshBytes = detailMeshBytes(mesh.vertices, mesh.triangles)
+  const sized = files.mesh.length === meshBytes
+  const past =
+    sized && indexPast(detailMeshViews(files.mesh, mesh).indices, mesh.vertices)
+  return faultsOf([
+    [
+      !sized,
+      `detail ${id}: mesh file holds ${String(files.mesh.length)} bytes, its counts need ${String(meshBytes)}`,
+    ],
+    [past, `detail ${id}: an index past the last vertex`],
+    [
+      files.mask.length !== cells,
+      `detail ${id}: mask holds ${String(files.mask.length)} bytes, the region has ${String(cells)} cells`,
+    ],
+    [
+      files.heights.length !== cells * U16,
+      `detail ${id}: heights hold ${String(files.heights.length)} bytes, the region needs ${String(cells * U16)}`,
+    ],
+  ])
 }
 
 export {
   DETAIL_MESH_TRIANGLES_MAX,
-  base64Bytes,
-  decodeBase64,
+  DETAIL_MESH_VERTICES_MAX,
+  detailFileFaults,
+  detailMeshBytes,
+  detailMeshViews,
   faultsOf,
-  meshFaults,
 }
-export type { LookDetailMesh }
+export type {
+  DetailFileRow,
+  LookDetailFiles,
+  LookDetailMesh,
+  LookDetailMeshViews,
+}

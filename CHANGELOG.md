@@ -7,7 +7,7 @@ docs/dev.md says.
 ## v0.7.0 (unreleased)
 
 - A look can grow grass, ferns and other small clutter round the player: `look.details` holds up to 8 layers, each a
-  small card mesh plus a density mask and ground heights over a grid. The engine scatters the cards near the camera, so
+  small card mesh plus a density mask and ground heights over a grid, all three as binary files. The engine scatters the cards near the camera, so
   a meadow ships as a mask instead of thousands of placed copies. Leave it out and nothing changes.
 
 ## v0.6.0 (2026-11-16)

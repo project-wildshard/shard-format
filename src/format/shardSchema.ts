@@ -307,7 +307,7 @@ export function shardfileRules(s: Shardfile): string[] {
     try { validatePropsReferences(s.props, s); } catch { errors.push('declared prop references'); }
     if (!materialExists(s.look.materials, s.props.family)) errors.push('declared prop material');
   }
-  errors.push(...detailLayerRules(s.look.details, s.look.materials));
+  errors.push(...detailLayerRules(s.look.details, s.look.materials, s.files));
   if (Math.abs(s.spawn.x) > CHUNK_HALF || Math.abs(s.spawn.z) > CHUNK_HALF || s.spawn.y < -CELL_BELOW || s.spawn.y > CELL_ABOVE) errors.push('player spawn in cell');
   const conditions = new Set(s.hooks.conditions.map((row) => row.id)), scenes = new Set(s.hooks.scenes.map((row) => row.id));
   const inputConditions = [...(s.plumbing?.input.flatMap(row => [row.when, row.hiddenWhen]) ?? []), ...s.items.contexts.map(row => row.extra?.hiddenWhen)];
