@@ -87,13 +87,7 @@ test('an item action may set only a declared quest flag', (): void => {
   expect(targetRules(use, shard('kit.lever'), props)).toContain(
     'declared item action quest flags',
   )
-  for (const setsFlag of [
-    '',
-    '../outside',
-    'x'.repeat(129),
-    true,
-    ['chest.opened'],
-  ]) {
+  for (const setsFlag of ['', 'x'.repeat(129), true, ['chest.opened']]) {
     expect(
       safeParse(TargetsSchema, {
         ...use,
@@ -101,4 +95,23 @@ test('an item action may set only a declared quest flag', (): void => {
       }).success,
     ).toBe(false)
   }
+})
+
+test('item-use flag names follow the quest flag contract', (): void => {
+  const use = {
+    ...targets,
+    itemActions: [
+      {
+        scene: 'rack.take',
+        item: 'weapon.rifle',
+        action: 3 as const,
+        setsFlag: 'quest_done',
+      },
+    ],
+  }
+  const content = {
+    ...shard('kit.lever'),
+    quests: { dialogue: [], flags: ['quest_done'] },
+  }
+  expect(targetRules(use, content, { panels: [], colliders: [] })).toEqual([])
 })

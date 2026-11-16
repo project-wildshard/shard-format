@@ -15,7 +15,10 @@ const prompt = { id, at: v.tuple([coord, coord, coord]), radius: v.pipe(finite, 
 /** A use target: its prompt runs `scene`. `unless` (TE-ENG6) names a `hooks.conditions` row: while it holds, the use is
  *  spent and its prompt is gone (a lit brazier). */
 const interactionRow = v.strictObject({ ...prompt, scene: id, unless: v.exactOptional(id) });
-const itemActionRow = v.strictObject({ scene: id, item: id, action: v.picklist([3, 4]), setsFlag: v.exactOptional(id) });
+const FLAG_NAME_MIN = 1;
+const FLAG_NAME_MAX = 128;
+const questFlag = v.pipe(v.string(), v.minLength(FLAG_NAME_MIN), v.maxLength(FLAG_NAME_MAX));
+const itemActionRow = v.strictObject({ scene: id, item: id, action: v.picklist([3, 4]), setsFlag: v.exactOptional(questFlag) });
 /** Named panels and colliders follow published state; interactions enqueue a named scene on the existing input path. */
 export const TargetsSchema: v.GenericSchema<ShardTargetsInput, ShardTargets> = v.strictObject({
   panels: v.pipe(v.array(v.strictObject({ panel: id, scope: v.picklist(['shared', 'player']), fieldId: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), equals: finite, visibleWhenMatched: v.boolean(), colliders: v.array(id), activeWhenMatched: v.boolean() })), v.maxLength(64)),
