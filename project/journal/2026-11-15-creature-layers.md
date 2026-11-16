@@ -31,3 +31,8 @@ brain name cannot require only hunt numbers. The additive contract now also
 accepts bounded brain parameters, and the exact existing Template pursuit
 numbers round-trip in a focused case. The engine brain remains responsible
 for the semantics of its parameters; no additional brain mechanism is added.
+
+J367 allows a shard's own GLB alongside a kit skeleton. A body may therefore
+omit its skeleton name while keeping its explicit look, size and scale. That
+absence is preserved; an unknown supplied kit name still refuses. This avoids
+pretending an existing custom rig follows a kit chain during CC4 expansion.

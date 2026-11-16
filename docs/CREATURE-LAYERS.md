@@ -10,7 +10,7 @@ The type label is for quest and journal filters; it never chooses a body.
 | Field | Contract |
 |---|---|
 | type | beast, humanoid, giant, dragonkin, undead, elemental, construct, insect, aquatic, critter or aberration |
-| body | skeleton (quadruped or biped), size (tiny to giant), positive scale up to 10, and an existing look row id |
+| body | Optional kit skeleton (quadruped or biped), size (tiny to giant), positive scale up to 10, and an existing look row id |
 | temperament | An open brain name, reaction (passive, skittish, neutral, aggressive), leash and assist radii, and home return speed/stop distance |
 | senses | Required notice radius; optional sight range/cone/graze radius, hearing radii for still/crouch/walk/sprint, and reveal radius |
 | abilities | At most 32 ordered strike references, each with range, cooldown and weight; optional health gate, damage, speed, windup and duration |
@@ -33,6 +33,8 @@ and far radius. A use name must identify a strike row in the same row set.
 A body look must identify a look in that row set. The list's order is authored
 priority; the parser does not reorder it or inject a default ability.
 
+A body with its own GLB rig omits skeleton; a kit poser names its skeleton
+contract explicitly. Omission remains absent and does not select a kit rig.
 Unknown skeletons, reactions, sense fields, ability references and look
 references produce named errors. All numbers are finite and bounded. Keeping
 kind as a label does not select an engine registration. The later resolver

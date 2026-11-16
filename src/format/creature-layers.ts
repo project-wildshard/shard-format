@@ -49,7 +49,8 @@ type CreatureTuningValue =
 type CreatureTuning = Record<string, CreatureTuningValue>
 
 interface CreatureBody {
-  skeleton: CreatureSkeleton
+  /** Omit for a GLB with its own rig; a kit poser names its contract explicitly. */
+  skeleton?: CreatureSkeleton
   size: CreatureSize
   scale: number
   look: string
@@ -167,7 +168,9 @@ const CreatureTypeSchema: GenericSchema<CreatureType> = picklist(
   'Unknown creature type',
 )
 const CreatureBodySchema: GenericSchema<CreatureBody> = strictObject({
-  skeleton: picklist(['quadruped', 'biped'], 'Unknown creature skeleton'),
+  skeleton: exactOptional(
+    picklist(['quadruped', 'biped'], 'Unknown creature skeleton'),
+  ),
   size: picklist(
     ['tiny', 'small', 'medium', 'large', 'giant'],
     'Unknown creature size',
