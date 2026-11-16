@@ -25,7 +25,8 @@ const repeatedFields = new Set([
   'audio',
   'minimap',
 ])
-const excludedPagePrefixes = ['world.', 'view.', 'page.', 'debug.']
+const excludedPagePrefixes = ['world.', 'view.']
+const excludedPageKinds = new Set(['page.life'])
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -70,7 +71,12 @@ function nativeHosts(files: readonly SourceFile[]): readonly string[] {
 function speciesData(
   files: readonly SourceFile[],
 ): Readonly<Record<string, unknown>> {
-  return object(section(files, 'actors/species')['rows'])
+  const actors = object(section(files, 'actors/species')['rows'])
+  const materials = object(section(files, 'look/materials')['rows'])
+  return {
+    ...actors,
+    looks: [...rows(actors['looks']), ...rows(materials['looks'])],
+  }
 }
 function missingLooks(data: Readonly<Record<string, unknown>>): number {
   const looks = rows(data['looks']).map(
@@ -96,7 +102,7 @@ function productFacts(
   const species = [
     ...rows(declared['species']),
     ...rows(programs['native']),
-    ...rows(programs['brained']),
+    ...rows(programs['page']),
   ]
   return {
     slug,
@@ -126,9 +132,10 @@ function singleUse(
     for (const name of product[field]) {
       if (
         field !== 'pageKinds' ||
-        !excludedPagePrefixes.some((prefix: string): boolean =>
-          name.startsWith(prefix),
-        )
+        (!excludedPageKinds.has(name) &&
+          !excludedPagePrefixes.some((prefix: string): boolean =>
+            name.startsWith(prefix),
+          ))
       ) {
         const slugs = users.get(name) ?? new Set<string>()
         slugs.add(product.slug)

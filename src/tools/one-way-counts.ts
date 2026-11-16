@@ -7,6 +7,7 @@ interface SourceInventory {
   readonly kinds: readonly string[]
 }
 const NONE = 0
+const OLD_KINDS = new Set(['bear', 'boar', 'deer', 'greyBlob'])
 const vocabulary = new RegExp(
   `\\b(?:${[
     ['code', 'shard'],
@@ -95,6 +96,45 @@ function languageCounts(
   }
 }
 
+function isObject(value: unknown): value is Readonly<Record<string, unknown>> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+function oldRows(value: unknown): number {
+  if (Array.isArray(value)) {
+    return value.reduce(
+      (total: number, row: unknown): number => total + oldRows(row),
+      NONE,
+    )
+  }
+  if (!isObject(value)) {
+    return NONE
+  }
+  const row = value
+  const old =
+    typeof row['kind'] === 'string' &&
+    OLD_KINDS.has(row['kind']) &&
+    typeof row['id'] === 'string' &&
+    Array.isArray(row['variants']) &&
+    (row['body'] === undefined || row['temperament'] === undefined)
+  return (
+    Number(old) +
+    Object.values(row).reduce(
+      (total: number, child: unknown): number => total + oldRows(child),
+      NONE,
+    )
+  )
+}
+function oldSourceRows(files: readonly SourceFile[]): number {
+  let total = NONE
+  for (const file of files) {
+    if (/(?:^|\/)(?:rows|species)\.json$/u.test(file.path)) {
+      const data: unknown = JSON.parse(file.text)
+      total += oldRows(data)
+    }
+  }
+  return total
+}
+
 /** Source metrics cover the audit's registry, pointer, gate and vocabulary seams. */
 function sourceCounts(
   input: Readonly<SourceInventory>,
@@ -129,10 +169,7 @@ function sourceCounts(
       sdk,
       /@wildshard\/engine\/game\/systems\/species\//gu,
     ),
-    'sdk.old-kind-source-labels': occurrences(
-      sdk,
-      /["'`](?:bear|boar|deer|greyBlob)["'`]/gu,
-    ),
+    'sdk.old-kind-source-rows': oldSourceRows(sdk),
     'engine.kind-keyed-tables':
       occurrences(named(engine, '/harvest.ts'), /\bconst\s+HARVEST\b/gu) +
       occurrences(named(engine, '/Inventory.ts'), /\btype\s+ItemId\b/gu),

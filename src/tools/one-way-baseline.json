@@ -1,0 +1,81 @@
+{
+  "engineRevision": "df1554054fa58d16072d4173e6b5036cd574505e",
+  "sdkRevision": "537b9f15f7c20432aa334146946a6983ab6b9a6c",
+  "pins": [
+    {
+      "slug": "blender-template",
+      "hash": "e99b0fb45c96faf4241e1dc72bf812ac17a175757322e87233f7ef2d0518d2d2",
+      "bytes": 20506624
+    },
+    {
+      "slug": "driftwood-isle",
+      "hash": "c10405befd5abe86e35e5dade8dcada9ee8a8cddf40b0a328eaa10b0f765a7d6",
+      "bytes": 94885888
+    },
+    {
+      "slug": "far-reach",
+      "hash": "cdbb400ca5d0908399f0e9c43b2304a49fa3881b0846bc562c0f6fe6444051fc",
+      "bytes": 47129088
+    },
+    {
+      "slug": "nalati-grasslands",
+      "hash": "77b77fcc2174d6485c11db79f0327a219d2a450cd5b7af3b7bb7649823912e69",
+      "bytes": 144178176
+    },
+    {
+      "slug": "nine-dragon-stack",
+      "hash": "ea45516a999bd33b7bea1cfca79c018503d6b51163fbeaeee6760709fc2c551b",
+      "bytes": 115897344
+    },
+    {
+      "slug": "pine-hollow",
+      "hash": "2afc6270c9534acc9d6578686bf87479c63872ac58799cef416d13b3b8b0281b",
+      "bytes": 337219584
+    },
+    {
+      "slug": "sunscar-dunes",
+      "hash": "2e78b39ea7b91902829cb08ee7466b4d7127cda7bc4bb98664a42c3e1a89151d",
+      "bytes": 11275264
+    },
+    {
+      "slug": "template",
+      "hash": "d9d5cb68310cb1e573bd68c2827eb32be9e8f0aeeffe0ca3adb0c47cdc58f599",
+      "bytes": 16335872
+    }
+  ],
+  "corpus": [
+    {
+      "root": "corpus/exports/brasscap-mesa/",
+      "sha256": "3de5adcbbadb42d6e5b394965e480c8f1e0202020e81d422bd1490ec4e5ec474"
+    },
+    {
+      "root": "corpus/handwritten/",
+      "sha256": "44e1fc5d196f388cf914405774ac53ffa92e6d41a10ac53b8e94dd53613b78c5"
+    }
+  ],
+  "counts": {
+    "engine.kind-literals": 24,
+    "engine.kit-registrations": 2,
+    "engine.look-fallbacks": 1,
+    "engine.temperament-guesses": 1,
+    "engine.grid-pointer-references": 21,
+    "sdk.grid-pointer-references": 0,
+    "format.grid-pointer-references": 5,
+    "engine.access-gate-references": 80,
+    "sdk.engine-kit-imports": 4,
+    "sdk.old-kind-source-rows": 6,
+    "engine.kind-keyed-tables": 2,
+    "format.kind-keyed-tables": 1,
+    "engine.retired-vocabulary": 908,
+    "format.retired-vocabulary": 198,
+    "sdk.retired-vocabulary": 84,
+    "products.rows-without-look": 0,
+    "products.species-program-sections": 4,
+    "products.repeated-manifest-fields": 12,
+    "products.single-shard-server-hosts": 41,
+    "products.single-shard-page-features": 30,
+    "corpus.rows-without-look": 0,
+    "corpus.species-program-sections": 0,
+    "corpus.repeated-manifest-fields": 11
+  }
+}

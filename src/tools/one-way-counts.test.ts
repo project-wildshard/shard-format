@@ -33,6 +33,10 @@ const input: SourceInventory = {
       'packages/build/src/species.ts',
       "import '@wildshard/engine/game/systems/species/bear'; const kind = 'boar'; gridShardfile",
     ),
+    files(
+      'src/shards/_template/rows.json',
+      '{"species":[{"id":"one","kind":"boar","variants":[]},{"id":"two","kind":"boar","variants":[],"body":{},"temperament":{}}]}',
+    ),
   ],
   format: [
     files(
@@ -54,6 +58,8 @@ const product = [
     features: [
       { kind: 'world.surface' },
       { kind: 'view.rig' },
+      { kind: 'page.life' },
+      { kind: 'debug.expose' },
       { kind: 'population.creatures' },
     ],
   }),
@@ -63,12 +69,15 @@ const product = [
         { id: 'one', kind: 'boar' },
         { id: 'two', kind: 'bear' },
       ],
-      looks: [{ species: 'one' }],
+      looks: [],
     },
+  }),
+  json('sections/look/materials.json', {
+    rows: { looks: [{ species: 'one' }] },
   }),
   json('sections/actors/species-programs.json', {
     native: [{ kind: 'deer' }],
-    brained: [{ kind: 'wolf' }],
+    page: [{ kind: 'wolf' }],
   }),
   json('sections/ui/level.json', {
     manifest: { spawn: {}, sky: {}, name: 'Discovery name' },
@@ -83,7 +92,7 @@ test('source inventory covers the audit seams without counting runtime test fixt
   assert.equal(counts['engine.grid-pointer-references'], 1)
   assert.equal(counts['engine.kind-literals'], 2)
   assert.equal(counts['sdk.engine-kit-imports'], 1)
-  assert.equal(counts['sdk.old-kind-source-labels'], 1)
+  assert.equal(counts['sdk.old-kind-source-rows'], 1)
   assert.equal(counts['engine.kind-keyed-tables'], 2)
   assert.equal(counts['format.kind-keyed-tables'], 1)
 })
@@ -123,7 +132,7 @@ test('product inventory reads addressed plans, explicit looks and manifest dupli
   assert.equal(counts['products.species-program-sections'], 1)
   assert.equal(counts['products.repeated-manifest-fields'], 2)
   assert.equal(counts['products.single-shard-server-hosts'], 1)
-  assert.equal(counts['products.single-shard-page-features'], 1)
+  assert.equal(counts['products.single-shard-page-features'], 2)
 })
 
 test('duplicate appearances in one shard never masquerade as two users', (): void => {
@@ -132,5 +141,5 @@ test('duplicate appearances in one shard never masquerade as two users', (): voi
     productFacts('one', product),
   ])
   assert.equal(counts['products.single-shard-server-hosts'], 2)
-  assert.equal(counts['products.single-shard-page-features'], 1)
+  assert.equal(counts['products.single-shard-page-features'], 2)
 })
