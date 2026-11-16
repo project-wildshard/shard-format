@@ -10,6 +10,7 @@ import {
   minValue,
   number,
   pipe,
+  picklist,
   regex,
   strictObject,
   string,
@@ -35,10 +36,7 @@ const MAX_PARTICLES = 64
 const MAX_OVERRIDES = 64
 const MAX_ID = 128
 const EMPTY = 0
-const surface = custom<StrikeDebris['surface']>(
-  (value: unknown): boolean =>
-    value === 'shell' || value === 'wood' || value === 'sand',
-)
+const surface = picklist(['shell', 'wood', 'sand'])
 const count = pipe(
   number(),
   integer(),
@@ -74,8 +72,11 @@ const policy = strictObject({
   default: effect,
   overrides: exactOptional(overrides),
 })
+/** Exact plain-data preflight identity for structural JSON Schema projectors. */
+const StrikeDebrisJsonGuard: GenericSchema<StrikeDebrisPolicy> =
+  custom<StrikeDebrisPolicy>(isJsonData, 'plain strike debris')
 const StrikeDebrisSchema: GenericSchema<StrikeDebrisPolicy> = pipe(
-  custom<StrikeDebrisPolicy>(isJsonData, 'plain strike debris'),
+  StrikeDebrisJsonGuard,
   policy,
 )
 
@@ -104,5 +105,5 @@ function strikeDebrisCatalogueRules(value: StrikeDebrisCatalogue): string[] {
   }
   return errors
 }
-export { StrikeDebrisSchema, strikeDebrisCatalogueRules }
+export { StrikeDebrisSchema, StrikeDebrisJsonGuard, strikeDebrisCatalogueRules }
 export type { StrikeDebris, StrikeDebrisPolicy, StrikeDebrisCatalogue }
