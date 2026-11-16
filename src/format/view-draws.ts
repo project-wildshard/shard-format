@@ -30,6 +30,20 @@ interface ViewTile {
 const VIEW_DRAWS: { readonly phone: number; readonly desktop: number } =
   Object.freeze({ desktop: DESKTOP_VIEW, phone: PHONE_VIEW })
 
+/** Desktop's fine-tile triangles: Mossgate's fullest tile (364,625) holds the 60 fps cap on desktop. */
+const DESKTOP_TILE_TRIANGLES = 400_000
+
+/**
+ * SHARD-SOURCE AP9b: one fine (L0) tile's triangles per tier. The phone's is
+ * `CONTENT_CAPS.l0.triangles`; desktop's is raised under J338 (look first).
+ * Both are reported, not enforced: the sdk's budget table reads them.
+ */
+const TILE_TRIANGLES: { readonly phone: number; readonly desktop: number } =
+  Object.freeze({
+    desktop: DESKTOP_TILE_TRIANGLES,
+    phone: CONTENT_CAPS.l0.triangles,
+  })
+
 function centre(tile: ViewTile, axis: number): number {
   const box = tile.drawBounds ?? tile.bounds
   return ((box.min[axis] ?? NONE) + (box.max[axis] ?? NONE)) / HALF
@@ -70,4 +84,4 @@ function viewDraws(tiles: readonly ViewTile[], from: ViewTile): number {
 }
 
 export type { ViewTile }
-export { VIEW_DRAWS, viewDraws }
+export { TILE_TRIANGLES, VIEW_DRAWS, viewDraws }

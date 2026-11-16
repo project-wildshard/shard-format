@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { VIEW_DRAWS, viewDraws } from './view-draws.ts'
+import { TILE_TRIANGLES, VIEW_DRAWS, viewDraws } from './view-draws.ts'
 
 import type { ViewTile } from './view-draws.ts'
 
@@ -44,4 +44,9 @@ test('AP8: a view sums the fine tiles near it, not one tile against the old 8-dr
   expect(viewDraws(tiles, hut)).toBe(HUT_DRAWS)
   expect(viewDraws(tiles, hut)).toBeLessThanOrEqual(VIEW_DRAWS.phone)
   expect(VIEW_DRAWS).toEqual({ desktop: 400, phone: 150 })
+})
+
+// SHARD-SOURCE AP9b: a fine tile's triangles per tier; phone is CONTENT_CAPS'.
+test('a fine tile has a triangle cap on each tier, desktop raised', (): void => {
+  expect(TILE_TRIANGLES).toEqual({ desktop: 400_000, phone: 40_000 })
 })

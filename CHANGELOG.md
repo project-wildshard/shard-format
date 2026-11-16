@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.5.11 (unreleased)
+
+- A fine tile now has a triangle budget for each tier: `TILE_TRIANGLES` is 40,000 on a phone (as before) and 400,000 on
+  a desktop, where Mossgate's fullest tile holds 60 fps. `wildshard check` reports both; neither refuses a shard.
+
 ## v0.5.10 (2026-11-15)
 
 - A map POI can stay out of respawning: `manifest.pois[].respawn: false` means a fallen player never comes back there
