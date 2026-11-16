@@ -2,7 +2,8 @@
 
 > Written by: Claude
 
-> **State:** living, 2026-11-13 (SHARD-AUTHORING SA19). The engine host columns were copied from engine `8f613824`.
+> **State:** living, 2026-11-16. TC-E7 adds the item-use flag contract; engine support is a separate pending change.
+> The engine host columns were copied from engine `8f613824` (SHARD-AUTHORING SA19).
 
 A shard is data. A shard file never carries code that engine imports: it declares names, and engine runs only the
 **trusted hosts** compiled into it, on the page (the browser client) and on the server (rooms, and the worker that runs
@@ -131,6 +132,14 @@ and nothing else. A **plain value** section holds its own schema's value, define
 | `world/water` | `wildshard:world/water@1` | root `water` | `installClientWater` (page), `shardfileWater` (page) |
 | `world/weather` | `wildshard:world/weather@1` | root `rows.weather` | `declaredWeather` (both) |
 <!-- /generated:sections -->
+
+An `itemActions` row under `targets` may declare `setsFlag`, a single flag id
+present in `quests.flags`. For example, a lantern refill scene may name
+`"setsFlag": "chest.opened"`. Unknown flag references fail validation.
+The receiving host must set it only for the player whose item use it accepts;
+walking near the prompt does not raise it. A row without this optional field
+keeps its previous behavior. Engine implementation and the two-player proof
+remain TEMPLATE-E2E TC-E7; the schema alone does not close that row.
 
 ## 2. `client/plan` kinds
 

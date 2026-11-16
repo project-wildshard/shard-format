@@ -15,11 +15,12 @@ const prompt = { id, at: v.tuple([coord, coord, coord]), radius: v.pipe(finite, 
 /** A use target: its prompt runs `scene`. `unless` (TE-ENG6) names a `hooks.conditions` row: while it holds, the use is
  *  spent and its prompt is gone (a lit brazier). */
 const interactionRow = v.strictObject({ ...prompt, scene: id, unless: v.exactOptional(id) });
+const itemActionRow = v.strictObject({ scene: id, item: id, action: v.picklist([3, 4]), setsFlag: v.exactOptional(id) });
 /** Named panels and colliders follow published state; interactions enqueue a named scene on the existing input path. */
 export const TargetsSchema: v.GenericSchema<ShardTargetsInput, ShardTargets> = v.strictObject({
   panels: v.pipe(v.array(v.strictObject({ panel: id, scope: v.picklist(['shared', 'player']), fieldId: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), equals: finite, visibleWhenMatched: v.boolean(), colliders: v.array(id), activeWhenMatched: v.boolean() })), v.maxLength(64)),
   interactions: v.pipe(v.array(interactionRow), v.maxLength(64)),
-  itemActions: v.exactOptional(v.pipe(v.array(v.strictObject({ scene: id, item: id, action: v.picklist([3, 4]) })), v.maxLength(64))),
+  itemActions: v.exactOptional(v.pipe(v.array(itemActionRow), v.maxLength(64))),
   itemFields: v.exactOptional(v.pipe(v.array(v.strictObject({ item: id, fieldId: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), property: v.picklist(['fuel', 'lit', 'taken']) })), v.maxLength(64))),
   /** TE-ENG3: a quest-giver who talks from rows. `at` is its feet; its talk prompt stands over them and reaches `radius`. E
    *  opens its `quests.dialogue` tree on the player's node. `figure` names the props model or panel that draws it; none: a
@@ -39,6 +40,15 @@ function idsOf(rows: readonly Readonly<{ id: string }>[]): Set<string> {
     out.add(row.id);
   }
   return out;
+}
+/** An item use writes only a flag declared by this shard's quest contract. */
+function itemActionFlags(actions: readonly Readonly<{ setsFlag?: string }>[], flags: readonly string[]): string[] {
+  for (const row of actions) {
+    if (row.setsFlag !== undefined && !flags.includes(row.setsFlag)) {
+      return ['declared item action quest flags'];
+    }
+  }
+  return [];
 }
 /** TE-ENG6: an interaction's `unless` names a declared condition a page can read: a shared field, or a player field an
  *  item projects (the page sees no other player field). */
@@ -115,7 +125,7 @@ function talksRefused(
   return false;
 }
 /** Refuse dangling identities, private fields and two writers for the same visual or collider. */
-export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput<typeof StateSchema>; hooks: ShardHooks; sim: { scripts: readonly string[]; bindings: ShardScriptBindings }; items: ShardItems; quests?: { dialogue: readonly { id: string }[] } }, props: { panels: readonly { id: string }[]; colliders: readonly { id: string }[]; models?: readonly { id: string }[] } | null): string[] {
+export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput<typeof StateSchema>; hooks: ShardHooks; sim: { scripts: readonly string[]; bindings: ShardScriptBindings }; items: ShardItems; quests?: { dialogue: readonly { id: string }[]; flags?: readonly string[] } }, props: { panels: readonly { id: string }[]; colliders: readonly { id: string }[]; models?: readonly { id: string }[] } | null): string[] {
   const errors = hookRules({ conditions: targets.panels.map((row) => ({ id: row.panel, ...row })), scenes: [] }, shard.state);
   const panels = new Set(props?.panels.map((row) => row.id)), colliders = new Set(props?.colliders.map((row) => row.id)), scenes = new Set(shard.hooks.scenes.map((row) => row.id));
   const bound = targets.panels.flatMap((row) => row.colliders);
@@ -125,6 +135,8 @@ export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput
   if (targets.panels.length > 0 && shard.sim.bindings.length === 0) errors.push('target fields require script bindings');
   const actions = targets.itemActions ?? [], fields = targets.itemFields ?? [];
   if (new Set(actions.map((row) => row.scene)).size !== actions.length || actions.some((row) => !scenes.has(row.scene) || !shard.items.rows.some((item) => item.id === row.item && (item.kind === 'tool' || item.family === LEVER_FAMILY || item.family === MELEE_FAMILY && row.action === RACK_TAKE)))) errors.push('declared item action scenes');
+  // TC-E7: item uses may raise only a declared quest flag, for the player who uses the scene.
+  errors.push(...itemActionFlags(actions, shard.quests?.flags ?? []));
   if (new Set(fields.map((row) => row.fieldId)).size !== fields.length || fields.some((row) => {
     const field = shard.state.player.find((entry) => entry.id === row.fieldId);
     return !projects(shard.items.rows, row) || field === undefined || field.privacy === 'host' || field.type !== (row.property === 'fuel' ? 'f64' : 'bool') || (field.min ?? 0) > 0 || (field.max ?? 1) < 1;
@@ -181,6 +193,8 @@ interface ShardTargetsFields {
         scene: string;
         item: string;
         action: 3 | 4;
+        /** Raise this declared quest flag for the player whose item use is accepted. */
+        setsFlag?: string;
     })[];
     itemFields?: ({
         item: string;

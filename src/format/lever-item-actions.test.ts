@@ -1,6 +1,7 @@
+import { safeParse } from 'valibot'
 import { expect, test } from 'vitest'
 
-import { targetRules } from './targets.ts'
+import { TargetsSchema, targetRules } from './targets.ts'
 
 // TE-ENG2: an item scene may name a declared lever-action (`kit.lever`), so a rack's prompt takes the rifle.
 // Any other weapon is still refused. Only the fields the rule reads are built here.
@@ -50,4 +51,54 @@ test('an item scene still refuses any other weapon', (): void => {
   expect(targetRules(targets, shard('kit.whip'), null)).toContain(
     'declared item action scenes',
   )
+})
+
+// TC-E7: an item use may raise a declared flag on its user's quest state.
+test('an item action may set only a declared quest flag', (): void => {
+  const action = {
+    scene: 'rack.take',
+    item: 'weapon.rifle',
+    action: 3 as const,
+    setsFlag: 'chest.opened',
+  }
+  const use = { ...targets, itemActions: [action] }
+  const props = { panels: [], colliders: [] }
+  expect(safeParse(TargetsSchema, use).success).toBe(true)
+  expect(
+    targetRules(
+      use,
+      {
+        ...shard('kit.lever'),
+        quests: { dialogue: [], flags: ['chest.opened'] },
+      },
+      props,
+    ),
+  ).toEqual([])
+  expect(
+    targetRules(
+      use,
+      {
+        ...shard('kit.lever'),
+        quests: { dialogue: [], flags: ['other.flag'] },
+      },
+      props,
+    ),
+  ).toContain('declared item action quest flags')
+  expect(targetRules(use, shard('kit.lever'), props)).toContain(
+    'declared item action quest flags',
+  )
+  for (const setsFlag of [
+    '',
+    '../outside',
+    'x'.repeat(129),
+    true,
+    ['chest.opened'],
+  ]) {
+    expect(
+      safeParse(TargetsSchema, {
+        ...use,
+        itemActions: [{ ...action, setsFlag }],
+      }).success,
+    ).toBe(false)
+  }
 })
