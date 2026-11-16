@@ -1,0 +1,190 @@
+// Validator output rows deliberately retain the format's mutable public data types.
+/* oxlint-disable typescript/prefer-readonly-parameter-types */
+// The portable library targets ES2022; sort only new arrays.
+/* oxlint-disable unicorn/no-array-sort */
+import { parse } from 'valibot'
+
+import { parseSkinFile, skinLookParameters } from './skin-file.ts'
+import { SkinVariantsSchema } from './skins.ts'
+import { validationSourceBytes } from './validationReceipt.ts'
+
+import type { ShardRows } from './rows.ts'
+import type { Shardfile } from './shardSchema.ts'
+import type { SkinBinding, SkinRow } from './skinData.ts'
+
+interface ResolvedSkinFile {
+  readonly hash: string
+  readonly row: SkinRow
+  readonly binding: SkinBinding
+}
+interface SkinLookFiles {
+  readonly skin: ResolvedSkinFile
+  readonly variants?: ReadonlyMap<string, ResolvedSkinFile>
+}
+type Source = Pick<Shardfile, 'rows' | 'files'>
+type Look = ShardRows['looks'][number]
+const FIRST = 0
+const SINGLE = 1
+
+function skinContract({ row, binding }: ResolvedSkinFile): string {
+  return new TextDecoder().decode(
+    validationSourceBytes({
+      family: row.family,
+      skeleton: row.rig.skeleton,
+      joints: [...(row.rig.joints[FIRST] ?? [])].sort(),
+      clips: [...row.rig.clips].sort(),
+      sockets: [...row.rig.sockets].sort(),
+      material: binding.material,
+      materials: binding.materials ?? {},
+    }),
+  )
+}
+
+function readSkinFile(
+  files: ReadonlyMap<string, Source['files'][number]>,
+  assets: ReadonlyMap<string, Uint8Array>,
+  hash: string,
+): ResolvedSkinFile {
+  const file = files.get(hash)
+  const bytes = assets.get(hash)
+  if (file?.kind !== 'json' || bytes === undefined) {
+    throw new Error('skin file missing')
+  }
+  const skin = { hash, ...parseSkinFile(bytes) }
+  if (
+    file.dependencies.length !== SINGLE ||
+    file.dependencies[FIRST] !== skin.row.file ||
+    files.get(skin.row.file)?.kind !== 'glb'
+  ) {
+    throw new Error('skin rig dependency mismatch')
+  }
+  return skin
+}
+
+function skinReader(
+  source: Source,
+  assets: ReadonlyMap<string, Uint8Array>,
+): (hash: string) => ResolvedSkinFile {
+  const files = new Map(
+    source.files.map((file): [string, Source['files'][number]] => [
+      file.hash,
+      file,
+    ]),
+  )
+  const parsed = new Map<string, ResolvedSkinFile>()
+  return (hash: string): ResolvedSkinFile => {
+    const known = parsed.get(hash)
+    if (known !== undefined) {
+      return known
+    }
+    const skin = readSkinFile(files, assets, hash)
+    parsed.set(hash, skin)
+    return skin
+  }
+}
+
+function checkCoverage(
+  skins: Readonly<Record<string, string>>,
+  ids: readonly string[],
+): void {
+  const expected = new Set(ids)
+  const keys = Object.keys(skins)
+  if (
+    keys.length !== expected.size ||
+    keys.some((key): boolean => !expected.has(key))
+  ) {
+    throw new Error('variant table must name every species variant exactly')
+  }
+}
+
+function checkDependencies(
+  skins: Readonly<Record<string, string>>,
+  actual: readonly string[],
+  defaultHash: string,
+): void {
+  const dependencies = [...new Set(Object.values(skins))].sort()
+  if (
+    dependencies.length !== actual.length ||
+    [...actual]
+      .sort()
+      .some((hash, index): boolean => hash !== dependencies[index])
+  ) {
+    throw new Error('variant table dependencies differ')
+  }
+  if (!dependencies.includes(defaultHash)) {
+    throw new Error('variant table must include its default skin')
+  }
+}
+
+function variantTable(
+  source: Source,
+  look: Look,
+  {
+    assets,
+    parameters,
+  }: {
+    assets: ReadonlyMap<string, Uint8Array>
+    parameters: { variants: string; skin: string }
+  },
+): Readonly<Record<string, string>> {
+  const table = source.files.find(
+    (file): boolean => file.hash === parameters.variants,
+  )
+  const bytes = assets.get(parameters.variants)
+  if (table?.kind !== 'json' || bytes === undefined) {
+    throw new Error(`skin look ${look.id}: variant table missing`)
+  }
+  const variants = parse(
+    SkinVariantsSchema,
+    JSON.parse(new TextDecoder().decode(bytes)),
+  )
+  const species = source.rows.species.find(
+    (row): boolean => row.id === look.species,
+  )
+  checkCoverage(
+    variants.skins,
+    (species?.variants ?? []).map((row): string => row.id),
+  )
+  checkDependencies(variants.skins, table.dependencies, parameters.skin)
+  return variants.skins
+}
+
+function resolveVariants(
+  table: Readonly<Record<string, string>>,
+  skin: ResolvedSkinFile,
+  read: (hash: string) => ResolvedSkinFile,
+): ReadonlyMap<string, ResolvedSkinFile> {
+  const contract = skinContract(skin)
+  const variants = new Map<string, ResolvedSkinFile>()
+  for (const [variant, hash] of Object.entries(table)) {
+    const value = read(hash)
+    if (skinContract(value) !== contract) {
+      throw new Error(`incompatible variant rig or material: ${variant}`)
+    }
+    variants.set(variant, value)
+  }
+  return variants
+}
+
+/** Resolve exact variant coverage and compatible rig/material declarations once at admission/load. */
+function resolveSkinLookFiles(
+  source: Source,
+  look: Look,
+  assets: ReadonlyMap<string, Uint8Array>,
+): SkinLookFiles {
+  const parameters = skinLookParameters(look)
+  const read = skinReader(source, assets)
+  const skin = read(parameters.skin)
+  if (parameters.variants === undefined) {
+    return { skin }
+  }
+  const table = variantTable(source, look, {
+    assets,
+    parameters: { variants: parameters.variants, skin: parameters.skin },
+  })
+  const variants = resolveVariants(table, skin, read)
+  return { skin, variants }
+}
+
+export { resolveSkinLookFiles }
+export type { ResolvedSkinFile, SkinLookFiles }

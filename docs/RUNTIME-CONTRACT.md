@@ -17,6 +17,23 @@ code, run by both sides; **shard-format** means the host parses the section with
 is shard-format's check of a shard file, which runs on the author's machine, in the API and in engine; every "refused"
 below is validation (or engine's load, where named) failing.
 
+## Creature skin variants
+
+A `platform.skin` look keeps its required `parameters.skin` hash. It may also
+name `parameters.variants`, a library JSON file with
+`{ "version": 1, "skins": { "variant-id": "skin-json-hash" } }`.
+The table contains 1 to 64 entries and names every variant of that look's species
+exactly. Each key is 1 to 128 characters. Its dependencies are exactly the unique
+skin JSON hashes, including the default skin. Each skin JSON depends on exactly
+its declared GLB. Multiple variants may share one skin.
+
+Admission checks every distinct skin's real GLB, cost, sockets and clips. A table's
+skins share their family, skeleton, joint/clip/socket names and material bindings;
+geometry, rest offsets and animation samples may differ. Canonical object order
+does not affect the material comparison. Missing entries or bytes, extra entries
+or dependencies, incompatible contracts and a missing library root refuse.
+Existing looks without a table retain their single skin.
+
 ## Generated and hand-kept
 
 Every table below between `generated` markers comes from this package's code, through `node src/tools/runtime-contract.ts write`.

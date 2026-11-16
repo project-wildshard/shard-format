@@ -4064,21 +4064,15 @@
    "unicorn(numeric-separators-style)": 4
   },
   "src/format/skinAssets.ts": {
-   "eslint(capitalized-comments)": 1,
-   "eslint(curly)": 16,
    "eslint(id-length)": 1,
    "eslint(init-declarations)": 1,
    "eslint(max-statements)": 3,
    "eslint(no-continue)": 3,
-   "eslint(no-magic-numbers)": 14,
-   "eslint(prefer-destructuring)": 3,
-   "eslint(sort-vars)": 3,
-   "import(consistent-type-specifier-style)": 3,
-   "import(exports-last)": 3,
-   "import(group-exports)": 4,
+   "eslint(no-magic-numbers)": 13,
+   "eslint(prefer-destructuring)": 2,
    "import(no-namespace)": 1,
    "typescript(explicit-function-return-type)": 8,
-   "typescript(prefer-readonly-parameter-types)": 8,
+   "typescript(prefer-readonly-parameter-types)": 7,
    "unicorn(filename-case)": 1,
    "unicorn(max-nested-calls)": 13
   },
@@ -4119,8 +4113,6 @@
   "src/format/skins.ts": {
    "eslint(id-length)": 1,
    "eslint(no-magic-numbers)": 3,
-   "import(exports-last)": 11,
-   "import(group-exports)": 12,
    "import(no-namespace)": 1,
    "unicorn(max-nested-calls)": 4
   },

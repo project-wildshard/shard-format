@@ -11,39 +11,28 @@
  * `attackSpan` is the attack duration the export sampled the attack clip with (seconds).
  */
 import * as v from 'valibot';
-import { parseSkinBindings, parseSkinRows, validateCreatureBones, type SkinBinding, type SkinRow } from './skinData.ts';
-import type { ShardRows } from './rows.ts';
+import { validateCreatureBones } from './skinData.ts';
+import type { SkinRow } from './skinData.ts';
 import type { Shardfile } from './shardSchema.ts';
 import { parseGlbData as parseGlb } from './glbCost.ts';
 import { skinLayerDecoded } from './skinLayers.ts';
 import { MaterialsSchema } from './materials.ts';
 import { SkinGlbMaterialsSchema, SkinPrimitiveSchema, skinMaterialsFault, skinPartsFault, skinPrimitiveCount } from './skin-materials.ts';
 
-import { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE, SkinLookParametersSchema, SkinClipParametersSchema, ShardSkinFileSchema, type SkinLookParameters } from './skins.ts';
+import { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE } from './skins.ts';
+import type { SkinLookParameters } from './skins.ts';
+import { resolveSkinLookFiles } from './skin-variants.ts';
+import { skinLookParameters } from './skin-file.ts';
 
-/** Parse a `platform.skin` look row's parameters (throws on anything else). */
-export function skinLookParameters(row: ShardRows['looks'][number]): SkinLookParameters {
-  if (row.recipe !== SKIN_LOOK_RECIPE) throw new Error(`look ${row.id}: not a skin look`);
-  if (row.animation.recipe !== SKIN_CLIPS_RECIPE) throw new Error(`look ${row.id}: a skin look animates with ${SKIN_CLIPS_RECIPE}`);
-  const look = v.safeParse(SkinLookParametersSchema, row.parameters), clips = v.safeParse(SkinClipParametersSchema, row.animation.parameters);
-  if (!look.success || !clips.success) throw new Error(`look ${row.id}: invalid skin parameters`);
-  return { skin: look.output.skin, attackSpan: clips.output.attackSpan };
-}
-/** Decode and validate one skin file's bytes: its rig row and binding, the binding for that row. */
-export function parseSkinFile(bytes: Uint8Array): { row: SkinRow; binding: SkinBinding } {
-  const file = v.parse(ShardSkinFileSchema, JSON.parse(new TextDecoder().decode(bytes)));
-  const [row] = parseSkinRows([file.row]); if (row === undefined) throw new Error('skin file: no row');
-  const [binding] = parseSkinBindings([file.binding], [row]); if (binding === undefined) throw new Error('skin file: no binding');
-  return { row, binding };
-}
 /** Shardfile reference rules for skin looks: a library `json` file whose dependencies are exactly its row's `glb`. */
-export function skinLookRules(source: Pick<Shardfile, 'rows' | 'files' | 'library'>): string[] {
+function skinLookRules(source: Pick<Shardfile, 'rows' | 'files' | 'library'>): string[] {
   const errors: string[] = [], files = new Map(source.files.map((file) => [file.hash, file]));
   for (const row of source.rows.looks) {
-    if (row.recipe !== SKIN_LOOK_RECIPE) { if (row.animation.recipe === SKIN_CLIPS_RECIPE) errors.push('skin clips without a skin look'); continue; }
-    let skin: string; try { skin = skinLookParameters(row).skin; } catch { errors.push('skin look parameters'); continue; }
-    const file = files.get(skin), glb = file?.dependencies.length === 1 ? files.get(file.dependencies[0] ?? '') : undefined;
-    if (file?.kind !== 'json' || glb?.kind !== 'glb' || !source.library.includes(skin)) errors.push('skin look file references');
+    if (row.recipe !== SKIN_LOOK_RECIPE) { if (row.animation.recipe === SKIN_CLIPS_RECIPE) {errors.push('skin clips without a skin look');} continue; }
+    let parameters: SkinLookParameters; try { parameters = skinLookParameters(row); } catch { errors.push('skin look parameters'); continue; }
+    const { skin, variants } = parameters, file = files.get(skin), glb = file?.dependencies.length === 1 ? files.get(file.dependencies[0] ?? '') : undefined;
+    if (file?.kind !== 'json' || glb?.kind !== 'glb' || !source.library.includes(skin)) {errors.push('skin look file references');}
+    if (variants !== undefined && (files.get(variants)?.kind !== 'json' || !source.library.includes(variants))) {errors.push('skin variant table references');}
   }
   return errors;
 }
@@ -58,7 +47,7 @@ const glbRigSchema = v.object({
 
 /** Check admitted GLB joint order, sockets and clips before a renderer allocates the creature view. */
 function validateRigBytes(glb: Uint8Array, row: SkinRow, parts: Readonly<Record<string, string>> | undefined): void {
-  // parseGlb already bounds and validates the header, JSON chunk and every node/accessor reference.
+  // ParseGlb already bounds and validates the header, JSON chunk and every node/accessor reference.
   const length = new DataView(glb.buffer, glb.byteOffset, glb.byteLength).getUint32(12, true);
   const rig = v.parse(glbRigSchema, JSON.parse(new TextDecoder().decode(glb.subarray(20, 20 + length))));
   function fail(reason: string): never { throw new Error(`skin ${row.id}: ${reason}`); }
@@ -66,42 +55,47 @@ function validateRigBytes(glb: Uint8Array, row: SkinRow, parts: Readonly<Record<
   const meshes = rig.nodes.filter(node => node.skin !== undefined && node.mesh !== undefined);
   const mesh = meshes[0];
   if (meshes.length !== 1 || mesh?.mesh === undefined || mesh.skin === undefined
-    || !skinPrimitiveCount(rig.meshes[mesh.mesh]?.primitives.length)) fail('expected one skinned mesh');
+    || !skinPrimitiveCount(rig.meshes[mesh.mesh]?.primitives.length)) {fail('expected one skinned mesh');}
   const partsFault = skinPartsFault(rig.meshes[mesh.mesh]?.primitives ?? [], rig.materials, parts);
   if (partsFault !== '') { fail(partsFault); }
   const joints = rig.skins[mesh.skin]?.joints.map(index => rig.nodes[index]?.name);
   const expected = row.rig.joints[0];
   if (joints === undefined || expected === undefined || joints.length !== expected.length
-    || joints.some((name, index) => name !== expected[index])) fail('skin joint order differs from bake');
+    || joints.some((name, index) => name !== expected[index])) {fail('skin joint order differs from bake');}
   for (const name of row.rig.sockets) {
-    if (named.filter(actual => actual === name).length !== 1) fail(`missing or ambiguous socket ${name}`);
+    if (named.filter(actual => actual === name).length !== 1) {fail(`missing or ambiguous socket ${name}`);}
   }
   for (const name of row.rig.clips) {
-    if (rig.animations.filter(clip => clip.name === name).length !== 1) fail(`missing or ambiguous clip ${name}`);
+    if (rig.animations.filter(clip => clip.name === name).length !== 1) {fail(`missing or ambiguous clip ${name}`);}
   }
 }
 
 /** Admit each rig binding and its exact GLB dependency before allocating a client view. */
-export function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'> & { readonly look?: Pick<Shardfile['look'], 'materials'> }, assets: ReadonlyMap<string, Uint8Array>): void {
+function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'> & { readonly look?: Pick<Shardfile['look'], 'materials'> }, assets: ReadonlyMap<string, Uint8Array>): void {
   const files = new Map(source.files.map((file) => [file.hash, file]));
   for (const look of source.rows.looks) {
-    if (look.recipe !== SKIN_LOOK_RECIPE) continue;
-    const skinHash = skinLookParameters(look).skin, bytes = assets.get(skinHash);
-    if (bytes === undefined) throw new Error('skin file missing');
-    const { row, binding } = parseSkinFile(bytes);
-    if (files.get(skinHash)?.dependencies[0] !== row.file) throw new Error('skin rig dependency mismatch');
+    if (look.recipe !== SKIN_LOOK_RECIPE) {continue;}
+    const resolved = resolveSkinLookFiles(source, look, assets);
+    const skins = new Map([resolved.skin, ...(resolved.variants?.values() ?? [])].map((skin): [string, typeof resolved.skin] => [skin.hash, skin]));
+    for (const { row, binding } of skins.values()) {
+
     validateCreatureBones(look.species, row.rig.sockets);
     validateCreatureBones(look.species, row.rig.joints[0] ?? []);
     v.parse(MaterialsSchema, { skin: binding.material });
-    const glb = assets.get(row.file), declared = files.get(row.file);
-    if (glb === undefined || declared === undefined) throw new Error('skin GLB missing');
+    const glb = assets.get(row.file); const declared = files.get(row.file);
+    if (glb === undefined || declared === undefined) {throw new Error('skin GLB missing');}
     const cost = parseGlb(glb);
     validateRigBytes(glb, row, binding.materials);
     const undeclared = skinMaterialsFault(binding.materials, source.look?.materials ?? {});
     if (undeclared !== '') { throw new Error(undeclared); }
     cost.decoded += skinLayerDecoded(binding.poseLayers ?? {}, row.rig.joints[0]?.length ?? 0);
     for (const key of ['decoded', 'gpu', 'triangles', 'draws'] as const) {
-      if (cost[key] > row.cost[key] || cost[key] > declared[key]) throw new Error('skin cost understated');
+      if (cost[key] > row.cost[key] || cost[key] > declared[key]) {throw new Error('skin cost understated');}
+    }
     }
   }
 }
+
+export { parseSkinFile, skinLookParameters } from './skin-file.ts';
+export { resolveSkinLookFiles } from './skin-variants.ts';
+export { skinLookRules, validateSkinAssets };

@@ -72,12 +72,12 @@ function rows(species: unknown): ShardRows {
     ],
   })
 }
-test('a body may keep its own GLB rig without claiming a kit skeleton', () => {
+test('a body may keep its own GLB rig without claiming a kit skeleton', (): void => {
   const body = { size: 'medium', scale: 1, look: 'fixture.look' }
-  const parsed = rows({ ...legacy, body }).species[0]
+  const [parsed] = rows({ ...legacy, body }).species
   expect(parsed?.body).toEqual(body)
   expect(Object.hasOwn(parsed?.body ?? {}, 'skeleton')).toBe(false)
-  expect(() =>
+  expect((): ShardRows =>
     rows({ ...legacy, body: { ...body, skeleton: 'invented' } }),
   ).toThrow('Unknown creature skeleton')
 })
