@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.7.0 (2026-11-16)
+
+- A look can grow grass, ferns and small clutter round the player: `look.details` holds up to 8 layers.
+- Each layer is a small card mesh, a density mask and ground heights over a grid, all three as binary files.
+- The engine scatters the cards near the camera, so a meadow ships as a mask, not thousands of copies. Leave it out and nothing changes.
+
 ## v0.6.0 (2026-11-16)
 
 - Creature authors can declare body, temperament, senses, ordered abilities
