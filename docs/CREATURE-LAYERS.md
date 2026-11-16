@@ -17,8 +17,11 @@ The type label is for quest and journal filters; it never chooses a body.
 | presentation | Blood switch and sound names; optional call variants and an ordered call interval |
 
 Temperament modifiers are pack (boolean), territorial (radius), ambush
-(boolean) and flee (remaining-health fraction). Optional tuning is the existing
-complete hunt tuning contract, preserving every number, including stalk tuning.
+(boolean) and flee (remaining-health fraction). Optional tuning accepts the
+existing complete hunt contract, preserving stalk tuning, or a bounded brain
+parameter object. Each object has at most 64 fields; values are finite numbers,
+booleans, sound/id strings, up to 32 scalar values, or one scalar object.
+The named engine brain validates the meaning of its own parameters.
 The spawn supplies home position. The home object supplies return speed and
 the distance at which the creature has arrived; later engine rows implement
 healing and resetting on return.

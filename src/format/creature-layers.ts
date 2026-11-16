@@ -5,6 +5,7 @@ import {
   exactOptional,
   finite,
   maxLength,
+  maxEntries,
   maxValue,
   minLength,
   minValue,
@@ -12,6 +13,7 @@ import {
   picklist,
   pipe,
   regex,
+  record,
   strictObject,
   string,
   tuple,
@@ -39,6 +41,12 @@ type CreatureType =
 type CreatureSkeleton = 'quadruped' | 'biped'
 type CreatureSize = 'tiny' | 'small' | 'medium' | 'large' | 'giant'
 type CreatureReaction = 'passive' | 'skittish' | 'neutral' | 'aggressive'
+type CreatureTuningScalar = number | boolean | string
+type CreatureTuningValue =
+  | CreatureTuningScalar
+  | CreatureTuningScalar[]
+  | Record<string, CreatureTuningScalar>
+type CreatureTuning = Record<string, CreatureTuningValue>
 
 interface CreatureBody {
   skeleton: CreatureSkeleton
@@ -57,7 +65,7 @@ interface CreatureTemperament {
   territorial?: number
   ambush?: boolean
   flee?: number
-  tuning?: NonNullable<SpeciesData['tuning']>
+  tuning?: NonNullable<SpeciesData['tuning']> | CreatureTuning
 }
 interface CreatureSenses {
   notice: number
@@ -106,6 +114,7 @@ const MAX_TIME = 86_400
 const MAX_AMOUNT = 10_000_000
 const MAX_SCALE = 10
 const MAX_CALLS = 32
+const MAX_TUNING_FIELDS = 64
 
 const id = pipe(string(), regex(/^[a-z][a-zA-Z0-9.:-]*$/u), maxLength(MAX_ID))
 const sound = pipe(string(), minLength(ONE), maxLength(MAX_SOUND))
@@ -129,6 +138,16 @@ const orderedTime = pipe(
     'Ordered creature call interval',
   ),
 )
+const tuningNumber = pipe(scalar, minValue(-MAX_AMOUNT), maxValue(MAX_AMOUNT))
+const tuningScalar = union([tuningNumber, boolean(), sound])
+const tuningList = pipe(array(tuningScalar), maxLength(MAX_CALLS))
+const tuningObject = pipe(
+  record(id, tuningScalar),
+  maxEntries(MAX_TUNING_FIELDS),
+)
+const tuningValue = union([tuningScalar, tuningList, tuningObject])
+const brainTuning = pipe(record(id, tuningValue), maxEntries(MAX_TUNING_FIELDS))
+const tuning = union([HuntTuningSchema, brainTuning])
 
 /** Schemas are separately bounded so their defining declaration stays small. */
 const CreatureTypeSchema: GenericSchema<CreatureType> = picklist(
@@ -170,7 +189,7 @@ const CreatureTemperamentSchema: GenericSchema<CreatureTemperament> =
     territorial: exactOptional(radius),
     ambush: exactOptional(boolean()),
     flee: exactOptional(unit),
-    tuning: exactOptional(HuntTuningSchema),
+    tuning: exactOptional(tuning),
   })
 const sight = strictObject({
   range: radius,
@@ -234,4 +253,7 @@ export type {
   CreatureAbility,
   CreaturePresentation,
   CreatureLayers,
+  CreatureTuningScalar,
+  CreatureTuningValue,
+  CreatureTuning,
 }

@@ -25,3 +25,9 @@ species serialized identically. Both complete folders validated with zero
 warnings (35 sections / 161 assets and 36 sections / 130 assets), and both
 recorded corpus JSON identities stayed unchanged. The old parser module was
 read from Git into owned scratch and removed after the comparison.
+
+The kit's pursuit preset exposed an overly narrow tuning field: an open
+brain name cannot require only hunt numbers. The additive contract now also
+accepts bounded brain parameters, and the exact existing Template pursuit
+numbers round-trip in a focused case. The engine brain remains responsible
+for the semantics of its parameters; no additional brain mechanism is added.

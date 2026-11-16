@@ -197,3 +197,31 @@ test('body look must exist', (): void => {
     'Unknown creature look: fixture.missing',
   )
 })
+
+test('pursuit keeps its own numeric parameters instead of requiring hunt fields', (): void => {
+  const tuning = {
+    awareRadius: 12,
+    leashRadius: 25,
+    speed: 1,
+    returnSpeed: 2,
+    stopDistance: 1.5,
+    turnRate: 4,
+    thinkDivisor: 3,
+    attackCooldownTicks: 60,
+    wanderRadius: 4,
+    wanderEveryTicks: 420,
+  }
+  const species = {
+    ...layered,
+    temperament: {
+      ...layered.temperament,
+      brain: 'pursue',
+      reaction: 'neutral',
+      leash: 25,
+      assist: 0,
+      home: { speed: 2, stop: 1.5 },
+      tuning,
+    },
+  }
+  expect(rows(species).species[0]?.temperament?.tuning).toEqual(tuning)
+})
