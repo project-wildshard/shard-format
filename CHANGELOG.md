@@ -4,6 +4,14 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.8.0 (2026-11-16)
+
+- Creatures can declare variant-selected harvest drops and an explicit exemption from the incoming damage cap.
+- Strike and melee rows can describe bounded contact debris with overrides for target species.
+- Journals can use admitted images; alpha tint keeps a sticker's inherited color.
+- An accepted item-scene use can raise a declared quest flag for its player.
+- Shards using these fields need an engine that implements them; older engines may refuse them.
+
 ## v0.7.0 (2026-11-16)
 
 - A look can grow grass, ferns and small clutter round the player: `look.details` holds up to 8 layers.
