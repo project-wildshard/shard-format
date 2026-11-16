@@ -18,3 +18,10 @@ This adds a contract, not new creature assets or an engine resolver. Those
 have their own M1 rows. Public exports were consolidated, lowering three
 existing lint counters without raising any counter. Focused behavior and
 defining-declaration tests cover the new fields and retained consumer types.
+
+The corpus proof compared the species entries from the parser at 87f98f1
+with the new parser: all three Brasscap corpus species and the handwritten
+species serialized identically. Both complete folders validated with zero
+warnings (35 sections / 161 assets and 36 sections / 130 assets), and both
+recorded corpus JSON identities stayed unchanged. The old parser module was
+read from Git into owned scratch and removed after the comparison.
