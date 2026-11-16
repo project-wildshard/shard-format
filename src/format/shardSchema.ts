@@ -1,3 +1,4 @@
+import { readSpeciesPrograms } from './speciesPrograms.ts';
 import type { StrikeDebrisPolicy } from './strike-debris.ts';
 import { strikeDebrisCatalogueRules } from './strike-debris.ts';
 import { harvestSpeciesRules } from './harvest-rows.ts';
@@ -210,7 +211,7 @@ export interface Shardfile {
 function sceneOf(row: Readonly<{ scene: string }>): string { return row.scene; }
 /** A hook's name. */
 function idOf(row: Readonly<{ id: string }>): string { return row.id; }
-export function shardfileRules(s: Shardfile): string[] {
+export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unknown>): string[] {
   const errors: string[] = [];
   const pageOwner = hasDeclaredClientPage(s);
   errors.push(...questNpcBindingRules(s.questNpcs ?? [], s.quests.flags, pageOwner || s.runtime?.binds?.includes('quests') === true));
@@ -309,7 +310,10 @@ export function shardfileRules(s: Shardfile): string[] {
       if (moves.passes !== undefined) { debrisStrikes.push(moves.passes.left, moves.passes.right); }
     }
   }
-  errors.push(...strikeDebrisCatalogueRules({ strikes: debrisStrikes, species: s.rows.species }));
+  const metadata = sections?.get('actors/species-programs');
+  const roster = metadata === undefined ? undefined : readSpeciesPrograms(metadata);
+  const targets = [...s.rows.species, ...roster?.page ?? [], ...roster?.native ?? [], ...roster?.program?.species ?? []];
+  errors.push(...strikeDebrisCatalogueRules({ strikes: debrisStrikes, species: targets }));
   const harvestItems = new Set((s.items.catalogue ?? []).map((row: Readonly<{ id: string }>): string => row.id));
   errors.push(...harvestSpeciesRules(s.rows.species, harvestItems));
   if (s.migrations.some(step => step.equipmentSlots?.some(rename => !s.items.rows.some(row => row.kind === 'weapon' && row.slot === rename.to)))) errors.push('migration equipment slots resolve declared weapons');
@@ -382,7 +386,7 @@ export function shardfileRules(s: Shardfile): string[] {
 }
 /** Strict schema for the public SDK format; rejects unknown fields and invalid references.
  * Keep the unknown-input/named-output boundary independent of the nested validator implementation. */
-export const ShardfileSchema: v.GenericSchema<unknown, Shardfile> = v.pipe(v.unknown(), v.rawCheck(({ dataset, addIssue }) => {
+function shardfileSchema(sections?: ReadonlyMap<string, unknown>): v.GenericSchema<unknown, Shardfile> { return v.pipe(v.unknown(), v.rawCheck(({ dataset, addIssue }) => {
   const input = dataset.value;
   try { preflightShardfile(input); } catch (error) {
     const nonData = error instanceof Error && /(?:JSON data|accessors)/u.test(error.message);
@@ -397,9 +401,14 @@ export const ShardfileSchema: v.GenericSchema<unknown, Shardfile> = v.pipe(v.unk
   }
 }), rawSchema,
   v.rawCheck(({ dataset, addIssue }) => { if (dataset.typed) { try { preflightAssetGraph(dataset.value); } catch (error) { addIssue({ message: error instanceof Error ? error.message : 'shardfile asset graph admission' }); } } }),
-  v.check((s) => entrywayRules(s).length === 0, 'illegal shard: entryway openings must meet road height y=0'), v.check((s) => shardfileRules(s).length === 0, 'shardfile semantic rules'));
-/** Parse untrusted JSON as a validated shardfile, or throw a Valibot error. */
-function parseShardfile(input: unknown): Shardfile { return v.parse(ShardfileSchema, input); }
+  v.check((s) => entrywayRules(s).length === 0, 'illegal shard: entryway openings must meet road height y=0'), v.check((s) => shardfileRules(s, sections).length === 0, 'shardfile semantic rules')); }
+export const ShardfileSchema: v.GenericSchema<unknown, Shardfile> = shardfileSchema();
+/** Parse JSON through every shard rule. Optional section payloads extend item target
+ * references only through the defining species-program contract, never an id allowlist.
+ * Product readers must verify section inventories, hashes and sizes before calling. */
+function parseShardfile(input: unknown, sections?: ReadonlyMap<string, unknown>): Shardfile {
+  return v.parse(sections === undefined ? ShardfileSchema : shardfileSchema(sections), input);
+}
 /** Admit one owned or cached declaration field with its defining schema.
  * The assembled declaration still crosses parseShardfile's cross-field rules. */
 function parseShardfileField<Key extends keyof Shardfile>(field: Key, input: unknown): Shardfile[Key] {

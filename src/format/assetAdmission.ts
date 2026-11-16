@@ -85,10 +85,10 @@ interface AssetAdmission {
 }
 
 /** The checks before any byte is read: preflight, schema, decision modules, the graph and declared costs. */
-// oxlint-disable-next-line eslint/max-statements, typescript/prefer-readonly-parameter-types -- validateShardfileAssets' opening steps, moved whole (AC6a2)
-function assetAdmission(input: unknown, memory: MemoryAdmission | undefined, scripts: ScriptAdmissionRows): AssetAdmission {
+// oxlint-disable-next-line eslint/max-params, eslint/max-statements, typescript/prefer-readonly-parameter-types -- the existing admission state also receives its checked section context
+function assetAdmission(input: unknown, memory: MemoryAdmission | undefined, scripts: ScriptAdmissionRows, sections?: ReadonlyMap<string, unknown>): AssetAdmission {
   preflightShardfile(input);
-  const s = parseShardfile(input), files = new Map(s.files.map((f) => [f.hash, f]));
+  const s = parseShardfile(input, sections), files = new Map(s.files.map((f) => [f.hash, f]));
   const contracts = decisionModuleContracts(scripts, s.files);
   const legacyModules = new Set([...s.sim.scripts, ...s.clientScripts.bindings.map(row => row.module), ...s.movers.filter(row => row.execution !== 'native').map(row => row.module)]);
   if ([...contracts.keys()].some(hash => legacyModules.has(hash))) throw new Error('Decision module cannot also use a legacy script host');
@@ -266,8 +266,8 @@ function admitAfterFiles(state: AssetAdmission, assets: ReadonlyMap<string, Uint
 }
 
 /** Admit exact bytes, graph closure, script growth and worst-location residency before a runtime is allocated. */
-function validateShardfileAssets(input: unknown, assets: ReadonlyMap<string, Uint8Array>, contentHash: (bytes: Uint8Array) => string, memory?: MemoryAdmission, textures?: TextureTranscodeSupport, scripts: ScriptAdmissionRows = []): Shardfile {
-  const state = assetAdmission(input, memory, scripts);
+function validateShardfileAssets(input: unknown, assets: ReadonlyMap<string, Uint8Array>, contentHash: (bytes: Uint8Array) => string, memory?: MemoryAdmission, textures?: TextureTranscodeSupport, scripts: ScriptAdmissionRows = [], sections?: ReadonlyMap<string, unknown>): Shardfile {
+  const state = assetAdmission(input, memory, scripts, sections);
   admitCommonsBytes(state, assets, contentHash);
   for (const file of state.shard.files) {
     admitFileBytes(state, file, assets.get(file.hash), assets, contentHash);

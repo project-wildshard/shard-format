@@ -148,7 +148,7 @@ export function assembleOutputFields(index: OutputIndex, sections: ReadonlyMap<s
 }
 /** The default untrusted reader always checks sections and the full host schema. */
 export function assembleOutputShardfile(input: unknown, sections: ReadonlyMap<string, unknown>): Shardfile {
-  const source = parseShardfile(assembleOutputFields(parseOutputIndex(input), sections));
+  const source = parseShardfile(assembleOutputFields(parseOutputIndex(input), sections), sections);
   const errors = clientOwnershipRules(source, sections); if (errors.length > 0) throw new Error(errors.join('; '));
   return source;
 }

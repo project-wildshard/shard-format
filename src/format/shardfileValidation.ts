@@ -114,11 +114,11 @@ export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refu
 
 /** Admit a whole shardfile's declared costs and its actual immutable bytes through the defining contracts. */
 export function admitShardfileFolder(input: unknown, assets: ReadonlyMap<string, Uint8Array>, hash: (bytes: Uint8Array) => string,
-  policy: 'warn' | 'refuse' = 'refuse', scripts: ScriptAdmissionRows = []): Shardfile {
-  const source = coded('shard-schema', (): Shardfile => parseShardfile(input));
+  policy: 'warn' | 'refuse' = 'refuse', scripts: ScriptAdmissionRows = [], sections?: ReadonlyMap<string, unknown>): Shardfile {
+  const source = coded('shard-schema', (): Shardfile => parseShardfile(input, sections));
   coded('declared-costs', (): void => { preflightDeclaredCosts(source, offlineMemoryAdmission(policy)); });
   coded('performance-targets', (): void => { assertShardfileTargets(source, policy); });
-  return coded('asset-admission', (): Shardfile => validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy), undefined, scripts));
+  return coded('asset-admission', (): Shardfile => validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy), undefined, scripts, sections));
 }
 
 /** Refuse world target rows that name items or quests the shardfile does not declare. */
@@ -229,7 +229,7 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
     coded('runtime-files', (): void => { ports.runtimeImports?.(entry.path, decoder().decode(read(entry))); });
   }
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
-  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts);
+  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, payloads);
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
   return { index, shard, assets, sections: payloads, scripts, warnings, audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };

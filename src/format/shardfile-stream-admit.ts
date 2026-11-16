@@ -31,7 +31,7 @@ function admitHead(
   payloads: ReadonlyMap<string, unknown>,
 ): Shardfile {
   const shard = withIssueCode('shard-schema', (): Shardfile =>
-    parseShardfile(assembleOutputShardfile(index, payloads)),
+    parseShardfile(assembleOutputShardfile(index, payloads), payloads),
   )
   withIssueCode('declared-costs', (): void => {
     preflightDeclaredCosts(shard, offlineMemoryAdmission('warn'))
@@ -55,7 +55,7 @@ function admitBeforeAssets(
     const head = admitHead(index, payloads)
     return {
       admission: withIssueCode('asset-admission', (): AssetAdmission =>
-        assetAdmission(head, offlineMemoryAdmission('warn'), scripts),
+        assetAdmission(head, offlineMemoryAdmission('warn'), scripts, payloads),
       ),
       refusal: undefined,
     }
