@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.12.0 (2026-11-16)
+
+- A shard can make up to 64 of its panels touchable with `props.bodies`: a crate or barrel players push.
+- Each body has a rest pose, a ball, cylinder or box shape, a surface and optional weight, grip, bounce and damping.
+- Shards using these fields need an engine that implements them; older engines may refuse them.
+
 ## v0.11.0 (2026-11-16)
 
 - Custom creatures can use their declared temperament when built.
