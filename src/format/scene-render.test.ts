@@ -80,3 +80,20 @@ test('bad scene-render keys are refused', (): void => {
     ).toThrow()
   }
 })
+
+// Meta SHARD-SOURCE SS8b: a hanging body's surfaces and cards name their swing per vertex (`_SWING`).
+test('a swinging surface and a swinging card parse; absent stays absent', (): void => {
+  expect('swing' in parse(PbrMaterialSchema, { family: 'pbr' })).toBe(false)
+  expect(parse(PbrMaterialSchema, { family: 'pbr', swing: true }).swing).toBe(
+    true,
+  )
+  const halo = parse(EmissiveMaterialSchema, {
+    family: 'emissive',
+    card: true,
+    swing: true,
+  })
+  expect([halo.card, halo.swing]).toEqual([true, true])
+  expect((): unknown =>
+    parse(PbrMaterialSchema, { family: 'pbr', swing: false }),
+  ).toThrow()
+})

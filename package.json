@@ -249,6 +249,7 @@
     "./postStack": "./src/format/postStack.ts",
     "./look-details": "./src/format/look-details.ts",
     "./look-light": "./src/format/look-light.ts",
+    "./look-swing": "./src/format/look-swing.ts",
     "./look-render": "./src/format/look-render.ts",
     "./pool-surface": "./src/format/pool-surface.ts",
     "./practiceCourseRows": "./src/format/practiceCourseRows.ts",

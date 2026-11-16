@@ -13,6 +13,7 @@
  *   `at` in linear `colour` × `intensity` (candela), out to `distance` metres with physical (2) decay, no shadow.
  * - `bounce` (B2): a warm fill from the ground: one shadowless directional light from the anti-sun heading, lifted
  *   by `lift` (0 level, 1 straight up), in linear `colour` × `intensity`.
+ * - `swings` (SHARD-SOURCE SS8b): hanging bodies a lamp's `swing` names, so its light swings too (`look-swing.ts`).
  * - `environment` (B2): sky-derived ambient: an environment filtered once from the look's own sky (its keys' zenith
  *   and horizon) over a `ground` colour (linear), lighting every PBR surface at `intensity`.
  *
@@ -27,6 +28,7 @@
  */
 import {
   array,
+  check,
   exactOptional,
   finite,
   maxLength,
@@ -49,6 +51,7 @@ import {
   lampFlicker,
   lampHalo,
 } from './look-render.ts'
+import { LookSwingsSchema, swingNumber, swingsDeclared } from './look-swing.ts'
 
 import type {
   LookLampFlicker,
@@ -56,6 +59,7 @@ import type {
   LookMotes,
   LookShadow,
 } from './look-render.ts'
+import type { LookSwing } from './look-swing.ts'
 import type { GenericSchema } from 'valibot'
 
 type Rgb = [number, number, number]
@@ -130,6 +134,8 @@ interface LookLamp {
   decay?: number
   halo?: LookLampHalo
   flicker?: LookLampFlicker
+  /** SS8b: the number of the `swings` row it hangs from */
+  swing?: number
 }
 /** A warm fill from the ground: a shadowless directional light from the anti-sun heading, lifted by `lift`. */
 interface LookBounce {
@@ -149,6 +155,7 @@ interface LookLight {
   heightFog?: LookHeightFog
   pools?: LookPools
   lamps?: LookLamp[]
+  swings?: LookSwing[]
   bounce?: LookBounce
   environment?: LookEnvironment
   shadow?: LookShadow
@@ -215,6 +222,7 @@ const LookLampSchema: GenericSchema<LookLamp, LookLamp> = strictObject({
   decay: lampDecay,
   halo: lampHalo,
   flicker: lampFlicker,
+  swing: exactOptional(swingNumber),
 })
 const LookLampsSchema: GenericSchema<LookLamp[], LookLamp[]> = pipe(
   array(LookLampSchema),
@@ -232,17 +240,21 @@ const LookEnvironmentSchema: GenericSchema<LookEnvironment, LookEnvironment> =
     ground: colour,
   })
 /** `look.light`: the optional light and post settings. */
-const LookLightSchema: GenericSchema<LookLight, LookLight> = strictObject({
-  ao: exactOptional(LookAoSchema),
-  rim: exactOptional(LookRimSchema),
-  heightFog: exactOptional(LookHeightFogSchema),
-  pools: exactOptional(LookPoolsSchema),
-  lamps: exactOptional(LookLampsSchema),
-  bounce: exactOptional(LookBounceSchema),
-  environment: exactOptional(LookEnvironmentSchema),
-  shadow: exactOptional(LookShadowSchema),
-  motes: exactOptional(LookMotesSchema),
-})
+const LookLightSchema: GenericSchema<LookLight, LookLight> = pipe(
+  strictObject({
+    ao: exactOptional(LookAoSchema),
+    rim: exactOptional(LookRimSchema),
+    heightFog: exactOptional(LookHeightFogSchema),
+    pools: exactOptional(LookPoolsSchema),
+    lamps: exactOptional(LookLampsSchema),
+    swings: exactOptional(LookSwingsSchema),
+    bounce: exactOptional(LookBounceSchema),
+    environment: exactOptional(LookEnvironmentSchema),
+    shadow: exactOptional(LookShadowSchema),
+    motes: exactOptional(LookMotesSchema),
+  }),
+  check<LookLight, string>(swingsDeclared, 'A lamp on an undeclared swing'),
+)
 /** `look.grade.tone`: absent is AgX, as before. */
 const LookToneSchema: GenericSchema<LookTone, LookTone> = picklist([
   'agx',

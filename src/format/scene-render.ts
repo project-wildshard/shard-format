@@ -11,6 +11,9 @@
  * - `sway`: foliage in the wind. Each vertex moves by its `_SWAY` vertex channel (metres, one float: 0 at the root) along
  *   `direction` (x, z) at about `rate` hertz, its phase taken from where it stands.
  * - `uvScroll`: the colour map's uv moves this many units a second (u, v): running water, drifting cloud shadow.
+ * - `swing: true` (meta SHARD-SOURCE SS8b, PBR and emissive): a hanging body. Each vertex's `_SWING` channel (one float)
+ *   names the look's `look.light.swings` row it hangs from, plus one (0: it stays still); the engine turns the vertex
+ *   (and a card's seat) round that swing's pivot by the swing's tilt each frame, the way a lamp, a sign or a banner hangs.
  *
  * Emissive family:
  * - `blend: 'alpha'` (beside `opaque` and `additive`): an unlit card blended over what is behind it (a flame tongue).
@@ -132,6 +135,11 @@ const emissiveCard: ExactOptionalSchema<
   GenericSchema<true, true>,
   undefined
 > = exactOptional(literal(true))
+/** PBR and emissive `swing` (SS8b): the `_SWING` channel names each vertex's swing. */
+const surfaceSwing: ExactOptionalSchema<
+  GenericSchema<true, true>,
+  undefined
+> = exactOptional(literal(true))
 /** Emissive `motion`. */
 const emissiveMotion: ExactOptionalSchema<
   GenericSchema<CardMotion, CardMotion>,
@@ -140,6 +148,8 @@ const emissiveMotion: ExactOptionalSchema<
 
 /** The vertex channel a swaying surface reads (GLB application attribute `_SWAY`, one float, metres). */
 const SWAY_CHANNEL = '_SWAY'
+/** The vertex channel a swinging surface reads (GLB application attribute `_SWING`, one float: swing number + 1, 0 still). */
+const SWING_CHANNEL = '_SWING'
 /** The vertex channel a card reads (GLB application attribute `_CORNER`, two floats, metres in view space). */
 const CORNER_CHANNEL = '_CORNER'
 
@@ -147,6 +157,7 @@ export {
   CORNER_CHANNEL,
   CardMotionSchema,
   SWAY_CHANNEL,
+  SWING_CHANNEL,
   SurfaceSwaySchema,
   UvScrollSchema,
   emissiveCard,
@@ -155,6 +166,7 @@ export {
   surfaceDepthOffset,
   surfaceOpacity,
   surfaceSway,
+  surfaceSwing,
   surfaceUvScroll,
 }
 export type { CardMotion, SurfaceSway }
