@@ -57,10 +57,12 @@ const SpeciesSchema: v.StrictObjectSchema<{ readonly capExempt: v.ExactOptionalS
 
 /** Callback-free gameplay metadata; rendering and policy ownership are admitted separately. */
 
+// SpeciesSchema checks field shapes; readSpecies additionally checks row-local harvest references.
 const NO_HARVEST_ERRORS = 0;
 function readSpecies(input: unknown): SpeciesData {
   const row = v.parse(SpeciesSchema, input);
-  if (harvestSpeciesRules([row]).length > NO_HARVEST_ERRORS) { throw new Error('Unknown harvest variant'); }
+  const errors = harvestSpeciesRules([row]);
+  if (errors.length > NO_HARVEST_ERRORS) { throw new Error(errors.join('; ')); }
   return row;
 }
 /** One existing SpeciesBrains owner receives these admitted policy/body rows and strike definitions. */

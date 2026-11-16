@@ -155,6 +155,8 @@ A journal icon may declare `image` with an admitted raster image hash or the
 existing bounded inert SVG sketch envelope. Raster images must be in the
 charged library closure with kind `image`; inline SVG uses the existing
 sketch raster CPU/GPU measurement and is counted once per distinct source.
+An image may set `tint: "currentColor"` to use its alpha as a mask painted
+by the sticker's inherited CSS color. Omit it to retain image colors.
 Selectors keep their current entry-kind and match-kind behavior. An image
 row cannot also declare a legacy glyph. Older glyph rows remain accepted
 until ONE-FORMAT OF31c2 replaces their producer and runtime path; this
@@ -165,9 +167,10 @@ from look-only metadata. Strike rows and melee swings may declare `debris`
 with a required `default` effect and up to 64 unique `overrides`. Each
 override names a target species row id and an `effect`. Effects declare
 `surface` (`shell`, `wood` or `sand`), integer `count` from 0 to 64,
-`atFeet` and `sparks` booleans. Complete row/program catalogues and full
+`atFeet` and `sparks` booleans. The `rows` and `speciesPrograms` readers and full
 item admission reject unknown target species ids; standalone strikes
-check syntax without inventing a catalogue. Runtime support and older
+check syntax without inventing a catalogue. Native runtime-plan metadata
+retains its separate interpreter admission. Runtime support and older
 source conversion remain ONE-FORMAT OF31d2 and OF31d3.
 
 ## 2. `client/plan` kinds
