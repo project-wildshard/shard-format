@@ -1,10 +1,8 @@
-import { readFileSync } from 'node:fs'
-
 import { parse, safeParse } from 'valibot'
 import { expect, test } from 'vitest'
 
+import { outputFixture } from '../test/helpers/output-fixture.ts'
 import { HarvestDropsSchema } from './harvest-rows.ts'
-import { assembleOutputShardfile, parseOutputIndex } from './outputIndex.ts'
 import { parsePlatformDataSection } from './platformDataSections.ts'
 import { parseRows } from './rows.ts'
 import { parseShardfile, shardfileRules } from './shardSchema.ts'
@@ -58,27 +56,8 @@ function rows(harvest: unknown): unknown {
     looks: [],
   }
 }
-function fixtureSections(
-  index: Readonly<{
-    sections: readonly Readonly<{ name: string; path: string }>[]
-  }>,
-  root: string,
-): Map<string, unknown> {
-  const sections = new Map<string, unknown>()
-  for (const section of index.sections) {
-    const path = new URL(section.path, root)
-    const text = readFileSync(path, 'utf8')
-    sections.set(section.name, JSON.parse(text))
-  }
-  return sections
-}
 function source(): ReturnType<typeof parseShardfile> {
-  const root = new URL('../test/fixtures/cli-fixture/', import.meta.url)
-  const indexPath = new URL('shard.json', root)
-  const indexSource = readFileSync(indexPath, 'utf8')
-  const index = parseOutputIndex(JSON.parse(indexSource))
-  const sections = fixtureSections(index, root.href)
-  const shard = assembleOutputShardfile(index, sections)
+  const shard = outputFixture()
   shard.rows.species.push({
     ...structuredClone(creature),
     harvest: structuredClone(drops),

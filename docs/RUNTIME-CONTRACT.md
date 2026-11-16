@@ -151,6 +151,15 @@ each item in `items.catalogue`. Both species contracts use the same
 `harvestRows` schema; producer content and engine consumption remain
 ONE-FORMAT OF31b2 and OF31b3.
 
+A journal icon may declare `image` with an admitted raster image hash or the
+existing bounded inert SVG sketch envelope. Raster images must be in the
+charged library closure with kind `image`; inline SVG uses the existing
+sketch raster CPU/GPU measurement and is counted once per distinct source.
+Selectors keep their current entry-kind and match-kind behavior. An image
+row cannot also declare a legacy glyph. Older glyph rows remain accepted
+until ONE-FORMAT OF31c2 replaces their producer and runtime path; this
+schema addition alone does not enable image rendering in an older engine.
+
 ## 2. `client/plan` kinds
 
 `client/plan` is `{ "version": 1, "features": [ … ] }`, at most 64 features. Each feature's `kind` picks one

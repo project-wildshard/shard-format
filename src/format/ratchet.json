@@ -734,10 +734,9 @@
    "unicorn(numeric-separators-style)": 1
   },
   "src/format/compendiumSketches.ts": {
-   "eslint(curly)": 5,
+   "eslint(curly)": 4,
    "eslint(id-length)": 1,
-   "eslint(max-statements)": 1,
-   "eslint(no-continue)": 2,
+   "eslint(no-continue)": 1,
    "import(consistent-type-specifier-style)": 1,
    "typescript(prefer-readonly-parameter-types)": 1,
    "unicorn(filename-case)": 1,

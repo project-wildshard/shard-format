@@ -1,3 +1,4 @@
+import { sketchReference } from './sketch.ts';
 import * as v from 'valibot';
 
 const key = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
@@ -17,8 +18,11 @@ const entry = v.strictObject({ id: key, kind: entryKind, tab: key, name: text, n
 const stat = v.strictObject({ label: text, value: v.picklist(['seen', 'taken', 'best', 'rarity', 'status']),
   fallback: v.exactOptional(text), suffix: v.exactOptional(text), words: v.exactOptional(v.record(key, text)) });
 const stats = v.pipe(v.array(stat), v.maxLength(8));
-const icon = v.strictObject({ entryKind: v.exactOptional(entryKind), matchKind: v.exactOptional(key),
-  icon: v.picklist(['antlers', 'ghost', 'ironhide', 'deer', 'boar', 'elk', 'bear']) });
+const iconSelectors = { entryKind: v.exactOptional(entryKind), matchKind: v.exactOptional(key) };
+const legacyIcon = v.strictObject({ ...iconSelectors, icon: v.picklist(['antlers', 'ghost', 'ironhide', 'deer', 'boar', 'elk', 'bear']) });
+const iconImage = v.pipe(text, v.check(sketchReference, 'bounded inert SVG data or admitted image hash'));
+const imageIcon = v.strictObject({ ...iconSelectors, image: iconImage });
+const icon = v.union([imageIcon, legacyIcon]);
 const cell = v.strictObject({ x: finite, y: finite, w: positive, h: positive });
 const trophy = v.strictObject({ entry: key, outline: key, mount: v.exactOptional(v.strictObject({ kind: key, variant: key })), title: text });
 const wall = v.strictObject({ cabin: natural, at: v.tuple([finite, finite, finite]), yaw: finite, width: positive,
@@ -47,12 +51,14 @@ export function journalRowRules(row: JournalRow): readonly string[] {
 }
 /** All raster images must be charged immutable library roots; logical URLs are resolved by the admitted product. */
 export function journalImageRefs(row: JournalRow): readonly string[] {
+  const icons = row.icons.flatMap((value: Readonly<JournalIcon>): string[] => 'image' in value && !value.image.startsWith('data:') ? [value.image] : []);
   return [...new Set([...row.entries.flatMap(value => [value.plate.sketch, ...value.plate.silhouette === undefined ? [] : [value.plate.silhouette]]),
-    ...row.chalk === undefined ? [] : [row.chalk.atlas]])];
+    ...row.chalk === undefined ? [] : [row.chalk.atlas], ...icons])];
 }
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 export type JournalRowInput = JournalRow;
+type JournalIcon = { entryKind?: 'species' | 'variant' | 'elite' | 'boss' | 'place'; matchKind?: string } & ({ image: string } | { icon: 'antlers' | 'ghost' | 'ironhide' | 'deer' | 'boar' | 'elk' | 'bear' });
 interface JournalRowFields {
     kind: 'journal';
     id: string;
@@ -68,11 +74,7 @@ interface JournalRowFields {
         place: string;
         default: string;
     };
-    icons: ({
-        entryKind?: 'species' | 'variant' | 'elite' | 'boss' | 'place';
-        matchKind?: string;
-        icon: 'antlers' | 'ghost' | 'ironhide' | 'deer' | 'boar' | 'elk' | 'bear';
-    })[];
+    icons: JournalIcon[];
     stats: {
         place: ({
             label: string;
