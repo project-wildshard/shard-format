@@ -26,6 +26,7 @@ import { MeshCollisionSchema, meshCollisionRules } from './meshCollision.ts';
 import { NativeGroundSchema, nativeGroundRules } from './nativeGround.ts';
 import { WaterSchema } from './water.ts';
 import { CreaturesSchema } from './creatures.ts';
+import type { ShardCreatures } from './creatures.ts';
 import { FlockSchema } from './crowds.ts';
 import { groupBrainRules } from './groupBrains.ts';
 import { EncountersSchema, encounterRules } from './encounters.ts';
@@ -363,12 +364,19 @@ export function shardfileRules(s: Shardfile): string[] {
   errors.push(...encounterRules(s.encounters, s.creatures.spawns.map((spawn) => spawn.id), s.ui.filter((row) => row.kind === 'bossPanel')));
   const controlled = new Set(s.encounters.map((row) => row.entity));
   errors.push(...groupBrainRules(s.creatures.groups, s.creatures.spawns, s.creatures.brains.map((row) => row.id), [...controlled]));
+  // Keep every previously admitted named/encounter controller. Only the formerly
+  // unowned null-brain case is extended to an actual engine policy or declaration.
+  const inlineBrains: Record<ShardCreatures['brains'][number]['kind'] | 'hunt', true> = {
+    hunt: true, pursue: true, skirmisher: true, guardian: true, 'perch-hunter': true,
+    script: true, 'ram-grazer': true, 'challenge-grazer': true, 'orbit-diver': true,
+    'patrol-diver': true, 'burst-flyer': true, grazer: true, diver: true, stalker: true,
+  };
   if (s.creatures.spawns.some((row) => {
+    if (controlled.has(row.id)) { return row.brain !== null; }
+    if (row.brain !== null) { return false; }
     const brain = species.get(row.species)?.temperament?.brain;
-    const encounter = controlled.has(row.id), layered = brain !== undefined && brain !== 'none';
-    if (encounter) { return row.brain !== null || layered; }
-    if (row.brain === null) { return !layered; }
-    return layered && row.brain !== brain;
+    return brain === undefined || !(Object.hasOwn(inlineBrains, brain)
+      || s.creatures.brains.some((declaration: { readonly id: string }): boolean => declaration.id === brain));
   })) errors.push('exactly one declared creature controller');
   return [...new Set(errors)];
 }
