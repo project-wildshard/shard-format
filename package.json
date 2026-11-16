@@ -94,6 +94,7 @@
     "./contracts": "./src/format/contracts.ts",
     "./coverAppearance": "./src/format/coverAppearance.ts",
     "./creatures": "./src/format/creatures.ts",
+    "./creatureLayers": "./src/format/creature-layers.ts",
     "./crowdPresentation": "./src/format/crowdPresentation.ts",
     "./crowds": "./src/format/crowds.ts",
     "./cueDirector": "./src/format/cueDirector.ts",

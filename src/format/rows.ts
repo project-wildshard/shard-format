@@ -3,6 +3,8 @@ import * as v from 'valibot';
 import { isJsonData } from './json.ts';
 import { sketchReference } from './sketch.ts';
 import { JournalRowSchema, journalRowRules } from './compendiumRows.ts';
+import { CreatureTypeSchema, CreatureBodySchema, CreatureTemperamentSchema, CreatureSensesSchema, CreatureAbilitySchema, CreaturePresentationSchema } from './creature-layers.ts';
+import type { CreatureLayers } from './creature-layers.ts';
 
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9.:-]*$/u), v.maxLength(128));
 const text = v.pipe(v.string(), v.maxLength(4096));
@@ -37,8 +39,13 @@ const variant = v.strictObject({ id, label: text, rarity: v.picklist(['common', 
 const flight = v.strictObject({ altitude: v.pipe(finite, v.minValue(-250), v.maxValue(250)),
   above: v.exactOptional(v.picklist(['ground', 'world'])), climbRate: v.pipe(positive, v.maxValue(30)), diveRate: v.pipe(positive, v.maxValue(30)),
   lockRange: v.exactOptional(v.pipe(positive, v.maxValue(600))), bank: v.exactOptional(v.pipe(finite, v.check(n => n > 0 && n < Math.PI / 2, 'flight bank between 0 and pi/2'))) });
+const MAX_ABILITIES = 32;
+const abilities = v.pipe(v.array(CreatureAbilitySchema), v.maxLength(MAX_ABILITIES));
 const species = v.strictObject({ id, kind: id, label: text, aggressive: v.boolean(), lockable: v.boolean(), dims, flight: v.exactOptional(flight),
-  variants: v.pipe(v.array(variant), v.minLength(1), v.maxLength(64)) });
+  variants: v.pipe(v.array(variant), v.minLength(1), v.maxLength(64)),
+  type: v.exactOptional(CreatureTypeSchema), body: v.exactOptional(CreatureBodySchema),
+  temperament: v.exactOptional(CreatureTemperamentSchema), senses: v.exactOptional(CreatureSensesSchema),
+  abilities: v.exactOptional(abilities), presentation: v.exactOptional(CreaturePresentationSchema) });
 const parameter = v.union([finite, v.boolean(), text, v.pipe(v.array(finite), v.maxLength(16))]);
 const look = v.strictObject({ id, species: id, recipe: id, material: v.optional(v.nullable(id), null), parameters: v.record(id, parameter),
   animation: v.strictObject({ recipe: id, parameters: v.record(id, parameter) }) });
@@ -54,7 +61,7 @@ const raw: v.StrictObjectSchema<{ readonly strikes: v.SchemaWithPipe<readonly [v
 /** Pure author rows: numeric weights, state output tables, clocks and registered view/presentation recipes. */
 
 /** Reference, uniqueness and complete clock/weather transition rules for data rows. */
-export function rowRules(rows: ShardRows): string[] {
+function rowRules(rows: ShardRows): string[] {
   const errors: string[] = [];
   for (const list of Object.values(rows)) if (new Set(list.map((r) => r.id)).size !== list.length) errors.push('unique row ids');
   for (const row of rows.loot) if (row.economy !== undefined && !('kind' in row.economy)) errors.push(...lootEconomyRules(row.economy));
@@ -65,6 +72,16 @@ export function rowRules(rows: ShardRows): string[] {
   for (const d of rows.days) if (d.schedule[0]?.from !== 0 || d.schedule.at(-1)?.to !== 24 || d.schedule.some((s, i) => s.from >= s.to || (i > 0 && d.schedule[i - 1]?.to !== s.from))) errors.push('complete ordered day schedule');
   const speciesIds = new Set(rows.species.map((s) => s.id));
   for (const s of rows.species) if (new Set(s.variants.map((r) => r.id)).size !== s.variants.length || s.variants.some((r) => r.scale[1] > 10)) errors.push('species variants');
+  const strikeIds = new Set<string>();
+  for (const strikeRow of rows.strikes) { strikeIds.add(strikeRow.id); }
+  const lookIds = new Set<string>();
+  for (const lookRow of rows.looks) { lookIds.add(lookRow.id); }
+  for (const speciesRow of rows.species) {
+    for (const ability of speciesRow.abilities ?? []) {
+      if (!strikeIds.has(ability.use)) { errors.push(`Unknown creature ability: ${ability.use}`); }
+    }
+    if (speciesRow.body !== undefined && !lookIds.has(speciesRow.body.look)) { errors.push(`Unknown creature look: ${speciesRow.body.look}`); }
+  }
   for (const l of rows.looks) if (!speciesIds.has(l.species)) errors.push('look species');
   for (const c of rows.compendiums) {
     if ('kind' in c) { errors.push(...journalRowRules(c)); continue; }
@@ -73,14 +90,25 @@ export function rowRules(rows: ShardRows): string[] {
   }
   return errors;
 }
+function rowMessage(issue: Readonly<{ input: unknown }>): string {
+  const data = v.parse(raw, issue.input);
+  const reasons = rowRules(data);
+  return `row reference rules: ${reasons.join('; ')}`;
+}
 /** The independent JSON check runs before strict row schemas; functions/accessors/cycles never become data. */
-export const RowsSchema: v.SchemaWithPipe<readonly [v.UnknownSchema, v.CheckAction<unknown, 'JSON-only rows'>, typeof raw, v.CheckAction<ShardRows, 'row reference rules'>]> = v.pipe(v.unknown(), v.check(isJsonData, 'JSON-only rows'), raw, v.check((rows) => rowRules(rows).length === 0, 'row reference rules'));
+const RowsSchema: v.SchemaWithPipe<readonly [v.UnknownSchema, v.CheckAction<unknown, 'JSON-only rows'>, typeof raw, v.CheckAction<ShardRows, typeof rowMessage>]> = v.pipe(v.unknown(), v.check(isJsonData, 'JSON-only rows'), raw, v.check((rows) => rowRules(rows).length === 0, rowMessage));
 /** Validate rows at the author boundary, before JSON serialization can erase closures. */
-export function parseRows(input: unknown): ShardRows { return v.parse(RowsSchema, input); }
+function parseRows(input: unknown): ShardRows { return v.parse(RowsSchema, input); }
 
 /** Admitted author data independent of validator implementation metadata. */
-export type StrikeRowsInput = StrikeRows;
-export interface StrikeRows { id: string; shape: ({ kind: 'point'; radius: number; }) | ({ kind: 'sphere'; radius: number; }) | ({ kind: 'lane'; length: number; width: number; }) | ({ kind: 'arc'; radius: number; halfAngle: number; }) | ({ kind: 'wedge'; length: number; halfAngle: number; }) | ({ kind: 'ring'; inner: number; outer: number; }); windup: number; active: number; recover: number; cooldown: number; range: number; damage: number; tags: (`${string}.${string}`)[]; weight: number; speed: number; }
-export interface ShardRowsInput { strikes: (StrikeRowsInput)[]; weather: ({ id: string; states: ({ id: string; next: string; length: [number, number]; numbers: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; })[]; initial: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; soak: number; dry: number; modes: ({ id: string; hold: (string) | null; at: number; dry: boolean; })[]; })[]; days: ({ id: string; units: 'hour'; start: number; schedule: ({ phase: 'dawn' | 'day' | 'golden' | 'dusk' | 'night'; from: number; to: number; minutes: number; })[]; sun: { maxElevation: number; azimuthOffset: number; }; fixed: { midday: number; golden: number; sunset: number; night: number; }; presets: { dawn: number; noon: number; dusk: number; night: number; }; })[]; species: ({ id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; })[]; looks: ({ id: string; species: string; recipe: string; material?: (string) | null | undefined; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; animation: { recipe: string; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; }; })[]; compendiums: (({ id: string; className: string; title: string; tabs: ({ id: string; label: string; })[]; stamp: string; stats: ({ label: string; value: string; })[]; entries: ({ id: string; kind: 'species'; tab: string; name: string; notes: string; sketch: string; species: string; })[]; }) | (v.InferInput<typeof JournalRowSchema>))[]; loot: (({ id: string; gear: 'purse.coins'; finds: null; marks: null; charted: boolean; chime: string; economy?: v.InferInput<typeof LootEconomySchema>; }) | ({ id: string; economy: v.InferInput<typeof BarterEconomySchema>; }))[]; }
+type StrikeRowsInput = StrikeRows;
+interface StrikeRows { id: string; shape: ({ kind: 'point'; radius: number; }) | ({ kind: 'sphere'; radius: number; }) | ({ kind: 'lane'; length: number; width: number; }) | ({ kind: 'arc'; radius: number; halfAngle: number; }) | ({ kind: 'wedge'; length: number; halfAngle: number; }) | ({ kind: 'ring'; inner: number; outer: number; }); windup: number; active: number; recover: number; cooldown: number; range: number; damage: number; tags: (`${string}.${string}`)[]; weight: number; speed: number; }
+interface ShardRowsInput { strikes: (StrikeRowsInput)[]; weather: ({ id: string; states: ({ id: string; next: string; length: [number, number]; numbers: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; })[]; initial: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; soak: number; dry: number; modes: ({ id: string; hold: (string) | null; at: number; dry: boolean; })[]; })[]; days: ({ id: string; units: 'hour'; start: number; schedule: ({ phase: 'dawn' | 'day' | 'golden' | 'dusk' | 'night'; from: number; to: number; minutes: number; })[]; sun: { maxElevation: number; azimuthOffset: number; }; fixed: { midday: number; golden: number; sunset: number; night: number; }; presets: { dawn: number; noon: number; dusk: number; night: number; }; })[]; species: SpeciesRow[]; looks: ({ id: string; species: string; recipe: string; material?: (string) | null | undefined; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; animation: { recipe: string; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; }; })[]; compendiums: (({ id: string; className: string; title: string; tabs: ({ id: string; label: string; })[]; stamp: string; stats: ({ label: string; value: string; })[]; entries: ({ id: string; kind: 'species'; tab: string; name: string; notes: string; sketch: string; species: string; })[]; }) | (v.InferInput<typeof JournalRowSchema>))[]; loot: (({ id: string; gear: 'purse.coins'; finds: null; marks: null; charted: boolean; chime: string; economy?: v.InferInput<typeof LootEconomySchema>; }) | ({ id: string; economy: v.InferInput<typeof BarterEconomySchema>; }))[]; }
 // oxlint-disable-next-line typescript/consistent-type-definitions -- Object.values needs the original implicit dictionary contract for row validation.
-export type ShardRows = { strikes: (StrikeRows)[]; weather: ({ id: string; states: ({ id: string; next: string; length: [number, number]; numbers: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; })[]; initial: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; soak: number; dry: number; modes: ({ id: string; hold: (string) | null; at: number; dry: boolean; })[]; })[]; days: ({ id: string; units: 'hour'; start: number; schedule: ({ phase: 'dawn' | 'day' | 'golden' | 'dusk' | 'night'; from: number; to: number; minutes: number; })[]; sun: { maxElevation: number; azimuthOffset: number; }; fixed: { midday: number; golden: number; sunset: number; night: number; }; presets: { dawn: number; noon: number; dusk: number; night: number; }; })[]; species: ({ id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; })[]; looks: ({ id: string; species: string; recipe: string; material: (string) | null; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; animation: { recipe: string; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; }; })[]; compendiums: (({ id: string; className: string; title: string; tabs: ({ id: string; label: string; })[]; stamp: string; stats: ({ label: string; value: string; })[]; entries: ({ id: string; kind: 'species'; tab: string; name: string; notes: string; sketch: string; species: string; })[]; }) | (v.InferOutput<typeof JournalRowSchema>))[]; loot: (({ id: string; gear: 'purse.coins'; finds: null; marks: null; charted: boolean; chime: string; economy?: v.InferOutput<typeof LootEconomySchema>; }) | ({ id: string; economy: v.InferOutput<typeof BarterEconomySchema>; }))[]; };
+type ShardRows = { strikes: (StrikeRows)[]; weather: ({ id: string; states: ({ id: string; next: string; length: [number, number]; numbers: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; })[]; initial: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; soak: number; dry: number; modes: ({ id: string; hold: (string) | null; at: number; dry: boolean; })[]; })[]; days: ({ id: string; units: 'hour'; start: number; schedule: ({ phase: 'dawn' | 'day' | 'golden' | 'dusk' | 'night'; from: number; to: number; minutes: number; })[]; sun: { maxElevation: number; azimuthOffset: number; }; fixed: { midday: number; golden: number; sunset: number; night: number; }; presets: { dawn: number; noon: number; dusk: number; night: number; }; })[]; species: SpeciesRow[]; looks: ({ id: string; species: string; recipe: string; material: (string) | null; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; animation: { recipe: string; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; }; })[]; compendiums: (({ id: string; className: string; title: string; tabs: ({ id: string; label: string; })[]; stamp: string; stats: ({ label: string; value: string; })[]; entries: ({ id: string; kind: 'species'; tab: string; name: string; notes: string; sketch: string; species: string; })[]; }) | (v.InferOutput<typeof JournalRowSchema>))[]; loot: (({ id: string; gear: 'purse.coins'; finds: null; marks: null; charted: boolean; chime: string; economy?: v.InferOutput<typeof LootEconomySchema>; }) | ({ id: string; economy: v.InferOutput<typeof BarterEconomySchema>; }))[]; };
+
+/** A species keeps its old fields, with optional explicit creature layers. */
+interface SpeciesRow extends CreatureLayers { id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; }
+
+export { rowRules, RowsSchema, parseRows };
+export type { StrikeRowsInput, StrikeRows, ShardRowsInput, ShardRows, SpeciesRow };

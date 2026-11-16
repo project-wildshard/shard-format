@@ -45,7 +45,7 @@ test('row section entries, namespaced strike tags and dictionary iteration remai
   const broken = ts.createProgram([consumer], options, host), brokenFile = broken.getSourceFile(consumer);
   if (brokenFile === undefined) throw new Error('Missing invalid row-tag consumer');
   expect(broken.getSemanticDiagnostics(brokenFile).map(row => row.code)).toContain(2322);
-  const interfaceRows = readFileSync(defining, 'utf8').replace('export type ShardRows = {', 'export interface ShardRows {');
+  const interfaceRows = readFileSync(defining, 'utf8').replace('type ShardRows = {', 'interface ShardRows {');
   host.readFile = path => path === consumer ? source : path === defining ? interfaceRows : read(path);
   const dictionary = ts.createProgram([consumer], options, host), dictionaryFile = dictionary.getSourceFile(consumer);
   if (dictionaryFile === undefined) throw new Error('Missing interface-row consumer');
