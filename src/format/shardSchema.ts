@@ -363,7 +363,13 @@ export function shardfileRules(s: Shardfile): string[] {
   errors.push(...encounterRules(s.encounters, s.creatures.spawns.map((spawn) => spawn.id), s.ui.filter((row) => row.kind === 'bossPanel')));
   const controlled = new Set(s.encounters.map((row) => row.entity));
   errors.push(...groupBrainRules(s.creatures.groups, s.creatures.spawns, s.creatures.brains.map((row) => row.id), [...controlled]));
-  if (s.creatures.spawns.some((row) => (row.brain === null) !== controlled.has(row.id))) errors.push('exactly one declared creature controller');
+  if (s.creatures.spawns.some((row) => {
+    const brain = species.get(row.species)?.temperament?.brain;
+    const encounter = controlled.has(row.id), layered = brain !== undefined && brain !== 'none';
+    if (encounter) { return row.brain !== null || layered; }
+    if (row.brain === null) { return !layered; }
+    return layered && row.brain !== brain;
+  })) errors.push('exactly one declared creature controller');
   return [...new Set(errors)];
 }
 /** Strict schema for the public SDK format; rejects unknown fields and invalid references.
