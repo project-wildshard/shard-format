@@ -141,6 +141,16 @@ walking near the prompt does not raise it. A row without this optional field
 keeps its previous behavior. Engine implementation and the two-player proof
 remain TEMPLATE-E2E TC-E7; the schema alone does not close that row.
 
+A species may declare ordered `harvest` entries with `item`, positive integer
+`count`, and an optional list of `variants`. Omitting `variants` matches every
+admitted variant; an empty harvest list yields nothing. A declaration holds at
+most 64 entries and 64 total item units before selectors reduce delivery.
+Variant selectors must name that species' variants, including its older
+producer contract's spawn-only variants. Full shard admission also requires
+each item in `items.catalogue`. Both species contracts use the same
+`harvestRows` schema; producer content and engine consumption remain
+ONE-FORMAT OF31b2 and OF31b3.
+
 ## 2. `client/plan` kinds
 
 `client/plan` is `{ "version": 1, "features": [ … ] }`, at most 64 features. Each feature's `kind` picks one

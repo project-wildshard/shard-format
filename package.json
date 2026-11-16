@@ -396,7 +396,8 @@
     "./worldSceneWeld": "./src/format/worldSceneWeld.ts",
     "./worldScenes": "./src/format/worldScenes.ts",
     "./worldTargets": "./src/format/worldTargets.ts",
-    "./worldUpdates": "./src/format/worldUpdates.ts"
+    "./worldUpdates": "./src/format/worldUpdates.ts",
+    "./harvestRows": "./src/format/harvest-rows.ts"
   },
   "engines": {
     "node": ">=24.18.0"

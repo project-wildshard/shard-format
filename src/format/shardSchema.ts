@@ -1,3 +1,4 @@
+import { harvestSpeciesRules } from './harvest-rows.ts';
 import { AdmissionLateSchema, lateLibraryRootsValid } from './admissionLate.ts';
 import { ManifestMetadataSchema } from './minimap.ts';
 import { hasDeclaredClientPage } from './runtimeBinds.ts';
@@ -296,6 +297,8 @@ export function shardfileRules(s: Shardfile): string[] {
   errors.push(...nativeGroundRules(s), ...navigationRules(s));
   errors.push(...targetRules(s.targets, s, { panels: s.props?.panels ?? [], colliders: [...s.props?.colliders ?? [], ...s.meshCollision?.panels ?? []], models: s.props?.models ?? [] }));
   errors.push(...itemRules(s.items, s.sim.scripts));
+  const harvestItems = new Set((s.items.catalogue ?? []).map((row: Readonly<{ id: string }>): string => row.id));
+  errors.push(...harvestSpeciesRules(s.rows.species, harvestItems));
   if (s.migrations.some(step => step.equipmentSlots?.some(rename => !s.items.rows.some(row => row.kind === 'weapon' && row.slot === rename.to)))) errors.push('migration equipment slots resolve declared weapons');
   if ((s.items.runtimeContexts?.length ?? 0) > 0 && !pageOwner && s.runtime?.binds?.includes('items') !== true) errors.push('native input contexts require their declared page or runtime owner');
   if (s.items.rows.some((row) => row.kind === 'tool' && row.action === null) && s.runtime?.binds?.includes('items') !== true) errors.push('native tools require runtime.binds items');

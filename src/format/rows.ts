@@ -1,3 +1,5 @@
+import type { HarvestDrop } from './harvest-rows.ts';
+import { HarvestDropsSchema, harvestSpeciesRules } from './harvest-rows.ts';
 import { LootEconomySchema, BarterEconomySchema, lootEconomyRules } from './lootEconomy.ts';
 import * as v from 'valibot';
 import { isJsonData } from './json.ts';
@@ -41,7 +43,7 @@ const flight = v.strictObject({ altitude: v.pipe(finite, v.minValue(-250), v.max
   lockRange: v.exactOptional(v.pipe(positive, v.maxValue(600))), bank: v.exactOptional(v.pipe(finite, v.check(n => n > 0 && n < Math.PI / 2, 'flight bank between 0 and pi/2'))) });
 const MAX_ABILITIES = 32;
 const abilities = v.pipe(v.array(CreatureAbilitySchema), v.maxLength(MAX_ABILITIES));
-const species = v.strictObject({ id, kind: id, label: text, aggressive: v.boolean(), lockable: v.boolean(), dims, flight: v.exactOptional(flight),
+const species = v.strictObject({ id, kind: id, label: text, harvest: v.exactOptional(HarvestDropsSchema), aggressive: v.boolean(), lockable: v.boolean(), dims, flight: v.exactOptional(flight),
   variants: v.pipe(v.array(variant), v.minLength(1), v.maxLength(64)),
   type: v.exactOptional(CreatureTypeSchema), body: v.exactOptional(CreatureBodySchema),
   temperament: v.exactOptional(CreatureTemperamentSchema), senses: v.exactOptional(CreatureSensesSchema),
@@ -62,7 +64,7 @@ const raw: v.StrictObjectSchema<{ readonly strikes: v.SchemaWithPipe<readonly [v
 
 /** Reference, uniqueness and complete clock/weather transition rules for data rows. */
 function rowRules(rows: ShardRows): string[] {
-  const errors: string[] = [];
+  const errors: string[] = harvestSpeciesRules(rows.species);
   for (const list of Object.values(rows)) if (new Set(list.map((r) => r.id)).size !== list.length) errors.push('unique row ids');
   for (const row of rows.loot) if (row.economy !== undefined && !('kind' in row.economy)) errors.push(...lootEconomyRules(row.economy));
   for (const w of rows.weather) {
@@ -108,7 +110,7 @@ interface ShardRowsInput { strikes: (StrikeRowsInput)[]; weather: ({ id: string;
 type ShardRows = { strikes: (StrikeRows)[]; weather: ({ id: string; states: ({ id: string; next: string; length: [number, number]; numbers: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; })[]; initial: { overcast: number; rain: number; wet: number; wind: number; fog: number; }; soak: number; dry: number; modes: ({ id: string; hold: (string) | null; at: number; dry: boolean; })[]; })[]; days: ({ id: string; units: 'hour'; start: number; schedule: ({ phase: 'dawn' | 'day' | 'golden' | 'dusk' | 'night'; from: number; to: number; minutes: number; })[]; sun: { maxElevation: number; azimuthOffset: number; }; fixed: { midday: number; golden: number; sunset: number; night: number; }; presets: { dawn: number; noon: number; dusk: number; night: number; }; })[]; species: SpeciesRow[]; looks: ({ id: string; species: string; recipe: string; material: (string) | null; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; animation: { recipe: string; parameters: Record<string, (number) | (boolean) | (string) | ((number)[])>; }; })[]; compendiums: (({ id: string; className: string; title: string; tabs: ({ id: string; label: string; })[]; stamp: string; stats: ({ label: string; value: string; })[]; entries: ({ id: string; kind: 'species'; tab: string; name: string; notes: string; sketch: string; species: string; })[]; }) | (v.InferOutput<typeof JournalRowSchema>))[]; loot: (({ id: string; gear: 'purse.coins'; finds: null; marks: null; charted: boolean; chime: string; economy?: v.InferOutput<typeof LootEconomySchema>; }) | ({ id: string; economy: v.InferOutput<typeof BarterEconomySchema>; }))[]; };
 
 /** A species keeps its old fields, with optional explicit creature layers. */
-interface SpeciesRow extends CreatureLayers { id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; }
+interface SpeciesRow extends CreatureLayers { harvest?: HarvestDrop[]; id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; }
 
 export { rowRules, RowsSchema, parseRows };
 export type { StrikeRowsInput, StrikeRows, ShardRowsInput, ShardRows, SpeciesRow };
