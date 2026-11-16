@@ -37,4 +37,30 @@ and SDK expansion rows decide when a new build must spell out these layers.
 
 Import the types and field schemas from @wildshard/shard-format/creatureLayers.
 RowsSchema and parseRows validate the complete row set and its references.
-The skeleton contracts are CC1b; corpus compatibility and release are CC1c.
+Corpus compatibility and release are CC1c.
+
+## Skeleton contracts
+
+The creatureSkeletons export supplies CREATURE_SKELETONS and skeletonBones.
+Both skeletons have a body root and a head bone. The quadruped preserves
+the current gait names: neck1/neck2/head, tail, front L/R shoulder/carpus/
+fetlock chains, and back L/R hip/stifle/hock chains. Joint prefixes are FL,
+FR, BL and BR followed by an underscore. Optional ear and belly bones may
+remain on a body without becoming required by the contract.
+
+The biped's body root has a hips/spine/chest/neck/head chain. Upper arm,
+forearm and hand chains start at chest; thigh, shin and foot chains start
+at hips. Their side suffix is .L or .R. The root can be an identity node;
+the existing actor root contract remains available to both skeletons.
+
+Both expose head, mouth, chest and back sockets. The quadruped also has
+seat and tail; the biped has hand.L and hand.R. Lock targets the chest
+socket. Socket positions are offsets in their bone's local bind frame.
+Supported clip names are idle, walk, run, attack, hit and die.
+
+Default volumes are a body capsule and a head sphere, expressed in metres
+before size/scale and row overrides. The capsule radius is 0.35 and its
+half length is 0.5, along z for quadrupeds and y for bipeds. Head radius is
+0.3 with a damage multiplier of 2; the body multiplier is 1. CC6 applies
+these contracts to server volumes and enforces the minimum 0.3 hit radius.
+These are contracts only; this row adds no meshes or animation assets.
