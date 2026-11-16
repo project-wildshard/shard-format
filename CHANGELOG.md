@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.11.0 (2026-11-16)
+
+- Custom creatures can use their declared temperament when built.
+- Weapon contact effects retain strict validation without blocking native documents.
+
 ## v0.10.0 (2026-11-16)
 
 - A look can hang lanterns, signs and banners that swing: `look.light.swings` holds up to 32 of them.
