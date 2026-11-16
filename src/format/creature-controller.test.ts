@@ -119,8 +119,8 @@ test.each(['hunt', 'pursue'])(
   },
 )
 
-test('missing controllers refuse while an explicit named owner keeps its declaration', (): void => {
-  const { source, species, spawn } = fixture('none')
+test('missing controllers refuse while previously admitted named owners remain readable', (): void => {
+  const { source, species } = fixture('none')
   expect(shardfileRules(source)).toContain(
     'exactly one declared creature controller',
   )
@@ -128,6 +128,10 @@ test('missing controllers refuse while an explicit named owner keeps its declara
   expect(shardfileRules(source)).toContain(
     'exactly one declared creature controller',
   )
+})
+
+test('previously admitted named owners remain readable with a temperament', (): void => {
+  const { source, species, spawn } = fixture('hunt')
   species.temperament = {
     brain: 'fixture.named',
     reaction: 'neutral',
@@ -154,13 +158,15 @@ test('missing controllers refuse while an explicit named owner keeps its declara
   spawn.brain = 'fixture.named'
   expect(shardfileRules(source)).toEqual([])
   species.temperament.brain = 'hunt'
-  expect(shardfileRules(source)).toContain(
-    'exactly one declared creature controller',
+  expect(shardfileRules(source)).toEqual([])
+  expect(parseShardfile(source).creatures.spawns).toEqual(
+    source.creatures.spawns,
   )
 })
 
-test('encounters retain ownership and refuse a competing temperament', (): void => {
-  const { source, species, spawn } = fixture('hunt')
+function encounterFixture(): ReturnType<typeof fixture> {
+  const value = fixture('hunt')
+  const { source, spawn } = value
   source.encounters = parse(EncountersSchema, [
     {
       id: 'fixture.encounter',
@@ -187,12 +193,65 @@ test('encounters retain ownership and refuse a competing temperament', (): void 
       ],
     },
   ])
+  return value
+}
+
+test('previously admitted encounters remain readable with a temperament', (): void => {
+  const { source } = encounterFixture()
+  expect(shardfileRules(source)).toEqual([])
+  expect(parseShardfile(source).creatures.spawns).toEqual(
+    source.creatures.spawns,
+  )
+})
+
+test('an encounter still refuses a competing explicit spawn controller', (): void => {
+  const { source, spawn } = encounterFixture()
+  spawn.brain = 'fixture.missing'
   expect(shardfileRules(source)).toContain(
     'exactly one declared creature controller',
   )
-  if (species.temperament === undefined) {
-    throw new Error('Missing fixture temperament')
-  }
-  species.temperament.brain = 'none'
-  expect(shardfileRules(source)).toEqual([])
+})
+
+test.each(['none', 'hnut', 'fixture.missing', 'constructor'])(
+  'a null-brain spawn refuses unknown policy %s',
+  (brain): void => {
+    const { source } = fixture(brain)
+    expect(shardfileRules(source)).toContain(
+      'exactly one declared creature controller',
+    )
+    expect((): Shardfile => parseShardfile(source)).toThrow(
+      'shardfile semantic rules',
+    )
+  },
+)
+
+test('a temperament cannot pretend that a group owns a null-brain spawn', (): void => {
+  const { source } = fixture('fixture.herd')
+  source.creatures.groups = [
+    {
+      id: 'fixture.herd',
+      kind: 'herd',
+      members: ['fixture.actor'],
+      thinkDivisor: 6,
+      walkSpeed: 1,
+      trotSpeed: 3,
+      gallopSpeed: 7,
+      chargeSpeed: 6,
+      sightRadius: 30,
+      grazingSightRadius: 12,
+      coneAngle: 1,
+      hearing: [1, 2, 4, 8],
+      alertThreshold: 0.4,
+      flightMinDistance: 20,
+      flightMaxDistance: 35,
+      stallionVariant: 'buck',
+      foalPrefix: 'kid',
+      snortCue: 'bleat',
+      neighCue: 'bleat',
+      squealCue: 'bleat',
+    },
+  ]
+  expect(shardfileRules(source)).toContain(
+    'exactly one declared creature controller',
+  )
 })
