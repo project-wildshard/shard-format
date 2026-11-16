@@ -4,10 +4,19 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.6.0 (2026-11-16)
+
+- Creature authors can declare body, temperament, senses, ordered abilities
+  and presentation separately, using shared quadruped and biped contracts.
+- One creature look can name a complete variant skin table. Admission checks
+  every skin and refuses missing variants, dependencies or incompatible rigs.
+- A pinned inventory now prevents growth in the remaining format migration work.
+
 ## v0.5.11 (unreleased)
 
 - A fine tile now has a triangle budget for each tier: `TILE_TRIANGLES` is 40,000 on a phone (as before) and 400,000 on
   a desktop, where Mossgate's fullest tile holds 60 fps. `wildshard check` reports both; neither refuses a shard.
+
 
 ## v0.5.10 (2026-11-15)
 
