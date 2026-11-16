@@ -50,6 +50,19 @@ test('journal image declarations refuse active SVG, external URLs and mixed synt
   expect((): unknown => journal([{ icon: 'boar', image }])).toThrow()
 })
 
+test('image alpha may inherit sticker tint while arbitrary paints and legacy tint fields refuse', (): void => {
+  const row = journal([{ image, tint: 'currentColor' }])
+  const shard = outputFixture()
+  shard.rows.compendiums.push(row)
+  expect(parseShardfile(shard).rows.compendiums.at(-1)).toEqual(row)
+  for (const tint of ['red', 'url(external)', true, 42]) {
+    expect((): unknown => journal([{ image, tint }])).toThrow()
+  }
+  expect((): unknown =>
+    journal([{ icon: 'boar', tint: 'currentColor' }]),
+  ).toThrow()
+})
+
 test('raster icons use the charged image library', (): void => {
   const shard = outputFixture('handwritten')
   const picture = shard.files.find(

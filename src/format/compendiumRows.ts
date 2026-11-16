@@ -21,7 +21,7 @@ const stats = v.pipe(v.array(stat), v.maxLength(8));
 const iconSelectors = { entryKind: v.exactOptional(entryKind), matchKind: v.exactOptional(key) };
 const legacyIcon = v.strictObject({ ...iconSelectors, icon: v.picklist(['antlers', 'ghost', 'ironhide', 'deer', 'boar', 'elk', 'bear']) });
 const iconImage = v.pipe(text, v.check(sketchReference, 'bounded inert SVG data or admitted image hash'));
-const imageIcon = v.strictObject({ ...iconSelectors, image: iconImage });
+const imageIcon = v.strictObject({ ...iconSelectors, image: iconImage, tint: v.exactOptional(v.literal('currentColor')) });
 const icon = v.union([imageIcon, legacyIcon]);
 const cell = v.strictObject({ x: finite, y: finite, w: positive, h: positive });
 const trophy = v.strictObject({ entry: key, outline: key, mount: v.exactOptional(v.strictObject({ kind: key, variant: key })), title: text });
@@ -58,7 +58,7 @@ export function journalImageRefs(row: JournalRow): readonly string[] {
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 export type JournalRowInput = JournalRow;
-type JournalIcon = { entryKind?: 'species' | 'variant' | 'elite' | 'boss' | 'place'; matchKind?: string } & ({ image: string } | { icon: 'antlers' | 'ghost' | 'ironhide' | 'deer' | 'boar' | 'elk' | 'bear' });
+type JournalIcon = { entryKind?: 'species' | 'variant' | 'elite' | 'boss' | 'place'; matchKind?: string } & ({ image: string; tint?: 'currentColor' } | { icon: 'antlers' | 'ghost' | 'ironhide' | 'deer' | 'boar' | 'elk' | 'bear' });
 interface JournalRowFields {
     kind: 'journal';
     id: string;
