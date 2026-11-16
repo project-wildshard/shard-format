@@ -48,7 +48,8 @@ async function output(
 
 async function measure(): Promise<Baseline> {
   const [lint, formatted] = await Promise.all([
-    output('node_modules/.bin/oxlint', [
+    output('node', [
+      'kit/scripts/bin-tools.mjs',
       '-c',
       'src/.oxlintrc.json',
       '--type-aware',
@@ -56,7 +57,8 @@ async function measure(): Promise<Baseline> {
       'json',
       TARGET,
     ]),
-    output('node_modules/.bin/oxfmt', [
+    output('node_modules/.bin/npr', [
+      'oxfmt',
       '-c',
       'kit/.oxfmtrc.json',
       '--list-different',

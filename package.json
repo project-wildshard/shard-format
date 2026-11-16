@@ -407,12 +407,12 @@
   "packageManager": "pnpm@10.34.9",
   "scripts": {
     "pnpm:devPreinstall": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
-    "typecheck": "tsc -p kit/tsconfig.json && tsc -p src/format/tsconfig.json && tsc -p src/format/tsconfig.lib.json",
+    "typecheck": "npr tsc -p kit/tsconfig.json && npr tsc -p src/format/tsconfig.json && npr tsc -p src/format/tsconfig.lib.json",
     "lint": "node kit/scripts/lint.mjs --type-aware --deny-warnings --no-error-on-unmatched-pattern --ignore-pattern '.githooks/**' --ignore-pattern '.agents/**' --ignore-pattern 'scripts/agent-parity.mjs' --ignore-pattern 'scripts/agent-sync.mjs' --ignore-pattern 'scripts/scratch-dir*' --ignore-pattern 'scripts/scratch-sweep*' --ignore-pattern 'scripts/lane-live*' --ignore-pattern 'scripts/leftovers-report*' --ignore-pattern 'scripts/keep-copy*' --ignore-pattern 'scripts/disk-audit*' --ignore-pattern 'test/tooling/disk-land.test.mjs' --ignore-pattern 'test/tooling/land-fixture.mjs' --ignore-pattern 'test/tooling/owned-scratch.mjs' --ignore-pattern 'test/tooling/lane-live.test.mjs' --ignore-pattern 'test/tooling/keep-copy.test.mjs' --ignore-pattern 'test/tooling/leftovers-report.test.mjs' --ignore-pattern 'test/tooling/reap-report.test.mjs' --ignore-pattern 'tmp/**' --ignore-pattern 'src/format/**' --ignore-pattern 'scripts/chromium-keychain*' --ignore-pattern 'scripts/worktree-ignore*' --ignore-pattern 'scripts/land*' --ignore-pattern 'scripts/worktree.mjs' --ignore-pattern 'scripts/worktree-reap.mjs' --ignore-pattern 'scripts/pid-lock*' --ignore-pattern 'scripts/apfs-clone.mjs' --ignore-pattern 'scripts/assert-store-layout.mjs' --ignore-pattern 'test/tooling/worktree-guard.test.mjs' --ignore-pattern 'scripts/vite-tmp*' --ignore-pattern 'vitest.config.ts' --ignore-pattern 'test/tooling/chrome-keychain.test.mjs' --ignore-pattern 'packages/wire/frozen/**' --ignore-pattern 'packages/wire/lib/**'",
     "lint:fix": "node kit/scripts/lint.mjs --type-aware --fix --ignore-pattern '.githooks/**' --ignore-pattern '.agents/**' --ignore-pattern 'scripts/agent-parity.mjs' --ignore-pattern 'scripts/agent-sync.mjs' --ignore-pattern 'scripts/scratch-dir*' --ignore-pattern 'scripts/scratch-sweep*' --ignore-pattern 'scripts/lane-live*' --ignore-pattern 'scripts/leftovers-report*' --ignore-pattern 'scripts/keep-copy*' --ignore-pattern 'scripts/disk-audit*' --ignore-pattern 'test/tooling/disk-land.test.mjs' --ignore-pattern 'test/tooling/land-fixture.mjs' --ignore-pattern 'test/tooling/owned-scratch.mjs' --ignore-pattern 'test/tooling/lane-live.test.mjs' --ignore-pattern 'test/tooling/keep-copy.test.mjs' --ignore-pattern 'test/tooling/leftovers-report.test.mjs' --ignore-pattern 'test/tooling/reap-report.test.mjs' --ignore-pattern 'tmp/**' --ignore-pattern 'src/format/**'",
     "lint:format": "node src/tools/format-ratchet.ts",
-    "format": "oxfmt -c kit/.oxfmtrc.json kit src '!src/format/**' '!src/test/fixtures/**'",
-    "format:check": "oxfmt -c kit/.oxfmtrc.json --check kit src '!src/format/**' '!src/test/fixtures/**'",
+    "format": "npr oxfmt -c kit/.oxfmtrc.json kit src '!src/format/**' '!src/test/fixtures/**'",
+    "format:check": "npr oxfmt -c kit/.oxfmtrc.json --check kit src '!src/format/**' '!src/test/fixtures/**'",
     "test": "node --test 'src/!(format|ci)/**/*.test.ts'",
     "test:ci": "node --test 'src/ci/**/*.test.ts'",
     "test:format": "vitest run src/format --testTimeout=30000 --maxWorkers=2",
@@ -424,10 +424,11 @@
     "agents:sync": "node scripts/agent-sync.mjs",
     "md:wrap": "node kit/scripts/md-wrap.mjs",
     "test:hooks": "node --test '.githooks/*.test.mjs'",
-    "check": "pnpm typecheck && pnpm lint && pnpm lint:format && pnpm format:check && pnpm test && pnpm test:format && pnpm check:asks && pnpm check:agents && pnpm check:agent-sync && pnpm test:agent-hooks && pnpm check:parity && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs test/tooling/disk-land.test.mjs test/tooling/lane-live.test.mjs test/tooling/keep-copy.test.mjs test/tooling/leftovers-report.test.mjs test/tooling/reap-report.test.mjs && pnpm check:wire",
+    "check": "pnpm check:bin-pins && pnpm typecheck && pnpm lint && pnpm lint:format && pnpm format:check && pnpm test && pnpm test:format && pnpm check:asks && pnpm check:agents && pnpm check:agent-sync && pnpm test:agent-hooks && pnpm check:parity && node --check scripts/chromium-keychain-check.mjs && node --test test/tooling/chrome-keychain.test.mjs test/tooling/disk-land.test.mjs test/tooling/lane-live.test.mjs test/tooling/keep-copy.test.mjs test/tooling/leftovers-report.test.mjs test/tooling/reap-report.test.mjs && pnpm check:wire",
     "check:wire": "pnpm --dir packages/wire check && pnpm --dir packages/wire test && pnpm check:wire-proofs",
     "check:wire-proofs": "node --test src/scripts/wire/recordings-proof.mjs src/scripts/wire/graph-proof.mjs src/scripts/wire/prepared-frame-proof.mjs",
-    "bench": "pnpm --dir packages/wire bench"
+    "bench": "pnpm --dir packages/wire bench",
+    "check:bin-pins": "node kit/scripts/bin-pins.mjs"
   },
   "dependencies": {
     "meshoptimizer": "1.2.0",
@@ -438,13 +439,11 @@
     "@typescript/typescript6": "6.0.2",
     "binaryen": "132.0.0",
     "fflate": "0.8.3",
-    "oxfmt": "0.74.0",
     "oxlint": "1.89.0",
-    "oxlint-tsgolint": "7.0.2004",
     "playwright": "1.64.1",
-    "typescript": "7.0.2",
     "vite": "8.3.0",
-    "vitest": "5.0.1"
+    "vitest": "5.0.1",
+    "npm-bin-deps": "2.1.0"
   },
   "pnpm": {
     "ignoredOptionalDependencies": [
@@ -529,5 +528,11 @@
       "@typescript/typescript-win32-arm64",
       "@typescript/typescript-win32-x64"
     ]
-  }
+  },
+  "binDependencies": {
+    "typescript": "7.0.2",
+    "oxfmt": "0.74.0",
+    "oxlint-tsgolint": "7.0.2004"
+  },
+  "binDependenciesInstaller": "npm"
 }

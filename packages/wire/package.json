@@ -58,9 +58,9 @@
     "fixtures/*.json"
   ],
   "scripts": {
-    "check": "pnpm build && git diff --exit-code -- lib && test -z \"$(git ls-files --others --exclude-standard -- lib)\" && node --check bin.mjs && node --check src/version.mjs && tsc -p tsconfig.json && tsc -p tsconfig.build.json --noEmit && oxfmt -c ../../kit/.oxfmtrc.json --check bin.mjs src test cli bench/capture && node bin.mjs check --baseline && node bin.mjs check",
+    "check": "pnpm build && git diff --exit-code -- lib && test -z \"$(git ls-files --others --exclude-standard -- lib)\" && node --check bin.mjs && node --check src/version.mjs && npr tsc -p tsconfig.json && npr tsc -p tsconfig.build.json --noEmit && npr oxfmt -c ../../kit/.oxfmtrc.json --check bin.mjs src test cli bench/capture && node bin.mjs check --baseline && node bin.mjs check",
     "test": "node --test 'test/*.test.ts'",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npr tsc -p tsconfig.build.json",
     "bench": "node --expose-gc ../../src/scripts/wire/benchmark.mjs",
     "lock": "pnpm build && node bin.mjs lock"
   },

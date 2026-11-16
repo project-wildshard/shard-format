@@ -17,7 +17,7 @@ import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {existsSync, globSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, rmdirSync, statSync, writeFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-import {basename, dirname, join, relative, resolve} from 'node:path';
+import {basename, dirname, isAbsolute, join, relative, resolve} from 'node:path';
 import {after, before, describe, test} from 'node:test';
 import {WORKTREES, isWorktreePath} from '../../scripts/worktree-ignore.mjs';
 
@@ -48,9 +48,18 @@ const run = (command, args, extra = {}) => spawnSync(command, args, {cwd: ROOT, 
 /** The planted paths a tool's output names. @param {string} text */
 const seen = text => planted().filter(path => text.includes(path) || text.includes(join(ROOT, path)));
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
-/** A tool from node_modules/.bin, else from the repo's npm-bin-deps folder (NM8: `binDependenciesDir`, .bin-deps/). @param {string} name */
-const bin = name => [join(ROOT, 'node_modules/.bin', name), join(ROOT, pkg.binDependenciesDir ?? '.bin-deps', 'node_modules/.bin', name)]
-  .find(path => existsSync(path)) ?? join(ROOT, 'node_modules/.bin', name);
+/** Resolve external binary tools through npr's public command, not its private cache layout. @param {string} name */
+const bin = name => {
+  if (name === 'oxfmt' && pkg.binDependencies?.oxfmt !== undefined) {
+    const found = run(join(ROOT, 'node_modules/.bin/npr'), ['which', name]);
+    const path = found.stdout.trim();
+    assert.equal(found.status, 0, found.stderr);
+    assert.ok(isAbsolute(path) && !path.includes('\n') && existsSync(path), `npr did not resolve ${name}`);
+    return path;
+  }
+  return [join(ROOT, 'node_modules/.bin', name), join(ROOT, pkg.binDependenciesDir ?? '.bin-deps', 'node_modules/.bin', name)]
+    .find(path => existsSync(path)) ?? join(ROOT, 'node_modules/.bin', name);
+};
 const scripts = /** @type {Record<string, string>} */ (pkg.scripts ?? {});
 // The repo's worktree mode (J240): a repo that lands through plan worktrees carries the land tool, scripts/land.mjs.
 // One that also keeps its own, wider guard (engine: test/tooling/worktree-ignore.test.mjs) is guarded by that, not by
@@ -140,11 +149,13 @@ describe('a planted plan worktree is invisible to the parent checkout', {skip: o
     } finally { rmSync(dirname(index), {recursive: true, force: true}); }
   });
 
-  test('oxlint, with every lint config at the root and in kit/, reports nothing from it', () => {
+  test('oxlint, with every lint config at the root and in kit/, reports nothing from it', async () => {
+    const nativeEnv = pkg.binDependencies?.['oxlint-tsgolint'] === undefined ? env
+      : (await import('../../kit/scripts/bin-tools.mjs')).lintEnvironment(ROOT, env);
     const configs = [...rootFiles.filter(name => /^\.oxlintrc.*\.json$/u.test(name)), ...existsSync(join(ROOT, 'kit/.oxlintrc.json')) ? ['kit/.oxlintrc.json'] : []];
     assert.ok(configs.length > 0, 'no oxlint config');
     for (const config of configs) {
-      const lint = run(bin('oxlint'), ['-c', config, '-f', 'json', '.']);
+      const lint = run(bin('oxlint'), ['-c', config, '-f', 'json', '.'], nativeEnv);
       assert.equal(lint.error, undefined);
       const report = JSON.parse(lint.stdout.slice(lint.stdout.indexOf('{')));
       assert.ok(report.number_of_files > 0, `${config} linted no files: ${lint.stderr}`);

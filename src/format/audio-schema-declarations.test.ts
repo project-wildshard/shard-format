@@ -4,16 +4,14 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 // oxlint-disable-next-line import/no-nodejs-modules -- Resolve the repository compiler without a shell.
 import { resolve } from 'node:path';
-// oxlint-disable-next-line import/no-nodejs-modules -- Run the installed TypeScript CLI.
-import { execPath } from 'node:process';
 import { expect, test } from 'vitest';
 
 test('audio schemas emit isolated declarations that remain strictly checked and compact', () => {
   mkdirSync('tmp', { recursive: true });
   const root = mkdtempSync(resolve('tmp/audio-schema-declarations-'));
   const put = (file: string, text: string): void => { writeFileSync(resolve(root, file), text); };
-  const run = (config: string): ReturnType<typeof spawnSync> => spawnSync(execPath,
-    [resolve('node_modules/typescript/bin/tsc'), '-p', resolve(root, config)], { encoding: 'utf8', timeout: 10_000 });
+  const run = (config: string): ReturnType<typeof spawnSync> => spawnSync(resolve('node_modules/.bin/npr'),
+    ['tsc', '-p', resolve(root, config)], { encoding: 'utf8', timeout: 10_000 });
   const options = { strict: true, exactOptionalPropertyTypes: true, noUncheckedIndexedAccess: true, types: [],
     target: 'ES2022', module: 'ESNext', moduleResolution: 'bundler', allowImportingTsExtensions: true, skipLibCheck: false };
   try {

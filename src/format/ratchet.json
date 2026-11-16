@@ -202,7 +202,7 @@
    "eslint(max-statements)": 1,
    "typescript(explicit-function-return-type)": 2,
    "unicorn(import-style)": 1,
-   "unused-disable-directive": 4
+   "unused-disable-directive": 3
   },
   "src/format/audio.ts": {
    "eslint(id-length)": 15,
