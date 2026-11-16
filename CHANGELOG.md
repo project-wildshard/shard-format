@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.9.0 (2026-11-16)
+
+- Shards from the preceding additive format remain readable without rebuilding their signed files.
+
 ## v0.8.0 (2026-11-16)
 
 - Creatures can declare variant-selected harvest drops and an explicit exemption from the incoming damage cap.
