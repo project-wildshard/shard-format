@@ -11,12 +11,8 @@ docs/dev.md says.
 - One creature look can name a complete variant skin table. Admission checks
   every skin and refuses missing variants, dependencies or incompatible rigs.
 - A pinned inventory now prevents growth in the remaining format migration work.
-
-## v0.5.11 (unreleased)
-
 - A fine tile now has a triangle budget for each tier: `TILE_TRIANGLES` is 40,000 on a phone (as before) and 400,000 on
   a desktop, where Mossgate's fullest tile holds 60 fps. `wildshard check` reports both; neither refuses a shard.
-
 
 ## v0.5.10 (2026-11-15)
 
