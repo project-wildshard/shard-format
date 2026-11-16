@@ -5,6 +5,7 @@ import { SkinClipNameSchema } from './skinData.ts';
 import { ClientChannelsSchema, NumericPoseSchema } from './clientChannels.ts';
 import { RidingPresentationSchema } from './riding.ts';
 
+const lookMetadata = v.omit(SpeciesSchema, ['harvest']);
 const text=v.pipe(v.string(),v.minLength(1),v.maxLength(4096)),number=v.pipe(v.number(),v.finite()),rgb=v.tuple([number,number,number]);
 const fur = v.object({ texSeed: number, tex: v.object({ contrast: number, grizzle: number, normalStrength: number,
   bristle: number, strandLen: number, root: number }), roughness: number, sheen: number, sheenColor: rgb,
@@ -12,7 +13,7 @@ const fur = v.object({ texSeed: number, tex: v.object({ contrast: number, grizzl
 const variantLook = v.object({ tint: v.exactOptional(v.record(text, rgb)), traits: v.exactOptional(v.record(text, number)),
   fur: v.exactOptional(v.object({ rim: v.exactOptional(rgb), sheenColor: v.exactOptional(rgb), emissive: v.exactOptional(rgb), emissiveIntensity: v.exactOptional(number) })) });
 /** Immutable species fields and a hull-only rest body; each spawn receives an independent body. */
-export const HullSpeciesSchema: v.GenericSchema<HullSpeciesRowsInput, HullSpeciesRows> = v.object({ ...SpeciesSchema.entries, fur,
+export const HullSpeciesSchema: v.GenericSchema<HullSpeciesRowsInput, HullSpeciesRows> = v.object({ ...lookMetadata.entries, fur,
   variants: v.array(v.object({ ...SpeciesSchema.entries.variants.item.entries, ...variantLook.entries })),
   rigContract: v.object({ skeleton: text, clips: v.array(v.never()), sockets: v.array(text) }),
   pose: v.object({ grazeNeck: number, gallopTail: number }),
@@ -129,7 +130,7 @@ export const DirectedSpeciesSchema: v.GenericSchema<DirectedSpeciesRowsInput, Di
 });
 
 /** Admitted data contracts, independent of validator implementation metadata. */
-export type HullSpeciesRowsInput = Omit<v.InferInput<typeof SpeciesSchema>, keyof ({
+export type HullSpeciesRowsInput = Omit<v.InferInput<typeof SpeciesSchema>, 'harvest' | keyof ({
     fur: {
         texSeed: number;
         tex: {
@@ -368,7 +369,7 @@ export type HullSpeciesRowsInput = Omit<v.InferInput<typeof SpeciesSchema>, keyo
         };
     };
 };
-export type HullSpeciesRows = Omit<v.InferOutput<typeof SpeciesSchema>, keyof ({
+export type HullSpeciesRows = Omit<v.InferOutput<typeof SpeciesSchema>, 'harvest' | keyof ({
     fur: {
         texSeed: number;
         tex: {

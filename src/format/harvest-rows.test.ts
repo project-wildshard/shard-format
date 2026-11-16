@@ -1,12 +1,14 @@
 import { readFileSync } from 'node:fs'
 
-import { safeParse } from 'valibot'
+import { parse, safeParse } from 'valibot'
 import { expect, test } from 'vitest'
 
 import { HarvestDropsSchema } from './harvest-rows.ts'
 import { assembleOutputShardfile, parseOutputIndex } from './outputIndex.ts'
+import { parsePlatformDataSection } from './platformDataSections.ts'
 import { parseRows } from './rows.ts'
 import { parseShardfile, shardfileRules } from './shardSchema.ts'
+import { SpeciesLookBookSchema } from './speciesBookRows.ts'
 import { readSpecies, readSpeciesPrograms } from './speciesPrograms.ts'
 
 import type { SpeciesRow } from './rows.ts'
@@ -156,4 +158,74 @@ test('drop admission bounds total delivery, ids and selectors without callbacks'
   expect(
     safeParse(HarvestDropsSchema, [{ item: 'own.trophy', count: 64 }]).success,
   ).toBe(true)
+})
+
+test('the real hull-book section strips gameplay harvest declarations from look metadata', (): void => {
+  const rgb = [0.5, 0.5, 0.5]
+  const definition = {
+    id: creature.id,
+    kind: creature.kind,
+    label: creature.label,
+    variants: creature.variants,
+    harvest: [{ item: 'unregistered', count: 1, variants: ['absent'] }],
+    fur: {
+      texSeed: 1,
+      tex: {
+        contrast: 1,
+        grizzle: 1,
+        normalStrength: 1,
+        bristle: 1,
+        strandLen: 1,
+        root: 1,
+      },
+      roughness: 1,
+      sheen: 1,
+      sheenColor: rgb,
+      envMapIntensity: 1,
+      rim: rgb,
+      shellLen: 1,
+      shag: 1,
+    },
+    rigContract: { skeleton: 'fixture', clips: [], sockets: [] },
+    pose: { grazeNeck: 0, gallopTail: 0 },
+    body: {
+      bones: [],
+      furParts: [],
+      hardParts: [],
+      eyeParts: [],
+      dims: creature.dims,
+    },
+  }
+  const looked = parsePlatformDataSection('look/hull-book', {
+    slug: 'fixture',
+    definitions: { fixture: definition },
+    rows: [],
+  })
+  expect(Object.hasOwn(looked.definitions['fixture'] ?? {}, 'harvest')).toBe(
+    false,
+  )
+})
+
+test('build-only look metadata refuses gameplay harvest declarations', (): void => {
+  const metadata = {
+    id: creature.id,
+    kind: creature.kind,
+    label: creature.label,
+    variants: creature.variants,
+  }
+  const look = {
+    metadata,
+    id: 'fixture.look',
+    family: 'own',
+    rigContract: { skeleton: 'fixture', clips: [], sockets: [] },
+    variants: {},
+    material: { rim: 0, bands: 1 },
+  }
+  const valid = { slug: 'fixture', body: {}, rows: [look] }
+  expect(safeParse(SpeciesLookBookSchema, valid).success).toBe(true)
+  const wrong = {
+    ...valid,
+    rows: [{ ...look, metadata: { ...metadata, harvest: drops } }],
+  }
+  expect((): unknown => parse(SpeciesLookBookSchema, wrong)).toThrow('harvest')
 })
