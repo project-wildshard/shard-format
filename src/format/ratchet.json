@@ -3059,7 +3059,7 @@
   "src/format/props.ts": {
    "eslint(complexity)": 1,
    "eslint(curly)": 10,
-   "eslint(id-length)": 58,
+   "eslint(id-length)": 54,
    "eslint(max-statements)": 1,
    "eslint(no-bitwise)": 3,
    "eslint(no-magic-numbers)": 62,

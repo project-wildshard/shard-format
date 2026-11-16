@@ -27,6 +27,41 @@ function boxWithinCell(b: v.InferOutput<typeof boxData>): boolean {
 const box = v.pipe(boxData, v.check(boxWithinCell, 'collider within cell'));
 const treads = v.pipe(v.strictObject({ kind: v.literal('treads'), from: point, to: point, width: extent, count: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(256)), surface }), v.check((t) => Math.hypot(t.to.x - t.from.x, t.to.z - t.from.z) > 0 && t.to.y >= t.from.y && [t.from, t.to].every((p) => Math.abs(p.x) + t.width / 2 <= 250 && Math.abs(p.z) + t.width / 2 <= 250), 'bounded nondegenerate stair'));
 const collider = v.strictObject({ id, panel: v.nullable(id), initialActive: v.boolean(), shapes: v.pipe(v.array(v.variant('kind', [box, treads])), v.minLength(1), v.maxLength(256)) });
+const BODY_EXTENT_MIN = 0.005;
+const BODY_EXTENT_MAX = 8;
+const BODY_DENSITY_MIN = 1;
+const BODY_DENSITY_MAX = 20_000;
+const BODY_FRICTION_MAX = 2;
+const BODY_DAMPING_MAX = 10;
+const BODIES_MAX = 64;
+const BODY_LEAST = 0;
+const BODIES_LEAST = 1;
+const BODY_SHARE_MAX = 1;
+const halfExtent = v.pipe(finite, v.minValue(BODY_EXTENT_MIN), v.maxValue(BODY_EXTENT_MAX));
+const share = v.pipe(finite, v.minValue(BODY_LEAST), v.maxValue(BODY_SHARE_MAX));
+const friction = v.pipe(finite, v.minValue(BODY_LEAST), v.maxValue(BODY_FRICTION_MAX));
+const damping = v.pipe(finite, v.minValue(BODY_LEAST), v.maxValue(BODY_DAMPING_MAX));
+const density = v.pipe(finite, v.minValue(BODY_DENSITY_MIN), v.maxValue(BODY_DENSITY_MAX));
+const ballShape = v.strictObject({ ball: halfExtent });
+const cylinderShape = v.strictObject({ cylinder: v.strictObject({ radius: halfExtent, halfHeight: halfExtent }) });
+const cuboidShape = v.strictObject({ cuboid: v.strictObject({ x: halfExtent, y: halfExtent, z: halfExtent }) });
+const bodyShape = v.union([ballShape, cylinderShape, cuboidShape]);
+const bodyMaterial = v.picklist(['wood', 'stone', 'grass', 'sand', 'rock', 'metal', 'earth', 'felt']);
+/** SHARD-SOURCE SS9a: a touchable panel. The server keeps it as one Rapier dynamic body (its rest pose `at` and `yaw`,
+ * the shape's half extents in metres); players push it, and every page draws the panel at the body's pose. */
+const body = v.strictObject({ id, panel: id, at: point, yaw: finite, shape: bodyShape, material: bodyMaterial,
+  density: v.exactOptional(density), friction: v.exactOptional(friction), restitution: v.exactOptional(share),
+  linearDamping: v.exactOptional(damping), angularDamping: v.exactOptional(damping), keep: v.exactOptional(v.boolean()) });
+const bodies = v.pipe(v.array(body), v.minLength(BODIES_LEAST), v.maxLength(BODIES_MAX));
+/** Each body has its own id and names a declared panel that no other body and no static collider claims. */
+function bodiesAdmitted(section: { readonly bodies?: readonly { readonly id: string; readonly panel: string }[] | undefined; readonly panels: readonly { readonly id: string }[]; readonly colliders: readonly { readonly panel: string | null }[] }): boolean {
+  const declared = new Set(section.panels.map((panel): string => panel.id));
+  const claimed = new Set(section.colliders.map((solid): string | null => solid.panel));
+  const rows = section.bodies ?? [];
+  const ids = new Set(rows.map((row): string => row.id));
+  const owned = new Set(rows.map((row): string => row.panel));
+  return ids.size === rows.length && owned.size === rows.length && rows.every((row): boolean => declared.has(row.panel) && !claimed.has(row.panel));
+}
 /** Declared self-contained GLBs: merged tile meshes, EXT_mesh_gpu_instancing lists, far proxy and script-addressable panels. */
 export const PropsSchema: v.GenericSchema<PropsDataInput, PropsData> = v.pipe(v.unknown(), v.check(isJsonData, 'JSON-only props'), v.strictObject({ version: v.literal(1), family: id,
   materials: v.exactOptional(PropMaterialsSchema),
@@ -40,7 +75,8 @@ export const PropsSchema: v.GenericSchema<PropsDataInput, PropsData> = v.pipe(v.
   panels: v.pipe(v.array(v.strictObject({ id, file: ref, visible: v.optional(v.boolean(), true) })), v.maxLength(64)), models: v.pipe(v.array(named), v.maxLength(64)), far: v.nullable(ref),
   colliders: v.optional(v.pipe(v.array(collider), v.maxLength(1024)), []),
   textures: v.pipe(v.array(v.strictObject({ model: ref, colour: ref })), v.maxLength(256)),
-}), v.check((s) => new Set(s.tiles.map((t) => `${t.lod}/${t.x}/${t.z}`)).size === s.tiles.length && s.tiles.every((t) => t.x < (t.lod === 0 ? 8 : 4) && t.z < (t.lod === 0 ? 8 : 4)) && new Set([...s.panels, ...s.models].map((p) => p.id)).size === s.panels.length + s.models.length && new Set(s.textures.map((t) => t.model)).size === s.textures.length && new Set(s.colliders.map((c) => c.id)).size === s.colliders.length && s.colliders.reduce((n, c) => n + c.shapes.reduce((m, shape) => m + (shape.kind === 'treads' ? shape.count : 1), 0), 0) <= 2048 && s.colliders.every((c) => c.panel === null || s.panels.some((p) => p.id === c.panel)), 'unique props addresses and ids'));
+  bodies: v.exactOptional(bodies),
+}), v.check((s) => new Set(s.tiles.map((tile) => `${tile.lod}/${tile.x}/${tile.z}`)).size === s.tiles.length && s.tiles.every((tile) => tile.x < (tile.lod === 0 ? 8 : 4) && tile.z < (tile.lod === 0 ? 8 : 4)) && new Set([...s.panels, ...s.models].map((entry) => entry.id)).size === s.panels.length + s.models.length && new Set(s.textures.map((texture) => texture.model)).size === s.textures.length && new Set(s.colliders.map((solid) => solid.id)).size === s.colliders.length && s.colliders.reduce((sum, solid) => sum + solid.shapes.reduce((count, shape) => count + (shape.kind === 'treads' ? shape.count : 1), 0), 0) <= 2048 && s.colliders.every((solid) => solid.panel === null || s.panels.some((panel) => panel.id === solid.panel)), 'unique props addresses and ids'), v.check<PropsData, string>(bodiesAdmitted, 'touchable bodies have unique ids and each names its own panel, which no static collider claims'));
 /** Validated data for the props renderer; no callbacks, URLs or generator code enter this section. */
 export type ShardProps = v.InferOutput<typeof PropsSchema>;
 /** Check every render binding against ordinary admitted file, tile and library rows before allocating content. */
@@ -133,5 +169,23 @@ interface PropsDataFields {
         model: string;
         colour: string;
     })[];
+    bodies?: PropsBody[];
+}
+/** SS9a: a point, or a cuboid's half extents, in metres. */
+interface PropsBodyVector { x: number; y: number; z: number }
+/** SS9a: one touchable panel's body. */
+interface PropsBody {
+    id: string;
+    panel: string;
+    at: PropsBodyVector;
+    yaw: number;
+    shape: { ball: number } | { cylinder: { radius: number; halfHeight: number } } | { cuboid: PropsBodyVector };
+    material: 'wood' | 'stone' | 'grass' | 'sand' | 'rock' | 'metal' | 'earth' | 'felt';
+    density?: number;
+    friction?: number;
+    restitution?: number;
+    linearDamping?: number;
+    angularDamping?: number;
+    keep?: boolean;
 }
 export type PropsData = { [Key in keyof PropsDataFields]: PropsDataFields[Key] };
