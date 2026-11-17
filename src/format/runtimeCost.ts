@@ -2,14 +2,18 @@ import * as v from 'valibot';
 import { RUNTIME_RESIDENT_FACTOR } from './wireLimits.ts';
 
 const mb = v.pipe(v.number(), v.finite(), v.minValue(0));
+const FIRST_EPOCH = 1;
+const epochNumber = v.pipe(v.number(), v.integer(), v.minValue(FIRST_EPOCH));
 /** Reviewed trusted-runtime measurements, kept with their shard rather than presenting an empty data budget as its cost. */
-export const MemoryMeasurementSchema: v.StrictObjectSchema<{ readonly webContentMB: v.GenericSchema<MemoryMeasurementRowsInput['webContentMB'], MemoryMeasurementRows['webContentMB']>; readonly glMB: v.GenericSchema<MemoryMeasurementRowsInput['glMB'], MemoryMeasurementRows['glMB']>; readonly engineBaseMB: v.GenericSchema<MemoryMeasurementRowsInput['engineBaseMB'], MemoryMeasurementRows['engineBaseMB']>; readonly residentBaseMB: v.ExactOptionalSchema<v.GenericSchema<Exclude<MemoryMeasurementRowsInput['residentBaseMB'], undefined>, Exclude<MemoryMeasurementRows['residentBaseMB'], undefined>>, undefined>; readonly rev: v.GenericSchema<MemoryMeasurementRowsInput['rev'], MemoryMeasurementRows['rev']>; readonly device: v.GenericSchema<MemoryMeasurementRowsInput['device'], MemoryMeasurementRows['device']>; readonly evidence: v.GenericSchema<MemoryMeasurementRowsInput['evidence'], MemoryMeasurementRows['evidence']>; }, undefined> = v.strictObject({
+export const MemoryMeasurementSchema: v.StrictObjectSchema<{ readonly webContentMB: v.GenericSchema<MemoryMeasurementRowsInput['webContentMB'], MemoryMeasurementRows['webContentMB']>; readonly glMB: v.GenericSchema<MemoryMeasurementRowsInput['glMB'], MemoryMeasurementRows['glMB']>; readonly engineBaseMB: v.GenericSchema<MemoryMeasurementRowsInput['engineBaseMB'], MemoryMeasurementRows['engineBaseMB']>; readonly residentBaseMB: v.ExactOptionalSchema<v.GenericSchema<Exclude<MemoryMeasurementRowsInput['residentBaseMB'], undefined>, Exclude<MemoryMeasurementRows['residentBaseMB'], undefined>>, undefined>; readonly rev: v.GenericSchema<MemoryMeasurementRowsInput['rev'], MemoryMeasurementRows['rev']>; readonly device: v.GenericSchema<MemoryMeasurementRowsInput['device'], MemoryMeasurementRows['device']>; readonly evidence: v.GenericSchema<MemoryMeasurementRowsInput['evidence'], MemoryMeasurementRows['evidence']>; readonly epoch: v.ExactOptionalSchema<v.GenericSchema<Exclude<MemoryMeasurementRowsInput['epoch'], undefined>, Exclude<MemoryMeasurementRows['epoch'], undefined>>, undefined>; }, undefined> = v.strictObject({
   webContentMB: mb, glMB: mb, engineBaseMB: mb,
   /** Matched settled pre-entry resident set. When present, subtract it instead of the dated engine-only calibration. */
   residentBaseMB: v.exactOptional(mb),
   rev: v.pipe(v.string(), v.regex(/^[a-f0-9]{9,40}$/u)),
   device: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   evidence: v.pipe(v.string(), v.regex(/^progress\/memory\/[a-zA-Z0-9/_-]+\.json$/u)),
+  /** MEMORY-GATES MG5 (J408): the memory model the reading was taken against (memory-epoch.ts); absent reads as epoch 1. */
+  epoch: v.exactOptional(epochNumber),
 });
 /** The current runtime measurement may retain its separate images-first reading for cold phone texture selection. */
 export const RuntimeCostSchema: v.GenericSchema<RuntimeCostInput, RuntimeCost> = v.strictObject({ ...MemoryMeasurementSchema.entries, imagesFirst: v.optional(MemoryMeasurementSchema) });
@@ -58,6 +62,7 @@ interface MemoryMeasurementRowsFields {
     rev: string;
     device: string;
     evidence: string;
+    epoch?: number;
 }
 export type MemoryMeasurementRows = { [Key in keyof MemoryMeasurementRowsFields]: MemoryMeasurementRowsFields[Key] };
 export type RuntimeCostInput = Omit<MemoryMeasurementRowsInput, keyof ({
