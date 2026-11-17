@@ -26,3 +26,16 @@
   install global stays with the builders there. New characterization
   vectors pin them: three fixture grids (WSTR bytes from the SP4b
   fields) sampled through the engine's exports.
+- SP4d (opus-sdksplit3): `placeForest`, `placeForestSteps`, `canopyMapOf`,
+  `TreeGrid` and `treeGridOf` (`./forestPlacement`) and the `GrassField`
+  class (`./grassField`) moved with no three.js, level or installed
+  terrain: the caller hands a `ForestPlacementSource` (samplers, seed,
+  tree cap, forest spec) or the grass ports. Tints are linear rgb
+  triples from `hslToRgb`, three's `Color.setHSL` in the linear working
+  space. `forest-placement.golden.json` pins five forests over the SP4b
+  terrains (the plain draw, a species mix with every spacing, growth,
+  bare pads, a mask, an infill grove, the cap, treeless and forestless),
+  canopy maps, trunk queries, seven HSL triples and four meadows on 91
+  points, all from the engine's own code; bit-exact on the first run.
+  The engine's undergrowth pass (`placeUndergrowth`, `DecisionLog`) and
+  `decodeTreeRecords` have no callers, so they stay for SP5 to drop.

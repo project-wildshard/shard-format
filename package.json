@@ -23,6 +23,7 @@
     "src/format/seeded-rng.golden.json",
     "src/format/terrain-field.golden.json",
     "src/format/baked-terrain.golden.json",
+    "src/format/forest-placement.golden.json",
     "src/tools/runtime-hosts.json",
     "packages/wire/src/net-command.ts",
     "src/cli/*.ts",
@@ -410,6 +411,9 @@
     "./noise": "./src/format/noise.ts",
     "./terrainField": "./src/format/terrain-field.ts",
     "./terrain-field.golden.json": "./src/format/terrain-field.golden.json",
+    "./forestPlacement": "./src/format/forest-placement.ts",
+    "./grassField": "./src/format/grass-field.ts",
+    "./forest-placement.golden.json": "./src/format/forest-placement.golden.json",
     "./baked-terrain.golden.json": "./src/format/baked-terrain.golden.json"
   },
   "engines": {
