@@ -119,6 +119,34 @@ test.each(['hunt', 'pursue'])(
   },
 )
 
+test('spawn group membership preserves independent controllers through full admission', (): void => {
+  const { source, spawn } = fixture('hunt')
+  source.creatures.spawns = [
+    { ...spawn, group: 'fixture.pack' },
+    { ...spawn, id: 'fixture.ally', group: 'fixture.pack' },
+  ]
+  const admitted = parseShardfile(source)
+  const [first, second] = admitted.creatures.spawns
+  expect(first?.group).toBe('fixture.pack')
+  expect(second?.group).toBe('fixture.pack')
+  expect(admitted.creatures.groups).toEqual([])
+  expect(first?.brain).toBe(spawn.brain)
+  expect(second?.brain).toBe(spawn.brain)
+})
+
+test('spawn membership omission remains absent and malformed ids refuse', (): void => {
+  const { source, spawn } = fixture('hunt')
+  expect(parseShardfile(source).creatures.spawns[0]).toEqual(spawn)
+  expect(
+    Object.hasOwn(parseShardfile(source).creatures.spawns[0] ?? {}, 'group'),
+  ).toBe(false)
+  for (const group of ['', 'has space', 'x'.repeat(1025), 3, undefined]) {
+    expect((): void => {
+      parse(CreaturesSchema, { brains: [], spawns: [{ ...spawn, group }] })
+    }).toThrow()
+  }
+})
+
 test('missing controllers refuse while previously admitted named owners remain readable', (): void => {
   const { source, species } = fixture('none')
   expect(shardfileRules(source)).toContain(

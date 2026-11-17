@@ -1,7 +1,7 @@
 # Species layers
 
 > Written by: Codex
-> State: additive format contract, 2026-11-15; M1 release pending.
+> State: M1 contract released0.14; additive M2 membership candidate, 2026-11-17.
 
 A species keeps its id, kind label, variants and existing dimensions. These
 fields are optional additions. Parsing an older row does not add any layer.
@@ -22,6 +22,11 @@ existing complete hunt contract, preserving stalk tuning, or a bounded brain
 parameter object. Each object has at most 64 fields; values are finite numbers,
 booleans, sound/id strings, up to 32 scalar values, or one scalar object.
 The named engine brain validates the meaning of its own parameters.
+A spawn may name a bounded `group` id for social membership. It does not
+select a controller: each member keeps its own temperament brain. Pack
+assistance uses this group together with the row’s pack modifier and assist
+radius. Omission stays absent, including in older saved source JSON.
+
 The spawn supplies home position. The home object supplies return speed and
 the distance at which the creature has arrived; later engine rows implement
 healing and resetting on return.

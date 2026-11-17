@@ -33,6 +33,7 @@ test('the live strike-tag metadata path keeps template-string admission and exac
     export const authored: v.InferInput<typeof CreaturesSchema> = { brains: [], spawns: [] };
     export const root = v.strictObject({ creatures: v.optional(CreaturesSchema, { brains: [], groups: [], spawns: [] }) });
     export function defaulted(row: v.InferOutput<typeof root>): ShardCreatures { return row.creatures; }
+    export function group(row: ShardCreatures['spawns'][number]): string | undefined { return row.group; }
     export function units(row: CreatureStrikeRows): 'world' | 'actor' | undefined { return row.units; }`;
   const host = ts.createCompilerHost(options), read = host.readFile.bind(host), exists = host.fileExists.bind(host);
   host.fileExists = file => file === consumer || exists(file);
