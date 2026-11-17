@@ -1,4 +1,5 @@
 import { acceptsShardfileCost, textureLibrarySource } from './deviceMemoryCost.ts';
+import { creaturePerchAdmissionRows } from './creature-perch.ts';
 import { admitScriptContract, decisionModuleContracts, type ScriptAdmissionRows } from './scriptContract.ts';
 import type { TextureTranscodeSupport } from './contentBounds.ts';
 import { admitScript } from './scriptAdmission.ts';
@@ -89,7 +90,9 @@ interface AssetAdmission {
 function assetAdmission(input: unknown, memory: MemoryAdmission | undefined, scripts: ScriptAdmissionRows, sections?: ReadonlyMap<string, unknown>): AssetAdmission {
   preflightShardfile(input);
   const s = parseShardfile(input, sections), files = new Map(s.files.map((f) => [f.hash, f]));
-  const contracts = decisionModuleContracts(scripts, s.files);
+  const perchRows = creaturePerchAdmissionRows(s.creatures.perchBodies ?? [], scripts);
+  const combined = [...scripts, ...perchRows];
+  const contracts = decisionModuleContracts(combined, s.files);
   const legacyModules = new Set([...s.sim.scripts, ...s.clientScripts.bindings.map(row => row.module), ...s.movers.filter(row => row.execution !== 'native').map(row => row.module)]);
   if ([...contracts.keys()].some(hash => legacyModules.has(hash))) throw new Error('Decision module cannot also use a legacy script host');
   preflightAssetGraph(s);
@@ -115,7 +118,7 @@ function assetAdmission(input: unknown, memory: MemoryAdmission | undefined, scr
   const propMaterials = s.props?.materials;
   const propModels = new Set([...s.props?.tiles ?? [], ...s.props?.panels ?? [], ...s.props?.models ?? []].map(row => row.file));
   if (s.props?.far !== undefined && s.props.far !== null) propModels.add(s.props.far);
-  return { shard: s, files, contracts, declared, closure, sum, commons: 0, commonsCosts, admissions, propMaterials, propModels, scripts };
+  return { shard: s, files, contracts, declared, closure, sum, commons: 0, commonsCosts, admissions, propMaterials, propModels, scripts: combined };
 }
 
 /** The pinned commons: present, of their wire size and hash, and of their pinned costs. */

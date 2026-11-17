@@ -346,6 +346,9 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   if (s.terrain?.sampling !== undefined && s.meshCollision !== null) errors.push('terrain sampling and mesh ground are mutually exclusive');
   if (s.look.families.some((family) => !materialExists({}, family)) || (s.terrain !== null && s.terrain.form !== 'query' && !materialExists(s.look.materials, s.terrain.family)) || s.rows.looks.some((row) => row.material !== null && !materialExists(s.look.materials, row.material))) errors.push('declared platform material family');
   const species = new Map(s.rows.species.map((row) => [row.id, row])), strikes = new Map(s.rows.strikes.map((row) => [row.id, row]));
+  for (const row of s.creatures.perchBodies ?? []) {
+    if (!strikes.has(row.policy.strike) || !strikes.has(row.projectile.strike)) { errors.push('declared perch body strikes'); }
+  }
   for (const brain of s.creatures.brains) if (brain.kind === 'script' && (!s.sim.scripts.includes(brain.module) || brain.strikes.some((request) => !strikes.has(request.strike)))) errors.push('declared custom brain module and strikes');
   for (const declared of s.creatures.brains) {
     const brain = declared.kind === 'grazer' ? grazerPreset(declared) : declared.kind === 'diver' ? diverPreset(declared) : declared;

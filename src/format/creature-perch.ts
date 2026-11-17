@@ -265,3 +265,5 @@ export {
   type CreaturePerchBody,
   type CreaturePerchBodyInput,
 }
+
+export { creaturePerchAdmissionRows } from './creature-perch-admission.ts'
