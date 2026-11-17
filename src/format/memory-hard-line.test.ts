@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
-import { expect, test } from 'vitest'
+import { beforeAll, expect, test } from 'vitest'
 
 import { MEMORY_GATES } from './contentBounds.ts'
 import { MEMORY_HARD_BYTES, overHardLine } from './memory-line.ts'
@@ -13,11 +13,16 @@ import { MemoryAdmission } from './memoryAdmission.ts'
 import {
   offlineMemoryAdmission,
   performanceReport,
+  prepareAssetDecoders,
 } from './shardfile-assets.ts'
 import { validateShardfileFolder } from './shardfileValidation.ts'
 
 import type { MemoryAdmissionRequest } from './memoryAdmission.ts'
 import type { Shardfile } from './shardSchema.ts'
+
+beforeAll(async (): Promise<void> => {
+  await prepareAssetDecoders()
+})
 
 const CORPUS = new URL('../../corpus/handwritten/', import.meta.url).pathname
 const unmeasured = {
