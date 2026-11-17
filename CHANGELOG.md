@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.13.0 (2026-11-16)
+
+- Explicit weapon contact effects can name creatures declared in the shard’s species program.
+
 ## v0.12.0 (2026-11-16)
 
 - A shard can make up to 64 of its panels touchable with `props.bodies`: a crate or barrel players push.
