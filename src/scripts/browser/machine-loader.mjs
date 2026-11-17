@@ -7,9 +7,9 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
 const MAX_BYTES=4096,READ_BYTES=4097,START=0,PRIVATE_MODE_BASE=0o100,SCHEMA_VERSION=1;
-/** @typedef {import('./browser-machine-loader.d.mts').BrowserPolicyRecord} BrowserPolicyRecord */
-/** @typedef {import('./browser-machine-loader.d.mts').BrowserMachineOptions} BrowserMachineOptions */
-/** @typedef {import('./browser-machine-loader.d.mts').BrowserMachineProvider} BrowserMachineProvider */
+/** @typedef {import('./machine-loader.d.mts').BrowserPolicyRecord} BrowserPolicyRecord */
+/** @typedef {import('./machine-loader.d.mts').BrowserMachineOptions} BrowserMachineOptions */
+/** @typedef {import('./machine-loader.d.mts').BrowserMachineProvider} BrowserMachineProvider */
 
 /** @param {string} filename */
 async function policyOpen(filename){

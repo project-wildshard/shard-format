@@ -1,5 +1,6 @@
 {
   "extends": "./kit/tsconfig.json",
   "compilerOptions": {"allowJs": true, "checkJs": true},
+  "exclude": [],
   "include": ["src/scripts/browser/*.mjs", "src/scripts/browser/*.d.mts"]
 }

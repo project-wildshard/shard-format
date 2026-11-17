@@ -15,3 +15,8 @@ Format's private Node benchmarks keep their bridge beside the existing
 now checks the bridge in a dedicated Node project; the common 12 private
 policy controls run against that exact module. Existing lint policy for
 plain Node scripts stays intact. No SDK dependency or library graph added.
+
+Review correction: remove inherited exclusions from the private tools
+project and resolve the renamed loader declaration. The exact local
+loader now runs its own twelve policy controls. Both this checked-source
+project and the normal typecheck pass; the source is genuinely included.
