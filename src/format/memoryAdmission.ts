@@ -33,9 +33,9 @@ export class MemoryAdmission {
   private readonly warnings = new Map<string, MemoryAdmissionWarning>();
   private readonly listeners = new Set<() => void>();
   private readonly developer: () => boolean;
-  private readonly hardPlayingBytes: number;
-  /** `hardPlayingBytes` (J408): a playing estimate over it refuses even under a Developer or report-only override. */
-  constructor(developer: () => boolean = () => false, hardPlayingBytes: number = Number.POSITIVE_INFINITY) { this.developer = developer; this.hardPlayingBytes = hardPlayingBytes; }
+  private readonly hardBytes: number;
+  /** `hardBytes` (J408): applies to playing and loading even with an override. */
+  constructor(developer: () => boolean = () => false, hardBytes: number = Number.POSITIVE_INFINITY) { this.developer = developer; this.hardBytes = hardBytes; }
 
   /** True for an in-envelope request or a Developer override. False means the caller retains its original refusal path. */
   accept(request: MemoryAdmissionRequest): boolean {
@@ -44,8 +44,9 @@ export class MemoryAdmission {
       || ![playingCap, loadingCap].every(value => Number.isFinite(value) && value > 0)) throw new RangeError('Invalid memory admission report');
     const key = `${request.stage}:${request.owner}`;
     const playingOverBytes = Math.max(0, request.playingBytes - playingCap), loadingOverBytes = Math.max(0, request.loadingBytes - loadingCap);
-    if (playingOverBytes === 0 && loadingOverBytes === 0 && request.playingBytes <= this.hardPlayingBytes) { if (this.warnings.delete(key)) this.notify(); return true; }
-    if (request.playingBytes > this.hardPlayingBytes || !this.developer()) return false;
+    if (Math.max(request.playingBytes, request.loadingBytes) > this.hardBytes) { return false; }
+    if (playingOverBytes === 0 && loadingOverBytes === 0) { if (this.warnings.delete(key)) this.notify(); return true; }
+    if (!this.developer()) return false;
     const warning = Object.freeze({ ...request, playingCap, loadingCap, playingOverBytes, loadingOverBytes,
       ...(request.categories === undefined ? {} : { categories: Object.freeze({ ...request.categories }) }),
       ...(request.measured === undefined ? {} : { measured: Object.freeze({ ...request.measured }) }),

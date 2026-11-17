@@ -14,7 +14,7 @@ export function acceptsShardfileCost(memory: MemoryAdmission | undefined, source
 
 /** Reapply the current trusted memory policy to a previously validated exact declaration. */
 export function acceptValidatedCost(source: Shardfile, cost: ReturnType<typeof worstContentCost>, memory?: MemoryAdmission): void {
-  if (!acceptsShardfileCost(memory, source, 'declared', cost)) throw new Error(`declared worst-location total exceeds envelope: ${cost.playing}${overHardLine(cost.playing)}`);
+  if (!acceptsShardfileCost(memory, source, 'declared', cost)) throw new Error(`declared worst-location total exceeds envelope: play ${cost.playing}, load ${cost.loading}${overHardLine(Math.max(cost.playing, cost.loading))}`);
 }
 
 /** Device cost projection after byte admission; source ceilings retain their full RGBA fallback. A KTX2 file's declared

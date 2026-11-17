@@ -26,3 +26,8 @@ shader compile, load transients, far slabs and paint arrays, and from then
 an older reading refuses whatever the policy until the home re-measures.
 Refusing every first-party home now would stop Driftwood and Nalati,
 which are under the line.
+
+Codex relay, MG4 and MG5. Loading-only estimates over 1.5 GB now refuse
+under both report policies and in offline admission. Folder and stream
+validation also count measured runtime residency in the offline verdict
+and check its epoch. The loading-only cases failed before the fix.

@@ -20,6 +20,8 @@ import { assertScriptSides } from './script-sides.ts';
 import { shardfileRecordings } from './shardfile-audio.ts';
 import type { RecordingMeasure } from './audio-measure.ts';
 import { issueError, withIssueCode as coded } from './issue-codes.ts';
+import { staleRuntimeIssues } from './memory-epoch.ts';
+import { offlineRuntimeMemoryIssues } from './memory-line.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -107,7 +109,7 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
 
 /** Refuse the declared targets a policy treats as refusals, before any byte is read or executed. */
 export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse'): void {
-  const issues = performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal');
+  const issues = [...staleRuntimeIssues(source.runtime), ...offlineRuntimeMemoryIssues(source), ...performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal')];
   if (issues.length === 0) return;
   throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
 }

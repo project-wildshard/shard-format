@@ -112,10 +112,36 @@ test.runIf(MEMORY_GATES.reportOnly)(
   },
 )
 
+test.each(['warn', 'refuse'] as const)(
+  'MG4: loading alone over the phone line refuses under %s',
+  (policy): void => {
+    const report = performanceReport(
+      heavy(corpus(), 1.47e9),
+      unmeasured,
+      policy,
+    )
+    expect(report.memory.worst.playing).toBeLessThan(MEMORY_HARD_BYTES)
+    expect(report.memory.worst.loading).toBeGreaterThan(MEMORY_HARD_BYTES)
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        code: 'perf-loading-memory',
+        severity: 'refusal',
+        limit: MEMORY_HARD_BYTES,
+      }),
+    )
+    expect(
+      offlineMemoryAdmission(policy).accept({
+        ...request(report.memory.worst.playing),
+        loadingBytes: report.memory.worst.loading,
+      }),
+    ).toBe(false)
+  },
+)
+
 test('MG4: the offline admission accepts over the 1.2 GB cap but refuses over the hard line, Developer or not', (): void => {
   const offline = offlineMemoryAdmission('warn')
-  expect(offline?.accept(request(1.3e9))).toBe(true)
-  expect(offline?.accept(request(1.6e9))).toBe(false)
+  expect(offline.accept(request(1.3e9))).toBe(true)
+  expect(offline.accept(request(1.6e9))).toBe(false)
   expect(
     new MemoryAdmission((): boolean => true, MEMORY_HARD_BYTES).accept(
       request(1.6e9),
