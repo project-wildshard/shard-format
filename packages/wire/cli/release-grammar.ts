@@ -7,13 +7,11 @@ import { isRecord } from './release-entries.ts'
 
 import type { LockRecord, ReleaseLock } from './release-entries.ts'
 
-/** What only a major may change: a peer can't read past them (5.5). */
-const MAJOR_KEYS = [
-  'version',
-  'maxRowFields',
-  'tableLimits',
-  'v0SchemaHash',
-] as const
+/** What only a major may change: a peer can't read past them (5.5).
+ *  `v0SchemaHash` is not one (WR8a): it hashes today's classes in v0 text, so
+ *  every appended field moves it, and no v0 peer gets past the bootstrap byte;
+ *  `check --baseline` holds the frozen v0 lock on its own. */
+const MAJOR_KEYS = ['version', 'maxRowFields', 'tableLimits'] as const
 
 /** Record a node's kind, if it has one, with the keys it carries. */
 function addKind(out: Map<string, Set<string>>, value: LockRecord): void {

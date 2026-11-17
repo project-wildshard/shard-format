@@ -38,6 +38,10 @@ const WINDOW_SECONDS = 1_209_600
 const NESTED = new Set(['fields', 'arms', 'node', 'values'])
 /** Keys with their own rules: history. */
 const HISTORY = new Set(['since', 'deprecated'])
+/** Keys counted from an entry's children, never its form: a class's row
+ *  field count rises with every appended row field (WR8a); the 32-field cap
+ *  is validate.ts's, and each field keeps its own rules. */
+const DERIVED = new Set(['rowFields'])
 
 const isRecord = (value: unknown): value is LockRecord =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -61,6 +65,7 @@ function changedKeys(old: LockRecord, next: LockRecord): readonly string[] {
     (key: string): boolean =>
       !NESTED.has(key) &&
       !HISTORY.has(key) &&
+      !DERIVED.has(key) &&
       JSON.stringify(old[key]) !== JSON.stringify(next[key]),
   )
 }

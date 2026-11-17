@@ -43,6 +43,44 @@ test('an append with a minor bump passes', (): void => {
   assert.deepEqual(releaseProblems(released(), next), [])
 })
 
+// WR8a (opus-wr8, 2026-11-17): MP1.5a's real lock moved `player.rowFields`
+// and `v0SchemaHash` with its two appended row fields, and both read as a
+// retype and a major. Both are derived from the classes; the fixture above
+// left them stale, so it passed while every real append failed.
+test('an appended row field passes with the lock regenerated', (): void => {
+  const next = copy()
+  next.wireMinor = 1
+  const player = classNamed(next, 'player')
+  fieldsOf(player).push({
+    id: 99,
+    name: 'roadX',
+    node: { kind: 'uint', bits: 16 },
+    default: 0,
+    since: 1,
+    send: 'others',
+    predicted: false,
+    required: false,
+  })
+  player['rowFields'] = Number(player['rowFields']) + 1
+  next['v0SchemaHash'] = Number(next['v0SchemaHash']) + 1
+  assert.deepEqual(releaseProblems(released(), next), [])
+})
+
+test('a released row field retyped still fails beside a regenerated count', (): void => {
+  const next = copy()
+  next.wireMinor = 1
+  const player = classNamed(next, 'player')
+  const [first] = fieldsOf(player)
+  if (first !== undefined) {
+    first['send'] = 'owner'
+  }
+  player['rowFields'] = Number(player['rowFields']) + 1
+  assert.match(
+    releaseProblems(released(), next).join('\n'),
+    /changed send: a released id is retyped/u,
+  )
+})
+
 test('an append without a minor bump fails', (): void => {
   const next = copy()
   list(next, 'events').push({ id: 99, name: 'aurora', fields: [], since: 0 })

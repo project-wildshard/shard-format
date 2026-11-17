@@ -9,6 +9,10 @@ const WINDOW_SECONDS = 1_209_600;
 const NESTED = new Set(['fields', 'arms', 'node', 'values']);
 /** Keys with their own rules: history. */
 const HISTORY = new Set(['since', 'deprecated']);
+/** Keys counted from an entry's children, never its form: a class's row
+ *  field count rises with every appended row field (WR8a); the 32-field cap
+ *  is validate.ts's, and each field keeps its own rules. */
+const DERIVED = new Set(['rowFields']);
 const isRecord = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
 const isEntry = (value) => isRecord(value) &&
     typeof value['id'] === 'number' &&
@@ -24,6 +28,7 @@ function changedKeys(old, next) {
     const keys = new Set([...Object.keys(old), ...Object.keys(next)]);
     return [...keys].filter((key) => !NESTED.has(key) &&
         !HISTORY.has(key) &&
+        !DERIVED.has(key) &&
         JSON.stringify(old[key]) !== JSON.stringify(next[key]));
 }
 /** The entries a struct or union holds (its fields, or its arms), and its node. */
