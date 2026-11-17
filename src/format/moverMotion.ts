@@ -39,6 +39,10 @@ const STEER_BOOST_MIN = 1;
 const STEER_LEAST = 0.005;
 const STEER_SPEED_MAX = 60;
 const STEER_TURN_MAX = Math.PI + Math.PI;
+const STEER_PUSH_LEAST = 0;
+const STEER_PUSH_MAX = 20;
+/** SS-MS2a2: the look's wind on a sail, the ground direction it blows toward ([x, z], any length above 0) and the m/s a full sail adds straight downwind. */
+const steerWind = v.strictObject({ toward: v.pipe(v.tuple([finite, finite]), v.someItem((axis: number): boolean => axis !== STEER_PUSH_LEAST, 'a wind push needs a direction')), push: bounded(STEER_PUSH_LEAST, STEER_PUSH_MAX) });
 /** Numeric fixed policies compiled to the session's existing fenced guest driver. */
 export const MoverDriverSchema: v.GenericSchema<MoverDriverRowsInput, MoverDriverRows> = v.variant('kind', [
   v.strictObject({ kind: v.literal('waves'), damping: bounded(0, 1), waves: v.tuple([wave, wave, wave, wave]) }),
@@ -49,8 +53,8 @@ export const MoverDriverSchema: v.GenericSchema<MoverDriverRowsInput, MoverDrive
   v.strictObject({ kind: v.literal('track') }),
   v.strictObject({ kind: v.literal('pendulum'), axis: v.picklist(['x', 'y', 'z']), amplitude: bounded(0, Math.PI), period: bounded(0.005, 3600) }),
   // SS-MS2a1: a vehicle its rider steers. Top speed (m/s), turn rate (rad/s), the boost multiplier, acceleration (m/s²),
-  // and whether it follows the ground under it or keeps its rest height. Board and leave are its carry's prompts.
-  v.strictObject({ kind: v.literal('steer'), speed: bounded(STEER_LEAST, STEER_SPEED_MAX), turn: bounded(STEER_LEAST, STEER_TURN_MAX), boost: bounded(STEER_BOOST_MIN, STEER_BOOST_MAX), accel: bounded(STEER_LEAST, STEER_ACCEL_MAX), ground: v.boolean() }),
+  // and whether it follows the ground under it or keeps its rest height. Board and leave are its carry's prompts; a wind push (SS-MS2a2) is optional.
+  v.strictObject({ kind: v.literal('steer'), speed: bounded(STEER_LEAST, STEER_SPEED_MAX), turn: bounded(STEER_LEAST, STEER_TURN_MAX), boost: bounded(STEER_BOOST_MIN, STEER_BOOST_MAX), accel: bounded(STEER_LEAST, STEER_ACCEL_MAX), ground: v.boolean(), wind: v.exactOptional(steerWind) }),
 ]);
 /** Stop track, activation and fixed driver before ABI lowering. */
 export const MoverMotionSchema: v.GenericSchema<MoverMotionRowsInput, MoverMotionRows> = v.strictObject({
@@ -99,7 +103,8 @@ export function lowerMoverMotion(input: unknown, rest: { at: { x: number; y: num
   }
   if (driver.kind === 'steer') {
     if (trigger.kind !== 'interact' || Boolean(trigger.permission) || track !== undefined) { throw new Error('Steer driver requires an ungated board press without a clip'); }
-    return { module: MOVER_DRIVER_MODULES.steer, input: [driver.speed, driver.turn, driver.boost, driver.accel, Number(driver.ground), rest.at.x, rest.at.y, rest.at.z, rest.euler.y] };
+    const { wind } = driver, push = wind === undefined ? [] : [...wind.toward.map((axis: number): number => axis / Math.hypot(...wind.toward)), wind.push];
+    return { module: MOVER_DRIVER_MODULES.steer, input: [driver.speed, driver.turn, driver.boost, driver.accel, Number(driver.ground), rest.at.x, rest.at.y, rest.at.z, rest.euler.y, ...push] };
   }
   if (driver.kind === 'static') {
     if (trigger.kind !== 'always' || track !== undefined) throw new Error('Static mover cannot consume a clip or interaction');
@@ -220,6 +225,7 @@ export type MoverDriverRows = ({
     boost: number;
     accel: number;
     ground: boolean;
+    wind?: { toward: [number, number]; push: number };
 });
 interface MoverMotionRowsInputFields {
     track?: MoverTrackRowsInput;

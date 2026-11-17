@@ -123,3 +123,28 @@ test('steer numbers are bounded: top speed, turn rate, boost and acceleration', 
     ).toThrow()
   }
 })
+
+// SHARD-SOURCE SS-MS2a2: a steer driver may carry a wind push, the look's wind direction and the m/s it adds at full sail.
+test('a steer driver lowers its wind push after its rest pose, the direction unit length', (): void => {
+  const wind = { toward: [3, -4], push: 2.5 }
+  expect(
+    lowerMoverMotion({ trigger, driver: { ...steer, wind } }, { at, euler })
+      .input,
+  ).toEqual([9, 1.2, 1.6, 4, 1, 4, 0.5, -6, 0.25, 0.6, -0.8, 2.5])
+  const [parsed] = parseMovers([row({ ...steer, wind })])
+  expect(parsed?.driver).toEqual({ ...steer, wind })
+})
+
+test('a wind push needs a direction and a push from 0 to 20 m/s', (): void => {
+  for (const wind of [
+    { toward: [0, 0], push: 1 },
+    { toward: [1, 0], push: -1 },
+    { toward: [1, 0], push: 21 },
+    { toward: [1, 0] },
+    { toward: [1, 0], push: 1, extra: 1 },
+  ]) {
+    expect((): unknown =>
+      lowerMoverMotion({ trigger, driver: { ...steer, wind } }, { at, euler }),
+    ).toThrow()
+  }
+})

@@ -1535,6 +1535,11 @@ turn rate up to 2π rad/s, a boost multiplier 1–4, acceleration up to 100 m/s�
 and whether it follows the ground): its rider's stick and boost move it instead
 of a fixed path, boarding is an ungated interact press, and it has no clip. Its
 identity is `MOVER_DRIVER_MODULES.steer`, which no guest module carries.
+An optional `wind` (`{toward: [x, z], push}`, SS-MS2a2) pushes the vehicle along
+its heading: `toward` is the ground direction the wind blows to (any non-zero length, lowered to unit
+length) and `push` the m/s (0–20) it adds straight downwind, scaled by the
+cosine to the heading, so the same stick goes further downwind than up. It
+lowers after the rest pose as three more input numbers.
 
 The executable helper `proveSocketLift(entry, {physics, runtime, fixedStep,
 waterAt?, approachSource?})` uses the admitted `MoverRuntime` and the engine's real capsule motor.
