@@ -2,6 +2,7 @@ import { CONTENT_CAPS as C } from './contentBounds.ts';
 import { contentCost } from './contentCost.ts';
 import type { Shardfile } from './shardSchema.ts';
 import { NEAR_PLACEHOLDER_LIMITS, nearPlaceholderCost } from './nearPlaceholder.ts';
+import type { BootMemoryCosts } from './boot-memory-cost.ts';
 
 /** Category resident targets are tradeable warnings; only the complete playing/loading totals refuse memory. */
 export function memoryTargetWarnings(shard: Shardfile): { category: string; bytes: number; target: number }[] {
@@ -59,7 +60,12 @@ interface LocationModel {
   cost: (x: number, z: number) => LocationCost;
 }
 
-function locationModels(shard: Shardfile, commons: number): LocationModel[] {
+interface BudgetOptions { readonly commons: number; readonly boot: BootMemoryCosts }
+const NO_BYTES = 0;
+
+function locationModels(shard: Shardfile, options: number | BudgetOptions): LocationModel[] {
+  const commons = typeof options === 'number' ? options : options.commons;
+  const boot = typeof options === 'number' ? undefined : options.boot;
   const bytesOf = ownTileBytes(shard), own = shard.tiles.filter(tile => tile.lod === 0).map(tile => {
     const bounds = tile.drawBounds ?? tile.bounds;
     return { x0: bounds.min[0], z0: bounds.min[2], x1: bounds.max[0], z1: bounds.max[2], bytes: bytesOf(tile) };
@@ -93,10 +99,10 @@ function locationModels(shard: Shardfile, commons: number): LocationModel[] {
       return l0;
     };
     models.push({
-      neighbours: neighbours.map(({ cx, cz }) => [cx, cz] as const), fixed: l1 + far + sims + commons + nearBytes,
+      neighbours: neighbours.map(({ cx, cz }) => [cx, cz] as const), fixed: l1 + far + sims + commons + nearBytes + (boot?.farSlabIndices ?? NO_BYTES) + (boot?.paintArrayGpu ?? NO_BYTES),
       cost: (x, z) => {
         const l0 = l0At(x, z);
-        return { ...contentCost({ l0, l1, far, libraries, sims, commons, near: nearBytes, overlap }), location: [x, z] };
+        return { ...contentCost({ l0, l1, far, libraries, sims, commons, near: nearBytes, overlap, boot }), location: [x, z] };
       },
     });
   }
@@ -104,10 +110,11 @@ function locationModels(shard: Shardfile, commons: number): LocationModel[] {
 }
 
 /** Conservative total around an actual player location, using the same neighbour assumptions as admission. */
-export function nearbyContentCost(shard: Shardfile, x: number, z: number, commons = 0): LocationCost {
+export function nearbyContentCost(shard: Shardfile, x: number, z: number, options: number | BudgetOptions = 0): LocationCost {
+  const commons = typeof options === 'number' ? options : options.commons;
   if (![x, z, commons].every(Number.isFinite) || commons < 0) throw new Error('Invalid memory estimate location');
   let worst: LocationCost = { playing: 0, loading: 0, accounted: 0, location: [x, z] };
-  for (const model of locationModels(shard, commons)) { const cost = model.cost(x, z); if (cost.playing > worst.playing) worst = cost; }
+  for (const model of locationModels(shard, options)) { const cost = model.cost(x, z); if (cost.playing > worst.playing) worst = cost; }
   return worst;
 }
 
@@ -118,14 +125,14 @@ const worstCache = new Map<string, LocationCost>();
 const syntheticCells = new Map<string, { l0: Uint8Array; active: Uint8Array }>();
 
 /** Worst disc with three synthetic neighbours at the platform targets; grid padding covers unsampled gaps. */
-export function worstContentCost(shard: Shardfile, commons = 0): LocationCost {
-  const steps = worstContentCostSteps(shard, commons);
+export function worstContentCost(shard: Shardfile, options: number | BudgetOptions = 0): LocationCost {
+  const steps = worstContentCostSteps(shard, options);
   for (;;) { const step = steps.next(); if (step.done === true) return step.value; }
 }
 
 /** `worstContentCost` in steps, one per own tile and synthetic neighbour tile the grids sum, then one per scanned row:
  *  a live admission paints between them (Pine's activation spent ~90 ms of a frame in this scan at 4x CPU). */
-export function* worstContentCostSteps(shard: Shardfile, commons = 0): Generator<void, LocationCost> {
+export function* worstContentCostSteps(shard: Shardfile, options: number | BudgetOptions = 0): Generator<void, LocationCost> {
   const bytesOf = ownTileBytes(shard);
   // The cache key is the JSON of every tile's [lod, bytes, x0, z0, x1, z1] and the shard's budgets, written row by row
   // (the same text, without an array per tile).
@@ -136,7 +143,7 @@ export function* worstContentCostSteps(shard: Shardfile, commons = 0): Generator
     const bounds = tile.drawBounds ?? tile.bounds;
     rows += `${i > 0 ? ',' : ''}[${json(tile.lod)},${json(bytesOf(tile))},${json(bounds.min[0])},${json(bounds.min[2])},${json(bounds.max[0])},${json(bounds.max[2])}]`;
   }
-  const key = `[[${rows}],${JSON.stringify([shard.far === null ? null : [shard.far.decoded, shard.far.gpu], shard.budgets.library.resident, shard.budgets.sim.resident, shard.budgets.overlap, shard.serverBudget.memory, commons,
+  const key = `[[${rows}],${JSON.stringify([shard.far === null ? null : [shard.far.decoded, shard.far.gpu], shard.budgets.library.resident, shard.budgets.sim.resident, shard.budgets.overlap, shard.serverBudget.memory, options,
     shard.near === undefined ? 0 : nearPlaceholderCost(shard.near, shard).total.resident]).slice(1)}`;
   const cached = worstCache.get(key);
   if (cached !== undefined) return { ...cached, location: [...cached.location] };
@@ -193,7 +200,7 @@ export function* worstContentCostSteps(shard: Shardfile, commons = 0): Generator
     syntheticCells.set(id, made); return made;
   };
   let worstAccounted = Number.NEGATIVE_INFINITY;
-  for (const model of locationModels(shard, commons)) {
+  for (const model of locationModels(shard, options)) {
     const found: { l0: Uint8Array; active: Uint8Array }[] = [];
     for (const neighbour of model.neighbours) found.push(yield* cellOf(neighbour));
     const [a, b, c] = found;

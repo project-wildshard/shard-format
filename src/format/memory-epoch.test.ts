@@ -32,10 +32,10 @@ test('MG5: a reading names its epoch; a missing one is the legacy epoch 1', (): 
 })
 
 test('MG5: an older epoch is stale and names the re-measure; a current one is not', (): void => {
-  expect(MEMORY_EPOCH).toBe(1)
+  expect(MEMORY_EPOCH).toBe(2)
   const legacy = parse(RuntimeCostSchema, nine)
-  expect(staleRuntimeCost(legacy)).toBe('')
-  expect(staleRuntimeCost(legacy, 2)).toBe(
+  expect(staleRuntimeCost(legacy, 1)).toBe('')
+  expect(staleRuntimeCost(legacy)).toBe(
     'native resident measurement is stale: memory epoch 1, current 2 (J408): re-measure the runtime home',
   )
   expect(staleRuntimeCost({ epoch: 2 }, 2)).toBe('')

@@ -37,7 +37,7 @@ function admitHead(
     preflightDeclaredCosts(shard, offlineMemoryAdmission('warn'))
   })
   withIssueCode('performance-targets', (): void => {
-    assertShardfileTargets(shard, 'warn')
+    assertShardfileTargets(shard, 'warn', payloads)
   })
   return shard
 }

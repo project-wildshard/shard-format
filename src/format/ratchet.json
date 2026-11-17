@@ -3966,7 +3966,7 @@
    "eslint(no-plusplus)": 4,
    "eslint(no-use-before-define)": 2,
    "eslint(prefer-destructuring)": 3,
-   "eslint(sort-vars)": 10,
+   "eslint(sort-vars)": 9,
    "import(consistent-type-specifier-style)": 1,
    "import(exports-last)": 13,
    "import(group-exports)": 18,

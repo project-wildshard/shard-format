@@ -21,7 +21,7 @@ import { shardfileRecordings } from './shardfile-audio.ts';
 import type { RecordingMeasure } from './audio-measure.ts';
 import { issueError, withIssueCode as coded } from './issue-codes.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
-import { offlineRuntimeMemoryIssues } from './memory-line.ts';
+import { offlineMemoryIssues } from './memory-line.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -108,8 +108,8 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
 }
 
 /** Refuse the declared targets a policy treats as refusals, before any byte is read or executed. */
-export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse'): void {
-  const issues = [...staleRuntimeIssues(source.runtime), ...offlineRuntimeMemoryIssues(source), ...performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal')];
+export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse', sections: ReadonlyMap<string, unknown> = new Map()): void {
+  const issues = [...staleRuntimeIssues(source.runtime), ...offlineMemoryIssues(source, sections), ...performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal')];
   if (issues.length === 0) return;
   throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
 }
@@ -119,7 +119,7 @@ export function admitShardfileFolder(input: unknown, assets: ReadonlyMap<string,
   policy: 'warn' | 'refuse' = 'refuse', scripts: ScriptAdmissionRows = [], sections?: ReadonlyMap<string, unknown>): Shardfile {
   const source = coded('shard-schema', (): Shardfile => parseShardfile(input, sections));
   coded('declared-costs', (): void => { preflightDeclaredCosts(source, offlineMemoryAdmission(policy)); });
-  coded('performance-targets', (): void => { assertShardfileTargets(source, policy); });
+  coded('performance-targets', (): void => { assertShardfileTargets(source, policy, sections); });
   return coded('asset-admission', (): Shardfile => validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy), undefined, scripts, sections));
 }
 

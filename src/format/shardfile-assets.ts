@@ -15,6 +15,7 @@ import { worstContentCost, memoryTargetWarnings, nearbyContentCost } from "./bud
 import { CONTENT_CAPS as C, MEMORY_GATES } from './contentBounds.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
 import { MEMORY_HARD_BYTES, hardLineIssue } from './memory-line.ts';
+import { bootMemoryCosts } from './boot-memory-cost.ts';
 import { VIEW_DRAWS, viewDraws } from './view-draws.ts';
 import { DEFAULT_GRAPH_BUDGET } from "./materialGraph.ts";
 import { SCRIPT_LIMITS } from './scriptLimits.ts';
@@ -22,11 +23,17 @@ import { runtimeAccountedBytes } from "./runtimeCost.ts";
 import { MemoryAdmission } from './memoryAdmission.ts';
 import { nearPlaceholderRoots } from './nearPlaceholder.ts';
 import type { IssueCodeOf } from './issue-codes.ts';
-
-
-/** Actual costs derived from a bounded parser, never trusted from the author declaration. */
 import { isNavigationData, navigationCost } from './navigationBytes.ts';
 
+type PerformancePolicy = 'refuse' | 'warn';
+interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown> }
+
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
+function reportMemory(source: Shardfile, nativeBytes: number, sections: ReadonlyMap<string, unknown>): PerformanceReport['memory'] {
+  const commons = nativeBytes + Object.values(source.requires.commonsCosts).reduce((sum, row) => sum + row.decoded + row.gpu, 0);
+  const budget = { commons, boot: bootMemoryCosts(source, sections) };
+  return { near: nearbyContentCost(source, source.spawn.x, source.spawn.z, budget), worst: worstContentCost(source, budget), playingLimit: C.playing, loadingLimit: C.loading };
+}
 /** A performance issue's code and its metric words. */
 type Named = readonly [code: IssueCodeOf<'performance'>, metric: string];
 
@@ -300,11 +307,10 @@ export function validatePropDrawBounds(source: Shardfile, assets: ReadonlyMap<st
 }
 
 /** Report deterministic declared bounds and measured native execution; the caller supplies trusted provenance policy. */
-export function performanceReport(source: Shardfile, observations: PerformanceObservations, policy: 'refuse' | 'warn' = 'refuse'): PerformanceReport {
+export function performanceReport(source: Shardfile, observations: PerformanceObservations, options: PerformancePolicy | PerformanceOptions = 'refuse'): PerformanceReport {
+  const { policy, sections } = typeof options === 'string' ? { policy: options, sections: new Map<string, unknown>() } : options;
   const native = { resident: source.runtime?.cost === undefined ? 0 : runtimeAccountedBytes(source.runtime.cost), evidence: source.runtime?.cost?.evidence ?? null, unmeasuredViewAndDownload: source.runtime !== null };
-  const commons = native.resident + Object.values(source.requires.commonsCosts).reduce((sum, row) => sum + row.decoded + row.gpu, 0);
-  const worst = worstContentCost(source, commons), spawn = source.spawn;
-  const memory = { near: nearbyContentCost(source, spawn.x, spawn.z, commons), worst, playingLimit: C.playing, loadingLimit: C.loading };
+  const memory = reportMemory(source, native.resident, sections), { worst } = memory, spawn = source.spawn;
   const issues: PerformanceIssue[] = memoryTargetWarnings(source).map(row => ({ code: 'perf-memory-target', metric: `${row.category} resident target (tradeable)`, actual: row.bytes, limit: row.target, severity: 'warning' }));
   issues.push(...performanceTargetIssues(source, policy));
   const check = ([code, metric]: Named, actual: number, limit: number): void => {

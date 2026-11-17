@@ -1,3 +1,4 @@
+import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
 import { runtimeAccountedBytes } from './runtimeCost.ts'
 
@@ -39,20 +40,23 @@ function hardLineIssue(
   }
 }
 
-/** File admission cannot infer the opaque runtime's resident bytes. */
-function offlineRuntimeMemoryIssues(
+/** Count cold-boot costs and any opaque runtime residency in offline admission. */
+function offlineMemoryIssues(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard type, read only
   source: Shardfile,
+  sections: ReadonlyMap<string, unknown>,
 ): ReturnType<typeof hardLineIssue>[] {
-  if (source.runtime?.cost === undefined) {
-    return []
-  }
-  const runtime = runtimeAccountedBytes(source.runtime.cost)
+  const native = source.runtime?.cost
+  const runtime =
+    native === undefined ? EMPTY_BYTES : runtimeAccountedBytes(native)
   const commons = Object.values(source.requires.commonsCosts).reduce(
     (sum, row): number => sum + row.decoded + row.gpu,
     EMPTY_BYTES,
   )
-  const cost = worstContentCost(source, runtime + commons)
+  const cost = worstContentCost(source, {
+    commons: runtime + commons,
+    boot: bootMemoryCosts(source, sections),
+  })
   return (['playing', 'loading'] as const)
     .filter((kind): boolean => cost[kind] > MEMORY_HARD_BYTES)
     .map((kind): ReturnType<typeof hardLineIssue> =>
@@ -60,9 +64,4 @@ function offlineRuntimeMemoryIssues(
     )
 }
 
-export {
-  MEMORY_HARD_BYTES,
-  hardLineIssue,
-  offlineRuntimeMemoryIssues,
-  overHardLine,
-}
+export { MEMORY_HARD_BYTES, hardLineIssue, offlineMemoryIssues, overHardLine }
