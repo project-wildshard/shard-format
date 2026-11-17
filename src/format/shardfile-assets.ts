@@ -12,7 +12,7 @@ import { journalImageRefs } from './compendiumRows.ts';
 import type { Shardfile } from "./shardSchema.ts";
 import type { ShardTerrain } from "./terrain.ts";
 import { worstContentCost, memoryTargetWarnings, nearbyContentCost } from "./budget.ts";
-import { CONTENT_CAPS as C, MEMORY_GATES } from './contentBounds.ts';
+import { CONTENT_CAPS as C, MEMORY_GATES, MEMORY_HARD_BYTES, overHardLine } from './contentBounds.ts';
 import { VIEW_DRAWS, viewDraws } from './view-draws.ts';
 import { DEFAULT_GRAPH_BUDGET } from "./materialGraph.ts";
 import { SCRIPT_LIMITS } from './scriptLimits.ts';
@@ -311,10 +311,12 @@ export function performanceReport(source: Shardfile, observations: PerformanceOb
   if (native.unmeasuredViewAndDownload) check(['perf-native-view-unmeasured', 'native view/download measurement required'], 1, 0);
   if (source.runtime !== null && source.runtime.cost === undefined) check(['perf-native-resident-unmeasured', 'native resident measurement required'], 1, 0);
   // G433: while src/format/memoryGates.json is report-only the totals print as warnings and never refuse a build.
-  const total = ([code, metric]: Named, actual: number, limit: number): void => {
-    if (MEMORY_GATES.reportOnly && actual > limit) issues.push({ code, metric: `${metric} (report-only, G433)`, actual, limit, severity: 'warning' }); else check([code, metric], actual, limit);
+  // J408 (MG4): a worst playing estimate over the hard line refuses whatever the policy or the switch.
+  const total = ([code, metric]: Named, actual: number, limit: number, hard = false): void => {
+    if (hard && actual > MEMORY_HARD_BYTES) issues.push({ code, metric: `${metric}${overHardLine(actual)}`, actual, limit: MEMORY_HARD_BYTES, severity: 'refusal' });
+    else if (MEMORY_GATES.reportOnly && actual > limit) issues.push({ code, metric: `${metric} (report-only, G433)`, actual, limit, severity: 'warning' }); else check([code, metric], actual, limit);
   };
-  total(['perf-playing-memory', 'worst playing total bytes'], worst.playing, C.playing); total(['perf-loading-memory', 'worst loading total bytes'], worst.loading, C.loading);
+  total(['perf-playing-memory', 'worst playing total bytes'], worst.playing, C.playing, true); total(['perf-loading-memory', 'worst loading total bytes'], worst.loading, C.loading);
   const library = reportCardClosure(source, source.library), critical = reportCardClosure(source, source.critical);
   const tileRoots = source.tiles.flatMap(tile => tile.files), farRoots = source.far?.files ?? [], nearRoots = nearPlaceholderRoots(source.near);
   const playable = reportCardClosure(source, [...source.critical, ...source.library, ...farRoots, ...source.tiles.filter(tile => tile.lod === 1 || near(tile, spawn.x, spawn.z)).flatMap(tile => tile.files)]);
@@ -362,7 +364,9 @@ export function performanceReportLines(report: PerformanceReport): string[] {
 }
 
 /** The memory admission an offline author build uses: strict for `refuse` unless src/format/memoryGates.json is
- * report-only (G433), when an over-envelope total is accepted and printed by the performance report instead. */
+ * report-only (G433), when an over-envelope total is accepted and printed by the performance report instead, up to the
+ * J408 hard line (MEMORY_HARD_BYTES), which refuses. */
 export function offlineMemoryAdmission(policy: 'warn' | 'refuse'): MemoryAdmission | undefined {
-  return policy === 'warn' || MEMORY_GATES.reportOnly ? new MemoryAdmission(() => true) : undefined;
+  // J408 (MG4): the accepting admission still refuses a worst playing estimate over the hard line.
+  return policy === 'warn' || MEMORY_GATES.reportOnly ? new MemoryAdmission(() => true, MEMORY_HARD_BYTES) : undefined;
 }
