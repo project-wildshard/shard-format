@@ -13,4 +13,21 @@ function overHardLine(playingBytes: number): string {
   return ` (over the ${(MEMORY_HARD_BYTES / GB).toFixed(DIGITS)} GB phone line, J408: a phone would close the page)`
 }
 
-export { MEMORY_HARD_BYTES, overHardLine }
+/** J408 (MG4): the refusal for a worst playing estimate over the hard line, whatever the policy or the report-only switch. */
+function hardLineIssue(playing: number): {
+  readonly code: 'perf-playing-memory'
+  readonly metric: string
+  readonly actual: number
+  readonly limit: number
+  readonly severity: 'refusal'
+} {
+  return {
+    code: 'perf-playing-memory',
+    metric: `worst playing total bytes${overHardLine(playing)}`,
+    actual: playing,
+    limit: MEMORY_HARD_BYTES,
+    severity: 'refusal',
+  }
+}
+
+export { MEMORY_HARD_BYTES, hardLineIssue, overHardLine }

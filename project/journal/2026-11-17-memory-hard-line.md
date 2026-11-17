@@ -18,3 +18,11 @@ publishing. The refusal names the line and J408.
 The src/format ratchet refused the first cut (exports, magic numbers, a
 four-parameter helper), so the line and its words live in memory-line.ts
 with one export group, and the playing refusal is its own branch.
+
+MG5: `runtimeCost` readings name the memory epoch they were taken
+against (`epoch`, optional; absent is epoch 1). `MEMORY_EPOCH` is 1 today,
+so nothing is refused yet: MG6 raises it when the model starts counting
+shader compile, load transients, far slabs and paint arrays, and from then
+an older reading refuses whatever the policy until the home re-measures.
+Refusing every first-party home now would stop Driftwood and Nalati,
+which are under the line.
