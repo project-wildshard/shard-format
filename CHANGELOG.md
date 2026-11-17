@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.15.0 (2026-11-17)
+
+- Give creatures social pack membership while each keeps its own brain.
+- Preserve existing shard files when social membership is omitted.
+
 ## v0.14.0 (2026-11-16)
 
 - Conditional incoming-damage exemptions preserve attack, state and effect tags when older creature policies are converted.
