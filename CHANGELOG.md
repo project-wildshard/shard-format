@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.21.0 (2026-11-17)
+
+- A steer vehicle can take a wind push: its sail goes faster downwind and slower upwind.
+
 ## v0.20.0 (2026-11-17)
 
 - A steer vehicle can take a wind push: its sail goes faster downwind and slower upwind.
