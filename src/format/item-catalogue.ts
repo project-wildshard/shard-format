@@ -29,14 +29,14 @@ export type ItemEquipmentRow = Omit<ItemEquipment, 'id' | 'cues'> & {
   id: EquipmentId
   cues?: EquipmentCues
 }
-/** An ammunition's portable row (the engine's `AmmoRow`): its flight, wet flight increments applied, and tags. */
+/** An ammunition's portable row (the engine's `AmmoRow`): its flight, wet flight increments applied, and its id as its one tag. */
 export interface ItemAmmoRow {
   id: AmmoId
   label: string
   name: string
   flight: { gravity: number; drag: number }
   wet?: { gravity: number; drag: number }
-  tags: readonly string[]
+  tags: readonly AmmoId[]
   material?: string
   pouchMax: number
 }

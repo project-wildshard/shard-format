@@ -4,13 +4,21 @@
 // ItemCatalogue answers (item-catalogue.golden-gen.mjs), so this proves format's copy reads every one the same.
 import { readFileSync } from 'node:fs'
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 
 import {
   catalogueAnswers,
   type ItemTable,
 } from './item-catalogue.golden-specs.ts'
-import { ItemCatalogue } from './item-catalogue.ts'
+import {
+  ItemCatalogue,
+  type ItemAmmoRow,
+  type AmmoId,
+} from './item-catalogue.ts'
+
+it("types an ammunition row's tags as its ammo ids, as the engine's combat tags are", () => {
+  expectTypeOf<ItemAmmoRow['tags']>().toEqualTypeOf<readonly AmmoId[]>()
+})
 
 interface Golden {
   readonly tables: readonly (ItemTable & { readonly answers: unknown })[]

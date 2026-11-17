@@ -89,3 +89,5 @@
   3-4-5 turn, and the goldens were regenerated. The collider law itself
   turns with libm trig: its golden records the answering host and other
   hosts hold floats to a relative 1e-12, every other value exactly.
+- SP5 follow-up: `ItemAmmoRow.tags` is `readonly AmmoId[]` (always its id),
+  so the engine's `AmmoRow` (combat tags) takes the row without a cast.
