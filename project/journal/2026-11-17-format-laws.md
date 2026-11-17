@@ -47,3 +47,13 @@
   matrix (`./wholePartition`), moved verbatim. `geometry-layout.golden.json`
   holds the engine's own answers (admitted rows, expanded runs, refusal
   messages) to 11 channel tables and 18 partitions.
+- SP4e2 (opus-sdksplit3): `readColliderRows` (verbatim, generic over the
+  host's surface names), `poseOf` and `placeCollider` (`./colliders`)
+  moved without three.js: three's Matrix4 set / premultiply /
+  decompose, Quaternion setFromRotationMatrix / setFromAxisAngle /
+  multiply and Vector3 applyMatrix4 are written out in the same
+  operation order, and a pose's matrix is 16 column-major numbers.
+  `colliders.golden.json` holds the engine's poses for 10 placements
+  (upright, turned, scaled, matrix: turned, mirrored, translation-only,
+  degenerate) with all 7 shape kinds placed at each, and its answers to
+  13 row batches; bit-exact on the first run.
