@@ -7,6 +7,8 @@ interface SourceInventory {
   readonly kinds: readonly string[]
 }
 const NONE = 0
+/** ONE-FORMAT OF10b: each dangerous gate is one deprecated engine function; OF10c1 to OF10c4 take it to 0. */
+const DANGEROUS_GATE = /\bexport function dangerous[A-Z]\w*/gu
 const OLD_KINDS = new Set(['bear', 'boar', 'deer', 'greyBlob'])
 const vocabulary = new RegExp(
   `\\b(?:${[
@@ -165,6 +167,7 @@ function sourceCounts(
       /\bgridShardfile\b/gu,
     ),
     'engine.access-gate-references': occurrences(engine, /\bfirstParty\b/gu),
+    'engine.dangerous-gates': occurrences(engine, DANGEROUS_GATE),
     'sdk.engine-kit-imports': occurrences(
       sdk,
       /@wildshard\/engine\/game\/systems\/species\//gu,

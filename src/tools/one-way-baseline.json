@@ -62,6 +62,7 @@
     "sdk.grid-pointer-references": 0,
     "format.grid-pointer-references": 5,
     "engine.access-gate-references": 80,
+    "engine.dangerous-gates": 4,
     "sdk.engine-kit-imports": 4,
     "sdk.old-kind-source-rows": 6,
     "engine.kind-keyed-tables": 2,

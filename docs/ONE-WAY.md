@@ -37,6 +37,7 @@ and ceilings. A drop is allowed; a rise or a new counter needs a fix.
 | sdk.grid-pointer-references | 0 | OF8 |
 | format.grid-pointer-references | 5 | OF8 |
 | engine.access-gate-references | 80 | OF10a to OF10c |
+| engine.dangerous-gates | 4 | OF10c1 to OF10c4 |
 | sdk.engine-kit-imports | 4 | OF5a / SDK-SPLIT SP3 |
 | sdk.old-kind-source-rows | 6 | CC4, OF4 |
 | engine.kind-keyed-tables | 2 | OF31 |
