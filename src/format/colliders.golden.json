@@ -1,5 +1,6 @@
 {
-  "about": "SDK-SPLIT SP4e2: engine models/colliders.ts readColliderRows, poseOf and placeCollider over colliders.golden-specs.ts; floats are IEEE-754 float64 bits, big-endian hex",
+  "about": "SDK-SPLIT SP4e2: engine models/colliders.ts readColliderRows, poseOf and placeCollider over colliders.golden-specs.ts; floats are IEEE-754 float64 bits, big-endian hex; host is the answering platform-arch (libm trig)",
+  "host": "darwin-arm64",
   "poses": [
     {
       "pose": {
@@ -763,17 +764,17 @@
     {
       "pose": {
         "matrix": [
-          "3ff87996529f9d93",
+          "3ff3333333333333",
           "0000000000000000",
-          "bff49d6e694619b8",
+          "bff999999999999a",
           "0000000000000000",
           "0000000000000000",
           "4000000000000000",
           "0000000000000000",
           "0000000000000000",
-          "3ff49d6e694619b8",
+          "3ff999999999999a",
           "0000000000000000",
-          "3ff87996529f9d93",
+          "3ff3333333333333",
           "0000000000000000",
           "4024000000000000",
           "4034000000000000",
@@ -781,9 +782,9 @@
           "3ff0000000000000"
         ],
         "quat": {
-          "w": "3fee0f575d0de5b9",
+          "w": "3fec9f25c5bfedd9",
           "x": "0000000000000000",
-          "y": "3fd5f209a5390a8a",
+          "y": "3fdc9f25c5bfedda",
           "z": "0000000000000000"
         },
         "scale": "4000000000000000",
@@ -799,10 +800,10 @@
           "hz": "4008000000000000",
           "kind": "box",
           "surface": "wood",
-          "x": "4021e7d730026d44",
+          "x": "4020000000000000",
           "y": "4035000000000000",
-          "yaw": "3feffffffffffffe",
-          "z": "4039a6f64f17aab2"
+          "yaw": "3ff3a3004f7daa75",
+          "z": "403a000000000000"
         },
         {
           "hx": "4000000000000000",
@@ -810,10 +811,10 @@
           "hz": "4000000000000000",
           "kind": "box",
           "rot": {
-            "w": "3feaf6ad60c7c6bd",
-            "x": "3fbc6fe16b7ced16",
-            "y": "3fe0a7d107dd2a18",
-            "z": "3f89f75f190f8a30"
+            "w": "3fe8e69e4d527f91",
+            "x": "3fbc9f25c5bfedda",
+            "y": "3fe39b1898193b3f",
+            "z": "bc60000000000000"
           },
           "x": "4024000000000000",
           "y": "4036000000000000",
@@ -823,19 +824,19 @@
           "halfHeight": "3ff999999999999a",
           "kind": "capsule",
           "radius": "3fe3333333333333",
-          "x": "4021f8ac54892730",
+          "x": "4022e147ae147ae1",
           "y": "4036666666666666",
-          "yaw": "3fe6666666666664",
-          "z": "403fe67aa8a52bf2"
+          "yaw": "3fedac670561bb51",
+          "z": "40400a3d70a3d70a"
         },
         {
           "kind": "ball",
           "radius": "3ffccccccccccccd",
           "surface": "rock",
-          "x": "4025a482e0ede53a",
+          "x": "4025c28f5c28f5c3",
           "y": "403499999999999a",
-          "yaw": "3fe6666666666664",
-          "z": "403e5aabfa59839e"
+          "yaw": "3fedac670561bb51",
+          "z": "403e28f5c28f5c29"
         },
         {
           "kind": "hull",
@@ -856,7 +857,7 @@
           ],
           "x": "4024000000000000",
           "y": "4034000000000000",
-          "yaw": "3fc999999999998f",
+          "yaw": "3fdb58ce0ac3769f",
           "z": "403e000000000000"
         },
         {
@@ -880,10 +881,10 @@
             "0000000000000000",
             "4010000000000000"
           ],
-          "x": "402cb21361d0aa9c",
+          "x": "402c000000000000",
           "y": "4034000000000000",
-          "yaw": "3fe6666666666664",
-          "z": "403cf3eb980136a2"
+          "yaw": "3fedac670561bb51",
+          "z": "403c000000000000"
         },
         {
           "count": "4018000000000000",
@@ -895,9 +896,9 @@
           "kind": "treads",
           "surface": "planks",
           "to": {
-            "x": "402bbb09677a49a5",
+            "x": "402d99999999999a",
             "y": "4038000000000000",
-            "z": "40414b6617bef6c6"
+            "z": "4040cccccccccccd"
           },
           "width": "4003333333333333"
         }

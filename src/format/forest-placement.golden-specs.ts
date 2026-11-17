@@ -1,3 +1,5 @@
+import { wave } from './terrain-field.golden-specs.ts'
+
 /* oxlint-disable curly, id-length, import/exports-last, import/group-exports, max-params, no-bitwise, no-magic-numbers, prefer-template, typescript/prefer-readonly-parameter-types, unicorn/no-array-callback-reference, unicorn/no-null, unicorn/number-literal-case, unicorn/numeric-separators-style -- golden-vector oracle and fixtures (SDK-SPLIT SP4): written to match the engine side byte for byte */
 // SDK-SPLIT SP4d: forest and grass fixtures whose placements the golden vectors pin. Each names a terrain of
 // terrain-field.golden-specs.ts; the engine's placeForest / GrassField (the oracle, forest-placement.golden-gen.mjs) and
@@ -59,7 +61,7 @@ export const FOREST_CASES: readonly {
       tintHue: 0.97,
       spacing: 6,
       scale: (x: number, z: number): number =>
-        0.8 + 0.4 * Math.abs(Math.sin(x * 0.01 + z * 0.02)),
+        0.8 + 0.4 * Math.abs(wave((x + 2 * z) / 628)),
       mask: (x: number, z: number): number => (x > 100 && z < 150 ? 0.2 : 1),
     },
   },
@@ -73,7 +75,7 @@ export const FOREST_CASES: readonly {
       ...plain,
       spacing: 9,
       species: (x: number, z: number): Partial<Record<string, number>> => ({
-        pine: 2 + Math.sin(x * 0.02),
+        pine: 2 + wave(x / 314),
         giant: z > 0 ? 0.6 : 0,
         sapling: 0.8,
         birch: x < -50 ? 1.5 : -1,

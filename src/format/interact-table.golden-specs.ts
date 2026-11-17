@@ -1,3 +1,5 @@
+import { wave } from './terrain-field.golden-specs.ts'
+
 /* oxlint-disable id-length, import/group-exports, no-magic-numbers, typescript/explicit-function-return-type, typescript/prefer-readonly-parameter-types, unicorn/no-null -- golden-vector oracle and fixtures (SDK-SPLIT SP4): written to match the engine side byte for byte */
 // SDK-SPLIT SP4f2: interact tables, placements and quest bindings the golden vectors pin. The engine's own
 // autoFlag / flagsRaised / flagsRead, readInteractPlacements / bindInteractPlacements, createQuestPlacements and
@@ -120,7 +122,7 @@ export const PLACEMENTS: readonly unknown[] = [
 
 export const PORTS: QuestPlacementPorts = {
   terrain: (x: number, z: number): number =>
-    0.5 * Math.sin(x * 0.1) + 0.25 * Math.cos(z * 0.07),
+    0.5 * wave(x / 63) + 0.25 * wave(z / 90 + 0.25),
   platforms: [
     (x: number, z: number): number | undefined =>
       Math.abs(x) < 5 && Math.abs(z) < 5 ? 2 : undefined,

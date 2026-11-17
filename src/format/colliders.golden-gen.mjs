@@ -16,6 +16,7 @@ import {
 const { readColliderRows, poseOf, placeCollider } = await import(
   join(process.argv[2], 'client/engine/models/colliders.ts')
 )
+const HOST = `${process.platform}-${process.arch}`
 const Matrix4 = poseOf({ x: 0, y: 0, z: 0 }).matrix.constructor
 const placement = p =>
   p.matrix === undefined
@@ -53,5 +54,5 @@ const grammar = ROW_CASES.map(c =>
 )
 writeFileSync(
   process.argv[3],
-  `${JSON.stringify({ about: 'SDK-SPLIT SP4e2: engine models/colliders.ts readColliderRows, poseOf and placeCollider over colliders.golden-specs.ts; floats are IEEE-754 float64 bits, big-endian hex', poses, grammar })}\n`,
+  `${JSON.stringify({ about: 'SDK-SPLIT SP4e2: engine models/colliders.ts readColliderRows, poseOf and placeCollider over colliders.golden-specs.ts; floats are IEEE-754 float64 bits, big-endian hex; host is the answering platform-arch (libm trig)', host: HOST, poses, grammar })}\n`,
 )

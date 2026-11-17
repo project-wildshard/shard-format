@@ -1,9 +1,17 @@
-/* oxlint-disable id-length, import/group-exports, max-params, no-magic-numbers, typescript/prefer-readonly-parameter-types, unicorn/number-literal-case, unicorn/numeric-separators-style -- golden-vector oracle and fixtures (SDK-SPLIT SP4): written to match the engine side byte for byte */
+/* oxlint-disable id-length, import/exports-last, import/group-exports, max-params, no-magic-numbers, typescript/prefer-readonly-parameter-types, unicorn/number-literal-case, unicorn/numeric-separators-style -- golden-vector oracle and fixtures (SDK-SPLIT SP4): written to match the engine side byte for byte */
 // SDK-SPLIT SP4b: terrain specs whose fields the golden vectors sample. Plain functions over the noise they are
 // handed, so the engine's buildTerrain (the oracle, terrain-field.golden-gen.mjs); not shipped and format's build the same field.
 // Together they touch every branch: landscape noise, a graded path and a bench, trails, cabin pads, a pond, an ocean,
 // a finish and a splat rule.
 import type { TerrainSpec } from './terrain-field.ts'
+
+/** A smooth periodic wave in [-1, 1] (period 1) from arithmetic and `Math.floor` only, where a fixture would reach for
+ *  `Math.sin`: a host's libm sin and cos can differ in the last bit (macOS arm64 against Linux x64, SDK-SPLIT SP4g), plain
+ *  arithmetic cannot, so fixtures built on it give the same bits on every CI host. */
+export function wave(t: number): number {
+  const f = t - Math.floor(t)
+  return 32 * f * f * (1 - f) * (1 - f) - 1
+}
 
 type Vec2 = [number, number]
 interface Noise {
@@ -52,7 +60,7 @@ export const TERRAIN_SPECS: readonly {
       pond: { x: -30, z: -120, r: 26 },
       pondFill: 0.8,
       finish: (x: number, z: number, h: number): number =>
-        h + 0.25 * Math.sin(x * 0.05) * Math.cos(z * 0.05),
+        h + 0.25 * wave(x / 125) * wave(z / 125 + 0.25),
       splat: (
         x: number,
         z: number,

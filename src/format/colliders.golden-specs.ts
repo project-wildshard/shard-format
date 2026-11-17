@@ -1,4 +1,4 @@
-/* oxlint-disable capitalized-comments, curly, id-length, import/exports-last, import/group-exports, no-magic-numbers, typescript/explicit-function-return-type, typescript/prefer-readonly-parameter-types, unicorn/no-array-callback-reference, unicorn/no-array-sort, unicorn/no-null -- golden-vector oracle and fixtures (SDK-SPLIT SP4): written to match the engine side byte for byte */
+/* oxlint-disable capitalized-comments, curly, id-length, import/exports-last, import/group-exports, max-lines, no-magic-numbers, typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion, typescript/prefer-readonly-parameter-types, unicorn/no-array-callback-reference, unicorn/no-array-sort, unicorn/no-null -- golden-vector oracle and fixtures (SDK-SPLIT SP4): written to match the engine side byte for byte */
 // SDK-SPLIT SP4e2: collider rows and poses the golden vectors pin. The engine's readColliderRows, poseOf and placeCollider
 // (three.js math, the oracle, colliders.golden-gen.mjs) and format's three-free copies read and place the same rows.
 // Together they touch every branch: each shape kind, a collider's own yaw or rotation or none, an upright and a turned
@@ -16,8 +16,9 @@ export interface PlacementFixture {
   readonly matrix?: readonly number[]
 }
 
-const c = Math.cos(0.7),
-  s = Math.sin(0.7)
+// a 3-4-5 turn: exact without libm trig, so the fixture matrix has the same bits on every host
+const c = 0.6,
+  s = 0.8
 export const POSE_CASES: readonly PlacementFixture[] = [
   { x: 0, y: 0, z: 0 },
   { x: 12.5, y: -3, z: 7.25, scale: 1.75 },
@@ -260,4 +261,46 @@ export function rowsAnswer(read: () => unknown): unknown {
   } catch (error) {
     return { error: error instanceof Error ? error.message : String(error) }
   }
+}
+
+/* A pose turned by yaw or lean, and a collider's own yaw, go through the host's libm `Math.sin`, `Math.cos` and
+ * `Math.atan2`, whose last bit differs between hosts (SDK-SPLIT SP4g: macOS arm64 against Linux x64 CI). The golden records
+ * the host that answered it (`platform-arch`); that host is held to every bit, another to `settleOffHost`. */
+const FLOAT_BITS = /^[0-9a-f]{16}$/u
+function floatOf(hex: string): number {
+  const view = new DataView(new ArrayBuffer(8))
+  view.setBigUint64(0, BigInt(`0x${hex}`))
+  return view.getFloat64(0)
+}
+
+/** `got` with each float that lies within a relative 1e-12 of the golden's taken as the golden's bits, so on a host whose
+ *  libm differs the comparison still names every real difference and holds every non-float exactly. */
+export function settleOffHost(got: unknown, want: unknown): unknown {
+  if (
+    typeof got === 'string' &&
+    typeof want === 'string' &&
+    FLOAT_BITS.test(got) &&
+    FLOAT_BITS.test(want)
+  ) {
+    const a = floatOf(got),
+      b = floatOf(want)
+    return Math.abs(a - b) <= 1e-12 * Math.max(1, Math.abs(a), Math.abs(b))
+      ? want
+      : got
+  }
+  if (Array.isArray(got) && Array.isArray(want))
+    return got.map((g, i) => settleOffHost(g, want[i]))
+  if (
+    typeof got === 'object' &&
+    got !== null &&
+    typeof want === 'object' &&
+    want !== null
+  )
+    return Object.fromEntries(
+      Object.entries(got).map(([k, v]) => [
+        k,
+        settleOffHost(v, (want as Record<string, unknown>)[k]),
+      ]),
+    )
+  return got
 }

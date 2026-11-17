@@ -83,3 +83,9 @@
   narrows these rows. `item-catalogue.golden.json` embeds six item
   tables (corpus, Nalati, Nine Dragon, Pine Hollow's built section with
   ammunition and inventory, the template) with the engine's answers.
+- SP4g fix: CI (Linux x64) answered Math.sin/cos one bit off macOS arm64,
+  so fixtures that called them (terrain finish, forest scale and species,
+  interact terrain, a collider turn) now use an arithmetic `wave` and a
+  3-4-5 turn, and the goldens were regenerated. The collider law itself
+  turns with libm trig: its golden records the answering host and other
+  hosts hold floats to a relative 1e-12, every other value exactly.
