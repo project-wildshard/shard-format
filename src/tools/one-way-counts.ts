@@ -172,7 +172,10 @@ function sourceCounts(
     'sdk.old-kind-source-rows': oldSourceRows(sdk),
     'engine.kind-keyed-tables':
       occurrences(named(engine, '/harvest.ts'), /\bconst\s+HARVEST\b/gu) +
-      occurrences(named(engine, '/Inventory.ts'), /\btype\s+ItemId\b/gu),
+      occurrences(
+        named(engine, '/Inventory.ts'),
+        /\btype\s+ItemId\s*=(?!\s*string\b)/gu,
+      ),
     'format.kind-keyed-tables': occurrences(
       named(input.format, '/compendiumRows.ts'),
       /\bicon:\s*v\.picklist\(\[[^\]]*["'](?:boar|bear|deer|elk)["'][^\]]*\]\)/gu,

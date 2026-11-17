@@ -143,3 +143,26 @@ test('duplicate appearances in one shard never masquerade as two users', (): voi
   assert.equal(counts['products.single-shard-server-hosts'], 2)
   assert.equal(counts['products.single-shard-page-features'], 2)
 })
+
+test('an open item identity is not a fixed kind vocabulary', (): void => {
+  const generic = sourceCounts({
+    ...input,
+    engine: [
+      files('src/client/game/Inventory.ts', 'export type ItemId = string;'),
+    ],
+  })
+  assert.equal(generic['engine.kind-keyed-tables'], 0)
+  const restricted = sourceCounts({
+    ...input,
+    engine: [
+      files(
+        'src/client/game/Inventory.ts',
+        'export type ItemId = "hide" | "tusk";',
+      ),
+    ],
+  })
+  assert.equal(restricted['engine.kind-keyed-tables'], 1)
+  assert.deepEqual(countRises(generic, restricted), [
+    'engine.kind-keyed-tables: 0 -> 1',
+  ])
+})
