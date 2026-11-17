@@ -28,15 +28,22 @@ test('grid page allocations and overlap are charged only when supplied', () => {
   expect(split.playing).toBe(standalone.playing);
 });
 
-test('cold boot charges resident slabs and arrays plus the larger concurrent phase', () => {
-  const boot = { heldSpawnParts: 40_000_000, largestDecode: 20_000_000, shaderCompile: 90_000_000,
-    farSlabIndices: 8_000_000, paintArrayGpu: 4_000_000, paintArrayStaging: 3_000_000 };
-  const original = contentCost(template), estimate = contentCost({ ...template, boot });
+const boot = { heldSpawnParts: 40_000_000, largestDecode: 20_000_000, shaderCompile: 90_000_000,
+  farSlabIndices: 8_000_000, paintArrayGpu: 4_000_000, paintArrayStaging: 3_000_000 };
+
+test('cold boot charges resident slabs and arrays plus the larger concurrent phase', (): void => {
+  const original = contentCost(template);
+  const estimate = contentCost({ ...template, boot });
   expect(estimate.accounted - original.accounted).toBe(12_000_000);
   expect(estimate.loading - estimate.playing).toBe(93_000_000);
   const held = contentCost({ ...template, boot: { ...boot, heldSpawnParts: 100_000_000 } });
   expect(held.loading - held.playing).toBe(120_000_000);
-  const overlap = 30_000_000, withChurn = contentCost({ ...template, overlap, boot });
+});
+
+test('play and boot share headroom when their allocations run separately', (): void => {
+  const estimate = contentCost({ ...template, boot });
+  const overlap = 30_000_000;
+  const withChurn = contentCost({ ...template, overlap, boot });
   expect(withChurn.playing).toBe(estimate.playing + overlap);
   expect(withChurn.loading).toBe(estimate.loading);
 });
