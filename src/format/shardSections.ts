@@ -1,5 +1,7 @@
 /** Defining root wire sections shared by the authoring SDK and game admission.
  * Native reference/asset/entry/allocator checks stay in game; look and material contracts await DS1.4. */
+import { BudgetTierSchema } from './budget-tiers.ts';
+import type { BudgetTier } from './budget-tiers.ts';
 import * as v from 'valibot';
 import { WIRE_CELL, WIRE_TILE_SIZES } from './wireLimits.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
@@ -40,7 +42,9 @@ export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> 
 /** Authored compressed and resident ceilings. */
 export const BudgetsSchema: v.GenericSchema<ShardBudgetsInput, ShardBudgets> = v.strictObject({
   /** Reviewed whole-client floor retained when an opaque runtime becomes declared data. */
-  client: v.exactOptional(RuntimeCostSchema), library: v.strictObject({ resident: ShardNaturalSchema, compressed: ShardNaturalSchema, downloadAllowance: v.exactOptional(ShardNaturalSchema) }), sim: v.strictObject({ resident: ShardNaturalSchema, compressed: ShardNaturalSchema }), overlap: ShardNaturalSchema });
+  client: v.exactOptional(RuntimeCostSchema),
+  /** ONE-FORMAT OF10c0: the budget tier this shard picks (`budgetTiers.ts`); none is `small`. */
+  tier: v.exactOptional(BudgetTierSchema), library: v.strictObject({ resident: ShardNaturalSchema, compressed: ShardNaturalSchema, downloadAllowance: v.exactOptional(ShardNaturalSchema) }), sim: v.strictObject({ resident: ShardNaturalSchema, compressed: ShardNaturalSchema }), overlap: ShardNaturalSchema });
 /** Fixed-step simulation and admitted script binding declarations. */
 export const SimSchema: v.GenericSchema<ShardSimInput, ShardSim> = v.strictObject({ fixedHz: v.literal(60), scriptTickDivisor: v.pipe(positive, v.check((n) => 60 % n === 0, 'script divisor divides 60')), commandVersion: v.literal(0), snapshotVersion: v.literal(0), scripts: ShardReferencesSchema, bindings: v.optional(ScriptBindingsSchema, []) });
 /** Bounded player count and authored movement speed. */
@@ -233,6 +237,7 @@ interface ShardRequiresFields {
 }
 export type ShardRequires = { [Key in keyof ShardRequiresFields]: ShardRequiresFields[Key] };
 interface ShardBudgetsInputFields {
+    tier?: BudgetTier;
     client?: v.InferInput<typeof RuntimeCostSchema>;
     library: {
         resident: ShardNaturalInput;
@@ -248,6 +253,7 @@ interface ShardBudgetsInputFields {
 export type ShardBudgetsInput = { [Key in keyof ShardBudgetsInputFields]: ShardBudgetsInputFields[Key] };
 interface ShardBudgetsFields {
     client?: v.InferOutput<typeof RuntimeCostSchema>;
+    tier?: BudgetTier;
     library: {
         resident: ShardNatural;
         compressed: ShardNatural;
