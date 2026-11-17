@@ -22,6 +22,7 @@ import {
 
 import { HuntTuningSchema } from './speciesPrograms.ts'
 
+import type { CreatureBody } from './creature-body.ts'
 import type { SpeciesData } from './speciesPrograms.ts'
 import type { GenericSchema } from 'valibot'
 
@@ -48,13 +49,6 @@ type CreatureTuningValue =
   | Record<string, CreatureTuningScalar>
 type CreatureTuning = Record<string, CreatureTuningValue>
 
-interface CreatureBody {
-  /** Omit for a GLB with its own rig; a kit poser names its contract explicitly. */
-  skeleton?: CreatureSkeleton
-  size: CreatureSize
-  scale: number
-  look: string
-}
 /** The spawn supplies home position; these numbers control its return policy. */
 interface CreatureTemperament {
   brain: string
@@ -113,7 +107,6 @@ const MAX_RADIUS = 500
 const MAX_SPEED = 15
 const MAX_TIME = 86_400
 const MAX_AMOUNT = 10_000_000
-const MAX_SCALE = 10
 const MAX_CALLS = 32
 const MAX_TUNING_FIELDS = 64
 
@@ -167,17 +160,6 @@ const CreatureTypeSchema: GenericSchema<CreatureType> = picklist(
   ],
   'Unknown creature type',
 )
-const CreatureBodySchema: GenericSchema<CreatureBody> = strictObject({
-  skeleton: exactOptional(
-    picklist(['quadruped', 'biped'], 'Unknown creature skeleton'),
-  ),
-  size: picklist(
-    ['tiny', 'small', 'medium', 'large', 'giant'],
-    'Unknown creature size',
-  ),
-  scale: pipe(scalar, minValue(Number.MIN_VALUE), maxValue(MAX_SCALE)),
-  look: id,
-})
 const CreatureTemperamentSchema: GenericSchema<CreatureTemperament> =
   strictObject({
     brain: id,
@@ -239,7 +221,6 @@ const CreaturePresentationSchema: GenericSchema<CreaturePresentation> =
 
 export {
   CreatureTypeSchema,
-  CreatureBodySchema,
   CreatureTemperamentSchema,
   CreatureSensesSchema,
   CreatureAbilitySchema,
@@ -250,7 +231,6 @@ export type {
   CreatureSkeleton,
   CreatureSize,
   CreatureReaction,
-  CreatureBody,
   CreatureTemperament,
   CreatureSenses,
   CreatureAbility,
@@ -260,3 +240,6 @@ export type {
   CreatureTuningValue,
   CreatureTuning,
 }
+
+export { CreatureBodySchema } from './creature-body.ts'
+export type { CreatureBody } from './creature-body.ts'
