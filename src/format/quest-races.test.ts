@@ -67,3 +67,33 @@ test('a shard without races moves unchanged: the list stays absent and reads as 
   expect(data.races ?? []).toEqual([])
   expect(JSON.stringify(data)).toBe(JSON.stringify(base))
 })
+
+test('a race may name flags its finish and a lapse lower, so the next run counts them again', (): void => {
+  const flags = ['gate.start', 'gate.mid', 'gate.end']
+  const resets = { ...race, resets: ['gate.mid'] }
+  expect(
+    parse(QuestDataSchema, { ...base, flags, races: [resets] }).races,
+  ).toEqual([resets])
+  expect(questDataRules({ ...base, flags, races: [resets] })).toEqual([])
+  expect(
+    questDataRules({
+      ...base,
+      flags,
+      races: [{ ...race, resets: ['gate.nope'] }],
+    }),
+  ).toContain('undeclared quest flag gate.nope')
+  expect(
+    questDataRules({
+      ...base,
+      flags,
+      races: [{ ...race, resets: ['gate.start'] }],
+    }),
+  ).toContain('race arch-run resets its own start or stop')
+  expect(
+    safeParse(QuestDataSchema, {
+      ...base,
+      flags,
+      races: [{ ...race, resets: [] }],
+    }).success,
+  ).toBe(false)
+})

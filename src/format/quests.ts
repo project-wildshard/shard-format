@@ -23,7 +23,11 @@ const RACE_CAP_MAX_S = 3600;
 const RACE_CAP_MIN_S = 1;
 const RACES_MAX = 32;
 const raceCap = v.pipe(finite, v.safeInteger(), v.minValue(RACE_CAP_MIN_S), v.maxValue(RACE_CAP_MAX_S));
-const race = v.strictObject({ id, start: id, stop: id, fact: id, cap: raceCap });
+/** Flags a run's finish and a lapse lower beside `start` and `stop`, so the next run counts them again (a gate line's middle gates). */
+const RACE_RESETS_MAX = 64;
+const RACE_RESETS_MIN = 1;
+const raceResets = v.pipe(v.array(id), v.minLength(RACE_RESETS_MIN), v.maxLength(RACE_RESETS_MAX));
+const race = v.strictObject({ id, start: id, stop: id, fact: id, cap: raceCap, resets: v.exactOptional(raceResets) });
 const raceRows = v.pipe(v.array(race), v.maxLength(RACES_MAX));
 const raceList = v.exactOptional(raceRows);
 const choice = v.strictObject({ id, label: text, next: v.nullable(id), when: v.exactOptional(condition), sets: v.exactOptional(names), scene: v.exactOptional(id) });
@@ -50,8 +54,9 @@ export function questDataRules(data: QuestData): string[] {
   for (const t of data.triggers) checkFlags([t.flag, ...reads(t.when)]);
   const raceIds: string[] = [];
   for (const run of data.races ?? []) {
-    raceIds.push(run.id); checkFlags([run.start, run.stop]);
+    raceIds.push(run.id); checkFlags([run.start, run.stop, ...(run.resets ?? [])]);
     if (run.start === run.stop) { errors.push(`race ${run.id} starts and stops on one flag`); }
+    if (run.resets?.some((flag): boolean => flag === run.start || flag === run.stop) === true) { errors.push(`race ${run.id} resets its own start or stop`); }
   }
   unique(raceIds);
   for (const d of data.dialogue) {
@@ -190,6 +195,7 @@ interface QuestDataInputFields {
         stop: string;
         fact: string;
         cap: number;
+        resets?: (string)[];
     })[];
     dialogue: ({
         id: string;
@@ -332,6 +338,7 @@ interface QuestDataFields {
         stop: string;
         fact: string;
         cap: number;
+        resets?: (string)[];
     })[];
     dialogue: ({
         id: string;
