@@ -9,7 +9,7 @@
     "maxNodes": 4096,
     "maxMessageBytes": 65536
   },
-  "v0SchemaHash": 2038956392,
+  "v0SchemaHash": 408870210,
   "messages": [
     {
       "id": 1,
@@ -2429,7 +2429,7 @@
     {
       "id": 1,
       "name": "player",
-      "rowFields": 11,
+      "rowFields": 13,
       "fields": [
         {
           "id": 1,
@@ -2609,6 +2609,36 @@
             "kind": "bool"
           },
           "default": false,
+          "since": 0,
+          "send": "others",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 58,
+          "name": "roadX",
+          "node": {
+            "kind": "quant",
+            "min": -2048,
+            "max": 2048,
+            "bits": 16
+          },
+          "default": -2048,
+          "since": 0,
+          "send": "others",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 59,
+          "name": "roadZ",
+          "node": {
+            "kind": "quant",
+            "min": -2048,
+            "max": 2048,
+            "bits": 16
+          },
+          "default": -2048,
           "since": 0,
           "send": "others",
           "predicted": false,
