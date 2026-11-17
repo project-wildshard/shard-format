@@ -19,6 +19,7 @@
     "src/format/*.ts",
     "!src/format/*.test.ts",
     "src/format/memoryGates.json",
+    "src/format/seededRng.golden.json",
     "src/tools/runtime-hosts.json",
     "packages/wire/src/net-command.ts",
     "src/cli/*.ts",
@@ -400,7 +401,9 @@
     "./worldUpdates": "./src/format/worldUpdates.ts",
     "./incomingCapPolicy": "./src/format/incoming-cap-policy.ts",
     "./strikeDebris": "./src/format/strike-debris.ts",
-    "./harvestRows": "./src/format/harvest-rows.ts"
+    "./harvestRows": "./src/format/harvest-rows.ts",
+    "./seededRng": "./src/format/seededRng.ts",
+    "./seededRng.golden.json": "./src/format/seededRng.golden.json"
   },
   "engines": {
     "node": ">=24.18.0"
