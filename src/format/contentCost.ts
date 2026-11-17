@@ -36,7 +36,8 @@ export function contentCost(input: ContentCostInput): { playing: number; loading
   const base = (input.engineBase ?? C.engineBase) + page + Math.ceil(resident * C.residentFactor);
   const playing = base + input.overlap;
   // The boot phases and playing churn share the same allocation headroom.
-  const loading = input.boot === undefined ? playing + input.overlap : base + bootOverlap(input.overlap, input.boot);
+  // MG6 epoch 3: the boot peak is also bounded below by what the phone-tier probe measures; the larger reading wins.
+  const loading = input.boot === undefined ? playing + input.overlap : Math.max(base + bootOverlap(input.overlap, input.boot), input.boot.phoneFloor ?? NO_BYTES);
   return { playing, loading, accounted };
 }
 

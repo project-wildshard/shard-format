@@ -21,7 +21,9 @@ import { shardfileRecordings } from './shardfile-audio.ts';
 import type { RecordingMeasure } from './audio-measure.ts';
 import { issueError, withIssueCode as coded } from './issue-codes.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
-import { offlineMemoryIssues } from './memory-line.ts';
+import { memoryContext, offlineMemoryIssues } from './memory-line.ts';
+import type { MemoryContext } from './memory-line.ts';
+import { mountedImageBytes, NO_BYTES } from './boot-memory-cost.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -108,18 +110,19 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
 }
 
 /** Refuse the declared targets a policy treats as refusals, before any byte is read or executed. */
-export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse', sections: ReadonlyMap<string, unknown> = new Map()): void {
-  const issues = [...staleRuntimeIssues(source.runtime), ...offlineMemoryIssues(source, sections), ...performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal')];
+export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse', context: MemoryContext = new Map()): void {
+  const issues = [...staleRuntimeIssues(source.runtime), ...offlineMemoryIssues(source, context), ...performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal')];
   if (issues.length === 0) return;
   throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
 }
 
 /** Admit a whole shardfile's declared costs and its actual immutable bytes through the defining contracts. */
 export function admitShardfileFolder(input: unknown, assets: ReadonlyMap<string, Uint8Array>, hash: (bytes: Uint8Array) => string,
-  policy: 'warn' | 'refuse' = 'refuse', scripts: ScriptAdmissionRows = [], sections?: ReadonlyMap<string, unknown>): Shardfile {
+  policy: 'warn' | 'refuse' = 'refuse', scripts: ScriptAdmissionRows = [], context?: MemoryContext): Shardfile {
+  const sections = context === undefined ? undefined : memoryContext(context).sections;
   const source = coded('shard-schema', (): Shardfile => parseShardfile(input, sections));
   coded('declared-costs', (): void => { preflightDeclaredCosts(source, offlineMemoryAdmission(policy)); });
-  coded('performance-targets', (): void => { assertShardfileTargets(source, policy, sections); });
+  coded('performance-targets', (): void => { assertShardfileTargets(source, policy, context); });
   return coded('asset-admission', (): Shardfile => validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy), undefined, scripts, sections));
 }
 
@@ -185,17 +188,19 @@ function checkServerAndKtx2(index: OutputIndex, read: ReadListed, assets: Readon
 
 /** C0 (J137): the cook file; a mount passes the same hash and size checks as any listed file (`cook-invalid`). */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
-function readCook(index: OutputIndex, read: ReadListed, hash: (bytes: Uint8Array) => string): ReturnType<typeof readCookData> | undefined {
-  return coded('cook-invalid', (): ReturnType<typeof readCookData> | undefined => {
+function readCook(index: OutputIndex, read: ReadListed, hash: (bytes: Uint8Array) => string): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } {
+  return coded('cook-invalid', (): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } => {
     const cook = index.cook === undefined ? undefined : readCookData(readCanonicalJson(read(index.cook)));
     requireCookPreparation(index, cook, hash);
+    let mountedImages = NO_BYTES;
     for (const mount of cook?.mounts ?? []) {
       if (!mountSharesBlob(mount, index.files)) {
         if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
-        read(mount);
+        // MG6 epoch 3: the engine images a shard mounts decode at boot like its own (Far Reach's sky and textures).
+        mountedImages += mountedImageBytes(mount.path, read(mount));
       }
     }
-    return cook;
+    return { cook, mountedImages };
   });
 }
 
@@ -225,13 +230,13 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
   }
   checkServerAndKtx2(index, read, assets);
   coded('pack-invalid', (): void => { checkPacks(index, new Set(files.paths()), { readFile: files.read, readListed: read, verify, hash: ports.hash }); });
-  const cook = readCook(index, read, ports.hash);
+  const { cook, mountedImages } = readCook(index, read, ports.hash);
   for (const entry of index.runtime?.files ?? []) {
     if (ports.runtimeImports === undefined) throw issueError('runtime-files', 'Copied runtime files need a runtime import checker');
     coded('runtime-files', (): void => { ports.runtimeImports?.(entry.path, decoder().decode(read(entry))); });
   }
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
-  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, payloads);
+  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages });
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
   return { index, shard, assets, sections: payloads, scripts, warnings, audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };

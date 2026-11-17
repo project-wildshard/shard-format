@@ -2,7 +2,7 @@
  * `runtimeCost` reading must have been taken against. It rises when the model changes what it charges (MG6 adds shader
  * compile, load transients, far slabs and paint arrays); from then a reading from an older epoch is refused until the
  * shard re-measures. A reading with no `epoch` is epoch 1, the model before MG6. */
-const MEMORY_EPOCH = 2
+const MEMORY_EPOCH = 3
 const LEGACY_EPOCH = 1
 
 interface EpochRow {

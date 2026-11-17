@@ -1,6 +1,8 @@
+import { parse } from 'valibot'
+
 import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
-import { runtimeAccountedBytes } from './runtimeCost.ts'
+import { runtimeAccountedBytes, RuntimeCostSchema } from './runtimeCost.ts'
 
 import type { Shardfile } from './shardSchema.ts'
 
@@ -40,22 +42,55 @@ function hardLineIssue(
   }
 }
 
+/**
+ * MG6 epoch 3 (mini-estcal, 2026-11-17): the offline gates charge a runtime home from the engine base, never less a
+ * matched pre-entry resident set. The phone-tier probe found that set live at the boot peak: the renderer's
+ * ArrayBuffers stay at their peak after ready (Nalati 509 of 531 MB, Pine 484, Driftwood 284), so subtracting
+ * `residentBaseMB` (Nalati 685, Pine 671 MB against a 299 MB engine) dropped 386 and 372 MB from the estimate.
+ */
+function runtimeOfflineBytes(input: unknown): number {
+  const row = parse(RuntimeCostSchema, input)
+  return runtimeAccountedBytes({
+    ...row,
+    residentBaseMB: row.engineBaseMB,
+    imagesFirst: undefined,
+  })
+}
+
+/** What the offline estimate knows of the product beyond its sections: the decoded engine images its cook mounts. */
+type MemoryContext =
+  | ReadonlyMap<string, unknown>
+  | Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages: number }>
+
+function memoryContext(
+  context: MemoryContext,
+): Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages: number }> {
+  return context instanceof Map
+    ? { sections: context, mountedImages: EMPTY_BYTES }
+    : // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the union's other arm
+      (context as Readonly<{
+        sections: ReadonlyMap<string, unknown>
+        mountedImages: number
+      }>)
+}
+
 /** Count cold-boot costs and any opaque runtime residency in offline admission. */
 function offlineMemoryIssues(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard type, read only
   source: Shardfile,
-  sections: ReadonlyMap<string, unknown>,
+  context: MemoryContext,
 ): ReturnType<typeof hardLineIssue>[] {
+  const { sections, mountedImages } = memoryContext(context)
   const native = source.runtime?.cost
   const runtime =
-    native === undefined ? EMPTY_BYTES : runtimeAccountedBytes(native)
+    native === undefined ? EMPTY_BYTES : runtimeOfflineBytes(native)
   const commons = Object.values(source.requires.commonsCosts).reduce(
     (sum, row): number => sum + row.decoded + row.gpu,
     EMPTY_BYTES,
   )
   const cost = worstContentCost(source, {
     commons: runtime + commons,
-    boot: bootMemoryCosts(source, sections),
+    boot: bootMemoryCosts(source, sections, mountedImages),
   })
   return (['playing', 'loading'] as const)
     .filter((kind): boolean => cost[kind] > MEMORY_HARD_BYTES)
@@ -64,4 +99,12 @@ function offlineMemoryIssues(
     )
 }
 
-export { MEMORY_HARD_BYTES, hardLineIssue, offlineMemoryIssues, overHardLine }
+export {
+  MEMORY_HARD_BYTES,
+  type MemoryContext,
+  hardLineIssue,
+  memoryContext,
+  offlineMemoryIssues,
+  overHardLine,
+  runtimeOfflineBytes,
+}

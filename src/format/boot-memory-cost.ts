@@ -1,6 +1,7 @@
 import { controlFileHashes } from './admissionControl.ts'
 import { textureMipBytes } from './contentBounds.ts'
 import { spawnViewSceneFiles } from './spawnView.ts'
+import { parseImageAsset } from './stillImage.ts'
 import { parseWorldScenes, worldScenesForTier } from './worldScenes.ts'
 
 import type { Shardfile } from './shardSchema.ts'
@@ -13,6 +14,12 @@ interface BootMemoryCosts {
   readonly farSlabIndices: number
   readonly paintArrayGpu: number
   readonly paintArrayStaging: number
+  /** MG6 epoch 3: the boot's CPU side as the phone-tier probe's renderer holds it (boot-phone.ts). */
+  readonly renderer?: number
+  /** MG6 epoch 3: a runtime home's paired Simulator WebContent + GL reading, whole (not less its pre-entry set). */
+  readonly runtimeReading?: number
+  /** MG6 epoch 3: `bootPhoneBytes` of the two above, the floor the loading estimate never goes under. */
+  readonly phoneFloor?: number
 }
 
 const NO_BYTES = 0
@@ -24,6 +31,18 @@ const BASE_LEVEL = 1
 // MG6: Nine's cold phone-tier shader step rose by 193 MB in the mini's
 // Chromium capture (04d76bcf). The calibrated increment rounds to 168 MB.
 const SHADER_COMPILE_BYTES = 168_000_000
+/** MG6 epoch 3 (mini-estcal, 2026-11-17): the phone-tier probe's loading renderer on an empty product (Ink Cel, Pastel,
+ *  Template, Open Plots read 368-424 MB on the v0.1.36 client, engine probe `3cd2dd87`), rounded up to cover Brasscap
+ *  and Sunscar. Lower it when the engine's own boot gets cheaper (mini-ninemem2). */
+const RENDERER_FLOOR_BYTES = 420_000_000
+const MB = 1_000_000
+/** MG6 epoch 3: the phone is the probe's loading renderer x2.0 (engine `3cd2dd87`, the floor from Jake's v0.1.36
+ *  iPhone crash). */
+const PHONE_PER_RENDERER = 2
+/** MG6 epoch 3: the probe's phone over a runtime home's paired Simulator WebContent + GL reading. Nalati 2,239 / 904 MB
+ *  = 2.48, Pine 2,076 / 850 MB = 2.44 (Driftwood 2.12; Nine's reading is stale). */
+const PHONE_PER_RUNTIME_READING = 2.5
+const IMAGE_MOUNT = /\.(?:webp|png|jpe?g)$/u
 
 function spawnMemoryCosts(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
@@ -101,23 +120,95 @@ function paintArrayBytes(
   return { paintArrayGpu, paintArrayStaging }
 }
 
-/** Boot memory that sits outside the steady-state file and tile budgets. */
+/** MG6 epoch 3: what the probe's renderer holds at the boot peak beyond its empty-product floor. Each client file's
+ *  downloaded bytes, its CPU-decoded form (decoded audio is left out: a boot decodes only its sample set, and Nine and
+ *  Open Plots decode none), the commons the same way, and the engine images the cook mounts (Far Reach's sky and
+ *  terrain textures: 107 MB of decoded bitmaps measured against 105 MB charged). */
+function rendererBytes(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
+  shard: Shardfile,
+  mountedImages: number,
+): number {
+  let bytes = RENDERER_FLOOR_BYTES + mountedImages
+  for (const file of shard.files) {
+    bytes += file.compressed + (file.kind === 'audio' ? NO_BYTES : file.decoded)
+  }
+  for (const wire of Object.values(shard.requires.commonsWire)) {
+    bytes += wire
+  }
+  for (const row of Object.values(shard.requires.commonsCosts)) {
+    bytes += row.decoded
+  }
+  return bytes
+}
+
+/** MG6 epoch 3: a runtime home's paired reading, whole. */
+function runtimeReadingBytes(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
+  shard: Shardfile,
+): number {
+  const cost = shard.runtime?.cost
+  return cost === undefined
+    ? NO_BYTES
+    : Math.ceil((cost.webContentMB + cost.glMB) * MB)
+}
+
+/** The decoded bytes of one mounted engine image the cook serves beside the product; zero for any other mount. A
+ *  mount that does not parse as a still image is charged at its own size. */
+function mountedImageBytes(path: string, bytes: Readonly<Uint8Array>): number {
+  if (!IMAGE_MOUNT.test(path)) {
+    return NO_BYTES
+  }
+  try {
+    return parseImageAsset(bytes).decoded
+  } catch {
+    return bytes.length
+  }
+}
+
+/** MG6 epoch 3: the boot's phone floor, from the renderer side and from a runtime home's own reading. */
+function bootPhoneBytes(
+  boot: Readonly<Pick<BootMemoryCosts, 'renderer' | 'runtimeReading'>>,
+): number {
+  return Math.ceil(
+    Math.max(
+      PHONE_PER_RENDERER * (boot.renderer ?? NO_BYTES),
+      PHONE_PER_RUNTIME_READING * (boot.runtimeReading ?? NO_BYTES),
+    ),
+  )
+}
+
+/** Boot memory that sits outside the steady-state file and tile budgets. `mountedImages` is the decoded size of the
+ *  engine images the cook mounts (`mountedImageBytes`), when the caller has the product's mounts. */
 function bootMemoryCosts(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
   shard: Shardfile,
   sections: ReadonlyMap<string, unknown>,
+  mountedImages: number = NO_BYTES,
 ): BootMemoryCosts {
   const rawScene = sections.get('world/scenes')
   const scene =
     rawScene === undefined
       ? undefined
       : worldScenesForTier(parseWorldScenes(rawScene), 'phone')
+  const renderer = rendererBytes(shard, mountedImages)
+  const runtimeReading = runtimeReadingBytes(shard)
   return {
     ...spawnMemoryCosts(shard, sections),
     shaderCompile: SHADER_COMPILE_BYTES,
     farSlabIndices: farSlabBytes(shard.files, scene),
     ...paintArrayBytes(scene),
+    renderer,
+    runtimeReading,
+    phoneFloor: bootPhoneBytes({ renderer, runtimeReading }),
   }
 }
 
-export { type BootMemoryCosts, bootMemoryCosts }
+export {
+  type BootMemoryCosts,
+  bootMemoryCosts,
+  bootPhoneBytes,
+  mountedImageBytes,
+  NO_BYTES,
+  RENDERER_FLOOR_BYTES,
+}
