@@ -20,7 +20,7 @@ const brain = v.pipe(v.strictObject({ id, kind: v.literal('pursue'), awareRadius
 v.check((b) => b.stopDistance <= b.awareRadius && b.awareRadius <= b.leashRadius && b.wanderRadius <= b.leashRadius, 'ordered brain radii'));
 /** One authored body's home; never inferred from a species or another actor. */
 export const CreatureHomeSchema: v.GenericSchema<ShardCreatureHomeInput, ShardCreatureHome> = v.strictObject({ x: coord, y: coord, z: coord, r: v.pipe(radius, v.minValue(Number.MIN_VALUE)) });
-/** Bounded per-spawn home overriding a flyer's catalogue home or supplying its ram boundary. */
+/** Bounded per-spawn home for an admitted home-aware or perch policy. */
 
 const memoryKey = v.pipe(v.string(), v.regex(/^[a-zA-Z][a-zA-Z0-9._-]{0,63}$/u),
   v.check(key => !['constructor', 'prototype', '__proto__'].includes(key), 'safe memory key'));
@@ -79,7 +79,8 @@ export function creatureRules(content: { brains: readonly { id: string; kind?: s
       || (policy?.kind === 'grazer' && policy.pattern === 'circle-challenge'))) errors.push('declared per-body circle phase policy');
     if (body.home === undefined) continue;
     if (policy === undefined || !(policy.kind === 'ram-grazer' || policy.kind === 'orbit-diver'
-      || policy.kind === 'patrol-diver' || policy.kind === 'burst-flyer' || policy.kind === 'diver'
+      || policy.kind === 'patrol-diver' || policy.kind === 'burst-flyer' || policy.kind === 'diver' || policy.kind === 'perch-hunter'
+      || (policy.kind === 'guardian' && policy.pattern === 'perch')
       || (policy.kind === 'grazer' && policy.pattern === 'wander-ram'))) errors.push('declared per-body home policy');
   }
   errors.push(...groupBrainRules(content.groups ?? [], content.spawns, content.brains.map((row) => row.id)));
