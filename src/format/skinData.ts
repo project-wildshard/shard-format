@@ -11,10 +11,11 @@ export const SkinClipNameSchema: v.GenericSchema<SkinClipNameRowsInput, SkinClip
 const joint = v.pipe(v.string(), v.regex(/^[A-Za-z][A-Za-z0-9_.-]*$/u), v.maxLength(64));
 const bytes = v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(25_000_000));
 
-/** One exported skin as the export half writes it (`public/assets/baked/<shard>/skins.json`): the GLB's content hash and its rig. */
+/** One exported skin: the GLB hash and rig. Clips may be empty for a poser-driven
+ * rig; loop bindings must still name a declared clip. */
 export const SkinRowSchema: v.GenericSchema<SkinRowInput, SkinRow> = v.object({
   id, file: hash, family: v.picklist(['toon', 'pbr']),
-  rig: v.strictObject({ skeleton: v.pipe(v.string(), v.regex(/^[a-z][A-Za-z0-9.]*$/u), v.maxLength(128)), joints: v.pipe(v.array(v.pipe(v.array(joint), v.minLength(1), v.maxLength(128))), v.length(1)), clips: v.pipe(v.array(SkinClipNameSchema), v.minLength(1), v.maxLength(32)), sockets: v.pipe(v.array(joint), v.maxLength(32)) }),
+  rig: v.strictObject({ skeleton: v.pipe(v.string(), v.regex(/^[a-z][A-Za-z0-9.]*$/u), v.maxLength(128)), joints: v.pipe(v.array(v.pipe(v.array(joint), v.minLength(1), v.maxLength(128))), v.length(1)), clips: v.pipe(v.array(SkinClipNameSchema), v.maxLength(32)), sockets: v.pipe(v.array(joint), v.maxLength(32)) }),
   cost: v.strictObject({ decoded: bytes, gpu: bytes, triangles: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(400_000)), draws: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(512)) }),
 });
 /** A validated exported skin row. */

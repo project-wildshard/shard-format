@@ -4080,7 +4080,7 @@
    "eslint(id-length)": 5,
    "eslint(max-statements)": 1,
    "eslint(no-continue)": 1,
-   "eslint(no-magic-numbers)": 20,
+   "eslint(no-magic-numbers)": 19,
    "eslint(prefer-named-capture-group)": 2,
    "import(exports-last)": 12,
    "import(group-exports)": 13,
@@ -4089,7 +4089,7 @@
    "typescript(no-unsafe-type-assertion)": 2,
    "typescript(prefer-readonly-parameter-types)": 6,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 25
+   "unicorn(max-nested-calls)": 24
   },
   "src/format/skinLayers.ts": {
    "eslint(complexity)": 1,

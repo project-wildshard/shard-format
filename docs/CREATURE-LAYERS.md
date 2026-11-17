@@ -1,7 +1,7 @@
 # Species layers
 
 > Written by: Codex
-> State: M1 contract released0.14; additive M2 membership candidate, 2026-11-17.
+> State: M1 contract released0.14; additive M2 contracts, 2026-11-17.
 
 A species keeps its id, kind label, variants and existing dimensions. These
 fields are optional additions. Parsing an older row does not add any layer.
@@ -74,3 +74,9 @@ half length is 0.5, along z for quadrupeds and y for bipeds. Head radius is
 0.3 with a damage multiplier of 2; the body multiplier is 1. CC6 applies
 these contracts to server volumes and enforces the minimum 0.3 hit radius.
 These are contracts only; this row adds no meshes or animation assets.
+
+A skin rig may declare an empty `clips` list for a kit poser. The list
+remains bounded to32 recognized clip names; bindings may loop only a
+clip present in that list. This does not invent an idle animation or
+change a GLB. Joint order, required body/head and socket admission remain
+the same for animated and clipless rigs.
