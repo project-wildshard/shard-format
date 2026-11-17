@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.17.0 (2026-11-17)
+
+- Declare perch creatures, their homes and shared projectile pools in the shard format.
+- Catch missing perch strikes and excessive script memory before loading a shard.
+
 ## v0.16.0 (2026-11-17)
 
 - Shard tools can place forests, grow grass, place colliders and read item catalogues by the game's own rules, without the engine.
