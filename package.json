@@ -28,6 +28,7 @@
     "src/format/colliders.golden.json",
     "src/format/small-laws.golden.json",
     "src/format/interact-table.golden.json",
+    "src/format/item-catalogue.golden.json",
     "src/tools/runtime-hosts.json",
     "packages/wire/src/net-command.ts",
     "src/cli/*.ts",
@@ -429,6 +430,8 @@
     "./small-laws.golden.json": "./src/format/small-laws.golden.json",
     "./interactTable": "./src/format/interact-table.ts",
     "./interact-table.golden.json": "./src/format/interact-table.golden.json",
+    "./itemCatalogue": "./src/format/item-catalogue.ts",
+    "./item-catalogue.golden.json": "./src/format/item-catalogue.golden.json",
     "./baked-terrain.golden.json": "./src/format/baked-terrain.golden.json"
   },
   "engines": {

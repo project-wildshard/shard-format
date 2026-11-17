@@ -1,0 +1,2310 @@
+{
+  "about": "SDK-SPLIT SP4f3: engine game/loadout/itemCatalogue.ts over the corpus and shard item tables embedded here (item-catalogue.golden-specs.ts)",
+  "tables": [
+    {
+      "name": "handwritten/sections/combat/items.json",
+      "table": {
+        "contexts": [],
+        "loadout": { "primary": null, "secondary": null, "tools": [] },
+        "rows": [],
+        "version": 1
+      },
+      "answers": {
+        "ok": {
+          "rows": [
+            [
+              "item.missing",
+              {
+                "error": "Missing declared equipment presentation: item.missing"
+              },
+              { "error": "Missing declared ammunition" }
+            ]
+          ],
+          "inventory": { "error": "Missing declared inventory policy" }
+        }
+      }
+    },
+    {
+      "name": "brasscap-mesa/sections/combat/items.json",
+      "table": {
+        "contexts": [
+          {
+            "actions": ["attack", "aim", "reload"],
+            "id": "brasscap.lever",
+            "keysFrom": "weapon.ranged",
+            "lockable": false,
+            "touch": "ranged"
+          }
+        ],
+        "loadout": {
+          "primary": "weapon.brasscap-lever",
+          "secondary": null,
+          "tools": []
+        },
+        "rows": [
+          {
+            "charge": 1,
+            "context": "brasscap.lever",
+            "family": "kit.lever",
+            "heavy": {
+              "cooldown": 0.68,
+              "damage": 10,
+              "effect": null,
+              "id": "brasscap.lever.round-heavy",
+              "range": 1,
+              "tags": ["actor.player", "weapon.brasscap-lever", "dmg.ranged"],
+              "width": 0.1
+            },
+            "hook": null,
+            "id": "weapon.brasscap-lever",
+            "kind": "weapon",
+            "light": {
+              "cooldown": 0.68,
+              "damage": 10,
+              "effect": null,
+              "id": "brasscap.lever.round",
+              "range": 1,
+              "tags": ["actor.player", "weapon.brasscap-lever", "dmg.ranged"],
+              "width": 0.1
+            },
+            "profile": {
+              "action": "lever",
+              "autoReload": 0.35,
+              "bloomMax": 0,
+              "bloomShot": 0,
+              "damageScale": 1,
+              "family": "firearm",
+              "interval": 0.68,
+              "lever": {
+                "autoReloadClose": 5,
+                "cockAt": 0.2,
+                "cycleDelay": 0.12,
+                "cycleTime": 0.56,
+                "ejectAt": 0.34,
+                "reloadIn": 0.22,
+                "reloadOut": 0.2
+              },
+              "magazine": 6,
+              "movingAimReduction": 0,
+              "movingSpread": 0,
+              "projectile": {
+                "delivery": "hitscan",
+                "flight": { "drag": 0, "gravity": 0, "windCoupling": 0 },
+                "kind": "bullet",
+                "lifetime": 1,
+                "pool": 1,
+                "radius": 0,
+                "speed": 0,
+                "substeps": 1
+              },
+              "range": 120,
+              "reload": 0.4,
+              "reloadMode": "perRound",
+              "reserve": 30,
+              "spreadAds": 0,
+              "spreadHip": 0.9,
+              "spreadRadius": "sqrt"
+            },
+            "slot": "declared.weapon.brasscap-lever",
+            "ui": {
+              "blurb": "Six in the tube, loaded one round at a time.",
+              "icon": "lever",
+              "name": "Lever-action",
+              "swapIcon": "⌐"
+            },
+            "view": {
+              "asset": "5821f33aa00e9acd2f4c0a29129978ee7006a879d163ce1463ae476031bfabcf",
+              "colour": "#8a5a2b",
+              "position": [0.19, -0.22, -0.56],
+              "recipe": "kit.rifle",
+              "rotation": [0, 0, 0]
+            }
+          }
+        ],
+        "version": 1
+      },
+      "answers": {
+        "ok": {
+          "rows": [
+            [
+              "weapon.brasscap-lever",
+              {
+                "error": "Missing declared equipment presentation: weapon.brasscap-lever"
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "item.missing",
+              {
+                "error": "Missing declared equipment presentation: item.missing"
+              },
+              { "error": "Missing declared ammunition" }
+            ]
+          ],
+          "inventory": { "error": "Missing declared inventory policy" }
+        }
+      }
+    },
+    {
+      "name": "shard-nalati/src/data/items.json",
+      "table": {
+        "version": 1,
+        "rows": [
+          {
+            "id": "weapon.bow",
+            "kind": "weapon",
+            "family": "bow",
+            "slot": "declared.weapon.bow",
+            "context": "weapon.bow",
+            "ui": {
+              "name": "Bow",
+              "icon": "longbow",
+              "swapIcon": "<path d=\"M6 3c7 3.5 7 14.5 0 18\"/><path d=\"M6 3v18\" stroke-width=\"0.9\"/><path d=\"M4 12h15M16.5 9.5 19 12l-2.5 2.5\"/>",
+              "blurb": ""
+            },
+            "view": {
+              "recipe": "nalati-grasslands.bow",
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "rotation": [0, 0, 0]
+            },
+            "hook": null,
+            "light": {
+              "id": "weapon.bow.light",
+              "damage": 0,
+              "cooldown": 1,
+              "range": 0.01,
+              "width": 0.01,
+              "tags": [],
+              "effect": null
+            },
+            "heavy": {
+              "id": "weapon.bow.heavy",
+              "damage": 0,
+              "cooldown": 1,
+              "range": 0.01,
+              "width": 0.01,
+              "tags": [],
+              "effect": null
+            },
+            "charge": 0.001,
+            "profile": {
+              "family": "bow",
+              "quiver": 24,
+              "speedBase": 30,
+              "speedDraw": 28,
+              "damageScale": 1.2,
+              "draw": {
+                "drawTime": 0.75,
+                "letdownTime": 0.4,
+                "renockTime": 0.62,
+                "renockEarly": 0.4,
+                "holdSteady": 3,
+                "holdTire": 8,
+                "tiredTime": 1.1
+              },
+              "spread": {
+                "degrees": 0.3,
+                "radius": "sqrt",
+                "axisScale": 1,
+                "aimMultiplier": 0.5,
+                "motion": 0.6
+              },
+              "flight": { "gravity": 5, "drag": 0.015, "windCoupling": 0.25 },
+              "muzzle": 0.55,
+              "pool": 8,
+              "substeps": 4,
+              "lifetime": 12
+            },
+            "equipment": {
+              "cues": {
+                "fire": "cue.bow.loose",
+                "reload": "cue.reload",
+                "impact": "cue.arrow.hit"
+              },
+              "id": "weapon.bow",
+              "legacySlot": "bow",
+              "ui": {
+                "swapIcon": "<path d=\"M6 3c7 3.5 7 14.5 0 18\"/><path d=\"M6 3v18\" stroke-width=\"0.9\"/><path d=\"M4 12h15M16.5 9.5 19 12l-2.5 2.5\"/>",
+                "name": "Bow",
+                "icon": "longbow",
+                "touch": "bow",
+                "lockOn": false,
+                "melee": false,
+                "tracers": false,
+                "ammo": { "label": "Arrows", "segments": 4 },
+                "swapName": "Bow",
+                "huntersEye": true
+              },
+              "meta": {
+                "name": "Bow",
+                "icon": "longbow",
+                "blurb": "",
+                "category": "weapon"
+              },
+              "rangedFeel": {
+                "kick": {
+                  "body": 0.35,
+                  "head": 0.6,
+                  "kill": 0.9,
+                  "side": 0.6,
+                  "killSide": 1.2
+                },
+                "trauma": {
+                  "kill": 0,
+                  "head": 0,
+                  "killKinds": [],
+                  "headKinds": []
+                }
+              }
+            }
+          },
+          {
+            "id": "weapon.sabre",
+            "kind": "weapon",
+            "family": "melee",
+            "slot": "declared.weapon.sabre",
+            "context": "weapon.melee",
+            "ui": {
+              "name": "Sabre",
+              "icon": "sword",
+              "swapIcon": "<path d=\"M5 19c4-3.5 9.5-9.5 13.5-15.5-1 5-5.5 11.5-11.5 16.5\"/><path d=\"M3.5 16.5l4.5 4.5M4.5 21.5l2-2\"/>",
+              "blurb": ""
+            },
+            "view": {
+              "recipe": "nalati-grasslands.sabre",
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "rotation": [0, 0, 0]
+            },
+            "hook": null,
+            "light": {
+              "id": "sabre.light",
+              "damage": 24,
+              "cooldown": 0.08,
+              "range": 2.2,
+              "width": 0.9,
+              "tags": [],
+              "effect": null
+            },
+            "heavy": {
+              "id": "sabre.heavy",
+              "damage": 48,
+              "cooldown": 0.08,
+              "range": 2.2,
+              "width": 0.9,
+              "tags": [],
+              "effect": null
+            },
+            "charge": 0.45,
+            "profile": {
+              "family": "melee",
+              "damage": 24,
+              "reach": 2.2,
+              "swingScale": 0.9,
+              "cooldown": 0.08,
+              "comboGap": 0.6,
+              "chainLag": 0.02,
+              "heavyCharge": 0.45,
+              "moves": {
+                "combo": [
+                  {
+                    "windup": 0.07,
+                    "slashEnd": 0.24,
+                    "total": 0.35,
+                    "damage": 1,
+                    "stagger": 0,
+                    "sweep": 1
+                  },
+                  {
+                    "windup": 0.06,
+                    "slashEnd": 0.22,
+                    "total": 0.34,
+                    "damage": 1,
+                    "stagger": 0,
+                    "sweep": -1
+                  },
+                  {
+                    "windup": 0.1,
+                    "slashEnd": 0.28,
+                    "total": 0.44,
+                    "damage": 1.3333333333333333,
+                    "stagger": 0.25,
+                    "sweep": 0.5
+                  }
+                ],
+                "heavy": {
+                  "windup": 0.06,
+                  "slashEnd": 0.3,
+                  "total": 0.62,
+                  "damage": 2,
+                  "stagger": 1,
+                  "sweep": 0.35
+                },
+                "passes": {
+                  "left": {
+                    "windup": 0.09,
+                    "slashEnd": 0.3,
+                    "total": 0.5,
+                    "damage": 1,
+                    "stagger": 1,
+                    "sweep": 1,
+                    "reach": 2.8
+                  },
+                  "right": {
+                    "windup": 0.09,
+                    "slashEnd": 0.3,
+                    "total": 0.5,
+                    "damage": 1,
+                    "stagger": 1,
+                    "sweep": -1,
+                    "reach": 2.8
+                  }
+                }
+              },
+              "mounted": {
+                "reach": 2.8,
+                "cooldown": 0.7,
+                "sense": 6,
+                "chainWindow": 3,
+                "chainStep": 0.1,
+                "chainMax": 1.4,
+                "speedDivisor": 12,
+                "behind": -2
+              },
+              "lunge": {
+                "range": 4,
+                "heavyRange": 5,
+                "cone": 0.4363323129985824,
+                "stop": 1.1,
+                "speed": 22,
+                "minTime": 0.08,
+                "maxTime": 0.15
+              },
+              "sweep": {
+                "rays": 5,
+                "extensions": [0.12, 0.24, 0.36, 0.48],
+                "step": 0.09,
+                "maxSamples": 6,
+                "maxHits": 8
+              }
+            },
+            "equipment": {
+              "cues": {
+                "fire": "cue.sabre.swing",
+                "reload": "cue.reload",
+                "impact": "cue.sabre.hit"
+              },
+              "id": "weapon.sabre",
+              "legacySlot": "sabre",
+              "ui": {
+                "swapIcon": "<path d=\"M5 19c4-3.5 9.5-9.5 13.5-15.5-1 5-5.5 11.5-11.5 16.5\"/><path d=\"M3.5 16.5l4.5 4.5M4.5 21.5l2-2\"/>",
+                "name": "Sabre",
+                "icon": "sword",
+                "touch": "melee",
+                "lockOn": true,
+                "melee": true,
+                "tracers": false,
+                "swapName": "Sabre"
+              },
+              "meta": {
+                "name": "Sabre",
+                "icon": "sword",
+                "blurb": "",
+                "category": "weapon"
+              }
+            }
+          },
+          {
+            "id": "weapon.spear",
+            "kind": "weapon",
+            "family": "thrown",
+            "slot": "declared.weapon.spear",
+            "context": "weapon.spear",
+            "ui": {
+              "name": "Spear",
+              "icon": "sword",
+              "swapIcon": "<path d=\"M4 20 16 8\"/><path d=\"M16 8c.8-2.6 2.6-4.4 5-5-.6 2.4-2.4 4.2-5 5z\"/><path d=\"M13.2 8.6l2.2 2.2\"/>",
+              "blurb": ""
+            },
+            "view": {
+              "recipe": "nalati-grasslands.spear",
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "rotation": [0, 0, 0]
+            },
+            "hook": null,
+            "light": {
+              "id": "weapon.spear.light",
+              "damage": 0,
+              "cooldown": 1,
+              "range": 0.01,
+              "width": 0.01,
+              "tags": [],
+              "effect": null
+            },
+            "heavy": {
+              "id": "weapon.spear.heavy",
+              "damage": 0,
+              "cooldown": 1,
+              "range": 0.01,
+              "width": 0.01,
+              "tags": [],
+              "effect": null
+            },
+            "charge": 0.001,
+            "profile": {
+              "family": "thrown",
+              "speed": 28,
+              "gravity": 9.8,
+              "damage": 55,
+              "headMultiplier": 2,
+              "radius": 0.03,
+              "headOffset": 0.8,
+              "windup": 0.4,
+              "release": 0.14,
+              "recovery": 0.45,
+              "carried": 3,
+              "pool": 5,
+              "pickupRadius": 1.6,
+              "pickupHeight": 2.2,
+              "survive": 0.9,
+              "arcPoints": 32,
+              "arcAfter": 0.12,
+              "stagger": 1
+            },
+            "equipment": {
+              "cues": {
+                "fire": "cue.spear.thrust",
+                "reload": "cue.reload",
+                "impact": "cue.javelin.hit"
+              },
+              "id": "weapon.spear",
+              "legacySlot": "spear",
+              "ui": {
+                "swapIcon": "<path d=\"M4 20 16 8\"/><path d=\"M16 8c.8-2.6 2.6-4.4 5-5-.6 2.4-2.4 4.2-5 5z\"/><path d=\"M13.2 8.6l2.2 2.2\"/>",
+                "name": "Spear",
+                "icon": "sword",
+                "touch": "throwing",
+                "lockOn": true,
+                "melee": true,
+                "tracers": false,
+                "ammo": { "label": "Javelins", "segments": 3 },
+                "swapName": "Spear"
+              },
+              "meta": {
+                "name": "Spear",
+                "icon": "sword",
+                "blurb": "",
+                "category": "weapon"
+              }
+            }
+          },
+          {
+            "id": "weapon.rifle",
+            "kind": "weapon",
+            "family": "firearm",
+            "slot": "declared.weapon.rifle",
+            "context": "weapon.ranged",
+            "ui": {
+              "name": "AR-15",
+              "icon": "rifle",
+              "swapIcon": "<path d=\"M3 13h14l3-2h1v3h-4l-2 2H9l-1 3H5l1-3H3z\"/>",
+              "blurb": ""
+            },
+            "view": {
+              "recipe": "nalati-grasslands.rifle",
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "rotation": [0, 0, 0]
+            },
+            "hook": null,
+            "light": {
+              "id": "weapon.rifle.light",
+              "damage": 0,
+              "cooldown": 1,
+              "range": 0.01,
+              "width": 0.01,
+              "tags": [],
+              "effect": null
+            },
+            "heavy": {
+              "id": "weapon.rifle.heavy",
+              "damage": 0,
+              "cooldown": 1,
+              "range": 0.01,
+              "width": 0.01,
+              "tags": [],
+              "effect": null
+            },
+            "charge": 0.001,
+            "profile": {
+              "family": "firearm",
+              "action": "semi",
+              "magazine": 30,
+              "reserve": 90,
+              "interval": 0.09,
+              "reload": 1.6,
+              "reloadMode": "magazine",
+              "autoReload": 0.35,
+              "damageScale": 0.55,
+              "range": 300,
+              "spreadAds": 0.12,
+              "spreadHip": 1.1,
+              "spreadRadius": "linear",
+              "bloomShot": 0.35,
+              "bloomMax": 1.6,
+              "movingSpread": 0,
+              "movingAimReduction": 0,
+              "projectile": {
+                "kind": "bullet",
+                "delivery": "hitscan",
+                "speed": 0,
+                "radius": 0,
+                "flight": { "gravity": 0, "drag": 0, "windCoupling": 0 },
+                "pool": 1,
+                "substeps": 1,
+                "lifetime": 1
+              }
+            },
+            "equipment": {
+              "cues": {
+                "fire": "cue.firearm.fire",
+                "reload": "cue.firearm.reload",
+                "impact": "cue.projectile.hit"
+              },
+              "id": "weapon.rifle",
+              "legacySlot": "rifle",
+              "ui": {
+                "swapIcon": "<path d=\"M3 13h14l3-2h1v3h-4l-2 2H9l-1 3H5l1-3H3z\"/>",
+                "name": "AR-15",
+                "icon": "rifle",
+                "touch": "ranged",
+                "lockOn": false,
+                "melee": false,
+                "tracers": true,
+                "ammo": { "label": "Rounds", "magazine": true, "segments": 6 }
+              },
+              "meta": {
+                "name": "AR-15",
+                "icon": "rifle",
+                "blurb": "",
+                "category": "weapon"
+              },
+              "rangedFeel": {
+                "kick": {
+                  "body": 0.35,
+                  "head": 0.6,
+                  "kill": 0.9,
+                  "side": 0.6,
+                  "killSide": 1.2
+                },
+                "trauma": {
+                  "kill": 0,
+                  "head": 0,
+                  "killKinds": [],
+                  "headKinds": []
+                }
+              }
+            }
+          }
+        ],
+        "contexts": [],
+        "runtimeContexts": [
+          "weapon.melee",
+          "weapon.bow",
+          "weapon.spear",
+          "weapon.ranged"
+        ],
+        "loadout": {
+          "primary": "weapon.bow",
+          "secondary": "weapon.sabre",
+          "tools": []
+        }
+      },
+      "answers": {
+        "ok": {
+          "rows": [
+            [
+              "weapon.bow",
+              {
+                "ok": {
+                  "legacySlot": "bow",
+                  "ui": {
+                    "name": "Bow",
+                    "icon": "longbow",
+                    "swapIcon": "<path d=\"M6 3c7 3.5 7 14.5 0 18\"/><path d=\"M6 3v18\" stroke-width=\"0.9\"/><path d=\"M4 12h15M16.5 9.5 19 12l-2.5 2.5\"/>",
+                    "touch": "bow",
+                    "lockOn": false,
+                    "melee": false,
+                    "tracers": false,
+                    "swapName": "Bow",
+                    "huntersEye": true,
+                    "ammo": { "label": "Arrows", "segments": 4 }
+                  },
+                  "meta": {
+                    "name": "Bow",
+                    "icon": "longbow",
+                    "blurb": "",
+                    "category": "weapon"
+                  },
+                  "rangedFeel": {
+                    "kick": {
+                      "body": 0.35,
+                      "head": 0.6,
+                      "kill": 0.9,
+                      "side": 0.6,
+                      "killSide": 1.2
+                    },
+                    "trauma": {
+                      "kill": 0,
+                      "head": 0,
+                      "killKinds": [],
+                      "headKinds": []
+                    }
+                  },
+                  "id": "weapon.bow",
+                  "cues": {
+                    "fire": "cue.bow.loose",
+                    "reload": "cue.reload",
+                    "impact": "cue.arrow.hit"
+                  }
+                }
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "weapon.sabre",
+              {
+                "ok": {
+                  "legacySlot": "sabre",
+                  "ui": {
+                    "name": "Sabre",
+                    "icon": "sword",
+                    "swapIcon": "<path d=\"M5 19c4-3.5 9.5-9.5 13.5-15.5-1 5-5.5 11.5-11.5 16.5\"/><path d=\"M3.5 16.5l4.5 4.5M4.5 21.5l2-2\"/>",
+                    "touch": "melee",
+                    "lockOn": true,
+                    "melee": true,
+                    "tracers": false,
+                    "swapName": "Sabre"
+                  },
+                  "meta": {
+                    "name": "Sabre",
+                    "icon": "sword",
+                    "blurb": "",
+                    "category": "weapon"
+                  },
+                  "id": "weapon.sabre",
+                  "cues": {
+                    "fire": "cue.sabre.swing",
+                    "reload": "cue.reload",
+                    "impact": "cue.sabre.hit"
+                  }
+                }
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "weapon.spear",
+              {
+                "ok": {
+                  "legacySlot": "spear",
+                  "ui": {
+                    "name": "Spear",
+                    "icon": "sword",
+                    "swapIcon": "<path d=\"M4 20 16 8\"/><path d=\"M16 8c.8-2.6 2.6-4.4 5-5-.6 2.4-2.4 4.2-5 5z\"/><path d=\"M13.2 8.6l2.2 2.2\"/>",
+                    "touch": "throwing",
+                    "lockOn": true,
+                    "melee": true,
+                    "tracers": false,
+                    "swapName": "Spear",
+                    "ammo": { "label": "Javelins", "segments": 3 }
+                  },
+                  "meta": {
+                    "name": "Spear",
+                    "icon": "sword",
+                    "blurb": "",
+                    "category": "weapon"
+                  },
+                  "id": "weapon.spear",
+                  "cues": {
+                    "fire": "cue.spear.thrust",
+                    "reload": "cue.reload",
+                    "impact": "cue.javelin.hit"
+                  }
+                }
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "weapon.rifle",
+              {
+                "ok": {
+                  "legacySlot": "rifle",
+                  "ui": {
+                    "name": "AR-15",
+                    "icon": "rifle",
+                    "swapIcon": "<path d=\"M3 13h14l3-2h1v3h-4l-2 2H9l-1 3H5l1-3H3z\"/>",
+                    "touch": "ranged",
+                    "lockOn": false,
+                    "melee": false,
+                    "tracers": true,
+                    "ammo": {
+                      "label": "Rounds",
+                      "segments": 6,
+                      "magazine": true
+                    }
+                  },
+                  "meta": {
+                    "name": "AR-15",
+                    "icon": "rifle",
+                    "blurb": "",
+                    "category": "weapon"
+                  },
+                  "rangedFeel": {
+                    "kick": {
+                      "body": 0.35,
+                      "head": 0.6,
+                      "kill": 0.9,
+                      "side": 0.6,
+                      "killSide": 1.2
+                    },
+                    "trauma": {
+                      "kill": 0,
+                      "head": 0,
+                      "killKinds": [],
+                      "headKinds": []
+                    }
+                  },
+                  "id": "weapon.rifle",
+                  "cues": {
+                    "fire": "cue.firearm.fire",
+                    "reload": "cue.firearm.reload",
+                    "impact": "cue.projectile.hit"
+                  }
+                }
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "item.missing",
+              {
+                "error": "Missing declared equipment presentation: item.missing"
+              },
+              { "error": "Missing declared ammunition" }
+            ]
+          ],
+          "inventory": { "error": "Missing declared inventory policy" }
+        }
+      }
+    },
+    {
+      "name": "shard-nine-dragon/src/data/items.json",
+      "table": {
+        "version": 1,
+        "rows": [
+          {
+            "id": "weapon.jian",
+            "kind": "weapon",
+            "family": "melee",
+            "slot": "declared.weapon.jian",
+            "context": "weapon.melee",
+            "ui": {
+              "name": "Neon Jian",
+              "icon": "sword",
+              "swapIcon": "<path d=\"M20.5 3.5 9.2 14.8M20.5 3.5l-.6 4.2M20.5 3.5l-4.2.6\"/><path d=\"M6.6 12.2l5.2 5.2M8.4 15.6 4 20\"/>",
+              "blurb": ""
+            },
+            "view": {
+              "recipe": "nine-dragon-stack.jian",
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "rotation": [0, 0, 0]
+            },
+            "hook": null,
+            "light": {
+              "id": "weapon.jian.light",
+              "damage": 0,
+              "cooldown": 1,
+              "range": 0.01,
+              "width": 0.01,
+              "tags": [],
+              "effect": null
+            },
+            "heavy": {
+              "id": "weapon.jian.heavy",
+              "damage": 0,
+              "cooldown": 1,
+              "range": 0.01,
+              "width": 0.01,
+              "tags": [],
+              "effect": null
+            },
+            "charge": 0.001,
+            "profile": {
+              "family": "melee",
+              "damage": 12,
+              "reach": 2.2,
+              "swingScale": 1,
+              "cooldown": 0.08,
+              "comboGap": 0.6,
+              "chainLag": 0.02,
+              "heavyCharge": 0.45,
+              "moves": {
+                "combo": [
+                  {
+                    "windup": 0.07,
+                    "slashEnd": 0.235,
+                    "total": 0.35,
+                    "damage": 1,
+                    "stagger": 0,
+                    "sweep": 1
+                  },
+                  {
+                    "windup": 0.06,
+                    "slashEnd": 0.22,
+                    "total": 0.34,
+                    "damage": 1,
+                    "stagger": 0,
+                    "sweep": -1
+                  },
+                  {
+                    "windup": 0.1,
+                    "slashEnd": 0.28,
+                    "total": 0.44,
+                    "damage": 1.3333333333333333,
+                    "stagger": 0.25,
+                    "sweep": 0.5
+                  }
+                ],
+                "heavy": {
+                  "windup": 0.06,
+                  "slashEnd": 0.3,
+                  "total": 0.62,
+                  "damage": 2,
+                  "stagger": 1,
+                  "sweep": 0.35
+                }
+              },
+              "lunge": {
+                "range": 4,
+                "heavyRange": 5,
+                "cone": 0.4363323129985824,
+                "stop": 1.1,
+                "speed": 22,
+                "minTime": 0.08,
+                "maxTime": 0.15
+              },
+              "sweep": {
+                "rays": 5,
+                "extensions": [0.12, 0.24, 0.36, 0.48],
+                "step": 0.09,
+                "maxSamples": 6,
+                "maxHits": 8
+              }
+            },
+            "equipment": {
+              "id": "weapon.jian",
+              "legacySlot": "sword",
+              "ui": {
+                "swapIcon": "<path d=\"M20.5 3.5 9.2 14.8M20.5 3.5l-.6 4.2M20.5 3.5l-4.2.6\"/><path d=\"M6.6 12.2l5.2 5.2M8.4 15.6 4 20\"/>",
+                "name": "Neon Jian",
+                "icon": "sword",
+                "touch": "melee",
+                "lockOn": true,
+                "melee": true,
+                "tracers": false
+              },
+              "meta": {
+                "name": "Neon Jian",
+                "icon": "sword",
+                "blurb": "",
+                "category": "weapon"
+              },
+              "cues": {
+                "fire": "cue.sword.swing",
+                "reload": "cue.reload",
+                "impact": "cue.sword.hit",
+                "hit": "cue.sword.hit",
+                "heavy": "cue.sword.heavy"
+              },
+              "hitStop": { "body": 0.06, "head": 0.06, "kill": 0.06 }
+            }
+          },
+          {
+            "id": "tool.fei-zhua",
+            "kind": "tool",
+            "family": "nine-dragon-stack.fei-zhua",
+            "ui": {
+              "name": "Fei Zhua",
+              "icon": "grapple",
+              "swapIcon": "<path d=\"M20.5 3.5 9.2 14.8M20.5 3.5l-.6 4.2M20.5 3.5l-4.2.6\"/><path d=\"M6.6 12.2l5.2 5.2M8.4 15.6 4 20\"/>",
+              "blurb": "Lock a hook, then jump"
+            },
+            "view": {
+              "recipe": "nine-dragon-stack.fei-zhua",
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "rotation": [0, 0, 0]
+            },
+            "hook": null,
+            "action": null,
+            "fuelSeconds": 1,
+            "intensity": 0,
+            "equipment": {
+              "id": "tool.fei-zhua",
+              "ui": {
+                "swapIcon": "<path d=\"M20.5 3.5 9.2 14.8M20.5 3.5l-.6 4.2M20.5 3.5l-4.2.6\"/><path d=\"M6.6 12.2l5.2 5.2M8.4 15.6 4 20\"/>",
+                "name": "Fei Zhua",
+                "icon": "grapple",
+                "touch": "melee",
+                "lockOn": true,
+                "melee": true,
+                "tracers": false
+              },
+              "meta": {
+                "name": "tool.fei-zhua",
+                "icon": "grapple",
+                "blurb": "Lock a hook, then jump",
+                "category": "Grapple"
+              }
+            }
+          }
+        ],
+        "contexts": [],
+        "loadout": {
+          "primary": "weapon.jian",
+          "secondary": null,
+          "tools": ["tool.fei-zhua"]
+        }
+      },
+      "answers": {
+        "ok": {
+          "rows": [
+            [
+              "weapon.jian",
+              {
+                "ok": {
+                  "legacySlot": "sword",
+                  "ui": {
+                    "name": "Neon Jian",
+                    "icon": "sword",
+                    "swapIcon": "<path d=\"M20.5 3.5 9.2 14.8M20.5 3.5l-.6 4.2M20.5 3.5l-4.2.6\"/><path d=\"M6.6 12.2l5.2 5.2M8.4 15.6 4 20\"/>",
+                    "touch": "melee",
+                    "lockOn": true,
+                    "melee": true,
+                    "tracers": false
+                  },
+                  "meta": {
+                    "name": "Neon Jian",
+                    "icon": "sword",
+                    "blurb": "",
+                    "category": "weapon"
+                  },
+                  "hitStop": { "body": 0.06, "head": 0.06, "kill": 0.06 },
+                  "id": "weapon.jian",
+                  "cues": {
+                    "fire": "cue.sword.swing",
+                    "reload": "cue.reload",
+                    "impact": "cue.sword.hit",
+                    "hit": "cue.sword.hit",
+                    "heavy": "cue.sword.heavy"
+                  }
+                }
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "tool.fei-zhua",
+              {
+                "ok": {
+                  "ui": {
+                    "name": "Fei Zhua",
+                    "icon": "grapple",
+                    "swapIcon": "<path d=\"M20.5 3.5 9.2 14.8M20.5 3.5l-.6 4.2M20.5 3.5l-4.2.6\"/><path d=\"M6.6 12.2l5.2 5.2M8.4 15.6 4 20\"/>",
+                    "touch": "melee",
+                    "lockOn": true,
+                    "melee": true,
+                    "tracers": false
+                  },
+                  "meta": {
+                    "name": "tool.fei-zhua",
+                    "icon": "grapple",
+                    "blurb": "Lock a hook, then jump",
+                    "category": "Grapple"
+                  },
+                  "id": "tool.fei-zhua"
+                }
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "item.missing",
+              {
+                "error": "Missing declared equipment presentation: item.missing"
+              },
+              { "error": "Missing declared ammunition" }
+            ]
+          ],
+          "inventory": { "error": "Missing declared inventory policy" }
+        }
+      }
+    },
+    {
+      "name": "pine-hollow/sections/combat/items.json",
+      "table": {
+        "catalogue": [
+          {
+            "icon": "tusk",
+            "id": "ironhide-tusk",
+            "label": "Ironhide's broken tusk",
+            "travels": false
+          },
+          {
+            "icon": "antlers",
+            "id": "ghost-antler",
+            "label": "Pale antler",
+            "travels": false
+          },
+          {
+            "icon": "claw",
+            "id": "blackpaw-claw",
+            "label": "Old Blackpaw's claw",
+            "travels": false
+          },
+          {
+            "icon": "antlers",
+            "id": "imperial-crown",
+            "label": "Seven-tine crown",
+            "travels": false
+          },
+          {
+            "icon": "laurel",
+            "id": "amber-heartwood",
+            "label": "Amber heartwood",
+            "travels": false
+          },
+          {
+            "icon": "longbow",
+            "id": "warden-longbow",
+            "label": "The Warden's Longbow",
+            "travels": false
+          },
+          {
+            "icon": "seaglass",
+            "id": "amber-resin",
+            "label": "Amber resin",
+            "travels": false
+          },
+          {
+            "icon": "laurel",
+            "id": "lodge-ribbon",
+            "label": "Lodge ribbon",
+            "travels": false
+          }
+        ],
+        "contexts": [],
+        "loadout": {
+          "effects": {
+            "player": [],
+            "statuses": true,
+            "weapons": [],
+            "worn": []
+          },
+          "inventory": {
+            "counts": {
+              "complete": false,
+              "integer": false,
+              "max": 1000000,
+              "min": -1000000
+            },
+            "kinds": [
+              "venison",
+              "deer-hide",
+              "boar-hide",
+              "boar-tusk",
+              "bear-pelt",
+              "amber-resin",
+              "lodge-ribbon"
+            ],
+            "quantity": "unchecked",
+            "restoreError": "Incompatible Pine pack continuation",
+            "slots": 7,
+            "snapshot": "roster"
+          },
+          "native": {
+            "initial": 0,
+            "input": {
+              "command": "pine.weapon",
+              "phase": "afterBodies",
+              "publication": {
+                "aim": {
+                  "command": "pine.aim",
+                  "initial": 0.5,
+                  "max": 1,
+                  "min": 0,
+                  "sentinel": 2
+                },
+                "phase": "afterBodies",
+                "step": "pine.combat-input"
+              },
+              "step": "pine.loadout"
+            },
+            "lower": 0.25,
+            "ownership": [null, "owned:lever-rifle", "paid:king"],
+            "raise": 0.25,
+            "slots": [0, 1, 2]
+          },
+          "primary": "weapon.crossbow",
+          "runtime": {
+            "owners": [
+              {
+                "item": "weapon.crossbow",
+                "presentation": true,
+                "row": "declared",
+                "slot": "primary"
+              },
+              {
+                "item": "weapon.lever",
+                "presentation": true,
+                "row": "declared",
+                "slot": "rifle"
+              },
+              {
+                "item": "weapon.longbow",
+                "row": "declared",
+                "slot": "secondary"
+              }
+            ],
+            "pause": true,
+            "sliceMs": 30
+          },
+          "secondary": "weapon.longbow",
+          "tools": []
+        },
+        "pickups": {
+          "blackpaw": {
+            "disposeItemOnTake": false,
+            "options": {
+              "prompt": "Take the Blackpaw crossbow",
+              "scale": 1.6,
+              "tier": "rare"
+            },
+            "retireBeforeCallback": false,
+            "takenGrace": 0,
+            "toss": { "horizontal": 1.2, "up": 3.5 },
+            "unique": false,
+            "walkIn": null
+          },
+          "ghost-stag": {
+            "death": { "floor": "max", "kind": "deer", "variant": "ghost" },
+            "disposeItemOnTake": false,
+            "options": {
+              "prompt": "Take the Ghost Stag crossbow",
+              "scale": 1.6,
+              "tier": "rare"
+            },
+            "retireBeforeCallback": false,
+            "takenGrace": 0,
+            "toss": { "horizontal": 1.2, "up": 3.5 },
+            "unique": false,
+            "walkIn": null
+          },
+          "hollow-ash": {
+            "disposeItemOnTake": false,
+            "options": {
+              "prompt": "Take the Hollow Ash crossbow",
+              "scale": 1.6,
+              "tier": "rare"
+            },
+            "retireBeforeCallback": false,
+            "takenGrace": 0,
+            "toss": { "horizontal": 1.2, "up": 3.5 },
+            "unique": false,
+            "walkIn": null
+          },
+          "imperial": {
+            "disposeItemOnTake": false,
+            "options": {
+              "prompt": "Take the Imperial crossbow",
+              "scale": 1.6,
+              "tier": "rare"
+            },
+            "retireBeforeCallback": false,
+            "takenGrace": 0,
+            "toss": { "horizontal": 1.2, "up": 3.5 },
+            "unique": false,
+            "walkIn": null
+          },
+          "ironhide": {
+            "death": { "floor": "max", "kind": "boar", "variant": "ironhide" },
+            "disposeItemOnTake": false,
+            "options": {
+              "prompt": "Take the Ironhide lever-action",
+              "scale": 1.35,
+              "tier": "rare"
+            },
+            "retireBeforeCallback": false,
+            "takenGrace": 0,
+            "toss": { "horizontal": 1.2, "up": 3.5 },
+            "unique": false,
+            "walkIn": null
+          },
+          "scarback-furnace": {
+            "disposeItemOnTake": false,
+            "options": {
+              "prompt": "Take the Scarback Furnace lever-action",
+              "scale": 1.35,
+              "tier": "rare"
+            },
+            "retireBeforeCallback": false,
+            "takenGrace": 0,
+            "toss": { "horizontal": 1.2, "up": 3.5 },
+            "unique": false,
+            "walkIn": null
+          },
+          "warden": {
+            "disposeItemOnTake": false,
+            "options": {
+              "prompt": "Take the Warden crossbow",
+              "scale": 1.6,
+              "tier": "rare"
+            },
+            "retireBeforeCallback": false,
+            "takenGrace": 0,
+            "toss": { "horizontal": 1.2, "up": 3.5 },
+            "unique": false,
+            "walkIn": null
+          }
+        },
+        "rows": [
+          {
+            "charge": 0.001,
+            "context": "weapon.ranged",
+            "equipment": {
+              "cues": {
+                "fire": "cue.crossbow.fire",
+                "impact": "cue.projectile.hit",
+                "reload": "cue.reload"
+              },
+              "hitStop": { "body": 0.035, "head": 0.055, "kill": 0.075 },
+              "id": "weapon.crossbow",
+              "legacySlot": "crossbow",
+              "meta": {
+                "blurb": "",
+                "category": "weapon",
+                "icon": "crossbow",
+                "name": "Hunting crossbow"
+              },
+              "rangedFeel": {
+                "kick": {
+                  "body": 0.35,
+                  "head": 0.6,
+                  "kill": 0.9,
+                  "killSide": 1.2,
+                  "side": 0.6
+                },
+                "trauma": {
+                  "head": 0.15,
+                  "headKinds": ["antler-king"],
+                  "kill": 0.28,
+                  "killKinds": ["bear", "elk", "antler-king"]
+                }
+              },
+              "ui": {
+                "ammo": {
+                  "bagLabel": "Iron bolts",
+                  "bagLabelFor": "Bolts",
+                  "label": "Bolts",
+                  "segments": 4
+                },
+                "icon": "crossbow",
+                "lockOn": false,
+                "melee": false,
+                "name": "Crossbow",
+                "swapIcon": "<path d=\"M4 7c4 3 12 3 16 0M12 5v15M8 17h8\"/>",
+                "swapName": "Crossbow",
+                "touch": "ranged",
+                "tracers": true
+              }
+            },
+            "family": "firearm",
+            "heavy": {
+              "cooldown": 1,
+              "damage": 0,
+              "effect": null,
+              "id": "weapon.crossbow.heavy",
+              "range": 0.01,
+              "tags": [],
+              "width": 0.01
+            },
+            "hook": null,
+            "id": "weapon.crossbow",
+            "kind": "weapon",
+            "light": {
+              "cooldown": 1,
+              "damage": 0,
+              "effect": null,
+              "id": "weapon.crossbow.light",
+              "range": 0.01,
+              "tags": [],
+              "width": 0.01
+            },
+            "profile": {
+              "action": "bolt",
+              "autoReload": 1.4,
+              "bloomMax": 0,
+              "bloomShot": 0,
+              "damageScale": 1,
+              "family": "firearm",
+              "interval": 0.3,
+              "magazine": 1,
+              "movingAimReduction": 0,
+              "movingSpread": 0,
+              "projectile": {
+                "delivery": "flight",
+                "flight": { "drag": 0.012, "gravity": 9.8, "windCoupling": 0 },
+                "kind": "bolt",
+                "lifetime": 12,
+                "muzzle": 0.35,
+                "pool": 8,
+                "radius": 0.03,
+                "speed": 62,
+                "substeps": 4
+              },
+              "range": 310,
+              "reload": 1.35,
+              "reloadMode": "single",
+              "reserve": 29,
+              "spreadAds": 0.15,
+              "spreadAxisScale": 2,
+              "spreadHip": 0.75,
+              "spreadRadius": "linear"
+            },
+            "ranged": {
+              "ammunition": [
+                {
+                  "damage": 1,
+                  "flight": { "drag": 1, "gravity": 1 },
+                  "id": "iron",
+                  "presentation": {
+                    "label": "Bolts",
+                    "name": "Iron bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": [],
+                  "wet": { "drag": 0.9, "gravity": 0.2 }
+                },
+                {
+                  "damage": 1,
+                  "flight": { "drag": 0.7, "gravity": 0.8 },
+                  "id": "pitch",
+                  "presentation": {
+                    "label": "Pitch bolts",
+                    "name": "Pitch-tipped bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": []
+                },
+                {
+                  "damage": 1.4,
+                  "flight": { "drag": 1.1, "gravity": 1.08 },
+                  "id": "broadhead",
+                  "presentation": {
+                    "label": "Broadheads",
+                    "name": "Broadhead bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": ["deer", "boar"],
+                  "wet": { "drag": 0.9, "gravity": 0.2 }
+                }
+              ],
+              "defaultAmmo": "iron",
+              "extent": 310,
+              "eye": 1.68,
+              "floor": -150,
+              "glance": {
+                "bounce": 0.15,
+                "keep": 0.25,
+                "lift": 0.02,
+                "maxSpeed": 6
+              },
+              "radius": 0.03,
+              "slot": 0,
+              "step": "pine.crossbow",
+              "tags": ["weapon.crossbow", "dmg.ranged", "cover.checked"]
+            },
+            "slot": "declared.weapon.crossbow",
+            "ui": {
+              "blurb": "",
+              "icon": "crossbow",
+              "name": "Crossbow",
+              "swapIcon": "<path d=\"M4 7c4 3 12 3 16 0M12 5v15M8 17h8\"/>"
+            },
+            "view": {
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "recipe": "pine-hollow.crossbow",
+              "rotation": [0, 0, 0]
+            }
+          },
+          {
+            "charge": 0.001,
+            "context": "weapon.ranged",
+            "equipment": {
+              "cues": {
+                "dry": "cue.lever.dry",
+                "fire": "cue.lever.fire",
+                "impact": "cue.projectile.hit",
+                "reload": "cue.lever.reload"
+              },
+              "hitStop": { "body": 0.035, "head": 0.055, "kill": 0.075 },
+              "id": "weapon.lever",
+              "legacySlot": "rifle",
+              "meta": {
+                "blurb": "",
+                "category": "weapon",
+                "icon": "lever",
+                "name": "Lever-action"
+              },
+              "rangedFeel": {
+                "kick": {
+                  "body": 0.35,
+                  "head": 0.6,
+                  "kill": 0.9,
+                  "killSide": 1.2,
+                  "side": 0.6
+                },
+                "trauma": {
+                  "head": 0.15,
+                  "headKinds": ["antler-king"],
+                  "kill": 0.28,
+                  "killKinds": ["bear", "elk", "antler-king"]
+                }
+              },
+              "ui": {
+                "ammo": {
+                  "label": "Cartridges",
+                  "magazine": true,
+                  "segments": 7
+                },
+                "icon": "lever",
+                "lockOn": false,
+                "melee": false,
+                "name": "Lever-action",
+                "swapIcon": "<path d=\"M3 13h14l3-2h1v3h-4l-2 2H9l-1 3H5l1-3H3z\"/>",
+                "touch": "ranged",
+                "tracers": true
+              }
+            },
+            "family": "firearm",
+            "heavy": {
+              "cooldown": 1,
+              "damage": 0,
+              "effect": null,
+              "id": "weapon.lever.heavy",
+              "range": 0.01,
+              "tags": [],
+              "width": 0.01
+            },
+            "hook": null,
+            "id": "weapon.lever",
+            "kind": "weapon",
+            "light": {
+              "cooldown": 1,
+              "damage": 0,
+              "effect": null,
+              "id": "weapon.lever.light",
+              "range": 0.01,
+              "tags": [],
+              "width": 0.01
+            },
+            "profile": {
+              "action": "lever",
+              "autoReload": 0.35,
+              "bloomMax": 0,
+              "bloomShot": 0,
+              "damageScale": 1.5,
+              "family": "firearm",
+              "interval": 0.68,
+              "lever": {
+                "autoReloadClose": 5,
+                "cockAt": 0.2,
+                "cycleDelay": 0.12,
+                "cycleTime": 0.56,
+                "ejectAt": 0.34,
+                "reloadIn": 0.22,
+                "reloadOut": 0.2
+              },
+              "magazine": 7,
+              "movingAimReduction": 0.6,
+              "movingSpread": 0.5,
+              "projectile": {
+                "delivery": "hitscan",
+                "flight": { "drag": 0, "gravity": 0, "windCoupling": 0 },
+                "kind": "bullet",
+                "lifetime": 1,
+                "pool": 1,
+                "radius": 0,
+                "speed": 0,
+                "substeps": 1
+              },
+              "range": 320,
+              "reload": 0.4,
+              "reloadMode": "perRound",
+              "reserve": 21,
+              "spreadAds": 0.06,
+              "spreadHip": 0.9,
+              "spreadRadius": "sqrt"
+            },
+            "ranged": {
+              "ammunition": [
+                {
+                  "damage": 1,
+                  "flight": { "drag": 1, "gravity": 1 },
+                  "id": "iron",
+                  "presentation": {
+                    "label": "Bolts",
+                    "name": "Iron bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": [],
+                  "wet": { "drag": 0.9, "gravity": 0.2 }
+                },
+                {
+                  "damage": 1,
+                  "flight": { "drag": 0.7, "gravity": 0.8 },
+                  "id": "pitch",
+                  "presentation": {
+                    "label": "Pitch bolts",
+                    "name": "Pitch-tipped bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": []
+                },
+                {
+                  "damage": 1.4,
+                  "flight": { "drag": 1.1, "gravity": 1.08 },
+                  "id": "broadhead",
+                  "presentation": {
+                    "label": "Broadheads",
+                    "name": "Broadhead bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": ["deer", "boar"],
+                  "wet": { "drag": 0.9, "gravity": 0.2 }
+                }
+              ],
+              "defaultAmmo": "iron",
+              "extent": 310,
+              "eye": 1.68,
+              "floor": -150,
+              "glance": {
+                "bounce": 0.15,
+                "keep": 0.25,
+                "lift": 0.02,
+                "maxSpeed": 6
+              },
+              "radius": 0.03,
+              "slot": 1,
+              "step": "pine.lever",
+              "tags": ["weapon.lever", "dmg.ranged", "cover.checked"]
+            },
+            "slot": "declared.weapon.lever",
+            "ui": {
+              "blurb": "",
+              "icon": "lever",
+              "name": "Lever-action",
+              "swapIcon": "<path d=\"M3 13h14l3-2h1v3h-4l-2 2H9l-1 3H5l1-3H3z\"/>"
+            },
+            "view": {
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "recipe": "pine-hollow.lever",
+              "rotation": [0, 0, 0]
+            }
+          },
+          {
+            "charge": 0.001,
+            "context": "weapon.bow",
+            "equipment": {
+              "cues": {
+                "charge": { "draw": "cue.longbow.draw" },
+                "fire": "cue.longbow.loose",
+                "impact": "cue.projectile.hit",
+                "reload": "cue.reload"
+              },
+              "hitStop": { "body": 0.035, "head": 0.055, "kill": 0.075 },
+              "id": "weapon.longbow",
+              "legacySlot": "bow",
+              "meta": {
+                "blurb": "",
+                "category": "weapon",
+                "icon": "longbow",
+                "name": "Warden's longbow"
+              },
+              "rangedFeel": {
+                "kick": {
+                  "body": 0.35,
+                  "head": 0.6,
+                  "kill": 0.9,
+                  "killSide": 1.2,
+                  "side": 0.6
+                },
+                "trauma": {
+                  "head": 0.15,
+                  "headKinds": ["antler-king"],
+                  "kill": 0.28,
+                  "killKinds": ["bear", "elk", "antler-king"]
+                }
+              },
+              "ui": {
+                "ammo": { "label": "Arrows", "segments": 4 },
+                "huntersEye": true,
+                "icon": "longbow",
+                "lockOn": false,
+                "melee": false,
+                "name": "Warden's longbow",
+                "swapIcon": "<path d=\"M6 3c7 3.5 7 14.5 0 18\"/><path d=\"M6 3v18\" stroke-width=\"0.9\"/><path d=\"M4 12h15M16.5 9.5 19 12l-2.5 2.5\"/>",
+                "swapName": "Bow",
+                "touch": "bow",
+                "tracers": false
+              }
+            },
+            "family": "bow",
+            "heavy": {
+              "cooldown": 1,
+              "damage": 0,
+              "effect": null,
+              "id": "weapon.longbow.heavy",
+              "range": 0.01,
+              "tags": [],
+              "width": 0.01
+            },
+            "hook": null,
+            "id": "weapon.longbow",
+            "kind": "weapon",
+            "light": {
+              "cooldown": 1,
+              "damage": 0,
+              "effect": null,
+              "id": "weapon.longbow.light",
+              "range": 0.01,
+              "tags": [],
+              "width": 0.01
+            },
+            "profile": {
+              "damageScale": 1.35,
+              "draw": {
+                "drawTime": 0.75,
+                "holdSteady": 3,
+                "holdTire": 8,
+                "letdownTime": 0.4,
+                "renockEarly": 0.4,
+                "renockTime": 0.62,
+                "tiredTime": 1.1
+              },
+              "family": "bow",
+              "flight": { "drag": 0.014, "gravity": 6, "windCoupling": 0.25 },
+              "lifetime": 12,
+              "muzzle": 0.55,
+              "pool": 8,
+              "quiver": 20,
+              "speedBase": 32,
+              "speedDraw": 30,
+              "spread": {
+                "aimMultiplier": 0.5,
+                "axisScale": 1,
+                "degrees": 0.3,
+                "motion": 0.6,
+                "radius": "sqrt"
+              },
+              "substeps": 4
+            },
+            "ranged": {
+              "ammunition": [
+                {
+                  "damage": 1,
+                  "flight": { "drag": 1, "gravity": 1 },
+                  "id": "iron",
+                  "presentation": {
+                    "label": "Bolts",
+                    "name": "Iron bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": [],
+                  "wet": { "drag": 0.9, "gravity": 0.2 }
+                },
+                {
+                  "damage": 1,
+                  "flight": { "drag": 0.7, "gravity": 0.8 },
+                  "id": "pitch",
+                  "presentation": {
+                    "label": "Pitch bolts",
+                    "name": "Pitch-tipped bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": []
+                },
+                {
+                  "damage": 1.4,
+                  "flight": { "drag": 1.1, "gravity": 1.08 },
+                  "id": "broadhead",
+                  "presentation": {
+                    "label": "Broadheads",
+                    "name": "Broadhead bolts",
+                    "pouchMax": 30
+                  },
+                  "targets": ["deer", "boar"],
+                  "wet": { "drag": 0.9, "gravity": 0.2 }
+                }
+              ],
+              "defaultAmmo": "iron",
+              "extent": 330,
+              "eye": 1.68,
+              "floor": -150,
+              "glance": {
+                "bounce": 0.25,
+                "keep": 0.35,
+                "lift": 0.03,
+                "maxSpeed": 9
+              },
+              "radius": 0.02,
+              "shaft": {
+                "bury": 0.09,
+                "capacity": 48,
+                "length": 0.76,
+                "reach": { "down": 1.2, "radius": 1.25, "up": 2.1 },
+                "recover": 0.7,
+                "recoveryStride": 8
+              },
+              "slot": 2,
+              "step": "pine.longbow",
+              "tags": ["weapon.longbow", "dmg.ranged", "cover.checked"]
+            },
+            "slot": "declared.weapon.longbow",
+            "ui": {
+              "blurb": "",
+              "icon": "longbow",
+              "name": "Warden's longbow",
+              "swapIcon": "<path d=\"M6 3c7 3.5 7 14.5 0 18\"/><path d=\"M6 3v18\" stroke-width=\"0.9\"/><path d=\"M4 12h15M16.5 9.5 19 12l-2.5 2.5\"/>"
+            },
+            "view": {
+              "colour": "#ffffff",
+              "position": [0, 0, 0],
+              "recipe": "pine-hollow.longbow",
+              "rotation": [0, 0, 0]
+            }
+          }
+        ],
+        "runtimeContexts": ["weapon.ranged", "weapon.bow"],
+        "version": 1
+      },
+      "answers": {
+        "ok": {
+          "rows": [
+            [
+              "weapon.crossbow",
+              {
+                "ok": {
+                  "legacySlot": "crossbow",
+                  "ui": {
+                    "name": "Crossbow",
+                    "icon": "crossbow",
+                    "swapIcon": "<path d=\"M4 7c4 3 12 3 16 0M12 5v15M8 17h8\"/>",
+                    "touch": "ranged",
+                    "lockOn": false,
+                    "melee": false,
+                    "tracers": true,
+                    "swapName": "Crossbow",
+                    "ammo": {
+                      "label": "Bolts",
+                      "segments": 4,
+                      "bagLabel": "Iron bolts",
+                      "bagLabelFor": "Bolts"
+                    }
+                  },
+                  "meta": {
+                    "name": "Hunting crossbow",
+                    "icon": "crossbow",
+                    "blurb": "",
+                    "category": "weapon"
+                  },
+                  "hitStop": { "body": 0.035, "head": 0.055, "kill": 0.075 },
+                  "rangedFeel": {
+                    "kick": {
+                      "body": 0.35,
+                      "head": 0.6,
+                      "kill": 0.9,
+                      "side": 0.6,
+                      "killSide": 1.2
+                    },
+                    "trauma": {
+                      "kill": 0.28,
+                      "head": 0.15,
+                      "killKinds": ["bear", "elk", "antler-king"],
+                      "headKinds": ["antler-king"]
+                    }
+                  },
+                  "id": "weapon.crossbow",
+                  "cues": {
+                    "fire": "cue.crossbow.fire",
+                    "reload": "cue.reload",
+                    "impact": "cue.projectile.hit"
+                  }
+                }
+              },
+              {
+                "ok": [
+                  [
+                    "iron",
+                    {
+                      "row": {
+                        "id": "ammo.iron",
+                        "label": "Bolts",
+                        "name": "Iron bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 1, "drag": 1 },
+                        "tags": ["ammo.iron"],
+                        "wet": { "gravity": 1.2, "drag": 1.9 }
+                      },
+                      "damage": { "default": 1, "kinds": {} }
+                    }
+                  ],
+                  [
+                    "pitch",
+                    {
+                      "row": {
+                        "id": "ammo.pitch",
+                        "label": "Pitch bolts",
+                        "name": "Pitch-tipped bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 0.8, "drag": 0.7 },
+                        "tags": ["ammo.pitch"]
+                      },
+                      "damage": { "default": 1, "kinds": {} }
+                    }
+                  ],
+                  [
+                    "broadhead",
+                    {
+                      "row": {
+                        "id": "ammo.broadhead",
+                        "label": "Broadheads",
+                        "name": "Broadhead bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 1.08, "drag": 1.1 },
+                        "tags": ["ammo.broadhead"],
+                        "wet": { "gravity": 1.2, "drag": 1.9 }
+                      },
+                      "damage": {
+                        "default": 1,
+                        "kinds": { "deer": 1.4, "boar": 1.4 }
+                      }
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "weapon.lever",
+              {
+                "ok": {
+                  "legacySlot": "rifle",
+                  "ui": {
+                    "name": "Lever-action",
+                    "icon": "lever",
+                    "swapIcon": "<path d=\"M3 13h14l3-2h1v3h-4l-2 2H9l-1 3H5l1-3H3z\"/>",
+                    "touch": "ranged",
+                    "lockOn": false,
+                    "melee": false,
+                    "tracers": true,
+                    "ammo": {
+                      "label": "Cartridges",
+                      "segments": 7,
+                      "magazine": true
+                    }
+                  },
+                  "meta": {
+                    "name": "Lever-action",
+                    "icon": "lever",
+                    "blurb": "",
+                    "category": "weapon"
+                  },
+                  "hitStop": { "body": 0.035, "head": 0.055, "kill": 0.075 },
+                  "rangedFeel": {
+                    "kick": {
+                      "body": 0.35,
+                      "head": 0.6,
+                      "kill": 0.9,
+                      "side": 0.6,
+                      "killSide": 1.2
+                    },
+                    "trauma": {
+                      "kill": 0.28,
+                      "head": 0.15,
+                      "killKinds": ["bear", "elk", "antler-king"],
+                      "headKinds": ["antler-king"]
+                    }
+                  },
+                  "id": "weapon.lever",
+                  "cues": {
+                    "fire": "cue.lever.fire",
+                    "reload": "cue.lever.reload",
+                    "impact": "cue.projectile.hit",
+                    "dry": "cue.lever.dry"
+                  }
+                }
+              },
+              {
+                "ok": [
+                  [
+                    "iron",
+                    {
+                      "row": {
+                        "id": "ammo.iron",
+                        "label": "Bolts",
+                        "name": "Iron bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 1, "drag": 1 },
+                        "tags": ["ammo.iron"],
+                        "wet": { "gravity": 1.2, "drag": 1.9 }
+                      },
+                      "damage": { "default": 1, "kinds": {} }
+                    }
+                  ],
+                  [
+                    "pitch",
+                    {
+                      "row": {
+                        "id": "ammo.pitch",
+                        "label": "Pitch bolts",
+                        "name": "Pitch-tipped bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 0.8, "drag": 0.7 },
+                        "tags": ["ammo.pitch"]
+                      },
+                      "damage": { "default": 1, "kinds": {} }
+                    }
+                  ],
+                  [
+                    "broadhead",
+                    {
+                      "row": {
+                        "id": "ammo.broadhead",
+                        "label": "Broadheads",
+                        "name": "Broadhead bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 1.08, "drag": 1.1 },
+                        "tags": ["ammo.broadhead"],
+                        "wet": { "gravity": 1.2, "drag": 1.9 }
+                      },
+                      "damage": {
+                        "default": 1,
+                        "kinds": { "deer": 1.4, "boar": 1.4 }
+                      }
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "weapon.longbow",
+              {
+                "ok": {
+                  "legacySlot": "bow",
+                  "ui": {
+                    "name": "Warden's longbow",
+                    "icon": "longbow",
+                    "swapIcon": "<path d=\"M6 3c7 3.5 7 14.5 0 18\"/><path d=\"M6 3v18\" stroke-width=\"0.9\"/><path d=\"M4 12h15M16.5 9.5 19 12l-2.5 2.5\"/>",
+                    "touch": "bow",
+                    "lockOn": false,
+                    "melee": false,
+                    "tracers": false,
+                    "swapName": "Bow",
+                    "huntersEye": true,
+                    "ammo": { "label": "Arrows", "segments": 4 }
+                  },
+                  "meta": {
+                    "name": "Warden's longbow",
+                    "icon": "longbow",
+                    "blurb": "",
+                    "category": "weapon"
+                  },
+                  "hitStop": { "body": 0.035, "head": 0.055, "kill": 0.075 },
+                  "rangedFeel": {
+                    "kick": {
+                      "body": 0.35,
+                      "head": 0.6,
+                      "kill": 0.9,
+                      "side": 0.6,
+                      "killSide": 1.2
+                    },
+                    "trauma": {
+                      "kill": 0.28,
+                      "head": 0.15,
+                      "killKinds": ["bear", "elk", "antler-king"],
+                      "headKinds": ["antler-king"]
+                    }
+                  },
+                  "id": "weapon.longbow",
+                  "cues": {
+                    "fire": "cue.longbow.loose",
+                    "reload": "cue.reload",
+                    "impact": "cue.projectile.hit",
+                    "charge": { "draw": "cue.longbow.draw" }
+                  }
+                }
+              },
+              {
+                "ok": [
+                  [
+                    "iron",
+                    {
+                      "row": {
+                        "id": "ammo.iron",
+                        "label": "Bolts",
+                        "name": "Iron bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 1, "drag": 1 },
+                        "tags": ["ammo.iron"],
+                        "wet": { "gravity": 1.2, "drag": 1.9 }
+                      },
+                      "damage": { "default": 1, "kinds": {} }
+                    }
+                  ],
+                  [
+                    "pitch",
+                    {
+                      "row": {
+                        "id": "ammo.pitch",
+                        "label": "Pitch bolts",
+                        "name": "Pitch-tipped bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 0.8, "drag": 0.7 },
+                        "tags": ["ammo.pitch"]
+                      },
+                      "damage": { "default": 1, "kinds": {} }
+                    }
+                  ],
+                  [
+                    "broadhead",
+                    {
+                      "row": {
+                        "id": "ammo.broadhead",
+                        "label": "Broadheads",
+                        "name": "Broadhead bolts",
+                        "pouchMax": 30,
+                        "flight": { "gravity": 1.08, "drag": 1.1 },
+                        "tags": ["ammo.broadhead"],
+                        "wet": { "gravity": 1.2, "drag": 1.9 }
+                      },
+                      "damage": {
+                        "default": 1,
+                        "kinds": { "deer": 1.4, "boar": 1.4 }
+                      }
+                    }
+                  ]
+                ]
+              }
+            ],
+            [
+              "item.missing",
+              {
+                "error": "Missing declared equipment presentation: item.missing"
+              },
+              { "error": "Missing declared ammunition" }
+            ]
+          ],
+          "inventory": {
+            "ok": {
+              "kinds": [
+                "venison",
+                "deer-hide",
+                "boar-hide",
+                "boar-tusk",
+                "bear-pelt",
+                "amber-resin",
+                "lodge-ribbon"
+              ],
+              "slots": 7,
+              "counts": {
+                "min": -1000000,
+                "max": 1000000,
+                "integer": false,
+                "complete": false
+              },
+              "quantity": "unchecked",
+              "snapshot": "roster",
+              "restoreError": "Incompatible Pine pack continuation"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "shards/_template/data/items.json",
+      "table": {
+        "version": 1,
+        "rows": [
+          {
+            "id": "weapon.template-whip",
+            "kind": "weapon",
+            "family": "kit.melee",
+            "slot": "declared.weapon.template-whip",
+            "context": "template.whip",
+            "ui": {
+              "name": "Whip",
+              "icon": "sword",
+              "swapIcon": "〰",
+              "blurb": "A quick whip with a poisoned heavy strike."
+            },
+            "view": {
+              "recipe": "kit.whip",
+              "colour": "#565656",
+              "position": [0.28, -0.35, -0.6],
+              "rotation": [0, 0, -0.3]
+            },
+            "hook": {
+              "module": "7035c479edde46ee0baf713fce437fe21e7b61967154f36b5f1126708b2bfaa7",
+              "entity": 1001,
+              "event": 101
+            },
+            "light": {
+              "id": "template.whip.light",
+              "damage": 18,
+              "cooldown": 0.4,
+              "range": 5,
+              "width": 1.2,
+              "tags": ["actor.player", "weapon.template-whip", "dmg.melee"],
+              "effect": null
+            },
+            "heavy": {
+              "id": "template.whip.heavy",
+              "damage": 30,
+              "cooldown": 0.8,
+              "range": 5,
+              "width": 1.2,
+              "tags": ["actor.player", "weapon.template-whip", "dmg.melee"],
+              "effect": "effect.poison"
+            },
+            "charge": 0.6
+          },
+          {
+            "id": "weapon.sword-iron",
+            "kind": "weapon",
+            "family": "kit.melee",
+            "slot": "declared.weapon.sword-iron",
+            "context": "weapon.melee",
+            "ui": {
+              "name": "Iron sword",
+              "icon": "sword",
+              "swapIcon": "⚔",
+              "blurb": "The shared iron sword."
+            },
+            "view": {
+              "recipe": "kit.sword",
+              "colour": "#888888",
+              "position": [0.2, -0.35, -0.6],
+              "rotation": [0, 0, 0]
+            },
+            "hook": null,
+            "light": {
+              "id": "sword.light",
+              "damage": 28,
+              "cooldown": 0.08,
+              "range": 2.2,
+              "width": 1.2,
+              "tags": ["actor.player", "weapon.sword-iron", "dmg.melee"],
+              "effect": null
+            },
+            "heavy": {
+              "id": "sword.heavy",
+              "damage": 56,
+              "cooldown": 0.08,
+              "range": 2.2,
+              "width": 1.2,
+              "tags": ["actor.player", "weapon.sword-iron", "dmg.melee"],
+              "effect": null
+            },
+            "charge": 0.45
+          },
+          {
+            "id": "tool.template-lantern",
+            "kind": "tool",
+            "family": "kit.lantern",
+            "ui": {
+              "name": "Lantern",
+              "icon": "glyph",
+              "swapIcon": "",
+              "blurb": "A lantern burning oil for two minutes."
+            },
+            "view": {
+              "recipe": "kit.lantern",
+              "colour": "#b08a4a",
+              "position": [-0.3, -0.3, -0.55],
+              "rotation": [0, 0, 0]
+            },
+            "hook": {
+              "module": "7035c479edde46ee0baf713fce437fe21e7b61967154f36b5f1126708b2bfaa7",
+              "entity": 1002,
+              "event": 102
+            },
+            "action": "template.lantern.toggle",
+            "fuelSeconds": 120,
+            "intensity": 2
+          }
+        ],
+        "contexts": [
+          {
+            "id": "template.whip",
+            "keysFrom": "weapon.melee",
+            "actions": ["attack", "heavy", "lock"],
+            "touch": "melee",
+            "lockable": true
+          }
+        ],
+        "loadout": {
+          "primary": "weapon.template-whip",
+          "secondary": null,
+          "tools": ["tool.template-lantern"]
+        }
+      },
+      "answers": {
+        "ok": {
+          "rows": [
+            [
+              "weapon.template-whip",
+              {
+                "error": "Missing declared equipment presentation: weapon.template-whip"
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "weapon.sword-iron",
+              {
+                "error": "Missing declared equipment presentation: weapon.sword-iron"
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "tool.template-lantern",
+              {
+                "error": "Missing declared equipment presentation: tool.template-lantern"
+              },
+              { "error": "Missing declared ammunition" }
+            ],
+            [
+              "item.missing",
+              {
+                "error": "Missing declared equipment presentation: item.missing"
+              },
+              { "error": "Missing declared ammunition" }
+            ]
+          ],
+          "inventory": { "error": "Missing declared inventory policy" }
+        }
+      }
+    }
+  ]
+}

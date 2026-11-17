@@ -75,3 +75,11 @@
   `interact-table.golden.json` holds the engine's answers over an
   11-row table with every kind, 4 binding sets, 5 placement inputs and
   10 quest places on fixture floors and frames.
+- SP4f3 (opus-sdksplit3): `ItemCatalogue` (`./itemCatalogue`) moved
+  verbatim with the portable vocabulary it returns (`CueId`, `ToolId`,
+  `EquipmentId`, `AmmoId`, `EquipmentCues`, `ItemEquipmentRow`,
+  `ItemAmmoRow`). The shard-augmented `EquipmentSlotMap` and
+  `EquipmentIconMap` stay in the engine (declaration merging), which
+  narrows these rows. `item-catalogue.golden.json` embeds six item
+  tables (corpus, Nalati, Nine Dragon, Pine Hollow's built section with
+  ammunition and inventory, the template) with the engine's answers.
