@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.16.0 (2026-11-17)
+
+- Shard tools can place forests, grow grass, place colliders and read item catalogues by the game's own rules, without the engine.
+- New shared parts: terrain field, seeded random numbers, noise, interactables, quest tables, headless sections, road light, mover poses.
+- Each new rule ships with golden test vectors from the engine, so tools and game stay in step bit for bit.
+- Nothing changes for existing shard files: these are additions only.
+
 ## v0.15.0 (2026-11-17)
 
 - Give creatures social pack membership while each keeps its own brain.
