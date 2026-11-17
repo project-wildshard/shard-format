@@ -1,0 +1,857 @@
+{
+  "about": "SDK-SPLIT SP4a: engine shared/engine/core/rng.ts draws; floats are IEEE-754 float64 bits, big-endian hex",
+  "cases": [
+    {
+      "seed": 0,
+      "first": {
+        "next": [
+          "3fd10d2d18800000",
+          "3f359c3700000000",
+          "3fcc942d84000000",
+          "3fc2b6c082000000",
+          "3fdde8b2f5000000",
+          "3fe1710ac6200000",
+          "3fe3b023abe00000",
+          "3fe4c47cfcc00000"
+        ],
+        "range": "3ff66ee8daac0000",
+        "int": 2,
+        "pick": "b",
+        "chance": true,
+        "weighted": "z",
+        "state": {
+          "version": 1,
+          "state": 2335519089,
+          "initial": 0,
+          "scrambledFork": false
+        }
+      },
+      "numberFork": {
+        "next": [
+          "3f83ae7a80000000",
+          "3fe58c865e400000",
+          "3fe14d8b78a00000",
+          "3fe0616ebdc00000",
+          "3fe505d1bdc00000",
+          "3fa91cb4c6000000",
+          "3fe2cdf076000000",
+          "3fefaa4c80c00000"
+        ],
+        "range": "401b13f675d00000",
+        "int": 2,
+        "pick": "e",
+        "chance": false,
+        "weighted": "z",
+        "state": {
+          "version": 1,
+          "state": 2132674854,
+          "initial": 4092123061,
+          "scrambledFork": false
+        }
+      },
+      "stringFork": {
+        "next": [
+          "3fbd09af63000000",
+          "3fe7e7fb15600000",
+          "3fe5829f31a00000",
+          "3fe7aa9be7000000",
+          "3f9c547110000000",
+          "3fe7270d00400000",
+          "3fe7db8be9200000",
+          "3fd47b9697400000"
+        ],
+        "range": "4016e362eea30000",
+        "int": -3,
+        "pick": "a",
+        "chance": true,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 749639121,
+          "initial": 2709087328,
+          "scrambledFork": false
+        }
+      },
+      "scrambled": {
+        "next": [
+          "3fd10d2d18800000",
+          "3f359c3700000000",
+          "3fcc942d84000000",
+          "3fc2b6c082000000",
+          "3fdde8b2f5000000",
+          "3fe1710ac6200000",
+          "3fe3b023abe00000",
+          "3fe4c47cfcc00000"
+        ],
+        "range": "3ff66ee8daac0000",
+        "int": 2,
+        "pick": "b",
+        "chance": true,
+        "weighted": "z",
+        "state": {
+          "version": 1,
+          "state": 2335519089,
+          "initial": 0,
+          "scrambledFork": true
+        }
+      },
+      "scrambledFork": {
+        "next": [
+          "3fef094812a00000",
+          "3fc61b3151800000",
+          "3fe398028da00000",
+          "3fec626eb0200000",
+          "3fe1b8922f000000",
+          "3fdca440e2c00000",
+          "3fe70e06e0e00000",
+          "3fe2c9c14e200000"
+        ],
+        "range": "40055588a7740000",
+        "int": 4,
+        "pick": "c",
+        "chance": true,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 3844262257,
+          "initial": 1508743168,
+          "scrambledFork": true
+        }
+      }
+    },
+    {
+      "seed": 1,
+      "first": {
+        "next": [
+          "3fe410fd5e600000",
+          "3f66693920000000",
+          "3fe0e0d89d600000",
+          "3fef64c4ffa00000",
+          "3feefcf3a5600000",
+          "3fd1fd998c000000",
+          "3fe39c603e000000",
+          "3fe71053eb800000"
+        ],
+        "range": "3ff13cb0ff400000",
+        "int": 10,
+        "pick": "c",
+        "chance": false,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 2335519090,
+          "initial": 1,
+          "scrambledFork": false
+        }
+      },
+      "numberFork": {
+        "next": [
+          "3fc1b60a56000000",
+          "3fc9df9298000000",
+          "3fe03ca955600000",
+          "3fed7f8743000000",
+          "3fcf9d78e3000000",
+          "3fe733b625600000",
+          "3fe590c65e600000",
+          "3fdda9cf0b400000"
+        ],
+        "range": "bff8852fec8c0000",
+        "int": 3,
+        "pick": "d",
+        "chance": false,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 2132674855,
+          "initial": 4092123062,
+          "scrambledFork": false
+        }
+      },
+      "stringFork": {
+        "next": [
+          "3fd2d43b72c00000",
+          "3fe6d15d7b000000",
+          "3fe2b7e4ba600000",
+          "3fd921b44dc00000",
+          "3fe5b24121000000",
+          "3fb76a6e9a000000",
+          "3fed24b752400000",
+          "3fe9e35352200000"
+        ],
+        "range": "3fd22378b2f00000",
+        "int": 6,
+        "pick": "c",
+        "chance": true,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 2409971960,
+          "initial": 74452871,
+          "scrambledFork": false
+        }
+      },
+      "scrambled": {
+        "next": [
+          "3fe17c9173c00000",
+          "3fdd695ec9800000",
+          "3fcf9f0ff5800000",
+          "3fe09e1ae7000000",
+          "3fec750cfca00000",
+          "3fe67a6735a00000",
+          "3fdb3b4a92c00000",
+          "3fde1ccdff800000"
+        ],
+        "range": "400ff4ae604a0000",
+        "int": -1,
+        "pick": "a",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 694987554,
+          "initial": 2654435761,
+          "scrambledFork": true
+        }
+      },
+      "scrambledFork": {
+        "next": [
+          "3fef476069400000",
+          "3fefd34ba1800000",
+          "3fd9864e7f000000",
+          "3fe3f81afe200000",
+          "3fd09eced3800000",
+          "3fb2ddde05000000",
+          "3fd293a752400000",
+          "3fef701375c00000"
+        ],
+        "range": "c0077589a1100000",
+        "int": -1,
+        "pick": "a",
+        "chance": false,
+        "weighted": "z",
+        "state": {
+          "version": 1,
+          "state": 1110411633,
+          "initial": 3069859840,
+          "scrambledFork": true
+        }
+      }
+    },
+    {
+      "seed": 24225,
+      "first": {
+        "next": [
+          "3fe59715b4000000",
+          "3fd503f283400000",
+          "3fe8b07048a00000",
+          "3fd255c59a800000",
+          "3fcdf2cf44800000",
+          "3fdadcaab7000000",
+          "3fabaea85e000000",
+          "3fb68aec1e000000"
+        ],
+        "range": "40136991a9710000",
+        "int": 3,
+        "pick": "b",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 2335543314,
+          "initial": 24225,
+          "scrambledFork": false
+        }
+      },
+      "numberFork": {
+        "next": [
+          "3fd1295431c00000",
+          "3fe3c1645f200000",
+          "3fce83cf39000000",
+          "3fd548c604000000",
+          "3fe05746db000000",
+          "3fe0dc5411800000",
+          "3fe9379499400000",
+          "3fbe893dd3000000"
+        ],
+        "range": "3fb29386fbc00000",
+        "int": -3,
+        "pick": "c",
+        "chance": true,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 2132650055,
+          "initial": 4092098262,
+          "scrambledFork": false
+        }
+      },
+      "stringFork": {
+        "next": [
+          "3fe2da4b43600000",
+          "3fc6d6c9e6000000",
+          "3fe3107c1ae00000",
+          "3fec1d38ee000000",
+          "3fcbdb864c800000",
+          "3fe7c65911a00000",
+          "3fef8b884a800000",
+          "3feb40e459600000"
+        ],
+        "range": "bfddaf9ad8d00000",
+        "int": 1,
+        "pick": "b",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 444582522,
+          "initial": 2404030729,
+          "scrambledFork": false
+        }
+      },
+      "scrambled": {
+        "next": [
+          "3fe18ad5ed400000",
+          "3fcbbe4d2f800000",
+          "3fea7836f0e00000",
+          "3fae1ba7c2000000",
+          "3fe67509c4400000",
+          "3fe635643c200000",
+          "3fec5a398ee00000",
+          "3fe9213b97e00000"
+        ],
+        "range": "401683a7e6b20000",
+        "int": 10,
+        "pick": "e",
+        "chance": false,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 1791473602,
+          "initial": 3750921809,
+          "scrambledFork": true
+        }
+      },
+      "scrambledFork": {
+        "next": [
+          "3fbdfa8ef0000000",
+          "3fc7eab61d000000",
+          "3feeed8a31400000",
+          "3fd646b4df400000",
+          "3fec10bb77200000",
+          "3fe31bbb8d800000",
+          "3fef668058400000",
+          "3fd5fd49a9c00000"
+        ],
+        "range": "400d5681d9260000",
+        "int": 10,
+        "pick": "c",
+        "chance": true,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 3556292977,
+          "initial": 1220773888,
+          "scrambledFork": true
+        }
+      }
+    },
+    {
+      "seed": 2147483647,
+      "first": {
+        "next": [
+          "3fdb7657d4400000",
+          "3fc045f7c6000000",
+          "3fd8a862f3c00000",
+          "3fd95e7c17400000",
+          "3fbe9fe7d9000000",
+          "3fee808346800000",
+          "3fe5c827cba00000",
+          "3fefdd6f12000000"
+        ],
+        "range": "3fd62905f9e00000",
+        "int": -4,
+        "pick": "c",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 188035440,
+          "initial": 2147483647,
+          "scrambledFork": false
+        }
+      },
+      "numberFork": {
+        "next": [
+          "3fd13c957b000000",
+          "3fe76a1531200000",
+          "3fd42d2596c00000",
+          "3fe6fa5f61a00000",
+          "3fefb54ef2400000",
+          "3fe0f85137000000",
+          "3fd6d662e5000000",
+          "3fdeffa8e5000000"
+        ],
+        "range": "3ff0fa7ebb740000",
+        "int": 1,
+        "pick": "c",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 4280158501,
+          "initial": 1944639412,
+          "scrambledFork": false
+        }
+      },
+      "stringFork": {
+        "next": [
+          "3fedca77e2e00000",
+          "3fc16a8636800000",
+          "3fdd34031d400000",
+          "3fde4f0047800000",
+          "3fca5c2620000000",
+          "3fe140a4a5600000",
+          "3fcad99235800000",
+          "3fe864807f400000"
+        ],
+        "range": "3ff7e204bcd80000",
+        "int": 5,
+        "pick": "a",
+        "chance": true,
+        "weighted": "z",
+        "state": {
+          "version": 1,
+          "state": 2878676743,
+          "initial": 543157654,
+          "scrambledFork": false
+        }
+      },
+      "scrambled": {
+        "next": [
+          "3fed18dc57a00000",
+          "3fcf804d77000000",
+          "3fdb06d802c00000",
+          "3fee0f6190800000",
+          "3fe93cefc0600000",
+          "3fe0daa51ba00000",
+          "3fd4fe5304800000",
+          "3fe4fb075be00000"
+        ],
+        "range": "3ff74389e0200000",
+        "int": 9,
+        "pick": "d",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 1828567409,
+          "initial": 3788015616,
+          "scrambledFork": true
+        }
+      },
+      "scrambledFork": {
+        "next": [
+          "3fc5be9e10000000",
+          "3fe557e98c800000",
+          "3fe3765ca0e00000",
+          "3fd289eb89800000",
+          "3faf1997ba000000",
+          "3fedb4a8d2000000",
+          "3fd5ae4ac1c00000",
+          "3fe2b1d310800000"
+        ],
+        "range": "400aec1c0ea60000",
+        "int": -4,
+        "pick": "e",
+        "chance": true,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 1706344817,
+          "initial": 3665793024,
+          "scrambledFork": true
+        }
+      }
+    },
+    {
+      "seed": 4294967295,
+      "first": {
+        "next": [
+          "3fecaf7e7a600000",
+          "3fc840d2d2000000",
+          "3fe6e6a072000000",
+          "3fee35bd20800000",
+          "3feb0c2d45e00000",
+          "3fe140a286e00000",
+          "3fe5c6a331a00000",
+          "3fde6fc5f2400000"
+        ],
+        "range": "c00050f4bd3e0000",
+        "int": 10,
+        "pick": "e",
+        "chance": true,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 2335519088,
+          "initial": 4294967295,
+          "scrambledFork": false
+        }
+      },
+      "numberFork": {
+        "next": [
+          "3f9c3a806c000000",
+          "3fe2474944000000",
+          "3febd828b0800000",
+          "3fd60f2bae800000",
+          "3fd0e0864e000000",
+          "3fd26f5692c00000",
+          "3feaaeec24e00000",
+          "3fd2a37816800000"
+        ],
+        "range": "c0087082214c0000",
+        "int": 8,
+        "pick": "a",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 2132674853,
+          "initial": 4092123060,
+          "scrambledFork": false
+        }
+      },
+      "stringFork": {
+        "next": [
+          "3fdf204f35c00000",
+          "3fd3bc74fc400000",
+          "3fe81c969aa00000",
+          "3fe115675ac00000",
+          "3faaf879f0000000",
+          "3fd6b7f8e7c00000",
+          "3fe99b26f7c00000",
+          "3fc9afc7eb000000"
+        ],
+        "range": "bfcb8fc4c1000000",
+        "int": -6,
+        "pick": "c",
+        "chance": true,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 673033514,
+          "initial": 2632481721,
+          "scrambledFork": false
+        }
+      },
+      "scrambled": {
+        "next": [
+          "3fd181a0ed800000",
+          "3fe59e9ae6c00000",
+          "3fecf4d19e800000",
+          "3fe7d9c40a800000",
+          "3fe81f950d800000",
+          "3fe6c96d94e00000",
+          "3fac0593f2000000",
+          "3fec793d13800000"
+        ],
+        "range": "c00577d583820000",
+        "int": 6,
+        "pick": "b",
+        "chance": false,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 3976051057,
+          "initial": 1640531968,
+          "scrambledFork": true
+        }
+      },
+      "scrambledFork": {
+        "next": [
+          "3fc7915179000000",
+          "3fd19389e7c00000",
+          "3fea39ce46e00000",
+          "3fe3c6e829400000",
+          "3fedb9a8e0600000",
+          "3fe3f8ff30600000",
+          "3feaf1512fe00000",
+          "3feca6b80e800000"
+        ],
+        "range": "401677f5f4b90000",
+        "int": 10,
+        "pick": "b",
+        "chance": true,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 3853828721,
+          "initial": 1518309632,
+          "scrambledFork": true
+        }
+      }
+    },
+    {
+      "seed": 2654435761,
+      "first": {
+        "next": [
+          "3fe17c9173c00000",
+          "3fdd695ec9800000",
+          "3fcf9f0ff5800000",
+          "3fe09e1ae7000000",
+          "3fec750cfca00000",
+          "3fe67a6735a00000",
+          "3fdb3b4a92c00000",
+          "3fde1ccdff800000"
+        ],
+        "range": "400ff4ae604a0000",
+        "int": -1,
+        "pick": "a",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 694987554,
+          "initial": 2654435761,
+          "scrambledFork": false
+        }
+      },
+      "numberFork": {
+        "next": [
+          "3fb88bcd15000000",
+          "3fc9d792d0000000",
+          "3fc7f79840800000",
+          "3fe17fb653a00000",
+          "3fe174a486000000",
+          "3febca4b04200000",
+          "3fe260f00a000000",
+          "3fe2791403800000"
+        ],
+        "range": "40133c2883b70000",
+        "int": -7,
+        "pick": "d",
+        "chance": true,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 3706093399,
+          "initial": 1370574310,
+          "scrambledFork": false
+        }
+      },
+      "stringFork": {
+        "next": [
+          "3fec2a2a63200000",
+          "3fef457d32400000",
+          "3fdbd289ac800000",
+          "3fe8e26c41400000",
+          "3fb4d27151000000",
+          "3fe2cd8f61200000",
+          "3fca3ea93d800000",
+          "3fefe71a36e00000"
+        ],
+        "range": "4004452de8f00000",
+        "int": 1,
+        "pick": "a",
+        "chance": true,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 1861643732,
+          "initial": 3821091939,
+          "scrambledFork": false
+        }
+      },
+      "scrambled": {
+        "next": [
+          "3fd737343d400000",
+          "3fed95b34f200000",
+          "3fee115cb0a00000",
+          "3fdf98ad34c00000",
+          "3fa96eff74000000",
+          "3fefb4ecb4600000",
+          "3fd0c29954400000",
+          "3fd1ee33de400000"
+        ],
+        "range": "bff3051711900000",
+        "int": 1,
+        "pick": "d",
+        "chance": false,
+        "weighted": "z",
+        "state": {
+          "version": 1,
+          "state": 2333867377,
+          "initial": 4293315584,
+          "scrambledFork": true
+        }
+      },
+      "scrambledFork": {
+        "next": [
+          "3fe714e450400000",
+          "3fc5463f91800000",
+          "3fdf62856e400000",
+          "3fa5429128000000",
+          "3fd32284afc00000",
+          "3fd4e67e5ec00000",
+          "3fc94908ba800000",
+          "3fd82d9f87400000"
+        ],
+        "range": "c00a4074fdf20000",
+        "int": 3,
+        "pick": "d",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 1050393969,
+          "initial": 3009842176,
+          "scrambledFork": true
+        }
+      }
+    },
+    {
+      "seed": 123456789,
+      "first": {
+        "next": [
+          "3fd07fa4bf800000",
+          "3fef1090ace00000",
+          "3fe9216837400000",
+          "3fca6399d8000000",
+          "3fd36587a1400000",
+          "3fe7e7f70e000000",
+          "3fe8eb62d6000000",
+          "3fd23567e0000000"
+        ],
+        "range": "c00a93ec3f2e0000",
+        "int": -7,
+        "pick": "b",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 2458975878,
+          "initial": 123456789,
+          "scrambledFork": false
+        }
+      },
+      "numberFork": {
+        "next": [
+          "3fd43d81c7000000",
+          "3feafa1a67600000",
+          "3fd403ced9400000",
+          "3fd267efaf000000",
+          "3fb050a9da000000",
+          "3fd2253b92400000",
+          "3feb1fa724c00000",
+          "3fe44607f4400000"
+        ],
+        "range": "bfe564abad700000",
+        "int": -3,
+        "pick": "b",
+        "chance": true,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 1971472819,
+          "initial": 3930921026,
+          "scrambledFork": false
+        }
+      },
+      "stringFork": {
+        "next": [
+          "3fed7c1633000000",
+          "3fde6800d2c00000",
+          "3fef2632f7a00000",
+          "3fbee2d90f000000",
+          "3fc22d5ac8800000",
+          "3fbb604f7c000000",
+          "3fe490b340800000",
+          "3fcdb9037c800000"
+        ],
+        "range": "4001fe15e2da0000",
+        "int": -4,
+        "pick": "e",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 1727986424,
+          "initial": 3687434631,
+          "scrambledFork": false
+        }
+      },
+      "scrambled": {
+        "next": [
+          "3fc87f03a1800000",
+          "3fd3cc17ff000000",
+          "3fea5312c6400000",
+          "3fee931739200000",
+          "3fb3328ec0000000",
+          "3fe0ed8d8c400000",
+          "3faafe5324000000",
+          "3febbcbbf7200000"
+        ],
+        "range": "bffdd0636d700000",
+        "int": -8,
+        "pick": "e",
+        "chance": false,
+        "weighted": "y",
+        "state": {
+          "version": 1,
+          "state": 186640881,
+          "initial": 2146089088,
+          "scrambledFork": true
+        }
+      },
+      "scrambledFork": {
+        "next": [
+          "3fef486883000000",
+          "3fea87190b800000",
+          "3fd7a11487800000",
+          "3fefd274d4800000",
+          "3feec08024200000",
+          "3fd640fae5c00000",
+          "3fdf0889d6400000",
+          "3fe7d7e6a2c00000"
+        ],
+        "range": "c005f01ec3ee0000",
+        "int": 6,
+        "pick": "e",
+        "chance": true,
+        "weighted": "x",
+        "state": {
+          "version": 1,
+          "state": 4025391473,
+          "initial": 1689872384,
+          "scrambledFork": true
+        }
+      }
+    }
+  ],
+  "hashes": [
+    {
+      "text": "",
+      "hash": 2166136261
+    },
+    {
+      "text": "a",
+      "hash": 3826002220
+    },
+    {
+      "text": "trees",
+      "hash": 405004626
+    },
+    {
+      "text": "0x5ea1:gameplay",
+      "hash": 1014518929
+    },
+    {
+      "text": "héllo wörld",
+      "hash": 3551649478
+    },
+    {
+      "text": "🌲",
+      "hash": 2508344997
+    }
+  ]
+}

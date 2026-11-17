@@ -15,8 +15,10 @@ export const ENTRY_WIDTH = 8;
 /** Asphalt reserved inside each midpoint entry in metres. */
 export const ENTRY_ASPHALT = 15;
 /** The entry road's width at each edge midpoint in metres (SDK-SPLIT SP4a: was the engine's core/config). */
+// oxlint-disable-next-line import/group-exports, import/exports-last -- one more grid constant beside its siblings (SDK-SPLIT SP4a)
 export const ROAD_WIDTH = 15;
 /** How far the entry road runs into the cell in metres; at least 50 (SDK-SPLIT SP4a: was the engine's core/config). */
+// oxlint-disable-next-line import/group-exports, import/exports-last -- one more grid constant beside its siblings (SDK-SPLIT SP4a)
 export const ROAD_LENGTH = 60;
 /** Total cell height in metres. */
 export const CELL_HEIGHT = 500;       // metres, bottom to top
