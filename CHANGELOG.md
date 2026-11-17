@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.25.0 (2026-11-17)
+
+- Memory checks now match what a phone really uses at boot, so worlds too big for a phone are refused before upload.
+
 ## v0.24.0 (2026-11-17)
 
 - Clipless creature skins now admit without adding a placeholder animation.
