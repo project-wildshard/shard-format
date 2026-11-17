@@ -57,3 +57,12 @@
   (upright, turned, scaled, matrix: turned, mirrored, translation-only,
   degenerate) with all 7 shape kinds placed at each, and its answers to
   13 row batches; bit-exact on the first run.
+- SP4f1 (opus-sdksplit3): `HEADLESS_CONTEXT_SECTIONS`, `headlessSections`
+  and `productHeadlessSections` over a structural `{ has, section }`
+  (`./headlessSections`); `ROAD_SKY` and `FAR_CLIFF_FLOOR`
+  (`./roadLight`); `MoverPose`, `MoverBox` and `moverChannelValues`
+  (`./moverPose`), verbatim. `small-laws.golden.json` holds the engine's
+  answers; `FAR_CLIFF_FLOOR` is read from the engine source because
+  `farView` pulls the renderer, which the sim loader refuses. Scene
+  source and species row types need no move: format already declares
+  `SceneModelSourceDocument`, `SceneBakeSourceDocument` and `SpeciesData`.
