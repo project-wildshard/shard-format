@@ -9,12 +9,19 @@ import { WIRE_PACKAGE_VERSION } from '../src/version.mjs'
 // shipped a WIRE_MAJOR 1 lock, so a minor could only ship as a patch (which
 // the patch-tag rule refuses) and the 14-day clock looked for a tag that
 // never existed. `wire-vM.m.p` names WIRE_MAJOR M and WIRE_MINOR m.
-const manifest = JSON.parse(
+const manifest: unknown = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
-) as { readonly version: string }
+)
+const version =
+  typeof manifest === 'object' &&
+  manifest !== null &&
+  'version' in manifest &&
+  typeof manifest.version === 'string'
+    ? manifest.version
+    : ''
 
 test('the package version names the lock wire major and minor', (): void => {
-  const [major, minor] = manifest.version.split('.').map(Number)
+  const [major, minor] = version.split('.').map(Number)
   assert.deepEqual([major, minor], [WIRE_MAJOR, WIRE_MINOR])
-  assert.equal(WIRE_PACKAGE_VERSION, manifest.version)
+  assert.equal(WIRE_PACKAGE_VERSION, version)
 })
