@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.18.0 (2026-11-17)
+
+- Declare a timed run in quests: `races` names a start and a stop flag, the fact the finish files, and a cap in seconds.
+- Existing shard files are unchanged: the list is optional.
+
 ## v0.17.0 (2026-11-17)
 
 - Declare perch creatures, their homes and shared projectile pools in the shard format.
