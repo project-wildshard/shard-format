@@ -20,9 +20,16 @@ interface MutableLock {
   wireMinor: number
   [key: string]: unknown
 }
-const released = (): ReleaseLock => JSON.parse(wireLockText()) as ReleaseLock
-const copy = (): MutableLock =>
-  structuredClone(JSON.parse(wireLockText()) as MutableLock)
+/**
+ * Today's lock with its minor set back to 0, so each fixture's "a minor bump"
+ * is 1 whatever minor the package is at (MP1.5's roadX/roadZ made it 1).
+ */
+const atMinorZero = (): MutableLock => ({
+  ...(JSON.parse(wireLockText()) as MutableLock),
+  wireMinor: 0,
+})
+const released = (): ReleaseLock => atMinorZero()
+const copy = (): MutableLock => structuredClone(atMinorZero())
 /** A field of `entry` by name; a fixture's target must exist. */
 const fieldNamed = (entry: Mutable, name: string): Mutable => {
   const found = (entry['fields'] as Mutable[]).find(

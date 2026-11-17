@@ -1,7 +1,7 @@
 {
   "version": 1,
   "wireMajor": 1,
-  "wireMinor": 0,
+  "wireMinor": 1,
   "maxRowFields": 32,
   "tableLimits": {
     "maxDepth": 8,
