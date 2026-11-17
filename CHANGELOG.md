@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.19.0 (2026-11-17)
+
+- A race can name `resets`: flags its finish and a lapse lower, so a second run counts its middle gates again.
+- A carry mover can take a `steer` driver: its rider's stick and boost move it instead of a fixed path.
+- A creature can declare its own hit volumes and lock sockets; creatures without them keep their bytes.
+
 ## v0.18.0 (2026-11-17)
 
 - Declare a timed run in quests: `races` names a start and a stop flag, the fact the finish files, and a cap in seconds.
