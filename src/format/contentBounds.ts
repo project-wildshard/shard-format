@@ -42,14 +42,6 @@ export const ENGINE_BASE_BYTES: number = 250 * 1024 * 1024;
 export const MEMORY_GATES: Readonly<{ reportOnly: boolean; explorerMB: number; loadingMB: number; }> = Object.freeze({
   reportOnly: memoryGates.mode === 'report-only', explorerMB: memoryGates.explorerMB, loadingMB: memoryGates.loadingMB,
 });
-/** J408 (Jake, 2026-11-17, after Nine crashed his iPhone 17 Pro at boot): the hard line. A worst playing estimate over it
- * refuses in every offline gate (check, shard CI, api-server, the cook) whatever the policy or the report-only switch.
- * Engine's MEMORY_AMBER (src/client/game/grid/budgetOverlay.ts). Decimal bytes. MEMORY-GATES MG4. */
-export const MEMORY_HARD_BYTES = 1.5e9;
-/** The refusal's words for an estimate over the hard line. */
-export function overHardLine(playingBytes: number): string {
-  return playingBytes > MEMORY_HARD_BYTES ? ` (over the ${(MEMORY_HARD_BYTES / 1e9).toFixed(1)} GB phone line, J408: a phone would close the page)` : '';
-}
 /** Provisional phone content caps; shadow draws count in each draw cap. */
 export const CONTENT_CAPS: { readonly l0: { readonly size: 62.5; readonly resident: number; readonly compressed: number; readonly triangles: 40000; readonly draws: 8; }; readonly l1: { readonly size: 125; readonly resident: number; readonly compressed: number; readonly triangles: 10000; readonly draws: 2; }; readonly far: { readonly resident: number; readonly compressed: 1000000; readonly triangles: 8000; readonly draws: 1; }; readonly library: { readonly resident: number; readonly compressed: number; }; readonly sim: { readonly resident: number; readonly compressed: number; }; readonly engineBase: number; readonly playing: number; readonly loading: number; readonly l0Count: 40; readonly l1Count: 32; readonly farCount: 9; readonly simCount: 4; readonly libraryCount: 4; readonly overlap: number; readonly residentFactor: 1.11; readonly nearRadius: 150; readonly shadowRadius: 80; readonly pitch: 562.5; } = {
   l0: { size: 62.5, resident: 4 * CONTENT_MB, compressed: 0.3 * CONTENT_MB, triangles: 40_000, draws: 8 },

@@ -1,4 +1,5 @@
-import { CONTENT_CAPS as C, overHardLine, type TextureTranscodeSupport } from './contentBounds.ts';
+import { CONTENT_CAPS as C, type TextureTranscodeSupport } from './contentBounds.ts';
+import { overHardLine } from './memory-line.ts';
 import { worstContentCostSteps, type worstContentCost } from './budget.ts';
 import type { Shardfile } from './shardSchema.ts';
 import type { MemoryAdmission } from './memoryAdmission.ts';

@@ -14,3 +14,7 @@ moves: `performanceReport` refuses a worst playing total over it, and
 included) still refuses over it. Between the 1.2 GB cap and the line,
 nothing changes: a warning, as before, so no shard under the line stops
 publishing. The refusal names the line and J408.
+
+The src/format ratchet refused the first cut (exports, magic numbers, a
+four-parameter helper), so the line and its words live in memory-line.ts
+with one export group, and the playing refusal is its own branch.

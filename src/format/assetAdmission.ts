@@ -1,7 +1,8 @@
 import { acceptsShardfileCost, textureLibrarySource } from './deviceMemoryCost.ts';
 import { creaturePerchAdmissionRows } from './creature-perch.ts';
 import { admitScriptContract, decisionModuleContracts, type ScriptAdmissionRows } from './scriptContract.ts';
-import { overHardLine, type TextureTranscodeSupport } from './contentBounds.ts';
+import type { TextureTranscodeSupport } from './contentBounds.ts';
+import { overHardLine } from './memory-line.ts';
 import { admitScript } from './scriptAdmission.ts';
 import { SCRIPT_LIMITS } from './scriptLimits.ts';
 import { worstContentCost } from './budget.ts';
