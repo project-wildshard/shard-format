@@ -1,0 +1,180 @@
+{
+  "about": "SDK-SPLIT SP4e: engine models/nativeGeometry.ts NativeAttributesSchema and game/shardfile/wholeGeometryPieces.ts readWholePartition over geometry-layout.golden-specs.ts",
+  "channels": [
+    {
+      "ok": {
+        "position": {
+          "semantic": "POSITION",
+          "storage": "Float32Array",
+          "normalized": false,
+          "itemSize": 3
+        }
+      }
+    },
+    {
+      "ok": {
+        "position": {
+          "semantic": "POSITION",
+          "storage": "Int16Array",
+          "normalized": false,
+          "itemSize": 3
+        },
+        "normal": {
+          "semantic": "NORMAL",
+          "storage": "Int8Array",
+          "normalized": true,
+          "itemSize": 4
+        },
+        "aFace": {
+          "semantic": "_AFACE",
+          "storage": "Float16Array",
+          "normalized": false,
+          "itemSize": 1
+        }
+      }
+    },
+    {
+      "ok": {
+        "uv": {
+          "semantic": "TEXCOORD_0",
+          "storage": "Uint16Array",
+          "normalized": true,
+          "itemSize": 2
+        },
+        "color": {
+          "semantic": "COLOR_0",
+          "storage": "Uint8Array",
+          "normalized": true,
+          "itemSize": 4
+        },
+        "ids": {
+          "semantic": "_ID",
+          "storage": "Uint32Array",
+          "normalized": false,
+          "itemSize": 1
+        }
+      }
+    },
+    { "ok": {} },
+    {
+      "error": "Invalid type: Expected (\"Float32Array\" | \"Float16Array\" | \"Uint16Array\" | \"Uint32Array\" | \"Int16Array\" | \"Int8Array\" | \"Uint8Array\") but received \"Float64Array\""
+    },
+    { "error": "Invalid value: Expected <=4 but received 5" },
+    { "error": "Invalid integer: Received 1.5" },
+    { "error": "Invalid key: Expected never but received \"extra\"" },
+    { "error": "Invalid key: Expected \"normalized\" but received undefined" },
+    {
+      "ok": {
+        "0": {
+          "semantic": "POSITION",
+          "storage": "Float32Array",
+          "normalized": false,
+          "itemSize": 3
+        }
+      }
+    },
+    { "error": "Invalid type: Expected Object but received null" }
+  ],
+  "partitions": [
+    {
+      "id": "roof",
+      "vertices": [0, 1, 2, 3],
+      "triangles": [0, 1],
+      "vertexCount": 12,
+      "indexCount": 18,
+      "index": "u16",
+      "grid": null,
+      "vertexLength": 4,
+      "triangleLength": 2,
+      "denseVertices": false,
+      "denseTriangles": false
+    },
+    {
+      "id": "roof",
+      "vertices": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      "triangles": [0, 1, 2, 3, 4, 5],
+      "vertexCount": 12,
+      "indexCount": 18,
+      "index": "u16",
+      "grid": null,
+      "vertexLength": 12,
+      "triangleLength": 6,
+      "denseVertices": true,
+      "denseTriangles": true
+    },
+    {
+      "id": "roof",
+      "vertices": [2, 3, 4, 9, 10],
+      "triangles": [1, 4, 5],
+      "vertexCount": 12,
+      "indexCount": 18,
+      "index": "u32",
+      "grid": null,
+      "vertexLength": 5,
+      "triangleLength": 3,
+      "denseVertices": false,
+      "denseTriangles": false
+    },
+    {
+      "id": "roof",
+      "vertices": [3, 4, 5, 6, 7, 8],
+      "triangles": [1, 2],
+      "vertexCount": 12,
+      "indexCount": 0,
+      "index": "none",
+      "grid": { "origin": [1.5, -2, 0.25], "step": 0.00390625 },
+      "vertexLength": 6,
+      "triangleLength": 2,
+      "denseVertices": false,
+      "denseTriangles": false
+    },
+    {
+      "id": "roof",
+      "vertices": [],
+      "triangles": [],
+      "vertexCount": 12,
+      "indexCount": 18,
+      "index": "u16",
+      "grid": null,
+      "vertexLength": 0,
+      "triangleLength": 0,
+      "denseVertices": false,
+      "denseTriangles": false
+    },
+    {
+      "error": "Invalid type: Expected (unknown | Object) but received Object"
+    },
+    {
+      "error": "Invalid type: Expected (unknown | Object) but received Object"
+    },
+    {
+      "error": "Invalid type: Expected (unknown | Object) but received Object"
+    },
+    {
+      "id": "roof",
+      "vertices": "16777216 from 0",
+      "triangles": [0],
+      "vertexCount": 12,
+      "indexCount": 18,
+      "index": "u16",
+      "grid": null,
+      "vertexLength": 16777216,
+      "triangleLength": 1,
+      "denseVertices": true,
+      "denseTriangles": false
+    },
+    { "error": "Invalid type: Expected (unknown | Object) but received Array" },
+    { "error": "Invalid type: Expected (unknown | Object) but received Array" },
+    { "error": "Invalid value: Expected >=1 but received 0" },
+    {
+      "error": "Invalid type: Expected (\"none\" | \"u16\" | \"u32\") but received \"u8\""
+    },
+    { "error": "Invalid value: Expected <=1 but received 2" },
+    {
+      "error": "Invalid value: Expected >=0.000244140625 but received 0.0001220703125"
+    },
+    { "error": "Invalid key: Expected never but received \"extra\"" },
+    { "error": "Invalid key: Expected \"id\" but received undefined" },
+    { "error": "Invalid type: Expected (unknown | Object) but received Object" }
+  ]
+}

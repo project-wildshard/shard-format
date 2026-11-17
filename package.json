@@ -24,6 +24,7 @@
     "src/format/terrain-field.golden.json",
     "src/format/baked-terrain.golden.json",
     "src/format/forest-placement.golden.json",
+    "src/format/geometry-layout.golden.json",
     "src/tools/runtime-hosts.json",
     "packages/wire/src/net-command.ts",
     "src/cli/*.ts",
@@ -414,6 +415,9 @@
     "./forestPlacement": "./src/format/forest-placement.ts",
     "./grassField": "./src/format/grass-field.ts",
     "./forest-placement.golden.json": "./src/format/forest-placement.golden.json",
+    "./nativeGeometryChannels": "./src/format/native-geometry-channels.ts",
+    "./wholePartition": "./src/format/whole-partition.ts",
+    "./geometry-layout.golden.json": "./src/format/geometry-layout.golden.json",
     "./baked-terrain.golden.json": "./src/format/baked-terrain.golden.json"
   },
   "engines": {

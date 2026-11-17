@@ -39,3 +39,11 @@
   points, all from the engine's own code; bit-exact on the first run.
   The engine's undergrowth pass (`placeUndergrowth`, `DecisionLog`) and
   `decodeTreeRecords` have no callers, so they stay for SP5 to drop.
+- SP4e1 (opus-sdksplit3): the stored geometry channel table
+  (`NativeAttributeSchema`, `NativeAttributesSchema`,
+  `./nativeGeometryChannels`) and the whole-piece partition row with its
+  run-list form (`readWholePartition`, `WholePartitionRow`) plus the
+  `WholeGeometryPiece` shape, generic over the host's geometry and
+  matrix (`./wholePartition`), moved verbatim. `geometry-layout.golden.json`
+  holds the engine's own answers (admitted rows, expanded runs, refusal
+  messages) to 11 channel tables and 18 partitions.
