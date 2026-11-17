@@ -18,13 +18,21 @@ const trigger = v.variant('kind', [
   v.strictObject({ id, kind: v.literal('death'), flag: id, tag: id, when: v.exactOptional(condition) }),
   v.strictObject({ id, kind: v.literal('script'), flag: id, condition: id, when: v.exactOptional(condition) }),
 ]);
+/** A timed run: per player, the ticks from `start` rising to `stop` rising file `fact` with the seconds; past `cap` the run lapses. */
+const RACE_CAP_MAX_S = 3600;
+const RACE_CAP_MIN_S = 1;
+const RACES_MAX = 32;
+const raceCap = v.pipe(finite, v.safeInteger(), v.minValue(RACE_CAP_MIN_S), v.maxValue(RACE_CAP_MAX_S));
+const race = v.strictObject({ id, start: id, stop: id, fact: id, cap: raceCap });
+const raceRows = v.pipe(v.array(race), v.maxLength(RACES_MAX));
+const raceList = v.exactOptional(raceRows);
 const choice = v.strictObject({ id, label: text, next: v.nullable(id), when: v.exactOptional(condition), sets: v.exactOptional(names), scene: v.exactOptional(id) });
 const node = v.strictObject({ id, lines: v.pipe(v.array(text), v.minLength(1), v.maxLength(32)), sets: v.exactOptional(names), choices: v.pipe(v.array(choice), v.maxLength(16)) });
 const dialogue = v.strictObject({ id, name: text, start: id, nodes: v.pipe(v.array(node), v.minLength(1), v.maxLength(128)) });
 /** Display metadata for the existing achievement registry and ledger; no new progress save. */
 const achievement = v.strictObject({ id, name: text, goal: text, count: v.pipe(finite, v.safeInteger(), v.minValue(1), v.maxValue(4096)),
   kind: v.exactOptional(id), variant: v.exactOptional(id), event: v.exactOptional(id), title: text, icon: CatalogueIconSchema });
-const raw: v.GenericSchema<{ [K in keyof QuestDataInput]: QuestDataInput[K] }, QuestData> = v.strictObject({ achievements: v.exactOptional(v.pipe(v.array(achievement), v.maxLength(256))), flags: names, quests: v.pipe(v.array(quest), v.maxLength(32)), triggers: v.pipe(v.array(trigger), v.maxLength(128)), dialogue: v.pipe(v.array(dialogue), v.maxLength(32)) });
+const raw: v.GenericSchema<{ [K in keyof QuestDataInput]: QuestDataInput[K] }, QuestData> = v.strictObject({ achievements: v.exactOptional(v.pipe(v.array(achievement), v.maxLength(256))), flags: names, quests: v.pipe(v.array(quest), v.maxLength(32)), triggers: v.pipe(v.array(trigger), v.maxLength(128)), races: raceList, dialogue: v.pipe(v.array(dialogue), v.maxLength(32)) });
 /** Plain quest graphs, declared flags/triggers and finite dialogue trees; hooks name platform-resolved script ports. */
 
 const reads = (c: v.InferOutput<typeof condition> | undefined): string[] => [...(c?.all ?? []), ...(c?.any ?? []), ...(c?.none ?? [])];
@@ -40,6 +48,12 @@ export function questDataRules(data: QuestData): string[] {
     for (const m of q.intro?.markers ?? []) checkFlags(reads(m.hideWhen));
   }
   for (const t of data.triggers) checkFlags([t.flag, ...reads(t.when)]);
+  const raceIds: string[] = [];
+  for (const run of data.races ?? []) {
+    raceIds.push(run.id); checkFlags([run.start, run.stop]);
+    if (run.start === run.stop) { errors.push(`race ${run.id} starts and stops on one flag`); }
+  }
+  unique(raceIds);
   for (const d of data.dialogue) {
     unique(d.nodes.map((n) => n.id)); const nodes = new Map(d.nodes.map((n) => [n.id, n])), visited = new Set<string>(), active = new Set<string>();
     const visit = (name: string): void => {
@@ -170,6 +184,13 @@ interface QuestDataInputFields {
             none?: (string)[];
         };
     }))[];
+    races?: ({
+        id: string;
+        start: string;
+        stop: string;
+        fact: string;
+        cap: number;
+    })[];
     dialogue: ({
         id: string;
         name: string;
@@ -305,6 +326,13 @@ interface QuestDataFields {
             none?: (string)[];
         };
     }))[];
+    races?: ({
+        id: string;
+        start: string;
+        stop: string;
+        fact: string;
+        cap: number;
+    })[];
     dialogue: ({
         id: string;
         name: string;
