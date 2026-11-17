@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.14.0 (2026-11-16)
+
+- Conditional incoming-damage exemptions preserve attack, state and effect tags when older creature policies are converted.
+- Contradictory legacy and exact cap policies are refused before a shard starts.
+
 ## v0.13.0 (2026-11-16)
 
 - Explicit weapon contact effects can name creatures declared in the shard’s species program.
