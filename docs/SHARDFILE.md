@@ -1529,6 +1529,12 @@ blocking the road while the deck is away. The compiled `entryways` row uses
 The optional top-level `movers` array defaults to `[]`; every mover module is
 a critical admitted `sim.scripts` WASM module. Compiled chains remain refused
 until native joint reconnection is available.
+A native `channel` mover with a `carry` may take a `steer` driver
+(`{kind: "steer", speed, turn, boost, accel, ground}`: top speed 0.005–60 m/s,
+turn rate up to 2π rad/s, a boost multiplier 1–4, acceleration up to 100 m/s²,
+and whether it follows the ground): its rider's stick and boost move it instead
+of a fixed path, boarding is an ungated interact press, and it has no clip. Its
+identity is `MOVER_DRIVER_MODULES.steer`, which no guest module carries.
 
 The executable helper `proveSocketLift(entry, {physics, runtime, fixedStep,
 waterAt?, approachSource?})` uses the admitted `MoverRuntime` and the engine's real capsule motor.

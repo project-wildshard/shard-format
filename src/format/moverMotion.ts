@@ -6,11 +6,13 @@ const time = bounded(0, 3600);
 const point = v.tuple([bounded(-250, 250), bounded(-250, 250), bounded(-250, 250)]);
 const rotation = v.pipe(v.tuple([finite, finite, finite, finite]), v.check(q => Math.abs(Math.hypot(...q) - 1) < 1e-5));
 /** Fixed driver identities preserve their guest ABI and continuation across row migrations. */
-export const MOVER_DRIVER_MODULES: Readonly<{ ride: "f8f90ba2e03401910448a2af1e8b02420bc7b2e1003076bc6241d9cb0c688a22"; hinge: "1371d8959aebb567404fc8db59592b0d63f7afeb7060f0b74ea4f12389e6bafd"; waves: "9a5171bc3dd84488aae9de29ebd07fdb12dfbd2500c45cf91cf37e5bbbc712f0"; clip: "871aef47d9b0dd009d46ad41e5cb3c793625bc20325bdaca00134a8677b0c6f1"; }> = Object.freeze({
+export const MOVER_DRIVER_MODULES: Readonly<{ ride: "f8f90ba2e03401910448a2af1e8b02420bc7b2e1003076bc6241d9cb0c688a22"; hinge: "1371d8959aebb567404fc8db59592b0d63f7afeb7060f0b74ea4f12389e6bafd"; waves: "9a5171bc3dd84488aae9de29ebd07fdb12dfbd2500c45cf91cf37e5bbbc712f0"; clip: "871aef47d9b0dd009d46ad41e5cb3c793625bc20325bdaca00134a8677b0c6f1"; steer: "d7ee08f609c5a350692fba79d47d5aa6bebd14d324f955a5ba20b52c603e9270"; }> = Object.freeze({
   ride: 'f8f90ba2e03401910448a2af1e8b02420bc7b2e1003076bc6241d9cb0c688a22',
   hinge: '1371d8959aebb567404fc8db59592b0d63f7afeb7060f0b74ea4f12389e6bafd',
   waves: '9a5171bc3dd84488aae9de29ebd07fdb12dfbd2500c45cf91cf37e5bbbc712f0',
   clip: '871aef47d9b0dd009d46ad41e5cb3c793625bc20325bdaca00134a8677b0c6f1',
+  /** Native only (SS-MS2a1): no guest module carries it; the identity is sha256 of "wildshard mover driver steer v1". */
+  steer: 'd7ee08f609c5a350692fba79d47d5aa6bebd14d324f955a5ba20b52c603e9270',
 });
 /** Bounded real transform keys; both channels share their strictly increasing time grid. */
 export const MoverTrackSchema: v.GenericSchema<MoverTrackRowsInput, MoverTrackRows> = v.pipe(v.strictObject({
@@ -30,6 +32,13 @@ export const MoverTriggerSchema: v.GenericSchema<MoverTriggerRowsInput, MoverTri
   v.strictObject({ kind: v.literal('shared'), field: v.pipe(finite, v.integer(), v.minValue(1), v.maxValue(0x7fffffff)), equals: v.union([v.boolean(), finite]) }),
 ]);
 const wave = v.tuple([bounded(-1, 1), bounded(-1, 1), bounded(0, 10), bounded(0.005, 1000), bounded(-100, 100), bounded(0, 10)]);
+/** SS-MS2a1 steer bounds: top speed m/s, turn rad/s, boost multiplier, acceleration m/s²; the least is the format's 0.005. */
+const STEER_ACCEL_MAX = 100;
+const STEER_BOOST_MAX = 4;
+const STEER_BOOST_MIN = 1;
+const STEER_LEAST = 0.005;
+const STEER_SPEED_MAX = 60;
+const STEER_TURN_MAX = Math.PI + Math.PI;
 /** Numeric fixed policies compiled to the session's existing fenced guest driver. */
 export const MoverDriverSchema: v.GenericSchema<MoverDriverRowsInput, MoverDriverRows> = v.variant('kind', [
   v.strictObject({ kind: v.literal('waves'), damping: bounded(0, 1), waves: v.tuple([wave, wave, wave, wave]) }),
@@ -39,6 +48,9 @@ export const MoverDriverSchema: v.GenericSchema<MoverDriverRowsInput, MoverDrive
   v.strictObject({ kind: v.literal('static') }),
   v.strictObject({ kind: v.literal('track') }),
   v.strictObject({ kind: v.literal('pendulum'), axis: v.picklist(['x', 'y', 'z']), amplitude: bounded(0, Math.PI), period: bounded(0.005, 3600) }),
+  // SS-MS2a1: a vehicle its rider steers. Top speed (m/s), turn rate (rad/s), the boost multiplier, acceleration (m/s²),
+  // and whether it follows the ground under it or keeps its rest height. Board and leave are its carry's prompts.
+  v.strictObject({ kind: v.literal('steer'), speed: bounded(STEER_LEAST, STEER_SPEED_MAX), turn: bounded(STEER_LEAST, STEER_TURN_MAX), boost: bounded(STEER_BOOST_MIN, STEER_BOOST_MAX), accel: bounded(STEER_LEAST, STEER_ACCEL_MAX), ground: v.boolean() }),
 ]);
 /** Stop track, activation and fixed driver before ABI lowering. */
 export const MoverMotionSchema: v.GenericSchema<MoverMotionRowsInput, MoverMotionRows> = v.strictObject({
@@ -84,6 +96,10 @@ export function lowerMoverMotion(input: unknown, rest: { at: { x: number; y: num
   if (driver.kind === 'waves') {
     if (trigger.kind !== 'always' || track !== undefined) throw new Error('Waves require an always trigger without a clip');
     return { module: MOVER_DRIVER_MODULES.waves, input: [rest.at.x, rest.at.y, rest.at.z, rest.euler.y, driver.damping, ...driver.waves.flat()] };
+  }
+  if (driver.kind === 'steer') {
+    if (trigger.kind !== 'interact' || Boolean(trigger.permission) || track !== undefined) { throw new Error('Steer driver requires an ungated board press without a clip'); }
+    return { module: MOVER_DRIVER_MODULES.steer, input: [driver.speed, driver.turn, driver.boost, driver.accel, Number(driver.ground), rest.at.x, rest.at.y, rest.at.z, rest.euler.y] };
   }
   if (driver.kind === 'static') {
     if (trigger.kind !== 'always' || track !== undefined) throw new Error('Static mover cannot consume a clip or interaction');
@@ -197,6 +213,13 @@ export type MoverDriverRows = ({
     axis: 'x' | 'y' | 'z';
     amplitude: number;
     period: number;
+}) | ({
+    kind: 'steer';
+    speed: number;
+    turn: number;
+    boost: number;
+    accel: number;
+    ground: boolean;
 });
 interface MoverMotionRowsInputFields {
     track?: MoverTrackRowsInput;

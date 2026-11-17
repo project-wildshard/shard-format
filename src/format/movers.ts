@@ -25,7 +25,8 @@ export function parseMovers(input: unknown): MoverData {
     if (m.kind === 'chain' ? m.chain === undefined || m.boxes.length > 0 : m.chain !== undefined || (m.kind === 'channel' ? m.boxes.length > 0 : m.boxes.length === 0)) throw new Error('Mover primitive shape');
     if (m.execution === 'native' && (m.driver === undefined || m.trigger === undefined)) throw new Error('Native mover requires admitted motion');
     if (m.kind === 'channel' && m.driver?.kind !== 'track' && m.carry === undefined) throw new Error('Channel mover requires its declared track');
-    if (m.carry !== undefined && (m.execution !== 'native' || m.kind !== 'channel' || m.driver?.kind !== 'winch' || m.driver.mode !== 'ride' || m.driver.return !== 'command' || m.driver.gate)) throw new Error('Carry requires an admitted native command path');
+    if (m.carry !== undefined && (m.execution !== 'native' || m.kind !== 'channel' || (m.driver?.kind !== 'steer' && (m.driver?.kind !== 'winch' || m.driver.mode !== 'ride' || m.driver.return !== 'command' || m.driver.gate)))) { throw new Error('Carry requires an admitted native command path'); }
+    if (m.driver?.kind === 'steer' && (m.carry === undefined || m.execution !== 'native')) { throw new Error('A steer driver is a native carry'); }
     if (m.execution !== 'native' && m.driver?.kind === 'winch' && m.driver.mode === 'ride' && (m.driver.return !== undefined || m.driver.ease !== undefined || m.driver.snap !== undefined)) throw new Error('Guest mover cannot accept native path tuning');
     if (m.restoreFrom !== undefined && (m.atEnd?.field !== 5 || m.atEnd.equals !== 1 || m.track?.loop !== 'once'
       || !(m.driver?.kind === 'track' || m.driver?.kind === 'winch' && m.driver.mode === 'hinge'))) throw new Error('Mover restore requires an admitted one-shot endpoint');

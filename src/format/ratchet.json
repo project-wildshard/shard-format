@@ -2381,7 +2381,7 @@
   },
   "src/format/movers.ts": {
    "eslint(complexity)": 1,
-   "eslint(curly)": 10,
+   "eslint(curly)": 9,
    "eslint(id-length)": 63,
    "eslint(max-statements)": 1,
    "eslint(no-magic-numbers)": 28,
