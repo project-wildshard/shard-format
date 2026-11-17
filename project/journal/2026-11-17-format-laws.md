@@ -19,3 +19,10 @@
   refuses any rise, so the verbatim law ports and the golden oracles
   carry one file-level oxlint-disable naming exactly the rules that
   fire, with the reason; restyling them would risk the bit-exact match.
+- SP4c: `parseBakedTerrain` and `bakedSamplers` were already defined
+  here (`./bakedTerrainBytes`, `./bakedTerrainSampling`); the engine's
+  `world/BakedTerrain.ts` only re-exports them, so nothing moved. The
+  sdk's bake points at these subpaths in SP6, and `Heightfield`'s
+  install global stays with the builders there. New characterization
+  vectors pin them: three fixture grids (WSTR bytes from the SP4b
+  fields) sampled through the engine's exports.

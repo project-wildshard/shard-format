@@ -22,6 +22,7 @@
     "src/format/memoryGates.json",
     "src/format/seeded-rng.golden.json",
     "src/format/terrain-field.golden.json",
+    "src/format/baked-terrain.golden.json",
     "src/tools/runtime-hosts.json",
     "packages/wire/src/net-command.ts",
     "src/cli/*.ts",
@@ -408,7 +409,8 @@
     "./seeded-rng.golden.json": "./src/format/seeded-rng.golden.json",
     "./noise": "./src/format/noise.ts",
     "./terrainField": "./src/format/terrain-field.ts",
-    "./terrain-field.golden.json": "./src/format/terrain-field.golden.json"
+    "./terrain-field.golden.json": "./src/format/terrain-field.golden.json",
+    "./baked-terrain.golden.json": "./src/format/baked-terrain.golden.json"
   },
   "engines": {
     "node": ">=24.18.0"
