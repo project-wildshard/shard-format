@@ -104,6 +104,7 @@
     "./contracts": "./src/format/contracts.ts",
     "./coverAppearance": "./src/format/coverAppearance.ts",
     "./creatures": "./src/format/creatures.ts",
+    "./creaturePerch": "./src/format/creature-perch.ts",
     "./creatureLayers": "./src/format/creature-layers.ts",
     "./creatureSkeletons": "./src/format/creature-skeletons.ts",
     "./crowdPresentation": "./src/format/crowdPresentation.ts",
