@@ -398,6 +398,7 @@
     "./worldScenes": "./src/format/worldScenes.ts",
     "./worldTargets": "./src/format/worldTargets.ts",
     "./worldUpdates": "./src/format/worldUpdates.ts",
+    "./incomingCapPolicy": "./src/format/incoming-cap-policy.ts",
     "./strikeDebris": "./src/format/strike-debris.ts",
     "./harvestRows": "./src/format/harvest-rows.ts"
   },

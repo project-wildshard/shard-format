@@ -2311,7 +2311,7 @@
    "typescript(explicit-function-return-type)": 5,
    "typescript(no-confusing-void-expression)": 3,
    "typescript(prefer-readonly-parameter-types)": 10,
-   "unicorn(max-nested-calls)": 212,
+   "unicorn(max-nested-calls)": 205,
    "unicorn(no-array-for-each)": 1,
    "unicorn(no-null)": 4,
    "unicorn(numeric-separators-style)": 1
@@ -4311,7 +4311,7 @@
    "typescript(explicit-function-return-type)": 10,
    "typescript(prefer-readonly-parameter-types)": 7,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 35,
+   "unicorn(max-nested-calls)": 32,
    "unicorn(numeric-separators-style)": 3
   },
   "src/format/speciesScripts.ts": {

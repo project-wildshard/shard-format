@@ -173,6 +173,15 @@ check syntax without inventing a catalogue. Native runtime-plan metadata
 retains its separate interpreter admission. Runtime support and older
 source conversion remain ONE-FORMAT OF31d2 and OF31d3.
 
+Manifest and native-hunt `fight` metadata may declare `capExemptTags`:
+up to 512 unique exact dotted strings, each at most 521 characters.
+Punctuation is literal, including `*`. The `incomingCapPolicy` compiler
+lowers older aliases once, preserving request, state, effect and
+environment-hit tags. When both fields exist, admission requires identical
+sets. Species `capExempt` booleans override this conditional policy;
+absence retains it. This contract alone does not add support to older
+engine readers.
+
 ## 2. `client/plan` kinds
 
 `client/plan` is `{ "version": 1, "features": [ … ] }`, at most 64 features. Each feature's `kind` picks one

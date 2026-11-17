@@ -1,3 +1,4 @@
+import { IncomingCapTagsSchema, incomingCapPolicyAgrees } from './incoming-cap-policy.ts';
 import type { StrikeDebrisCatalogue } from './strike-debris.ts';
 import { strikeDebrisCatalogueRules } from './strike-debris.ts';
 import type { HarvestDrop, HarvestSpecies } from './harvest-rows.ts';
@@ -78,12 +79,13 @@ function readSpeciesProgram(input: unknown): SpeciesProgramData { return v.parse
 
 const names = v.pipe(v.array(id), v.maxLength(64));
 const tag = v.custom<`${string}.${string}`>(value => typeof value === 'string' && value.length <= 128 && /^[a-z][a-zA-Z0-9.-]*\.[a-zA-Z0-9.-]+$/u.test(value));
+const nativeFightFields = v.strictObject({ telegraphed: v.exactOptional(v.boolean()), attackers: v.exactOptional(v.pipe(positive, v.integer(), v.maxValue(1024))),
+    maxHitDamage: v.exactOptional(nonnegative), capExempt: v.exactOptional(names), capExemptTags: v.exactOptional(IncomingCapTagsSchema),
+    input: v.exactOptional(v.strictObject({ bufferMs: nonnegative, coyoteMs: nonnegative })) });
 /** Settings for the existing native hunt and continuation owners; no callbacks or replacement clock. */
 const NativeHuntSchema: v.GenericSchema<NativeHuntRowsInput, NativeHuntRows> = v.strictObject({
   limit: v.pipe(positive, v.integer(), v.maxValue(1024)), player: v.picklist(['host', 'origin']),
-  fight: v.strictObject({ telegraphed: v.exactOptional(v.boolean()), attackers: v.exactOptional(v.pipe(positive, v.integer(), v.maxValue(1024))),
-    maxHitDamage: v.exactOptional(nonnegative), capExempt: v.exactOptional(names),
-    input: v.exactOptional(v.strictObject({ bufferMs: nonnegative, coyoteMs: nonnegative })) }),
+  fight: v.pipe(nativeFightFields, v.check<NativeHuntRows['fight'], 'matching legacy and exact incoming-cap policy'>(incomingCapPolicyAgrees, 'matching legacy and exact incoming-cap policy')),
   tuning: v.exactOptional(v.record(id, optionalTuning)),
   bands: v.strictObject({ states: names, scripted: v.exactOptional(v.boolean()), legacyKinds: names }),
   hit: v.strictObject({ namespace: id, tags: v.pipe(v.array(tag), v.maxLength(32)) }), memoryFields: v.exactOptional(names),
@@ -105,7 +107,7 @@ interface SpeciesData { capExempt?: boolean; harvest?: HarvestDrop[]; id: string
 type SpeciesProgramDataInput = unknown;
 interface SpeciesProgramData { species: ({ brain?: v.InferOutput<typeof SpeciesBrainSchema>; body?: v.InferOutput<typeof CreatureBodyRecipeSchema>; } & SpeciesData)[]; strikes: (v.InferOutput<typeof CreatureStrikeSchema>)[]; modules?: Record<string, string>; }
 type NativeHuntRowsInput = NativeHuntRows;
-interface NativeHuntRows { limit: number; player: 'host' | 'origin'; fight: { telegraphed?: boolean; attackers?: number; maxHitDamage?: number; capExempt?: (string)[]; input?: { bufferMs: number; coyoteMs: number; }; }; tuning?: Record<string, { hp?: number; sightRange?: number; sightRangeGraze?: number; sightCone?: number; hearStill?: number; hearCrouch?: number; hearWalk?: number; hearSprint?: number; noticeRate?: number; forgetRate?: number; alertAt?: number; boltAt?: number; freezeMin?: number; freezeMax?: number; relaxAfter?: number; panicDist?: number; runSpeed?: number; trotSpeed?: number; fleeMinTime?: number; fleeUntil?: number; fleeUntilMax?: number; fleeMaxTime?: number; lookBack?: number; waryTime?: number; waryBoost?: number; herdAlertRadius?: number; herdBoltDelayMin?: number; herdBoltDelayMax?: number; impactSpook?: number; impactAlert?: number; stalk?: { detect: number; speed: number; giveUp: number; rechargeCd: number; huffMin: number; huffMax: number; roar: string; fleeBelowHp: number; fleeChance: number; }; }>; bands: { states: (string)[]; scripted?: boolean; legacyKinds: (string)[]; }; hit: { namespace: string; tags: (`${string}.${string}`)[]; }; memoryFields?: (string)[]; }
+interface NativeHuntRows { limit: number; player: 'host' | 'origin'; fight: { telegraphed?: boolean; attackers?: number; maxHitDamage?: number; capExempt?: (string)[]; capExemptTags?: (string)[]; input?: { bufferMs: number; coyoteMs: number; }; }; tuning?: Record<string, { hp?: number; sightRange?: number; sightRangeGraze?: number; sightCone?: number; hearStill?: number; hearCrouch?: number; hearWalk?: number; hearSprint?: number; noticeRate?: number; forgetRate?: number; alertAt?: number; boltAt?: number; freezeMin?: number; freezeMax?: number; relaxAfter?: number; panicDist?: number; runSpeed?: number; trotSpeed?: number; fleeMinTime?: number; fleeUntil?: number; fleeUntilMax?: number; fleeMaxTime?: number; lookBack?: number; waryTime?: number; waryBoost?: number; herdAlertRadius?: number; herdBoltDelayMin?: number; herdBoltDelayMax?: number; impactSpook?: number; impactAlert?: number; stalk?: { detect: number; speed: number; giveUp: number; rechargeCd: number; huffMin: number; huffMax: number; roar: string; fleeBelowHp: number; fleeChance: number; }; }>; bands: { states: (string)[]; scripted?: boolean; legacyKinds: (string)[]; }; hit: { namespace: string; tags: (`${string}.${string}`)[]; }; memoryFields?: (string)[]; }
 type SpeciesProgramsInput = unknown;
 interface SpeciesPrograms { page: (SpeciesData)[]; native: (SpeciesData)[]; program?: SpeciesProgramData; spawns?: v.InferOutput<typeof SpawnTablesSchema>; hunt?: NativeHuntRows; }
 
