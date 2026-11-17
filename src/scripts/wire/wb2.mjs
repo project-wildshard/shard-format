@@ -10,7 +10,7 @@ import {resolve,dirname} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {loadavg} from 'node:os';
 import {build} from 'vite';
-import {chromium} from 'playwright';
+import {chromium} from '../browser/playwright.mjs';
 import {KEYCHAIN_ARGS} from '../../../scripts/chromium-keychain.mjs';
 import {POLICY} from '../../../packages/wire/lib/bench/capture/benchmark-stats.js';
 import {prepareTraffic,recording,trafficBytes} from '../../../packages/wire/lib/bench/capture/benchmark-data.js';
