@@ -9,6 +9,7 @@ import { sketchReference } from './sketch.ts';
 import { JournalRowSchema, journalRowRules } from './compendiumRows.ts';
 import { CreatureTypeSchema, CreatureBodySchema, CreatureTemperamentSchema, CreatureSensesSchema, CreatureAbilitySchema, CreaturePresentationSchema } from './creature-layers.ts';
 import type { CreatureLayers } from './creature-layers.ts';
+import { creatureSizeRules } from './creature-sizes.ts';
 
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9.:-]*$/u), v.maxLength(128));
 const text = v.pipe(v.string(), v.maxLength(4096));
@@ -75,7 +76,7 @@ function rowRules(rows: ShardRows): string[] {
   }
   for (const d of rows.days) if (d.schedule[0]?.from !== 0 || d.schedule.at(-1)?.to !== 24 || d.schedule.some((s, i) => s.from >= s.to || (i > 0 && d.schedule[i - 1]?.to !== s.from))) errors.push('complete ordered day schedule');
   const speciesIds = new Set(rows.species.map((s) => s.id));
-  errors.push(...strikeDebrisCatalogueRules(rows));
+  errors.push(...strikeDebrisCatalogueRules(rows), ...creatureSizeRules(rows.species));
   for (const s of rows.species) if (new Set(s.variants.map((r) => r.id)).size !== s.variants.length || s.variants.some((r) => r.scale[1] > 10)) errors.push('species variants');
   const strikeIds = new Set<string>();
   for (const strikeRow of rows.strikes) { strikeIds.add(strikeRow.id); }

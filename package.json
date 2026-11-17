@@ -107,6 +107,7 @@
     "./creaturePerch": "./src/format/creature-perch.ts",
     "./creatureLayers": "./src/format/creature-layers.ts",
     "./creatureVolumes": "./src/format/creature-volumes.ts",
+    "./creatureSizes": "./src/format/creature-sizes.ts",
     "./creatureSkeletons": "./src/format/creature-skeletons.ts",
     "./crowdPresentation": "./src/format/crowdPresentation.ts",
     "./crowds": "./src/format/crowds.ts",
