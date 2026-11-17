@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.23.0 (2026-11-17)
+
+- Refuse shard builds and uploads whose estimated playing or loading memory exceeds the 1.5 GB phone budget.
+- Let runtime shards record their memory model version so gates can refuse stale measurements when the model changes.
+
 ## v0.22.0 (2026-11-17)
 
 - Creature authors now have one size policy for geometry, stride, awareness and cell weight.
