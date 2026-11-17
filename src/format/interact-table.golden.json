@@ -1,0 +1,340 @@
+{
+  "about": "SDK-SPLIT SP4f2: engine world/interact/types.ts and game/plugin/quests.ts compileQuestTable over interact-table.golden-specs.ts",
+  "flags": [
+    [
+      "open:sea-chest",
+      ["open:sea-chest", "chest:any", "key:cellar", "found:map"],
+      ["talked:castaway", "key:hold"]
+    ],
+    ["taken:hold-key", ["taken:hold-key", "key:hold"], ["dead:sailor"]],
+    ["open:sluice", ["open:sluice"], ["plate:p1", "lever:jam", "key:cellar"]],
+    ["lever:jam", ["lever:jam", "jammed"], []],
+    ["lever:loose", ["lever:loose"], []],
+    ["plate:p1", ["plate:p1"], []],
+    [null, [], []],
+    ["taken:flint", ["taken:flint", "has:flint"], ["jammed"]],
+    ["lit:b-lit", ["lit:b-lit"], []],
+    ["used:seat", ["used:seat"], ["lit:b-lit"]],
+    ["used:altar", ["used:altar"], ["shard:1", "shard:2"]]
+  ],
+  "transient": ["plate:"],
+  "compiled": [
+    {
+      "ok": {
+        "marks": [],
+        "rows": [
+          {
+            "id": "flint",
+            "act": 1,
+            "at": "flint",
+            "needs": [{ "none": ["jammed"] }, { "none": ["taken:flint"] }],
+            "sets": ["taken:flint", "has:flint"]
+          },
+          {
+            "id": "seat",
+            "act": 2,
+            "at": "seat",
+            "needs": [{ "all": ["lit:b-lit"] }],
+            "sets": ["used:seat"]
+          },
+          {
+            "id": "jam",
+            "act": 3,
+            "at": "jam",
+            "needs": [{ "none": ["lever:jam"] }],
+            "sets": ["lever:jam"]
+          }
+        ]
+      }
+    },
+    { "error": "Unsupported quest table action loose" },
+    { "error": "Unsupported quest table action nobody" },
+    { "error": "Unsupported quest table action sea-chest" }
+  ],
+  "placements": [
+    [
+      {
+        "ok": [
+          {
+            "id": "sea-chest",
+            "kind": "chest",
+            "x": 0,
+            "y": 1,
+            "z": -0.5,
+            "yaw": 0
+          },
+          {
+            "id": "hold-key",
+            "kind": "key",
+            "x": 2.5,
+            "y": 2,
+            "z": -1.5,
+            "yaw": 0.1
+          },
+          {
+            "id": "sluice",
+            "kind": "door",
+            "x": 5,
+            "y": 3,
+            "z": -2.5,
+            "yaw": 0.2
+          },
+          {
+            "id": "jam",
+            "kind": "lever",
+            "x": 7.5,
+            "y": 4,
+            "z": -3.5,
+            "yaw": 0.30000000000000004
+          },
+          {
+            "id": "loose",
+            "kind": "lever",
+            "x": 10,
+            "y": 5,
+            "z": -4.5,
+            "yaw": 0.4
+          },
+          {
+            "id": "p1",
+            "kind": "plate",
+            "x": 12.5,
+            "y": 6,
+            "z": -5.5,
+            "yaw": 0.5
+          },
+          {
+            "id": "b1",
+            "kind": "barrel",
+            "x": 15,
+            "y": 7,
+            "z": -6.5,
+            "yaw": 0.6000000000000001
+          },
+          {
+            "id": "flint",
+            "kind": "pickup",
+            "x": 17.5,
+            "y": 8,
+            "z": -7.5,
+            "yaw": 0.7000000000000001
+          },
+          {
+            "id": "b-lit",
+            "kind": "beacon",
+            "x": 20,
+            "y": 9,
+            "z": -8.5,
+            "yaw": 0.8
+          },
+          {
+            "id": "seat",
+            "kind": "bench",
+            "x": 22.5,
+            "y": 10,
+            "z": -9.5,
+            "yaw": 0.9
+          },
+          {
+            "id": "altar",
+            "kind": "altar",
+            "x": 25,
+            "y": 11,
+            "z": -10.5,
+            "yaw": 1
+          }
+        ]
+      },
+      {
+        "ok": {
+          "external": ["dead:sailor", "talked:castaway"],
+          "rows": [
+            {
+              "kind": "chest",
+              "id": "sea-chest",
+              "at": { "poi": "world", "x": 0, "y": 1, "z": -0.5, "yaw": 0 },
+              "lock": "hold",
+              "contents": [
+                { "item": "coin", "n": 3 },
+                { "key": "cellar", "label": "Cellar key" },
+                { "flag": "found:map", "label": "A map" }
+              ],
+              "requires": { "all": ["talked:castaway"] },
+              "sets": ["chest:any"]
+            },
+            {
+              "kind": "key",
+              "id": "hold-key",
+              "at": { "poi": "world", "x": 2.5, "y": 2, "z": -1.5, "yaw": 0.1 },
+              "key": "hold",
+              "label": "Hold key",
+              "showWhen": { "any": ["dead:sailor"] }
+            },
+            {
+              "kind": "door",
+              "id": "sluice",
+              "at": { "poi": "world", "x": 5, "y": 3, "z": -2.5, "yaw": 0.2 },
+              "w": 2,
+              "h": 3,
+              "look": "sluice",
+              "opensWhen": { "all": ["plate:p1"], "none": ["lever:jam"] },
+              "latch": true,
+              "lock": "cellar"
+            },
+            {
+              "kind": "lever",
+              "id": "jam",
+              "at": {
+                "poi": "world",
+                "x": 7.5,
+                "y": 4,
+                "z": -3.5,
+                "yaw": 0.30000000000000004
+              },
+              "label": "Jam",
+              "latch": true,
+              "sets": ["jammed"]
+            },
+            {
+              "kind": "lever",
+              "id": "loose",
+              "at": { "poi": "world", "x": 10, "y": 5, "z": -4.5, "yaw": 0.4 },
+              "label": "Loose"
+            },
+            {
+              "kind": "plate",
+              "id": "p1",
+              "at": {
+                "poi": "world",
+                "x": 12.5,
+                "y": 6,
+                "z": -5.5,
+                "yaw": 0.5
+              },
+              "size": 1.5,
+              "by": "barrel"
+            },
+            {
+              "kind": "barrel",
+              "id": "b1",
+              "at": {
+                "poi": "world",
+                "x": 15,
+                "y": 7,
+                "z": -6.5,
+                "yaw": 0.6000000000000001
+              },
+              "leash": 12
+            },
+            {
+              "kind": "pickup",
+              "id": "flint",
+              "at": {
+                "poi": "world",
+                "x": 17.5,
+                "y": 8,
+                "z": -7.5,
+                "yaw": 0.7000000000000001
+              },
+              "look": "flint",
+              "item": "flint",
+              "label": "Flint",
+              "sets": ["has:flint"],
+              "requires": { "none": ["jammed"] }
+            },
+            {
+              "kind": "beacon",
+              "id": "b-lit",
+              "at": { "poi": "world", "x": 20, "y": 9, "z": -8.5, "yaw": 0.8 },
+              "label": "Beacon"
+            },
+            {
+              "kind": "bench",
+              "id": "seat",
+              "at": {
+                "poi": "world",
+                "x": 22.5,
+                "y": 10,
+                "z": -9.5,
+                "yaw": 0.9
+              },
+              "label": "Sit",
+              "showWhen": { "all": ["lit:b-lit"] }
+            },
+            {
+              "kind": "altar",
+              "id": "altar",
+              "at": { "poi": "world", "x": 25, "y": 11, "z": -10.5, "yaw": 1 },
+              "label": "Altar",
+              "fills": ["shard:1", "shard:2"],
+              "socketLook": "token"
+            }
+          ]
+        }
+      }
+    ],
+    [
+      {
+        "ok": [
+          { "id": "hold-key", "kind": "key", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "sluice", "kind": "door", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "jam", "kind": "lever", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "loose", "kind": "lever", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "p1", "kind": "plate", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "b1", "kind": "barrel", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "flint", "kind": "pickup", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "b-lit", "kind": "beacon", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "seat", "kind": "bench", "x": 0, "y": 0, "z": 0, "yaw": 0 },
+          { "id": "altar", "kind": "altar", "x": 0, "y": 0, "z": 0, "yaw": 0 }
+        ]
+      },
+      { "error": "Incomplete interactable placements" }
+    ],
+    [
+      { "error": "Invalid or duplicate interactable placement" },
+      { "error": "Invalid or duplicate interactable placement" }
+    ],
+    [
+      { "error": "Invalid or duplicate interactable placement" },
+      { "error": "Invalid or duplicate interactable placement" }
+    ],
+    [
+      { "error": "Invalid interactable placement rows" },
+      { "error": "Invalid interactable placement rows" }
+    ]
+  ],
+  "places": [
+    { "ok": { "x": 3, "z": 4, "y": 2, "yaw": 0 } },
+    { "ok": { "x": 25, "z": 0, "y": 1.7, "yaw": 0 } },
+    {
+      "ok": {
+        "x": 12.215313703214393,
+        "z": -4.303949331880392,
+        "y": 0.7085518752421773,
+        "yaw": 1
+      }
+    },
+    {
+      "ok": {
+        "x": 12.215313703214393,
+        "z": -4.303949331880392,
+        "y": 7,
+        "yaw": 0.6
+      }
+    },
+    { "ok": { "x": -28, "z": 15, "y": -0.04310131310502059, "yaw": 1.1 } },
+    { "ok": { "x": -31, "z": 10, "y": 3.5, "yaw": 0 } },
+    {
+      "ok": {
+        "x": -31.36805547124873,
+        "z": 12.358363262049016,
+        "y": 0.15975022946251366,
+        "yaw": -2.1
+      }
+    },
+    { "ok": { "x": 4, "z": 5, "y": 0.42955234936617, "yaw": 0.2 } },
+    { "error": "Missing quest frame cave" },
+    { "error": "Invalid quest placement coordinate" }
+  ],
+  "floors": [2, 1.4, -0.07455484456568628]
+}

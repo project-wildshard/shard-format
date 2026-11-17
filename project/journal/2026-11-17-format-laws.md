@@ -66,3 +66,12 @@
   `farView` pulls the renderer, which the sim loader refuses. Scene
   source and species row types need no move: format already declares
   `SceneModelSourceDocument`, `SceneBakeSourceDocument` and `SpeciesData`.
+- SP4f2 (opus-sdksplit3): the interact table's data half (rows, `Cond`,
+  `QuestPlace`, `createQuestPlacements`, `readInteractPlacements`,
+  `bindInteractPlacements`, `autoFlag`, `flagsRaised`, `flagsRead`,
+  `TRANSIENT_PREFIXES`) and `compileQuestTable` (over format's own
+  `parseInteractionRows`) moved verbatim as `./interactTable`; the
+  three.js looks, props and live interactables stay engine.
+  `interact-table.golden.json` holds the engine's answers over an
+  11-row table with every kind, 4 binding sets, 5 placement inputs and
+  10 quest places on fixture floors and frames.

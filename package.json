@@ -27,6 +27,7 @@
     "src/format/geometry-layout.golden.json",
     "src/format/colliders.golden.json",
     "src/format/small-laws.golden.json",
+    "src/format/interact-table.golden.json",
     "src/tools/runtime-hosts.json",
     "packages/wire/src/net-command.ts",
     "src/cli/*.ts",
@@ -426,6 +427,8 @@
     "./roadLight": "./src/format/road-light.ts",
     "./moverPose": "./src/format/mover-pose.ts",
     "./small-laws.golden.json": "./src/format/small-laws.golden.json",
+    "./interactTable": "./src/format/interact-table.ts",
+    "./interact-table.golden.json": "./src/format/interact-table.golden.json",
     "./baked-terrain.golden.json": "./src/format/baked-terrain.golden.json"
   },
   "engines": {
