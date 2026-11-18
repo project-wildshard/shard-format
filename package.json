@@ -206,6 +206,8 @@
     "./materialGraph": "./src/format/materialGraph.ts",
     "./materials": "./src/format/materials.ts",
     "./memoryAdmission": "./src/format/memoryAdmission.ts",
+    "./memory-armed": "./src/format/memory-armed.ts",
+    "./memory-armed.json": "./src/format/memory-armed.json",
     "./memoryGates.json": "./src/format/memoryGates.json",
     "./runtime-hosts.json": "./src/tools/runtime-hosts.json",
     "./meshCollision": "./src/format/meshCollision.ts",
