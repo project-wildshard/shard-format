@@ -407,6 +407,7 @@
     "./worldSceneModels": "./src/format/worldSceneModels.ts",
     "./worldScenePages": "./src/format/worldScenePages.ts",
     "./worldScenePlacement": "./src/format/worldScenePlacement.ts",
+    "./placement-page-text": "./src/format/placement-page-text.ts",
     "./worldSceneSlabs": "./src/format/worldSceneSlabs.ts",
     "./worldSceneSurface": "./src/format/worldSceneSurface.ts",
     "./worldSceneWeld": "./src/format/worldSceneWeld.ts",
