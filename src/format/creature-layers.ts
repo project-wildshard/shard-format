@@ -20,12 +20,14 @@ import {
   union,
 } from 'valibot'
 
+import { CreatureProjectileSchema } from './creature-projectile.ts'
 import { CreatureSocketNameSchema } from './creature-volumes.ts'
 import { CreatureSkinClipNameSchema } from './skinData.ts'
 import { StrikeTellKindSchema } from './spawnCombat.ts'
 import { HuntTuningSchema } from './speciesPrograms.ts'
 
 import type { CreatureBody } from './creature-body.ts'
+import type { CreatureProjectile } from './creature-projectile.ts'
 import type { CreatureSkinClipName } from './skinData.ts'
 import type { StrikeTellKind } from './spawnCombat.ts'
 import type { SpeciesData } from './speciesPrograms.ts'
@@ -90,6 +92,7 @@ interface CreatureAbility {
   /** Horizontal travel in metres on clear ground. */
   strength?: number
   tell?: StrikeTellKind
+  projectile?: CreatureProjectile
 }
 type CreatureAbilityInput = Omit<CreatureAbility, 'clip'> & { clip?: string }
 interface CreaturePresentation {
@@ -229,6 +232,7 @@ const abilityRow = strictObject({
   effect: exactOptional(picklist(['knockback'])),
   strength: exactOptional(knockbackDistance),
   tell: exactOptional(StrikeTellKindSchema),
+  projectile: exactOptional(CreatureProjectileSchema),
 })
 const abilityEffectCheck = check<
   CreatureAbility,
