@@ -15,7 +15,8 @@ import { worstContentCost, memoryTargetWarnings, nearbyContentCost } from "./bud
 import { CONTENT_CAPS as C, MEMORY_GATES } from './contentBounds.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
 import { MEMORY_HARD_BYTES, hardLineIssue, runtimeOfflineBytes } from './memory-line.ts';
-import { bootMemoryCosts, NO_BYTES } from './boot-memory-cost.ts';
+import { bootMemoryCosts } from './boot-memory-cost.ts';
+import type { TierIndex } from './phone-files.ts';
 import { VIEW_DRAWS, viewDraws } from './view-draws.ts';
 import { DEFAULT_GRAPH_BUDGET } from "./materialGraph.ts";
 import { SCRIPT_LIMITS } from './scriptLimits.ts';
@@ -25,12 +26,12 @@ import type { IssueCodeOf } from './issue-codes.ts';
 import { isNavigationData, navigationCost } from './navigationBytes.ts';
 
 type PerformancePolicy = 'refuse' | 'warn';
-interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number }
+interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex }
 
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
-function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number }>): PerformanceReport['memory'] {
+function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number; index?: TierIndex }>): PerformanceReport['memory'] {
   const commons = nativeBytes + Object.values(source.requires.commonsCosts).reduce((sum, row) => sum + row.decoded + row.gpu, 0);
-  const budget = { commons, boot: bootMemoryCosts(source, options.sections, options.mountedImages ?? NO_BYTES) };
+  const budget = { commons, boot: bootMemoryCosts(source, options.sections, options) };
   return { near: nearbyContentCost(source, source.spawn.x, source.spawn.z, budget), worst: worstContentCost(source, budget), playingLimit: C.playing, loadingLimit: C.loading };
 }
 /** A performance issue's code and its metric words. */

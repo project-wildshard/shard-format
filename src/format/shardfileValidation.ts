@@ -237,7 +237,7 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
     coded('runtime-files', (): void => { ports.runtimeImports?.(entry.path, decoder().decode(read(entry))); });
   }
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
-  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages });
+  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index });
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
   return { index, shard, assets, sections: payloads, scripts, warnings, audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };

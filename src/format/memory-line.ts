@@ -4,6 +4,7 @@ import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
 import { runtimeAccountedBytes, RuntimeCostSchema } from './runtimeCost.ts'
 
+import type { TierIndex } from './phone-files.ts'
 import type { Shardfile } from './shardSchema.ts'
 
 /** J408 (Jake, 2026-11-17, after Nine crashed his iPhone 17 Pro at boot): the hard line. An estimate over it
@@ -57,20 +58,28 @@ function runtimeOfflineBytes(input: unknown): number {
   })
 }
 
-/** What the offline estimate knows of the product beyond its sections: the decoded engine images its cook mounts. */
+/** What the offline estimate knows of the product beyond its sections: the decoded engine images its cook mounts and,
+ *  from MG6 epoch 5, the output index, so its terms count only the files a phone fetches. */
 type MemoryContext =
   | ReadonlyMap<string, unknown>
-  | Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages: number }>
+  | Readonly<{
+      sections: ReadonlyMap<string, unknown>
+      mountedImages: number
+      index?: TierIndex
+    }>
 
-function memoryContext(
-  context: MemoryContext,
-): Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages: number }> {
+function memoryContext(context: MemoryContext): Readonly<{
+  sections: ReadonlyMap<string, unknown>
+  mountedImages: number
+  index?: TierIndex
+}> {
   return context instanceof Map
     ? { sections: context, mountedImages: EMPTY_BYTES }
     : // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the union's other arm
       (context as Readonly<{
         sections: ReadonlyMap<string, unknown>
         mountedImages: number
+        index?: TierIndex
       }>)
 }
 
@@ -80,7 +89,7 @@ function offlineMemoryIssues(
   source: Shardfile,
   context: MemoryContext,
 ): ReturnType<typeof hardLineIssue>[] {
-  const { sections, mountedImages } = memoryContext(context)
+  const { sections, mountedImages, index } = memoryContext(context)
   const native = source.runtime?.cost
   const runtime =
     native === undefined ? EMPTY_BYTES : runtimeOfflineBytes(native)
@@ -90,7 +99,7 @@ function offlineMemoryIssues(
   )
   const cost = worstContentCost(source, {
     commons: runtime + commons,
-    boot: bootMemoryCosts(source, sections, mountedImages),
+    boot: bootMemoryCosts(source, sections, { mountedImages, index }),
   })
   return (['playing', 'loading'] as const)
     .filter((kind): boolean => cost[kind] > MEMORY_HARD_BYTES)

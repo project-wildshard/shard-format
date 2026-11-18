@@ -37,7 +37,12 @@ function admitHead(
     preflightDeclaredCosts(shard, offlineMemoryAdmission('warn'))
   })
   withIssueCode('performance-targets', (): void => {
-    assertShardfileTargets(shard, 'warn', payloads)
+    // MG6 epoch 5: the index lets the estimate count only the files a phone fetches (no mount bytes in the stream).
+    assertShardfileTargets(shard, 'warn', {
+      sections: payloads,
+      mountedImages: 0,
+      index,
+    })
   })
   return shard
 }

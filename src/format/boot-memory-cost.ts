@@ -1,9 +1,11 @@
 import { controlFileHashes } from './admissionControl.ts'
 import { textureMipBytes } from './contentBounds.ts'
+import { contentBytes, gpuBytes, phoneInactiveFiles } from './phone-files.ts'
 import { spawnViewSceneFiles } from './spawnView.ts'
 import { parseImageAsset } from './stillImage.ts'
 import { parseWorldScenes, worldScenesForTier } from './worldScenes.ts'
 
+import type { TierIndex } from './phone-files.ts'
 import type { Shardfile } from './shardSchema.ts'
 import type { WorldScenesSection } from './worldScenes.ts'
 
@@ -22,10 +24,10 @@ interface BootMemoryCosts {
   readonly phoneFloor?: number
 }
 
-/** MG6 epoch 4: what the offline estimate reads of a product, in bytes. */
+/** MG6 epoch 4: what the offline estimate reads of a product, in bytes; from epoch 5 only the files a phone fetches. */
 interface PhoneTerms {
-  /** Every client file's wire bytes plus its CPU-decoded bytes (audio aside), the commons the same way, and the decoded
-   *  engine images the cook mounts: what a boot downloads and decodes. */
+  /** Every phone-tier client file's wire bytes plus its CPU-decoded bytes (audio aside), the commons the same way, and,
+   *  for a data shard, the decoded engine images the cook mounts: what a boot downloads and decodes. */
   readonly content: number
   /** GPU texture bytes: image and KTX2 files, commons GPU and mounted images; zero for a runtime home, whose `gl` stands
    *  in (its files carry every tier's variants: Pine ships 704 MB of texture bytes and holds 65 MB on a phone at Low). */
@@ -50,25 +52,25 @@ const BASE_LEVEL = 1
 // Chromium capture (04d76bcf). The calibrated increment rounds to 168 MB.
 const SHADER_COMPILE_BYTES = 168_000_000
 const MB = 1_000_000
-const ENGINE_PLAYING_BYTES = 710_000_000
-const ENGINE_LOADING_BYTES = 910_000_000
-/** MG6 epoch 4 (mini-estcal2, 2026-11-17): the estimate is ENGINE-MEMORY EM11's phone chain (engine
- *  `scripts/memory/phone-model.json`, refit at the 2048 MiB ActiveHard line in `72e30a23`: native WebKit [K] of the
- *  WebContent and GPU processes through alpha or scale to an iPhone 17 Pro's WebContent). It replaces epoch 3's
- *  Chromium renderer x2.0 and 2.5 x the Simulator reading, which put Pine at 2,276 MB against EM11's 1.5-1.7 GB. Each
- *  weight is phone bytes per product byte, fitted so that every pinned product's estimate is at or over the upper bound
- *  of EM11's error bar on its cold runs (engine `6b432a2a`, Mac mini, phone Low; `memory-calibration.golden.json` holds
- *  the pairs), with each verdict kept: a product EM11 puts under the 1.0 GB playing envelope or the 1.5 GB loading line
- *  stays under it here (Far Reach binds both). The fit is minimax, then least total overshoot; the content weight is held
- *  at 0.5 settled and 0.8 loading at least, so bytes a boot downloads and decodes always count (epoch 3: the renderer's
- *  ArrayBuffers stay at their peak after ready). The engine term is Template's bound raised to cover Sunscar Dunes,
- *  whose held bitmaps outweigh its terms; refit it when the engine's own boot gets cheaper. */
+const ENGINE_PLAYING_BYTES = 696_764_000
+const ENGINE_LOADING_BYTES = 982_344_000
+/** MG6 epoch 5 (mini-em11b, 2026-11-18): the estimate is ENGINE-MEMORY EM11's phone chain (engine
+ *  `scripts/memory/phone-model.json`, refit on readings without the Web Inspector's Network retention: native WebKit [K]
+ *  of the WebContent and GPU processes through alpha or scale to an iPhone 17 Pro's WebContent, at the 2048 MiB
+ *  ActiveHard line). Each weight is phone bytes per product byte, fitted so that every pinned product's estimate is at or
+ *  over the upper bound of EM11's error bar on its cold runs (engine `037d9f15`, Mac mini, phone Low;
+ *  `memory-calibration.golden.json` holds the pairs), with each verdict kept at the 1.0 GB playing envelope and the 1.5 GB
+ *  loading line except Pine's loading (memory-calibration.test.ts says why). The fit is minimax, then least
+ *  total overshoot; the content weight is held at 0.5 settled and 0.8 loading at least, so bytes a boot downloads and
+ *  decodes always count. The terms count only the files a phone fetches (`phoneInactiveFiles`). The engine term is
+ *  Template's bound raised to cover Sunscar Dunes, whose held bitmaps outweigh its terms; refit it when the engine's own
+ *  boot gets cheaper. Epoch 4 (`6b432a2a` readings) read Pine at 1.46x its clean bound and Dunes under it. */
 const PHONE = {
   engine: { playing: ENGINE_PLAYING_BYTES, loading: ENGINE_LOADING_BYTES },
   content: { playing: 0.5, loading: 0.8 },
-  textures: { playing: 1.3, loading: 2.4 },
-  gl: { playing: 1.5, loading: 1.4 },
-  geometry: { playing: 0.2, loading: 2.6 },
+  textures: { playing: 1.46099, loading: 1.786 },
+  gl: { playing: 1.771, loading: 1.349 },
+  geometry: { playing: 0, loading: 1.977 },
   /** A runtime home never reads under its own Simulator reading settled, nor under it times EM11's lowest peak over
    *  settled (1.257) while loading. No pinned home binds here today; it stops a heavy runtime with light files. */
   runtime: { playing: 1, loading: 1.26 },
@@ -153,48 +155,13 @@ function paintArrayBytes(
   return { paintArrayGpu, paintArrayStaging }
 }
 
-/** MG6 epoch 3: what a boot downloads and decodes. Each client file's downloaded bytes, its CPU-decoded form (decoded
- *  audio is left out: a boot decodes only its sample set, and Nine and Open Plots decode none), the commons the same way,
- *  and the engine images the cook mounts (Far Reach's sky and terrain textures: 107 MB of decoded bitmaps measured
- *  against 105 MB charged). */
-function contentBytes(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
-  shard: Shardfile,
-  mountedImages: number,
-): number {
-  let bytes = mountedImages
-  for (const file of shard.files) {
-    bytes += file.compressed + (file.kind === 'audio' ? NO_BYTES : file.decoded)
-  }
-  for (const wire of Object.values(shard.requires.commonsWire)) {
-    bytes += wire
-  }
-  for (const row of Object.values(shard.requires.commonsCosts)) {
-    bytes += row.decoded
-  }
-  return bytes
-}
-
-/** The GPU bytes of the product's files of these kinds. */
-function gpuBytes(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
-  shard: Shardfile,
-  kinds: ReadonlySet<string>,
-): number {
-  let bytes = NO_BYTES
-  for (const file of shard.files) {
-    if (kinds.has(file.kind)) {
-      bytes += file.gpu
-    }
-  }
-  return bytes
-}
-
-/** MG6 epoch 4: a product's terms. */
+/** MG6 epoch 5: a product's terms without the `inactive` files. A runtime home's mounted images are left to its reading:
+ *  a phone Low boot of Pine fetched none of its 99.6 MB of them (meta MEMORY-GATES, mini-pinemem2 `95a75759`). */
 function phoneTerms(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
   shard: Shardfile,
   mountedImages: number = NO_BYTES,
+  inactive: ReadonlySet<string> = new Set(),
 ): PhoneTerms {
   const cost = shard.runtime?.cost
   const commonsGpu = Object.values(shard.requires.commonsCosts).reduce(
@@ -202,13 +169,17 @@ function phoneTerms(
     NO_BYTES,
   )
   return {
-    content: contentBytes(shard, mountedImages),
+    content: contentBytes(
+      shard,
+      cost === undefined ? mountedImages : NO_BYTES,
+      inactive,
+    ),
     textures:
       cost === undefined
-        ? gpuBytes(shard, TEXTURE_KINDS) + commonsGpu + mountedImages
+        ? gpuBytes(shard, TEXTURE_KINDS, inactive) + commonsGpu + mountedImages
         : NO_BYTES,
     gl: cost === undefined ? NO_BYTES : Math.ceil(cost.glMB * MB),
-    geometry: gpuBytes(shard, GEOMETRY_KINDS),
+    geometry: gpuBytes(shard, GEOMETRY_KINDS, inactive),
     sims: Math.max(shard.budgets.sim.resident, shard.serverBudget.memory),
     runtimeReading:
       cost === undefined
@@ -250,20 +221,27 @@ function bootPhoneBytes(
   return { playing, loading: Math.max(playing, phase('loading')) }
 }
 
-/** Boot memory that sits outside the steady-state file and tile budgets. `mountedImages` is the decoded size of the
- *  engine images the cook mounts (`mountedImageBytes`), when the caller has the product's mounts. */
+/** Boot memory outside the steady-state file and tile budgets. `product` carries what the caller has: the decoded size
+ *  of the images the cook mounts (`mountedImageBytes`) and the output index, so the terms count only phone files. */
 function bootMemoryCosts(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
   shard: Shardfile,
   sections: ReadonlyMap<string, unknown>,
-  mountedImages: number = NO_BYTES,
+  product: Readonly<{
+    mountedImages?: number
+    index?: TierIndex | undefined
+  }> = {},
 ): BootMemoryCosts {
   const rawScene = sections.get('world/scenes')
   const scene =
     rawScene === undefined
       ? undefined
       : worldScenesForTier(parseWorldScenes(rawScene), 'phone')
-  const terms = phoneTerms(shard, mountedImages)
+  const terms = phoneTerms(
+    shard,
+    product.mountedImages ?? NO_BYTES,
+    phoneInactiveFiles(shard, product.index, sections),
+  )
   const phone = bootPhoneBytes(terms)
   return {
     ...spawnMemoryCosts(shard, sections),
