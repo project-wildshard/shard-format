@@ -4,23 +4,28 @@ import { CreatureStrikeSchema } from './creatures.ts';
 
 const id = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
 const amount = v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(60));
+type StrikeTellKind = 'lane' | 'ring';
+const StrikeTellKindSchema: v.GenericSchema<StrikeTellKind> = v.picklist(['lane', 'ring']);
 /** V1 strike capabilities use the existing contact kernel. Effects and presentation edges are rows, never hooks. */
-export const SpawnCombatSchema: v.GenericSchema<SpawnCombatInput, SpawnCombat> = v.pipe(v.unknown(), v.check(isJsonData, 'plain JSON scripted strikes'), v.array(v.strictObject({ id, row: CreatureStrikeSchema,
+const SpawnCombatSchema: v.GenericSchema<SpawnCombatInput, SpawnCombat> = v.pipe(v.unknown(), v.check(isJsonData, 'plain JSON scripted strikes'), v.array(v.strictObject({ id, row: CreatureStrikeSchema,
   trauma: v.pipe(v.number(), v.finite(), v.minValue(0), v.maxValue(1)), stun: amount,
-  tell: v.exactOptional(v.picklist(['lane', 'ring'])), startCue: v.exactOptional(id), activeCue: v.exactOptional(id), doneCue: v.exactOptional(id),
+  tell: v.exactOptional(StrikeTellKindSchema), startCue: v.exactOptional(id), activeCue: v.exactOptional(id), doneCue: v.exactOptional(id),
 })), v.maxLength(32), v.check(rows => new Set(rows.map(row => row.id)).size === rows.length
   && new Set(rows.map(row => row.row.id)).size === rows.length, 'unique scripted strikes'));
 
 
 /** Admitted data contracts, independent of validator implementation metadata. */
-export type SpawnCombatInput = unknown;
-export type SpawnCombat = ({
+type SpawnCombatInput = unknown;
+type SpawnCombat = ({
     id: string;
     row: v.InferOutput<typeof CreatureStrikeSchema>;
     trauma: number;
     stun: number;
-    tell?: 'lane' | 'ring';
+    tell?: StrikeTellKind;
     startCue?: string;
     activeCue?: string;
     doneCue?: string;
 })[];
+
+export { SpawnCombatSchema, StrikeTellKindSchema };
+export type { SpawnCombat, SpawnCombatInput, StrikeTellKind };

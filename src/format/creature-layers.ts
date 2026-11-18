@@ -22,10 +22,12 @@ import {
 
 import { CreatureSocketNameSchema } from './creature-volumes.ts'
 import { CreatureSkinClipNameSchema } from './skinData.ts'
+import { StrikeTellKindSchema } from './spawnCombat.ts'
 import { HuntTuningSchema } from './speciesPrograms.ts'
 
 import type { CreatureBody } from './creature-body.ts'
 import type { CreatureSkinClipName } from './skinData.ts'
+import type { StrikeTellKind } from './spawnCombat.ts'
 import type { SpeciesData } from './speciesPrograms.ts'
 import type { GenericSchema } from 'valibot'
 
@@ -84,6 +86,10 @@ interface CreatureAbility {
   duration?: number
   from?: string
   clip?: CreatureSkinClipName
+  effect?: 'knockback'
+  /** Horizontal travel in metres on clear ground. */
+  strength?: number
+  tell?: StrikeTellKind
 }
 type CreatureAbilityInput = Omit<CreatureAbility, 'clip'> & { clip?: string }
 interface CreaturePresentation {
@@ -112,6 +118,7 @@ const MAX_SOUND = 4096
 const MAX_RADIUS = 500
 const MAX_SPEED = 15
 const MAX_TIME = 86_400
+const MAX_KNOCKBACK_DISTANCE = 60
 const MAX_AMOUNT = 10_000_000
 const MAX_CALLS = 32
 const MAX_TUNING_FIELDS = 64
@@ -124,6 +131,11 @@ const speed = pipe(scalar, minValue(ZERO), maxValue(MAX_SPEED))
 const unit = pipe(scalar, minValue(ZERO), maxValue(ONE))
 const time = pipe(scalar, minValue(ZERO), maxValue(MAX_TIME))
 const amount = pipe(scalar, minValue(ZERO), maxValue(MAX_AMOUNT))
+const knockbackDistance = pipe(
+  scalar,
+  minValue(ZERO),
+  maxValue(MAX_KNOCKBACK_DISTANCE),
+)
 const orderedRadius = pipe(
   tuple([radius, radius]),
   check<[number, number], 'Ordered creature ability range'>(
@@ -202,10 +214,7 @@ const CreatureSensesSchema: GenericSchema<CreatureSenses> = strictObject(
   },
   'Unknown creature sense',
 )
-const CreatureAbilitySchema: GenericSchema<
-  CreatureAbilityInput,
-  CreatureAbility
-> = strictObject({
+const abilityRow = strictObject({
   use: id,
   range: union([radius, orderedRadius]),
   cooldown: time,
@@ -217,7 +226,25 @@ const CreatureAbilitySchema: GenericSchema<
   duration: exactOptional(time),
   from: exactOptional(CreatureSocketNameSchema),
   clip: exactOptional(CreatureSkinClipNameSchema),
+  effect: exactOptional(picklist(['knockback'])),
+  strength: exactOptional(knockbackDistance),
+  tell: exactOptional(StrikeTellKindSchema),
 })
+const abilityEffectCheck = check<
+  CreatureAbility,
+  'Creature knockback effect and strength must be specified together'
+>(
+  ({
+    effect,
+    strength,
+  }: Readonly<Pick<CreatureAbility, 'effect' | 'strength'>>): boolean =>
+    (effect === undefined) === (strength === undefined),
+  'Creature knockback effect and strength must be specified together',
+)
+const CreatureAbilitySchema: GenericSchema<
+  CreatureAbilityInput,
+  CreatureAbility
+> = pipe(abilityRow, abilityEffectCheck)
 const callVariants = pipe(array(sound), maxLength(MAX_CALLS))
 const CreaturePresentationSchema: GenericSchema<CreaturePresentation> =
   strictObject({

@@ -132,6 +132,39 @@ const layered: SpeciesRow = {
   },
 }
 
+test('admits an optional knockback and an independent warning tell', (): void => {
+  const ability = layered.abilities?.[0]
+  expect(ability).toBeDefined()
+  for (const tell of ['ring', 'lane']) {
+    expect(
+      rows({
+        ...layered,
+        abilities: [{ ...ability, effect: 'knockback', strength: 6, tell }],
+      }).species[0]?.abilities?.[0],
+    ).toEqual({ ...ability, effect: 'knockback', strength: 6, tell })
+  }
+  expect(
+    rows({ ...layered, abilities: [{ ...ability, tell: 'ring' }] }).species[0]
+      ?.abilities?.[0],
+  ).toEqual({
+    ...ability,
+    tell: 'ring',
+  })
+  expect(rows(layered).species[0]?.abilities?.[0]).toEqual(ability)
+  for (const addition of [
+    { effect: 'pull', strength: 6 },
+    { effect: 'knockback' },
+    { effect: 'knockback', strength: -1 },
+    { effect: 'knockback', strength: 61 },
+    { strength: 6 },
+    { tell: 'flash' },
+  ]) {
+    expect((): ShardRows =>
+      rows({ ...layered, abilities: [{ ...ability, ...addition }] }),
+    ).toThrow()
+  }
+})
+
 test('all layers parse while old species keep their exact JSON bytes', (): void => {
   expect(rows(layered).species).toEqual([layered])
   const after = rows(legacy)

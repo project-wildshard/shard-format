@@ -4163,12 +4163,11 @@
   "src/format/spawnCombat.ts": {
    "eslint(id-length)": 1,
    "eslint(no-magic-numbers)": 7,
-   "import(group-exports)": 2,
    "import(no-namespace)": 1,
    "typescript(explicit-function-return-type)": 3,
    "typescript(prefer-readonly-parameter-types)": 3,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 10
+   "unicorn(max-nested-calls)": 9
   },
   "src/format/spawnScripts.ts": {
    "eslint(complexity)": 1,
