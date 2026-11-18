@@ -11,6 +11,14 @@ const turn = v.pipe(radius, v.maxValue(30));
 const seconds = v.pipe(positive, v.maxValue(600));
 const angle = v.pipe(finite, v.minValue(-2 * Math.PI), v.maxValue(2 * Math.PI));
 const motion = { speed, turn, ground: v.optional(v.boolean(), false) };
+/** CC17 leap: an arc to the target or a spot, peaking `height` metres above the start; `gravity` sets the time aloft. */
+const LEAP_LIMIT = 100;
+const EARTH_GRAVITY = 9.81;
+const leapBound = v.pipe(positive, v.maxValue(LEAP_LIMIT));
+const leapTarget = v.strictObject({ kind: v.literal('target') });
+const leapSpot = v.strictObject({ kind: v.literal('spot'), spot: id });
+const leapPoint = v.variant('kind', [leapTarget, leapSpot]);
+const leap = v.strictObject({ id, kind: v.literal('leap'), to: leapPoint, height: leapBound, gravity: v.optional(leapBound, EARTH_GRAVITY) });
 const ready = v.variant('kind', [
   v.strictObject({ kind: v.literal('over'), radius: positive, height: positive }),
   v.strictObject({ kind: v.literal('band'), tolerance: positive }),
@@ -41,6 +49,7 @@ export const ActorMoveSchema: v.GenericSchema<ActorMoveInput, ActorMove> = v.var
     angularSpeed: v.optional(v.pipe(finite, v.minValue(-30), v.maxValue(30)), 0), closeRadius: v.optional(radius, 0), stopDistance: v.optional(radius, 0) }),
   v.strictObject({ id, kind: v.literal('burrow'), field: id, rate: positive }),
   v.strictObject({ id, kind: v.literal('surface'), field: id, rate: positive }),
+  leap,
 ]);
 /** Plain `actors/moves` section, bounded and uniquely named. */
 export const ActorMovesSchema: v.GenericSchema<unknown, ActorMoves> = v.pipe(v.unknown(), v.check(isJsonData, 'plain JSON move data'), v.array(ActorMoveSchema), v.maxLength(256),
@@ -62,6 +71,7 @@ export function actorMoveRules(rows: readonly ActorMove[], refs: { spots: Readon
     if (row.kind === 'stalk' && row.ready.kind === 'range' && row.ready.strike !== undefined && !refs.strikes.has(row.ready.strike)) failures.add('move range resolves in actors/strikes');
     if (row.kind === 'dive' && row.strike !== undefined && !refs.strikes.has(row.strike)) failures.add('move strike resolves in actors/strikes');
     if ((row.kind === 'burrow' || row.kind === 'surface') && !refs.fields.has(row.field)) failures.add('move field resolves in declared actor fields');
+    if (row.kind === 'leap' && row.to.kind === 'spot' && !refs.spots.has(row.to.spot)) { failures.add('move location resolves in world spots'); }
   }
   return [...failures];
 }
@@ -339,6 +349,17 @@ export type ActorMoveInput = (Omit<Omit<{
     kind: 'surface';
     field: string;
     rate: number;
+}) | ({
+    id: string;
+    kind: 'leap';
+    to: ({
+        kind: 'target';
+    }) | ({
+        kind: 'spot';
+        spot: string;
+    });
+    height: number;
+    gravity?: number | undefined;
 });
 export type ActorMove = (Omit<Omit<{
     id: string;
@@ -612,4 +633,15 @@ export type ActorMove = (Omit<Omit<{
     kind: 'surface';
     field: string;
     rate: number;
+}) | ({
+    id: string;
+    kind: 'leap';
+    to: ({
+        kind: 'target';
+    }) | ({
+        kind: 'spot';
+        spot: string;
+    });
+    height: number;
+    gravity: number;
 });
