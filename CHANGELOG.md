@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.33.0 (2026-11-18)
+
+- The memory estimate is refitted to the current engine (memory epoch 6), so engine memory cuts now count at upload and in check.
+
 ## v0.32.0 (2026-11-18)
 
 - The phone memory estimate now counts only the files a phone downloads, so heavy zones read closer to what a phone holds.
