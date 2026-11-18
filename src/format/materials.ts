@@ -1,3 +1,4 @@
+import { graphTierLimits } from './budget-tiers.ts';
 import { hasDeclaredClientPage } from './runtimeBinds.ts';
 import * as v from 'valibot';
 import {
@@ -155,9 +156,10 @@ function numericFields(state: Shardfile['state'], privacy: 'public' | 'host'): s
  * programs are held to `PRESET_GRAPH_BUDGET` by the engine's own tests, never the author caps); a graph file must be a
  * JSON file of the library closure (`files` / `library` given: its bytes are validated by product admission, `graphFileRules`).
  */
-export function materialGraphRules(source: Pick<Shardfile, 'look' | 'state'> & Partial<Pick<Shardfile, 'files' | 'library' | 'runtime' | 'questHost'>>): string[] {
+export function materialGraphRules(source: Pick<Shardfile, 'look' | 'state'> & Partial<Pick<Shardfile, 'files' | 'library' | 'runtime' | 'questHost' | 'budgets'>>): string[] {
   const errors: string[] = [];
   const { day: dayChannels, state: stateFields } = graphBindingSources(source);
+  const budget = graphTierLimits(source);
   const files = new Map((source.files ?? []).map((row) => [row.hash, row])), closure = new Set<string>(), pending = [...source.library ?? []];
   while (pending.length > 0) { const hash = pending.pop(); if (hash === undefined || closure.has(hash)) continue; closure.add(hash); pending.push(...files.get(hash)?.dependencies ?? []); }
   for (const [materialId, material] of Object.entries(source.look.materials)) {
@@ -167,7 +169,7 @@ export function materialGraphRules(source: Pick<Shardfile, 'look' | 'state'> & P
       continue;
     }
     if ('preset' in material) { const refusal = presetRefusal(material.preset); if (refusal !== null) errors.push(`material ${materialId}: ${refusal}`); continue; }
-    const checked = validateGraph(material.graph, { dayKeys: [...dayChannels.keys()], stateFields, declaredBudget: source.runtime !== null && source.runtime !== undefined || hasDeclaredClientPage(source) });
+    const checked = validateGraph(material.graph, { dayKeys: [...dayChannels.keys()], stateFields, budget, budgetCeiling: budget, declaredBudget: true });
     if (!checked.ok) { errors.push(...checked.errors.map((error) => `material ${materialId}: ${error}`)); continue; }
     errors.push(...bindingTypeErrors(materialId, checked.graph, dayChannels));
     const fog = checked.graph.effectState?.fog;
@@ -184,15 +186,16 @@ export function materialGraphRules(source: Pick<Shardfile, 'look' | 'state'> & P
  * one `kind: "material"` graph that validates under the author caps against the shard's admitted bindings, and every
  * texture param names a KTX2 file its row declares as a direct dependency (so the texture is charged with the closure).
  */
-export function graphFileRules(source: Pick<Shardfile, 'look' | 'state' | 'files'> & Partial<Pick<Shardfile, 'runtime' | 'questHost'>>, bytes: (hash: string) => Uint8Array | undefined): string[] {
+export function graphFileRules(source: Pick<Shardfile, 'look' | 'state' | 'files'> & Partial<Pick<Shardfile, 'runtime' | 'questHost' | 'budgets'>>, bytes: (hash: string) => Uint8Array | undefined): string[] {
   const errors: string[] = [];
   const { day: dayChannels, state: stateFields } = graphBindingSources(source);
+  const budget = graphTierLimits(source);
   const files = new Map(source.files.map((row) => [row.hash, row]));
   for (const [materialId, material] of Object.entries(source.look.materials)) {
     if (material.family !== 'graph' || !('file' in material)) continue;
     let ir: unknown;
     try { ir = graphFileJson(material.file, bytes); } catch (error) { errors.push(`material ${materialId}: ${error instanceof Error ? error.message : 'graph file'}`); continue; }
-    const checked = validateGraph(ir, { dayKeys: [...dayChannels.keys()], stateFields, declaredBudget: source.runtime !== null && source.runtime !== undefined || hasDeclaredClientPage(source) });
+    const checked = validateGraph(ir, { dayKeys: [...dayChannels.keys()], stateFields, budget, budgetCeiling: budget, declaredBudget: true });
     if (!checked.ok) { errors.push(...checked.errors.map((error) => `material ${materialId}: ${error}`)); continue; }
     if (checked.graph.kind === 'post') { errors.push(`material ${materialId}: a graph file in a material slot holds a material or fog graph, not a post pass`); continue; }
     const fog = checked.graph.effectState?.fog, target = typeof fog === 'string' ? source.look.materials[fog] : undefined;

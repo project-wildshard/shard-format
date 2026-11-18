@@ -252,7 +252,7 @@ export interface GraphBudget {
 }
 /** the default ceilings (a starter graph: the measure preset is ≈ 60 nodes, ≈ 170 instructions) */
 export const DEFAULT_GRAPH_BUDGET: GraphBudget = { nodes: 160, samplers: 4, instructions: 480 };
-/** Hard ceilings for a native declaration; loop trips remain charged to the estimated cost. */
+/** Hard ceilings for an authored declaration; loop trips remain charged to the estimated cost. */
 export const MAX_GRAPH_BUDGET: GraphBudget = Object.freeze({ nodes: 4096, samplers: 16, instructions: 8192 });
 
 /** Raw graph JSON bounds, enforced before typing or compiler work; host-owned presets supply their own node budget. */
@@ -559,6 +559,8 @@ export interface GraphValidationOptions {
   /** the shard's declared public numeric state fields a param may bind to (any name when absent) */
   readonly stateFields?: readonly string[];
   readonly budget?: GraphBudget;
+  /** A product's ceiling also bounds explicit budgets and nested graphs. */
+  readonly budgetCeiling?: GraphBudget;
   /** Host authority to use an explicit declaration; content cannot grant this. */
   readonly declaredBudget?: boolean;
   /** the directional lights a `sun` sub-graph is built for (1 … SUN_CASCADES_MAX; SUN_CASCADES when absent) */
@@ -624,7 +626,9 @@ interface Scope {
  * every reason it is refused.
  */
 export function validateGraph(input: unknown, opts: GraphValidationOptions = {}): GraphValidation {
-  const rawErrors = graphAdmissionErrors(input, opts.declaredBudget === true ? MAX_GRAPH_BUDGET.nodes : opts.budget?.nodes ?? DEFAULT_GRAPH_BUDGET.nodes);
+  const ceiling = opts.budgetCeiling;
+  const rawLimit = opts.declaredBudget === true ? MAX_GRAPH_BUDGET.nodes : opts.budget?.nodes ?? DEFAULT_GRAPH_BUDGET.nodes;
+  const rawErrors = graphAdmissionErrors(input, Math.min(rawLimit, ceiling?.nodes ?? rawLimit));
   if (rawErrors.length > 0) return { ok: false, errors: rawErrors };
   const errors: string[] = [];
   const fail = (msg: string): null => { errors.push(msg); return null; };
@@ -641,6 +645,13 @@ export function validateGraph(input: unknown, opts: GraphValidationOptions = {})
     }
     if (opts.declaredBudget !== true) return { ok: false, errors: ['graph: declared budget requires native runtime authority'] };
     budget = { nodes: Number(declared.nodes), samplers: Number(declared['samplers']), instructions: Number(declared['instructions']) };
+  }
+  if (ceiling !== undefined) {
+    budget = {
+      nodes: Math.min(budget.nodes, ceiling.nodes),
+      samplers: Math.min(budget.samplers, ceiling.samplers),
+      instructions: Math.min(budget.instructions, ceiling.instructions),
+    };
   }
   if (input.version !== GRAPH_IR_VERSION) fail(`graph: version ${String(input.version)} (this engine reads ${GRAPH_IR_VERSION})`);
   const kind = input.kind, primitive = input.primitive;

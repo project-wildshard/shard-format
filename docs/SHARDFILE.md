@@ -254,9 +254,18 @@ absent: 1), `filter` (`linear` / `nearest`, absent: the file's own) and `mips`
 absent or `file`: the file's levels). A row for any other ref refuses admission.
 
 An additive material entry `{ family: "graph", graph: GraphIr }` carries engine
-IR version 1 data. `validateGraph` checks node types, cycles, stage placement,
-constant loops and the engine's default per-program budget (160 nodes, 4 samplers,
-480 estimated instructions). Only `kind: "material"` belongs in this slot; post
+IR version 1 data. `validateGraph` checks node types, cycles, stage placement and
+constant loops. The product's `budgets.tier` caps each material or fog program.
+
+| Tier | Nodes | Samplers | Estimated instructions | Authored post passes |
+| --- | ---: | ---: | ---: | ---: |
+| Small | 512 | 4 | 1,024 | 2 |
+| Medium | 1,280 | 8 | 3,072 | 3 |
+| Large | 4,096 | 16 | 8,192 | 4 |
+
+An explicit program budget can narrow these ceilings. Products without a named
+tier use small. Older runtimes keep large while their source pins are updated.
+Only material and fog graphs belong in this slot. Post
 passes, shader source and callbacks are refused. Graph texture params name admitted
 KTX2 hashes in the charged library closure, including declared commons; they cannot
 be bound. Graphs have no implicit default material: terrain, props and creature
@@ -374,8 +383,8 @@ reads the scene through `sceneColour`, `sceneColourAt(uv)` (one tap at a vec2, s
 as an edge or blur kernel), `sceneDepth([uv])` (linear view distance in metres) and
 `sceneNormal([uv])` (a unit view-space normal from a normal pre-pass). Each input is
 one sampler, however many taps read it, and each tap costs instructions. A material
-graph cannot read any of them. `look.post` is optional: an ordered list of at most 4
-authored passes, each `{ graph: <post graph> }` or `{ file: "<hash>" }` (a JSON file in
+graph cannot read any of them. `look.post` is an optional ordered list of authored
+passes capped by the tier above. Each pass is `{ graph: <post graph> }` or `{ file: "<hash>" }` (a JSON file in
 the library closure, validated with its bytes at product admission). Every pass
 validates under the author caps and the shard's admitted bindings. The stack's cost
 is the sum of its passes' instruction estimates, per pixel at 2× render scale, plus

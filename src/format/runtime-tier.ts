@@ -1,11 +1,8 @@
-import { budgetTierLimits } from './budget-tiers.ts'
+import { UNNAMED_TIER, budgetTierLimits } from './budget-tiers.ts'
 import { ratchetNote, ratchetSeverity } from './memory-ratchet.ts'
 import { runtimeAccountedBytes } from './runtimeCost.ts'
 
 import type { BudgetTier } from './budget-tiers.ts'
-
-/** The tier an unnamed runtime is held to until OF10c1b names every runtime shard's tier. */
-const UNNAMED_TIER: BudgetTier = 'large'
 
 /** What the check reads of a shard: its runtime's reviewed cost and its budgets. */
 type RuntimeTierSource = Readonly<{
@@ -55,9 +52,6 @@ function runtimeTierIssues(source: RuntimeTierSource): RuntimeTierIssue[] {
   ]
 }
 
-export {
-  UNNAMED_TIER,
-  type RuntimeTierIssue,
-  type RuntimeTierSource,
-  runtimeTierIssues,
-}
+export { UNNAMED_TIER } from './budget-tiers.ts'
+
+export { type RuntimeTierIssue, type RuntimeTierSource, runtimeTierIssues }

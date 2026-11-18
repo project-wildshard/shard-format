@@ -1,7 +1,7 @@
 /**
  * A shard's own post stack (SHARD-PLATFORM SF59 steps 3–4, G158, budget v1 C4-R1-A5 / C7): inside its cell a shard's
  * look owns the whole frame, its post passes included, as data. `look.post` is an ordered list of at most
- * {@link POST_STACK_BUDGET}`.passes` authored post graphs (`kind: "post"`), each inline (`{ graph }`) or a graph file of the
+ * its tier’s allowed number of authored post graphs (`kind: "post"`), each inline (`{ graph }`) or a graph file of the
  * library closure (`{ file }`, validated with its bytes at product admission). Each pass is a full-screen program; its
  * instruction estimate is a per-pixel cost at the phone's 2× render scale, so the stack's cost is the sum of its passes'
  * estimates plus the normal pre-pass when any pass reads `sceneNormal` ({@link POST_NORMAL_PREPASS_COST}, paid once).
@@ -12,6 +12,7 @@
 import * as v from 'valibot';
 import { validateGraph, type GraphIr, type PostInputs } from './materialGraph.ts';
 import { graphBindingSources, graphFileJson } from './materials.ts';
+import { graphTierLimits } from './budget-tiers.ts';
 import { isJsonData } from './json.ts';
 import type { Shardfile } from './shardSchema.ts';
 
@@ -48,7 +49,7 @@ export interface PostStackCost { readonly passes: number; readonly instructions:
  * Validate and cost a stack: each pass under the author caps against the shard's admitted bindings (a graph file read
  * through `bytes`; undefined bytes are refused), the sum against the stack budget. Returns the cost and every refusal.
  */
-export function postStackCost(source: Pick<Shardfile, 'look' | 'state'> & { readonly look: { readonly post?: readonly PostPass[] } }, bytes: (hash: string) => Uint8Array | undefined): { cost: PostStackCost; errors: string[] } {
+export function postStackCost(source: Pick<Shardfile, 'look' | 'state'> & Partial<Pick<Shardfile, 'budgets' | 'runtime'>> & { readonly look: { readonly post?: readonly PostPass[] } }, bytes: (hash: string) => Uint8Array | undefined): { cost: PostStackCost; errors: string[] } {
   const errors: string[] = [], passes = source.look.post ?? [];
   const { day, state } = graphBindingSources(source);
   let instructions = 0;
@@ -63,7 +64,8 @@ export function postStackCost(source: Pick<Shardfile, 'look' | 'state'> & { read
     inputs.colour ||= checked.inputs.colour; inputs.depth ||= checked.inputs.depth; inputs.normal ||= checked.inputs.normal;
   });
   if (inputs.normal) instructions += POST_NORMAL_PREPASS_COST;
-  if (passes.length > POST_STACK_BUDGET.passes) errors.push(`post: ${passes.length} passes (at most ${POST_STACK_BUDGET.passes})`);
+  const passLimit = Math.min(POST_STACK_BUDGET.passes, graphTierLimits(source).passes);
+  if (passes.length > passLimit) errors.push(`post: ${passes.length} passes (at most ${passLimit})`);
   if (instructions > POST_STACK_BUDGET.instructions) errors.push(`post: ≈ ${instructions} instructions per pixel at 2× (at most ${POST_STACK_BUDGET.instructions})`);
   return { cost: { passes: passes.length, instructions, inputs }, errors };
 }
@@ -73,7 +75,7 @@ export function postStackCost(source: Pick<Shardfile, 'look' | 'state'> & { read
  * file pass must be a JSON file of the library closure (`files` / `library` given; its bytes are costed by product
  * admission through `postStackCost`, so a stack holding files is summed there).
  */
-export function postStackRules(source: Pick<Shardfile, 'look' | 'state'> & Partial<Pick<Shardfile, 'files' | 'library'>> & { readonly look: { readonly post?: readonly PostPass[] } }): string[] {
+export function postStackRules(source: Pick<Shardfile, 'look' | 'state'> & Partial<Pick<Shardfile, 'budgets' | 'runtime'>> & Partial<Pick<Shardfile, 'files' | 'library'>> & { readonly look: { readonly post?: readonly PostPass[] } }): string[] {
   const passes = source.look.post ?? [];
   if (passes.length === 0) return [];
   const errors: string[] = [];
