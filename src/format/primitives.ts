@@ -64,6 +64,19 @@ function filled(value: unknown): boolean {
     Object.keys(value).length > NONE
   )
 }
+/** A row's key, or a nested one by a dotted key (`arena.bounds`). */
+function field(row: object, key: string): { has: boolean; value?: unknown } {
+  const keys = key.split('.')
+  const last = keys.pop() ?? key
+  const holder = at(row, keys)
+  if (typeof holder !== 'object' || holder === null) {
+    return { has: false }
+  }
+  return {
+    has: Object.hasOwn(holder, last),
+    value: Object.getOwnPropertyDescriptor(holder, last)?.value,
+  }
+}
 function rowCounts(row: unknown, rule: PrimitiveSwitch): boolean {
   if (typeof row !== 'object' || row === null) {
     return false
@@ -75,13 +88,8 @@ function rowCounts(row: unknown, rule: PrimitiveSwitch): boolean {
   if (having === undefined) {
     return true
   }
-  if (!Object.hasOwn(row, having)) {
-    return false
-  }
-  return (
-    equals === undefined ||
-    Object.getOwnPropertyDescriptor(row, having)?.value === equals
-  )
+  const found = field(row, having)
+  return found.has && (equals === undefined || found.value === equals)
 }
 function switchedOn(value: unknown, rule: PrimitiveSwitch): boolean {
   if (rule.having === undefined && rule.lacking === undefined) {

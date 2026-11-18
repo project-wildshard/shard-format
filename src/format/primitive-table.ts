@@ -5,7 +5,7 @@
 interface PrimitiveSwitch {
   readonly section: string
   readonly path: readonly string[]
-  /** When set, the family is on only if some row of the list at `path` has this key. */
+  /** When set, the family is on only if some row of the list at `path` has this key (a dotted key reads a nested one). */
   readonly having?: string
   /** With `having`: only a row whose `having` key holds this value counts. */
   readonly equals?: string
@@ -104,7 +104,11 @@ const TABLE: readonly Primitive[] = [
   {
     name: 'boss.arena',
     row: 'OF34',
-    on: 'later',
+    on: {
+      section: 'combat/encounters',
+      path: ['encounters'],
+      having: 'arena.bounds',
+    },
     hosts: ['boss.arena', 'boss.open-arena'],
   },
   {
