@@ -90,5 +90,5 @@ for (const pin of JSON.parse(readFileSync(pinsFile, 'utf8')).shards) {
 }
 writeFileSync(
   out,
-  `${JSON.stringify({ epoch: MEMORY_EPOCH, engine: em11.engine, measured: em11.measured, source: 'meta MEMORY-GATES MG6 / ENGINE-MEMORY EM11; engine test/pins/shardfiles.json; memory-calibration.em11.json', zones }, null, 1)}\n`,
+  `${JSON.stringify({ epoch: MEMORY_EPOCH, engine: em11.engine, measured: em11.measured, source: 'meta MEMORY-GATES MG6 / ENGINE-MEMORY EM11; engine test/pins/shardfiles.json; memory-calibration.em11.json', zones }, null, 2)}\n`,
 )

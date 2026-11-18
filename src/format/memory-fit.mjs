@@ -17,6 +17,8 @@ const LINES = { playing: 1000, loading: 1500 }
 const CONTENT_FLOOR = { playing: 0.5, loading: 0.8 }
 const RUNTIME = { playing: 1, loading: 1.26 }
 const EPS = 1e-9
+/** A kept verdict holds this far under its line, so rounding the weights cannot carry a zone over it (MB). */
+const VERDICT_MARGIN = 0.05
 
 /** Minimise c.x over x >= 0 under rows [a, op, b] (op '<=' or '>='): a dense two-phase simplex, Bland's rule.
  *  Returns x, or null when infeasible. */
@@ -130,7 +132,7 @@ function fitPhase(phase, zones, exempt) {
       if (runtime(z) < z.high) rows.push([coeff(z), '>=', z.high - fixed(z)])
       rows.push([coeff(z), '<=', ratio * z.high - fixed(z)])
       if (z.high <= LINES[phase] && !exempt.has(z.slug))
-        rows.push([coeff(z), '<=', LINES[phase] - fixed(z)])
+        rows.push([coeff(z), '<=', LINES[phase] - VERDICT_MARGIN - fixed(z)])
     }
     return rows
   }

@@ -5,7 +5,8 @@
 // The runs folder holds engine `scripts/memory/measure.mjs --runs=1 --out=<zone>-<n>.json` files: cold native WebKit
 // boots of every pinned zone on one engine build, rounds alternating the zone order. Each zone's figures go through the
 // engine's own EM11 chain (`scripts/memory/phoneModel.mjs` and its `phone-model.json`): the central figure is the median
-// run's, the upper bound the highest run's, so a bound holds for every run read. Decimal MB.
+// run's, the upper bound engine's `upperOverRuns` (EM11c, mini-em11c: the one-sided 90% prediction bound on one more
+// cold boot's high, which narrows as runs are added; it replaced the highest run's high, which widened). Decimal MB.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -15,6 +16,10 @@ const model = await import(
   pathToFileURL(join(engine, 'scripts/memory/phoneModel.mjs')).href
 )
 const phone = model.loadPhoneModel()
+if (typeof model.upperOverRuns !== 'function')
+  throw new Error(
+    `${engine} predates EM11c (engine upperOverRuns): update the engine checkout`,
+  )
 const MB = 1e6
 const median = xs => {
   const s = [...xs].sort((a, b) => a - b)
@@ -52,9 +57,9 @@ for (const [slug, runs] of [...byZone].sort(([a], [b]) => a.localeCompare(b))) {
   zones[slug] = {
     runs: runs.length,
     playingMB: mb(median(playing.map(r => r.central))),
-    playingHighMB: mb(Math.max(...playing.map(r => r.high))),
+    playingHighMB: mb(model.upperOverRuns(playing.map(r => r.high))),
     loadingMB: mb(median(loading.map(r => r.central))),
-    loadingHighMB: mb(Math.max(...loading.map(r => r.high))),
+    loadingHighMB: mb(model.upperOverRuns(loading.map(r => r.high))),
     settledWebContentMB: mb(median(runs.map(r => r.settled.webcontent))),
     settledGpuMB: mb(median(runs.map(r => r.settled.gpu))),
     peakWebContentMB: mb(
@@ -74,6 +79,7 @@ writeFileSync(
       engine: [...builds][0],
       measured: dates.sort()[0]?.slice(0, 10) ?? null,
       instrument: [...instruments][0],
+      upper: 'p90-prediction',
       model: {
         measured: phone.measured,
         alpha: phone.alpha,
@@ -82,6 +88,6 @@ writeFileSync(
       zones,
     },
     null,
-    1,
+    2,
   )}\n`,
 )

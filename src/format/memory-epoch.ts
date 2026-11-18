@@ -2,11 +2,12 @@
  * `runtimeCost` reading must have been taken against. It rises when the model changes what it charges (MG6 adds shader
  * compile, load transients, far slabs and paint arrays); from then a reading from an older epoch is refused until the
  * shard re-measures. A reading with no `epoch` is epoch 1, the model before MG6. */
-const MEMORY_EPOCH = 6
+const MEMORY_EPOCH = 7
 /** MG6 epoch 4 (mini-estcal2) changed how the estimate converts a reading (EM11's chain), not how a reading is taken:
  * epoch 3's paired Simulator WebContent + GL protocol stands, so a reading from epoch 3 on is current. Epoch 5
  * (mini-em11b) refits that conversion to EM11 read without the Web Inspector's Network retention and counts only the
- * files a phone fetches; epoch 6 (mini-sweep) refits it to an every-zone sweep on engine `50092092`. Readings are still
+ * files a phone fetches; epoch 6 (mini-sweep) refits it to an every-zone sweep on engine `50092092`; epoch 7 (mini-em11c) refits
+ * it to the same sweep read with EM11's 90% prediction bound over runs in place of the highest run. Readings are still
  * taken as in epoch 3. */
 const OLDEST_CURRENT_EPOCH = 3
 const LEGACY_EPOCH = 1

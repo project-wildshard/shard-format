@@ -1,5 +1,5 @@
 {
-  "epoch": 6,
+  "epoch": 7,
   "engine": "50092092",
   "measured": "2026-11-18",
   "source": "meta MEMORY-GATES MG6 / ENGINE-MEMORY EM11; engine test/pins/shardfiles.json; memory-calibration.em11.json",
@@ -11,12 +11,12 @@
       "em11": {
         "runs": 4,
         "playingMB": 630,
-        "playingHighMB": 699,
+        "playingHighMB": 701,
         "loadingMB": 882,
-        "loadingHighMB": 1019
+        "loadingHighMB": 1024
       },
-      "playing": 796913255,
-      "loading": 1072144010,
+      "playing": 790831927,
+      "loading": 1082652796,
       "terms": {
         "content": 60095993,
         "textures": 14372512,
@@ -33,12 +33,12 @@
       "em11": {
         "runs": 6,
         "playingMB": 1006,
-        "playingHighMB": 1266,
+        "playingHighMB": 1243,
         "loadingMB": 1242,
-        "loadingHighMB": 1442
+        "loadingHighMB": 1452
       },
-      "playing": 1266000963,
-      "loading": 1499998970,
+      "playing": 1243000830,
+      "loading": 1499957683,
       "terms": {
         "content": 174139026,
         "textures": 0,
@@ -55,12 +55,12 @@
       "em11": {
         "runs": 4,
         "playingMB": 775,
-        "playingHighMB": 925,
+        "playingHighMB": 933,
         "loadingMB": 1055,
-        "loadingHighMB": 1210
+        "loadingHighMB": 1220
       },
-      "playing": 925988892,
-      "loading": 1448375674,
+      "playing": 944187690,
+      "loading": 1460355946,
       "terms": {
         "content": 172368293,
         "textures": 147633364,
@@ -77,12 +77,12 @@
       "em11": {
         "runs": 4,
         "playingMB": 549,
-        "playingHighMB": 612,
+        "playingHighMB": 618,
         "loadingMB": 750,
-        "loadingHighMB": 879
+        "loadingHighMB": 886
       },
-      "playing": 769590047,
-      "loading": 1007226005,
+      "playing": 761618847,
+      "loading": 1016761963,
       "terms": {
         "content": 22645293,
         "textures": 4000000,
@@ -99,12 +99,12 @@
       "em11": {
         "runs": 6,
         "playingMB": 1060,
-        "playingHighMB": 1198,
+        "playingHighMB": 1207,
         "loadingMB": 1448,
-        "loadingHighMB": 1658
+        "loadingHighMB": 1678
       },
-      "playing": 1489416004,
-      "loading": 1731216239,
+      "playing": 1460823580,
+      "loading": 1727027755,
       "terms": {
         "content": 271640471,
         "textures": 0,
@@ -121,12 +121,12 @@
       "em11": {
         "runs": 6,
         "playingMB": 1036,
-        "playingHighMB": 1170,
+        "playingHighMB": 1175,
         "loadingMB": 1656,
-        "loadingHighMB": 1905
+        "loadingHighMB": 1908
       },
-      "playing": 1547157622,
-      "loading": 1905000217,
+      "playing": 1517894482,
+      "loading": 1908000605,
       "terms": {
         "content": 376168111,
         "textures": 0,
@@ -143,12 +143,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 528,
-        "playingHighMB": 582,
+        "playingHighMB": 590,
         "loadingMB": 754,
-        "loadingHighMB": 873
+        "loadingHighMB": 882
       },
-      "playing": 778701889,
-      "loading": 1043719615,
+      "playing": 773148097,
+      "loading": 1053388564,
       "terms": {
         "content": 43581944,
         "textures": 17267880,
@@ -165,12 +165,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 555,
-        "playingHighMB": 613,
+        "playingHighMB": 614,
         "loadingMB": 785,
-        "loadingHighMB": 911
+        "loadingHighMB": 914
       },
-      "playing": 789564386,
-      "loading": 1063047015,
+      "playing": 783974544,
+      "loading": 1073039934,
       "terms": {
         "content": 60512841,
         "textures": 17070020,
@@ -187,12 +187,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 557,
-        "playingHighMB": 615,
+        "playingHighMB": 620,
         "loadingMB": 783,
-        "loadingHighMB": 909
+        "loadingHighMB": 916
       },
-      "playing": 793525792,
-      "loading": 1075109620,
+      "playing": 788196422,
+      "loading": 1085394265,
       "terms": {
         "content": 69441362,
         "textures": 18499616,
@@ -209,12 +209,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 566,
-        "playingHighMB": 627,
+        "playingHighMB": 634,
         "loadingMB": 791,
-        "loadingHighMB": 924
+        "loadingHighMB": 940
       },
-      "playing": 796256460,
-      "loading": 1079234542,
+      "playing": 791177827,
+      "loading": 1089462663,
       "terms": {
         "content": 69454411,
         "textures": 19875780,
@@ -231,12 +231,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 547,
-        "playingHighMB": 604,
+        "playingHighMB": 611,
         "loadingMB": 767,
-        "loadingHighMB": 899
+        "loadingHighMB": 908
       },
-      "playing": 791214281,
-      "loading": 1065727250,
+      "playing": 785913439,
+      "loading": 1075672769,
       "terms": {
         "content": 57933980,
         "textures": 18656192,
@@ -253,12 +253,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 534,
-        "playingHighMB": 594,
+        "playingHighMB": 597,
         "loadingMB": 764,
-        "loadingHighMB": 889
+        "loadingHighMB": 893
       },
-      "playing": 784780054,
-      "loading": 1055737541,
+      "playing": 779233422,
+      "loading": 1065661763,
       "terms": {
         "content": 53527980,
         "textures": 17307180,
@@ -275,12 +275,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 547,
-        "playingHighMB": 609,
+        "playingHighMB": 612,
         "loadingMB": 769,
-        "loadingHighMB": 907
+        "loadingHighMB": 920
       },
-      "playing": 795997318,
-      "loading": 1082841030,
+      "playing": 791996978,
+      "loading": 1092866456,
       "terms": {
         "content": 60881204,
         "textures": 25793960,
@@ -297,12 +297,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 547,
-        "playingHighMB": 607,
+        "playingHighMB": 611,
         "loadingMB": 767,
-        "loadingHighMB": 901
+        "loadingHighMB": 923
       },
-      "playing": 792476048,
-      "loading": 1071807861,
+      "playing": 787451884,
+      "loading": 1081873232,
       "terms": {
         "content": 61987364,
         "textures": 20174728,
@@ -319,12 +319,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 563,
-        "playingHighMB": 627,
+        "playingHighMB": 638,
         "loadingMB": 789,
-        "loadingHighMB": 920
+        "loadingHighMB": 943
       },
-      "playing": 793345965,
-      "loading": 1073341701,
+      "playing": 787808345,
+      "loading": 1083638149,
       "terms": {
         "content": 69326701,
         "textures": 17356640,
@@ -341,12 +341,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 568,
-        "playingHighMB": 636,
+        "playingHighMB": 641,
         "loadingMB": 790,
-        "loadingHighMB": 918
+        "loadingHighMB": 919
       },
-      "playing": 802128881,
-      "loading": 1089434459,
+      "playing": 797133248,
+      "loading": 1099791059,
       "terms": {
         "content": 76775514,
         "textures": 20331320,
@@ -363,12 +363,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 568,
-        "playingHighMB": 630,
+        "playingHighMB": 634,
         "loadingMB": 802,
-        "loadingHighMB": 950
+        "loadingHighMB": 968
       },
-      "playing": 810566435,
-      "loading": 1109957991,
+      "playing": 806550858,
+      "loading": 1120501002,
       "terms": {
         "content": 83533091,
         "textures": 25710336,
@@ -385,12 +385,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 530,
-        "playingHighMB": 586,
+        "playingHighMB": 601,
         "loadingMB": 759,
-        "loadingHighMB": 880
+        "loadingHighMB": 894
       },
-      "playing": 783704153,
-      "loading": 1052845288,
+      "playing": 778193537,
+      "loading": 1062671192,
       "terms": {
         "content": 50220997,
         "textures": 17504848,
@@ -407,12 +407,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 515,
-        "playingHighMB": 576,
+        "playingHighMB": 589,
         "loadingMB": 732,
-        "loadingHighMB": 873
+        "loadingHighMB": 894
       },
-      "playing": 771748171,
-      "loading": 1030062628,
+      "playing": 766111700,
+      "loading": 1039495375,
       "terms": {
         "content": 32409250,
         "textures": 16814100,
@@ -429,12 +429,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 543,
-        "playingHighMB": 601,
+        "playingHighMB": 611,
         "loadingMB": 767,
-        "loadingHighMB": 894
+        "loadingHighMB": 903
       },
-      "playing": 785503633,
-      "loading": 1057621105,
+      "playing": 779951085,
+      "loading": 1067595048,
       "terms": {
         "content": 55672944,
         "textures": 17274708,
@@ -451,12 +451,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 540,
-        "playingHighMB": 602,
+        "playingHighMB": 606,
         "loadingMB": 765,
-        "loadingHighMB": 890
+        "loadingHighMB": 894
       },
-      "playing": 785314139,
-      "loading": 1056982698,
+      "playing": 779722899,
+      "loading": 1066949875,
       "terms": {
         "content": 55477815,
         "textures": 17062352,
@@ -473,12 +473,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 543,
-        "playingHighMB": 605,
+        "playingHighMB": 608,
         "loadingMB": 767,
-        "loadingHighMB": 910
+        "loadingHighMB": 927
       },
-      "playing": 788575153,
-      "loading": 1060904026,
+      "playing": 782979582,
+      "loading": 1070855958,
       "terms": {
         "content": 58372740,
         "textures": 17038576,
@@ -495,12 +495,12 @@
       "em11": {
         "runs": 3,
         "playingMB": 547,
-        "playingHighMB": 607,
+        "playingHighMB": 617,
         "loadingMB": 733,
-        "loadingHighMB": 863
+        "loadingHighMB": 878
       },
-      "playing": 771888100,
-      "loading": 1032144424,
+      "playing": 766275638,
+      "loading": 1041662452,
       "terms": {
         "content": 35006505,
         "textures": 16945876,
@@ -517,12 +517,12 @@
       "em11": {
         "runs": 4,
         "playingMB": 527,
-        "playingHighMB": 598,
+        "playingHighMB": 601,
         "loadingMB": 746,
-        "loadingHighMB": 889
+        "loadingHighMB": 895
       },
-      "playing": 769569076,
-      "loading": 1007192452,
+      "playing": 761597876,
+      "loading": 1016728410,
       "terms": {
         "content": 22603351,
         "textures": 4000000,
@@ -539,12 +539,12 @@
       "em11": {
         "runs": 6,
         "playingMB": 1038,
-        "playingHighMB": 1200,
+        "playingHighMB": 1203,
         "loadingMB": 1410,
-        "loadingHighMB": 1711
+        "loadingHighMB": 1723
       },
-      "playing": 1611600675,
-      "loading": 1869786214,
+      "playing": 1579538587,
+      "loading": 1864333372,
       "terms": {
         "content": 321092760,
         "textures": 0,
@@ -561,12 +561,12 @@
       "em11": {
         "runs": 4,
         "playingMB": 693,
-        "playingHighMB": 818,
+        "playingHighMB": 821,
         "loadingMB": 1000,
-        "loadingHighMB": 1163
+        "loadingHighMB": 1173
       },
-      "playing": 818002216,
-      "loading": 1163005781,
+      "playing": 821003114,
+      "loading": 1173014578,
       "terms": {
         "content": 66246475,
         "textures": 64220076,
@@ -583,12 +583,12 @@
       "em11": {
         "runs": 4,
         "playingMB": 605,
-        "playingHighMB": 671,
+        "playingHighMB": 674,
         "loadingMB": 850,
-        "loadingHighMB": 1015
+        "loadingHighMB": 1027
       },
-      "playing": 793199901,
-      "loading": 1064723477,
+      "playing": 787398852,
+      "loading": 1074869407,
       "terms": {
         "content": 53898111,
         "textures": 15910816,

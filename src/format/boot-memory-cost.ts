@@ -52,25 +52,26 @@ const BASE_LEVEL = 1
 // Chromium capture (04d76bcf). The calibrated increment rounds to 168 MB.
 const SHADER_COMPILE_BYTES = 168_000_000
 const MB = 1_000_000
-const ENGINE_PLAYING_BYTES = 739_589_000
-const ENGINE_LOADING_BYTES = 958_997_000
-/** MG6 epoch 6 (mini-sweep, 2026-11-18): the estimate is ENGINE-MEMORY EM11's phone chain (engine
+const ENGINE_PLAYING_BYTES = 730_889_000
+const ENGINE_LOADING_BYTES = 968_046_000
+/** MG6 epoch 7 (mini-em11c, 2026-11-18; epoch 6 mini-sweep): the estimate is ENGINE-MEMORY EM11's phone chain (engine
  *  `scripts/memory/phone-model.json`, read without the Web Inspector's Network retention: native WebKit [K] of the
  *  WebContent and GPU processes through alpha or scale to an iPhone 17 Pro's WebContent, at the 2048 MiB ActiveHard line).
  *  The terms are the product's alone; the engine term and every weight are what one engine build does with them, so the
  *  estimate follows the engine only through a sweep and a refit: `memory-calibration.em11.json` names the build (engine
  *  `50092092`, 99 cold runs, 6 per heavy zone), `memory-fit.mjs` fits this block from it and the golden pairs it. Each
  *  weight is phone bytes per product byte, fitted so that every pinned product's estimate is at or over the upper bound
- *  of EM11's error bar on its cold runs, with each verdict kept at the 1.0 GB playing envelope and the 1.5 GB loading
+ *  of EM11's error bar over its cold runs (engine `upperOverRuns`, the 90% prediction bound on one more cold boot;
+ *  epoch 6 used the highest run's), with each verdict kept at the 1.0 GB playing envelope and the 1.5 GB loading
  *  line. The fit is minimax, then least total overshoot; the content weight is held at 0.5 settled and 0.8 loading at
  *  least, so bytes a boot downloads and decodes always count. The terms count only the files a phone fetches
  *  (`phoneInactiveFiles`). Refit at every engine release, and after a memory cut that should reach the gates. */
 const PHONE = {
   engine: { playing: ENGINE_PLAYING_BYTES, loading: ENGINE_LOADING_BYTES },
   content: { playing: 0.5, loading: 0.8 },
-  textures: { playing: 0.6696, loading: 2.2211 },
-  gl: { playing: 2.2214, loading: 1.9312 },
-  geometry: { playing: 0, loading: 0.68 },
+  textures: { playing: 0.8518, loading: 2.2277 },
+  gl: { playing: 2.1475, loading: 1.8758 },
+  geometry: { playing: 0, loading: 0.7399 },
   /** A runtime home never reads under its own Simulator reading settled, nor under it times EM11's lowest peak over
    *  settled (1.257) while loading. No pinned home binds here today; it stops a heavy runtime with light files. */
   runtime: { playing: 1, loading: 1.26 },
