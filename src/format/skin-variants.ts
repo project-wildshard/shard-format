@@ -4,6 +4,7 @@
 /* oxlint-disable unicorn/no-array-sort */
 import { parse } from 'valibot'
 
+import { MaterialsSchema, materialTextureRefs } from './materials.ts'
 import { parseSkinFile, skinLookParameters } from './skin-file.ts'
 import { SkinVariantsSchema } from './skins.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
@@ -26,7 +27,31 @@ interface SkinLookFiles {
 type Source = Pick<Shardfile, 'rows' | 'files'>
 type Look = ShardRows['looks'][number]
 const FIRST = 0
-const SINGLE = 1
+const REST = 1
+/** A coat: what a variant or phone skin may wear of its own (OF27b), its maps, its fur's sheen and rim, and its glow. */
+const COAT: ReadonlySet<string> = new Set([
+  'maps',
+  'sheen',
+  'rim',
+  'emissive',
+  'emissiveIntensity',
+])
+
+/** A skin file's exact dependencies: its GLB, then its material's textures, sorted and once each (OF27b). */
+function skinFileDependencies(row: SkinRow, binding: SkinBinding): string[] {
+  const textures = materialTextureRefs(
+    parse(MaterialsSchema, { skin: binding.material }),
+  )
+  return [row.file, ...[...new Set(textures)].sort()]
+}
+
+function sharedMaterial(
+  material: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(material).filter(([key]): boolean => !COAT.has(key)),
+  )
+}
 
 function skinContract({ row, binding }: ResolvedSkinFile): string {
   return new TextDecoder().decode(
@@ -36,7 +61,7 @@ function skinContract({ row, binding }: ResolvedSkinFile): string {
       joints: [...(row.rig.joints[FIRST] ?? [])].sort(),
       clips: [...row.rig.clips].sort(),
       sockets: [...row.rig.sockets].sort(),
-      material: binding.material,
+      material: sharedMaterial(binding.material),
       materials: binding.materials ?? {},
     }),
   )
@@ -53,10 +78,14 @@ function readSkinFile(
     throw new Error('skin file missing')
   }
   const skin = { hash, ...parseSkinFile(bytes) }
+  const expected = skinFileDependencies(skin.row, skin.binding)
+  const texture = (ref: string): boolean =>
+    ref.startsWith('commons:') || files.get(ref)?.kind === 'ktx2'
   if (
-    file.dependencies.length !== SINGLE ||
-    file.dependencies[FIRST] !== skin.row.file ||
-    files.get(skin.row.file)?.kind !== 'glb'
+    file.dependencies.length !== expected.length ||
+    file.dependencies.some((ref, index): boolean => ref !== expected[index]) ||
+    files.get(skin.row.file)?.kind !== 'glb' ||
+    !expected.slice(REST).every((ref): boolean => texture(ref))
   ) {
     throw new Error('skin rig dependency mismatch')
   }
@@ -232,5 +261,5 @@ function lookSkins(resolved: SkinLookFiles): ResolvedSkinFile[] {
   ]
 }
 
-export { lookSkins, resolveSkinLookFiles }
+export { lookSkins, resolveSkinLookFiles, skinFileDependencies }
 export type { ResolvedSkinFile, SkinLookFiles }

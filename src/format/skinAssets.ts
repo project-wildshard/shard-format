@@ -36,8 +36,11 @@ function skinLookRules(source: Pick<Shardfile, 'rows' | 'files' | 'library'>): s
   for (const row of source.rows.looks) {
     if (row.recipe !== SKIN_LOOK_RECIPE) { if (row.animation.recipe === SKIN_CLIPS_RECIPE) {errors.push('skin clips without a skin look');} continue; }
     let parameters: SkinLookParameters; try { parameters = skinLookParameters(row); } catch { errors.push('skin look parameters'); continue; }
-    const { skin, variants, phone } = parameters, file = files.get(skin), glb = file?.dependencies.length === 1 ? files.get(file.dependencies[0] ?? '') : undefined;
-    if (file?.kind !== 'json' || glb?.kind !== 'glb' || !source.library.includes(skin)) {errors.push('skin look file references');}
+    const { skin, variants, phone } = parameters, file = files.get(skin), glb = files.get(file?.dependencies[0] ?? '');
+    // OF27b: a skin file depends on its GLB, then its material's textures (KTX2 files or commons)
+    const textures = file?.dependencies.slice(1) ?? [];
+    if (file?.kind !== 'json' || glb?.kind !== 'glb' || !source.library.includes(skin)
+      || textures.some((ref): boolean => !ref.startsWith('commons:') && files.get(ref)?.kind !== 'ktx2')) {errors.push('skin look file references');}
     if (!libraryJson(source.library, kinds, variants)) {errors.push('skin variant table references');}
     if (!libraryJson(source.library, kinds, phone)) {errors.push('skin phone file references');}
   }
@@ -104,5 +107,5 @@ function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'> & { readon
 }
 
 export { parseSkinFile, skinLookParameters } from './skin-file.ts';
-export { resolveSkinLookFiles } from './skin-variants.ts';
+export { resolveSkinLookFiles, skinFileDependencies } from './skin-variants.ts';
 export { skinLookRules, validateSkinAssets };

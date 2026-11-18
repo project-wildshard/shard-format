@@ -19,7 +19,7 @@ import { expect } from 'vitest'
 import { parseGlbData } from '../format/glbCost.ts'
 import { MaterialsSchema } from '../format/materials.ts'
 import { parseRows } from '../format/rows.ts'
-import { parseSkinFile } from '../format/skinAssets.ts'
+import { parseSkinFile, skinFileDependencies } from '../format/skinAssets.ts'
 
 import type { ShardRows } from '../format/rows.ts'
 import type { Shardfile } from '../format/shardSchema.ts'
@@ -92,6 +92,12 @@ function fixture(
     skin?: (value: ReturnType<typeof parseSkinFile>) => void
     table?: (value: SkinVariants) => void
     dependencies?: (value: string[]) => string[]
+    /** OF27b: mutate the default skin too (its bytes are then re-encoded) */
+    first?: (value: ReturnType<typeof parseSkinFile>) => void
+    /** OF27b: extra KTX2 files a skin's material may name */
+    textures?: readonly Uint8Array[]
+    /** OF27b: replace a skin file's dependencies (default: its GLB, then its material's textures) */
+    skinDependencies?: (value: string[], which: 'first' | 'second') => string[]
   } = {},
 ): Fixture {
   const materialSection = parse(
@@ -108,8 +114,10 @@ function fixture(
   if (original?.parameters.skin === undefined) {
     throw new Error('Missing actual bandit look')
   }
-  const firstBytes = bytes(`blobs/json/${original.parameters.skin}.json`)
-  const first = parseSkinFile(firstBytes)
+  const corpusBytes = bytes(`blobs/json/${original.parameters.skin}.json`)
+  const first = parseSkinFile(corpusBytes)
+  options.first?.(first)
+  const firstBytes = options.first === undefined ? corpusBytes : json(first)
   const glb = bytes(`blobs/glb/${first.row.file}.glb`)
   const alternate = new Uint8Array(glb)
   const length = new DataView(alternate.buffer).getUint32(GLB_JSON_LENGTH, true)
@@ -230,11 +238,32 @@ function fixture(
         }),
     critical: false,
   })
+  const skinDeps = (
+    value: ReturnType<typeof parseSkinFile>,
+    which: 'first' | 'second',
+  ): string[] => {
+    const own = skinFileDependencies(value.row, value.binding)
+    return options.skinDependencies?.(own, which) ?? own
+  }
+  const textures = (options.textures ?? []).map(
+    (value): [string, Uint8Array] => [hash(value), value],
+  )
   const source = {
     rows,
     files: [
-      file(firstBytes, 'json', [first.row.file]),
-      file(secondBytes, 'json', [second.row.file]),
+      file(firstBytes, 'json', skinDeps(first, 'first')),
+      file(secondBytes, 'json', skinDeps(second, 'second')),
+      ...textures.map(([id, value]): Fixture['source']['files'][number] => ({
+        hash: id,
+        kind: 'ktx2',
+        dependencies: [],
+        compressed: value.length,
+        decoded: value.length,
+        gpu: value.length,
+        triangles: ZERO,
+        draws: ZERO,
+        critical: false,
+      })),
       file(glb, 'glb', []),
       file(alternate, 'glb', []),
       file(tableBytes, 'json', dependencies),
@@ -248,6 +277,7 @@ function fixture(
     [first.row.file, glb],
     [hash(alternate), alternate],
     [tableHash, tableBytes],
+    ...textures,
   ])
   const [look] = rows.looks
   if (look === undefined) {
