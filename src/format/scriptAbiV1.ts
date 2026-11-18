@@ -1,11 +1,14 @@
 /** ONE-FORMAT CC32: `lockable` [target own actor, 0|1]; `heal` [own actor, hp]; `pull` [player, metres, own actor];
  *  `root` [player, seconds]. Additive: a guest that never names them is unchanged. */
-const CREATURE_COMMANDS = { lockable: 23, heal: 24, pull: 25, root: 26 } as const;
+const CREATURE_COMMANDS = { lockable: 23, heal: 24, pull: 25, root: 26, ability: 27 } as const;
+/** ONE-FORMAT CC59: a brain hook hears `part.broken` [actor, volume index]; `ability` [own actor, strike] replaces its
+ *  brain's next pick. A hit event's last slot is the mask of the row's `tags` the hit carried (bit i: i-th alias). */
+const CREATURE_EVENTS = { 'part.broken': 19 } as const;
 /** ABI-v1 numeric transport. These ids are shared by admission, generated bindings and the decision host. */
-export const SCRIPT_V1_EVENTS: Readonly<{ start: 1; tick: 2; timer: 3; 'zone.enter': 4; 'zone.leave': 5; interact: 6; hit: 7; threshold: 8; death: 9; 'move.done': 10; 'strike.done': 11; flag: 12; signal: 13; 'strike.target': 14; 'player.join': 15; 'player.leave': 16; spawned: 17; stop: 18; field: 30; cue: 31; channel: 32; }> = Object.freeze({
+export const SCRIPT_V1_EVENTS: Readonly<{ start: 1; tick: 2; timer: 3; 'zone.enter': 4; 'zone.leave': 5; interact: 6; hit: 7; threshold: 8; death: 9; 'move.done': 10; 'strike.done': 11; flag: 12; signal: 13; 'strike.target': 14; 'player.join': 15; 'player.leave': 16; spawned: 17; stop: 18; field: 30; cue: 31; channel: 32; } & typeof CREATURE_EVENTS> = Object.freeze({
   start: 1, tick: 2, timer: 3, 'zone.enter': 4, 'zone.leave': 5, interact: 6, hit: 7, threshold: 8,
   death: 9, 'move.done': 10, 'strike.done': 11, flag: 12, signal: 13, 'strike.target': 14,
-  'player.join': 15, 'player.leave': 16, spawned: 17, stop: 18, field: 30, cue: 31, channel: 32,
+  'player.join': 15, 'player.leave': 16, spawned: 17, stop: 18, ...CREATURE_EVENTS, field: 30, cue: 31, channel: 32,
 });
 /** Scalar reads; timer and random are answered by the host's own binding state. */
 export const SCRIPT_V1_READS: Readonly<{ x: 1; y: 2; z: 3; yaw: 4; hpShare: 5; alive: 6; field: 7; distance: 8; nearestPlayer: 9; flag: 10; timerLeft: 11; random: 12; actorInZone: 13; playersInZone: 14; moving: 15; strikeState: 16; playerFlag: 17; spawnGroupAlive: 18; bearing: 19; bodyX: 20; bodyY: 21; bodyZ: 22; bodyAlive: 23; bodyYaw: 24; bodyVisible: 25; playerIntent: 26; }> = Object.freeze({

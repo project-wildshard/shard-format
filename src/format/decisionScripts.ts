@@ -9,6 +9,10 @@ const id = v.pipe(v.string(), v.regex(/^[A-Za-z][A-Za-z0-9.:-]*$/u), v.maxLength
 const local = v.pipe(v.string(), v.regex(/^[A-Za-z_][A-Za-z0-9_.-]*$/u), v.maxLength(64));
 const finite = v.pipe(v.number(), v.finite());
 const positive = v.pipe(finite, v.integer(), v.minValue(1), v.maxValue(0x7fffffff));
+const HIT_TAG_LENGTH = 64;
+const HIT_TAGS = 16;
+const hitTag = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9_-]*(?:\.[a-z0-9_-]+)+$/u), v.maxLength(HIT_TAG_LENGTH));
+const hitTags = v.pipe(v.record(local, hitTag), v.check((value: Readonly<Record<string, string>>): boolean => Object.keys(value).length <= HIT_TAGS, 'at most 16 hit tags'));
 const aliases = v.pipe(v.record(local, id), v.check(value => Object.keys(value).length <= 256, 'bounded script id map'));
 const unique = (values: readonly unknown[]): boolean => new Set(values).size === values.length;
 const readNames: ("x" | "y" | "z" | "yaw" | "hpShare" | "alive" | "field" | "distance" | "nearestPlayer" | "flag" | "timerLeft" | "random" | "actorInZone" | "playersInZone" | "moving" | "strikeState" | "playerFlag" | "spawnGroupAlive" | "bearing" | "bodyX" | "bodyY" | "bodyZ" | "bodyAlive" | "bodyYaw" | "bodyVisible" | "playerIntent" | "actorsInZone" | "playersWithin" | "groundHeight" | "nearestWalkable" | "path" | "radial" | "declaredFloor")[] = [...keys(SCRIPT_V1_READS), ...keys(SCRIPT_V1_LISTS)];
@@ -25,7 +29,8 @@ const rowEntries = {
   source: v.pipe(v.string(), v.maxLength(256), v.regex(/^behaviour\/(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*\/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\.as$/u),
     v.check(value => !value.split('/').includes('generated'), 'authored script source, not generated glue')),
   sourceHash: v.exactOptional(v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u))),
-  binding: v.union([v.strictObject({ encounter: id }), v.strictObject({ quest: id }), v.strictObject({ zone: id }), v.strictObject({ shard: v.literal(true) }), v.strictObject({ spawnGroup: id })]),
+  // CC59: `brain` hooks a script onto a brain-owned creature; the brain keeps its body (no move, strike or stop).
+  binding: v.union([v.strictObject({ encounter: id }), v.strictObject({ quest: id }), v.strictObject({ zone: id }), v.strictObject({ shard: v.literal(true) }), v.strictObject({ spawnGroup: id }), v.strictObject({ brain: id })]),
   pages: v.optional(v.pipe(positive, v.maxValue(4)), 1), onFail: v.picklist(['hold', 'reset', 'skip']),
   on: v.pipe(v.array(v.picklist(keys(SCRIPT_V1_EVENTS))), v.minLength(1), v.maxLength(23), v.check(values => unique(values), 'unique subscribed events')),
   tick: v.optional(v.nullable(v.picklist([1, 2, 5, 10])), null),
@@ -36,6 +41,8 @@ const rowEntries = {
   targets: v.optional(aliases, {}), spawns: v.optional(aliases, {}), signals: v.optional(aliases, {}), facts: v.optional(aliases, {}),
   rewards: v.optional(aliases, {}), channels: v.optional(aliases, {}), impulses: v.optional(aliases, {}), weather: v.optional(aliases, {}),
   bodies: v.exactOptional(aliases), colliders: v.exactOptional(aliases),
+  // CC59: combat tags a hit event reports as a mask, bit i for the i-th alias in sorted order.
+  tags: v.exactOptional(hitTags),
   timers: v.optional(v.pipe(v.array(local), v.maxLength(64), v.check(values => unique(values), 'unique timer names')), []),
   stateVersion: positive, state: v.pipe(v.array(state), v.maxLength(16)),
   params: v.pipe(v.record(local, finite), v.check(value => Object.keys(value).length <= 32, 'bounded script parameters')),
@@ -64,6 +71,11 @@ export function decisionScriptRowRules(script: DecisionScriptRow): string[] {
   if ('spawnGroup' in script.binding && (Object.keys(script.actors).length === 0 || script.state.some(slot => slot.scope !== 'actor')))
     errors.push('spawn groups declare members and actor-scoped simulation state');
   if ((script.tick !== null) !== script.on.includes('tick')) errors.push('tick subscription has a declared 1/2/5/10 Hz rate');
+  if ('brain' in script.binding && (!Object.values(script.actors).includes(script.binding.brain)
+    || script.commands.some((name): boolean => name === 'move' || name === 'strike' || name === 'stop'))) {
+    errors.push('a brain hook names its creature and leaves move, strike and stop to the brain');
+  }
+  if (script.tags !== undefined && !validNames(Object.keys(script.tags))) { errors.push('unique nonreserved generated binding names'); }
   if (script.on.some(name => SCRIPT_V1_EVENTS[name] >= 30) || script.commands.some(name => SCRIPT_V1_COMMANDS[name] >= 100)) errors.push('simulation script uses only simulation ops');
   if (script.side === 'view' && !script.commands.every(isViewCommand)) { errors.push(VIEW_WRITES_GAMEPLAY); }
   for (const names of [...SCRIPT_V1_REFERENCE_KINDS.map(kind => Object.keys(script[kind] ?? {})), script.timers, script.state.map(slot => slot.name), Object.keys(script.params)]) {
@@ -207,6 +219,8 @@ interface DecisionScriptRowInputFields {
         shard: true;
     }) | ({
         spawnGroup: string;
+    }) | ({
+        brain: string;
     });
     pages?: number | undefined;
     onFail: 'hold' | 'reset' | 'skip';
@@ -232,6 +246,7 @@ interface DecisionScriptRowInputFields {
     weather?: Record<string, string> | undefined;
     bodies?: Record<string, string>;
     colliders?: Record<string, string>;
+    tags?: Record<string, string>;
     timers?: (string)[] | undefined;
     stateVersion: number;
     state: ({
@@ -262,6 +277,8 @@ interface DecisionScriptRowFields {
         shard: true;
     }) | ({
         spawnGroup: string;
+    }) | ({
+        brain: string;
     });
     pages: number;
     onFail: 'hold' | 'reset' | 'skip';
@@ -287,6 +304,7 @@ interface DecisionScriptRowFields {
     weather: Record<string, string>;
     bodies?: Record<string, string>;
     colliders?: Record<string, string>;
+    tags?: Record<string, string>;
     timers: (string)[];
     stateVersion: number;
     state: ({
