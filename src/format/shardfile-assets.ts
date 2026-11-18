@@ -14,6 +14,7 @@ import type { ShardTerrain } from "./terrain.ts";
 import { worstContentCost, memoryTargetWarnings, nearbyContentCost } from "./budget.ts";
 import { CONTENT_CAPS as C, MEMORY_GATES } from './contentBounds.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
+import { ratchetLimit } from './memory-ratchet.ts';
 import { MEMORY_HARD_BYTES, hardLineIssue, runtimeOfflineBytes } from './memory-line.ts';
 import { bootMemoryCosts } from './boot-memory-cost.ts';
 import type { TierIndex } from './phone-files.ts';
@@ -318,10 +319,10 @@ export function performanceReport(source: Shardfile, observations: PerformanceOb
   };
   if (native.unmeasuredViewAndDownload) check(['perf-native-view-unmeasured', 'native view/download measurement required'], 1, 0);
   if (source.runtime !== null && source.runtime.cost === undefined) check(['perf-native-resident-unmeasured', 'native resident measurement required'], 1, 0);
-  issues.push(...staleRuntimeIssues(source.runtime));
+  issues.push(...staleRuntimeIssues(source.runtime, undefined, source.identity));
   // G433 keeps the soft caps report-only. J408 applies to both estimates ahead of the soft caps.
   const total = (kind: 'playing' | 'loading', actual: number, limit: number): void => {
-    if (actual > MEMORY_HARD_BYTES) { issues.push(hardLineIssue(kind, actual)); return; }
+    if (actual > MEMORY_HARD_BYTES) { issues.push(hardLineIssue(kind, actual, source.identity.slug)); return; }
     const code = `perf-${kind}-memory` as const, metric = `worst ${kind} total bytes`;
     if (MEMORY_GATES.reportOnly && actual > limit) issues.push({ code, metric: `${metric} (report-only, G433)`, actual, limit, severity: 'warning' }); else check([code, metric], actual, limit);
   };
@@ -375,5 +376,6 @@ export function performanceReportLines(report: PerformanceReport): string[] {
 
 /** Offline soft-cap policy and the fixed J408 line for playing and loading. */
 export function offlineMemoryAdmission(policy: 'warn' | 'refuse'): MemoryAdmission {
-  return new MemoryAdmission(() => policy === 'warn' || MEMORY_GATES.reportOnly, MEMORY_HARD_BYTES);
+  // J412: the line holds each zone at its ratchet baseline when that is higher (`memory-ratchet.ts`).
+  return new MemoryAdmission(() => policy === 'warn' || MEMORY_GATES.reportOnly, (owner, kind): number => ratchetLimit(owner, kind, MEMORY_HARD_BYTES));
 }

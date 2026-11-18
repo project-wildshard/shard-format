@@ -33,9 +33,10 @@ export class MemoryAdmission {
   private readonly warnings = new Map<string, MemoryAdmissionWarning>();
   private readonly listeners = new Set<() => void>();
   private readonly developer: () => boolean;
-  private readonly hardBytes: number;
-  /** `hardBytes` (J408): applies to playing and loading even with an override. */
-  constructor(developer: () => boolean = () => false, hardBytes: number = Number.POSITIVE_INFINITY) { this.developer = developer; this.hardBytes = hardBytes; }
+  private readonly hardBytes: number | ((owner: string, kind: 'playing' | 'loading') => number);
+  /** `hardBytes` (J408): applies to playing and loading even with an override; a function gives each owner its own
+   *  line (J412's ratchet, `memory-ratchet.ts`). */
+  constructor(developer: () => boolean = () => false, hardBytes: number | ((owner: string, kind: 'playing' | 'loading') => number) = Number.POSITIVE_INFINITY) { this.developer = developer; this.hardBytes = hardBytes; }
 
   /** True for an in-envelope request or a Developer override. False means the caller retains its original refusal path. */
   accept(request: MemoryAdmissionRequest): boolean {
@@ -44,7 +45,8 @@ export class MemoryAdmission {
       || ![playingCap, loadingCap].every(value => Number.isFinite(value) && value > 0)) throw new RangeError('Invalid memory admission report');
     const key = `${request.stage}:${request.owner}`;
     const playingOverBytes = Math.max(0, request.playingBytes - playingCap), loadingOverBytes = Math.max(0, request.loadingBytes - loadingCap);
-    if (Math.max(request.playingBytes, request.loadingBytes) > this.hardBytes) { return false; }
+    const hard = this.hardBytes, line = (kind: 'playing' | 'loading'): number => typeof hard === 'number' ? hard : hard(request.owner, kind);
+    if (request.playingBytes > line('playing') || request.loadingBytes > line('loading')) { return false; }
     if (playingOverBytes === 0 && loadingOverBytes === 0) { if (this.warnings.delete(key)) this.notify(); return true; }
     if (!this.developer()) return false;
     const warning = Object.freeze({ ...request, playingCap, loadingCap, playingOverBytes, loadingOverBytes,

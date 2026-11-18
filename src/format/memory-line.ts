@@ -2,6 +2,7 @@ import { parse } from 'valibot'
 
 import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
+import { ratchetNote, ratchetSeverity } from './memory-ratchet.ts'
 import { runtimeAccountedBytes, RuntimeCostSchema } from './runtimeCost.ts'
 
 import type { TierIndex } from './phone-files.ts'
@@ -23,23 +24,29 @@ function overHardLine(bytes: number): string {
   return ` (over the ${(MEMORY_HARD_BYTES / GB).toFixed(DIGITS)} GB phone line, J408: a phone would close the page)`
 }
 
-/** J408 (MG4): the refusal for a worst-playing or loading estimate over the hard line. */
+/** J408 (MG4): the issue for a worst-playing or loading estimate over the hard line. J412: a refusal only over the
+ * zone's ratchet baseline (`memory-ratchet.ts`); at or under it, a report. */
 function hardLineIssue(
   kind: 'playing' | 'loading',
   bytes: number,
+  slug?: string,
 ): {
   readonly code: 'perf-playing-memory' | 'perf-loading-memory'
   readonly metric: string
   readonly actual: number
   readonly limit: number
-  readonly severity: 'refusal'
+  readonly severity: 'refusal' | 'warning'
 } {
+  const severity = ratchetSeverity(slug, kind, {
+    line: MEMORY_HARD_BYTES,
+    actual: bytes,
+  })
   return {
     code: `perf-${kind}-memory`,
-    metric: `worst ${kind} total bytes${overHardLine(bytes)}`,
+    metric: `worst ${kind} total bytes${overHardLine(bytes)}${severity === 'warning' ? ratchetNote(slug, kind) : ''}`,
     actual: bytes,
     limit: MEMORY_HARD_BYTES,
-    severity: 'refusal',
+    severity,
   }
 }
 
@@ -104,7 +111,7 @@ function offlineMemoryIssues(
   return (['playing', 'loading'] as const)
     .filter((kind): boolean => cost[kind] > MEMORY_HARD_BYTES)
     .map((kind): ReturnType<typeof hardLineIssue> =>
-      hardLineIssue(kind, cost[kind]),
+      hardLineIssue(kind, cost[kind], source.identity.slug),
     )
 }
 

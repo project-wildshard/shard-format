@@ -112,7 +112,8 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
 
 /** Refuse the declared targets a policy treats as refusals, before any byte is read or executed. */
 export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse', context: MemoryContext = new Map()): void {
-  const issues = [...staleRuntimeIssues(source.runtime), ...offlineMemoryIssues(source, context), ...runtimeTierIssues(source), ...performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal')];
+  // J412: the memory gates are ratchets; an issue within a zone's baseline reports (`memory-ratchet.ts`) and is not thrown here.
+  const issues = [...staleRuntimeIssues(source.runtime, undefined, source.identity), ...offlineMemoryIssues(source, context), ...runtimeTierIssues(source), ...performanceTargetIssues(source, policy)].filter(issue => issue.severity === 'refusal');
   if (issues.length === 0) return;
   throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
 }

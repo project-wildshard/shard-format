@@ -1,3 +1,5 @@
+import { staleReadingAdmitted } from './memory-ratchet.ts'
+
 /** MEMORY-GATES MG5 (J408, Jake 2026-11-17: "a stale runtimeCost is refused"): the memory model a runtime home's
  * `runtimeCost` reading must have been taken against. It rises when the model changes what it charges (MG6 adds shader
  * compile, load transients, far slabs and paint arrays); from then a reading from an older epoch is refused until the
@@ -21,7 +23,7 @@ interface StaleRuntimeIssue {
   readonly metric: string
   readonly actual: number
   readonly limit: number
-  readonly severity: 'refusal'
+  readonly severity: 'refusal' | 'warning'
 }
 
 /** Why a runtime reading is stale, older than `current` (the oldest current epoch), or empty when it is current. */
@@ -37,11 +39,14 @@ function staleRuntimeCost(
 }
 
 /** A refusal, whatever the policy, for a runtime home's reading and for its images-first reading, each stale against
- * `current`. Takes the shard's `runtime` (null for a data-only shard). */
+ * `current`. Takes the shard's `runtime` (null for a data-only shard). J412: a report instead for exactly the pinned
+ * revision the ratchet names (`memory-ratchet.ts` `staleRevision`), given its `identity`. */
 function staleRuntimeIssues(
   runtime: Readonly<{ cost?: EpochRow | undefined }> | null,
   current: number = OLDEST_CURRENT_EPOCH,
+  identity?: Readonly<{ slug: string; revision: number }>,
 ): StaleRuntimeIssue[] {
+  const admitted = staleReadingAdmitted(identity?.slug, identity?.revision)
   const rows: EpochRow[] = []
   const cost = runtime === null ? undefined : runtime.cost
   if (cost !== undefined) {
@@ -54,10 +59,10 @@ function staleRuntimeIssues(
     .filter((row: EpochRow): boolean => staleRuntimeCost(row, current) !== '')
     .map((row: EpochRow): StaleRuntimeIssue => ({
       code: 'perf-native-resident-unmeasured',
-      metric: staleRuntimeCost(row, current),
+      metric: `${staleRuntimeCost(row, current)}${admitted ? ' (report-only, J412 ratchet: the pinned revision)' : ''}`,
       actual: row.epoch ?? LEGACY_EPOCH,
       limit: current,
-      severity: 'refusal',
+      severity: admitted ? 'warning' : 'refusal',
     }))
 }
 
