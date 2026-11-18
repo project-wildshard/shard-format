@@ -99,6 +99,7 @@ function rowRules(rows: ShardRows): string[] {
       if (!strikeIds.has(ability.use)) { errors.push(`Unknown creature ability: ${ability.use}`); }
     }
     if (speciesRow.body !== undefined && !lookIds.has(speciesRow.body.look)) { errors.push(`Unknown creature look: ${speciesRow.body.look}`); }
+    if (speciesRow.body?.swap !== undefined && !lookIds.has(speciesRow.body.swap.look)) { errors.push(`Unknown creature look: ${speciesRow.body.swap.look}`); }
   }
   for (const l of rows.looks) if (!speciesIds.has(l.species)) errors.push('look species');
   for (const c of rows.compendiums) {

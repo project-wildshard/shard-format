@@ -1,6 +1,7 @@
 /** ONE-FORMAT CC32: `lockable` [target own actor, 0|1]; `heal` [own actor, hp]; `pull` [player, metres, own actor];
  *  `root` [player, seconds]. Additive: a guest that never names them is unchanged. */
-const CREATURE_COMMANDS = { lockable: 23, heal: 24, pull: 25, root: 26, ability: 27 } as const;
+const CREATURE_COMMANDS = { lockable: 23, heal: 24, pull: 25, root: 26, ability: 27, actorChannel: 28 } as const;
+/** ONE-FORMAT CC28: `actorChannel` [own actor, channel index 0..3 in the body's `channels`, value 0..1]. */
 /** ONE-FORMAT CC59: a brain hook hears `part.broken` [actor, volume index]; `ability` [own actor, strike] replaces its
  *  brain's next pick. A hit event's last slot is the mask of the row's `tags` the hit carried (bit i: i-th alias). */
 const CREATURE_EVENTS = { 'part.broken': 19 } as const;

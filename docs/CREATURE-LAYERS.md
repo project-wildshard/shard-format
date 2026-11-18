@@ -80,3 +80,15 @@ remains bounded to32 recognized clip names; bindings may loop only a
 clip present in that list. This does not invent an idle animation or
 change a GLB. Joint order, required body/head and socket admission remain
 the same for animated and clipless rigs.
+
+## Actor channels (ONE-FORMAT CC28)
+
+A body may declare up to four `channels`, each a name and an optional
+`initial` value from 0 to 1 (0 when omitted). The server owns their values:
+a script's `actorChannel` command (ABI-1 id 28) sets one by its index in this
+list, and the wire carries them as animal fields 25 to 28 in the same order,
+so every page reads the same value. A body's `bind` ties its look's material
+to channels: `tint` and `emissive` move toward a colour as their channel goes
+0 to 1, and `opacity` is a channel's value. `swap` draws a second look while
+a channel is at or above `at` (0.5 when omitted); that look must exist. A
+bound or swapped channel must be declared.

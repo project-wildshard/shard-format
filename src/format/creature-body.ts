@@ -14,6 +14,12 @@ import {
   string,
 } from 'valibot'
 
+import {
+  CreatureChannelBindSchema,
+  CreatureChannelsSchema,
+  CreatureLookSwapSchema,
+  channelsDeclared,
+} from './creature-channels.ts'
 import { creatureContract } from './creature-skeletons.ts'
 import {
   CreatureVolumesSchema,
@@ -21,6 +27,11 @@ import {
   MAX_VOLUMES,
 } from './creature-volumes.ts'
 
+import type {
+  CreatureChannel,
+  CreatureChannelBind,
+  CreatureLookSwap,
+} from './creature-channels.ts'
 import type { CreatureSkeleton, CreatureSize } from './creature-layers.ts'
 import type { CreatureTrail } from './creature-skeletons.ts'
 import type { CreatureVolume } from './creature-volumes.ts'
@@ -46,6 +57,12 @@ interface CreatureBody {
   volumes?: CreatureVolume[]
   lock?: string[]
   hits?: 'rest' | 'clip'
+  /** ONE-FORMAT CC28: at most four actor channels, in wire order (animal fields 25 to 28). */
+  channels?: CreatureChannel[]
+  /** Material tint, emissive and opacity that follow channels. */
+  bind?: CreatureChannelBind
+  /** A second look drawn while a channel is high. */
+  swap?: CreatureLookSwap
 }
 const trailCount = pipe(
   number(),
@@ -73,6 +90,9 @@ const bodyObject = strictObject({
   volumes: exactOptional(CreatureVolumesSchema),
   lock: exactOptional(CreatureLockSchema),
   hits: exactOptional(picklist(['rest', 'clip'])),
+  channels: exactOptional(CreatureChannelsSchema),
+  bind: exactOptional(CreatureChannelBindSchema),
+  swap: exactOptional(CreatureLookSwapSchema),
 })
 const CreatureBodySchema: GenericSchema<CreatureBody> = pipe(
   bodyObject,
@@ -117,6 +137,10 @@ const CreatureBodySchema: GenericSchema<CreatureBody> = pipe(
       )
     },
     'Too many resolved creature volumes',
+  ),
+  check<CreatureBody, 'A creature binds an undeclared channel'>(
+    channelsDeclared,
+    'A creature binds an undeclared channel',
   ),
 )
 
