@@ -188,3 +188,26 @@ test('a skin texture takes a sampler; a stray sampler still refuses', (): void =
   expect(textureSamplerRules(look, sample.source.files, skins)).toEqual([])
   expect(textureSamplerRules(look, sample.source.files)).toHaveLength(1)
 })
+
+test('a painterly skin variant wears its own coat map', (): void => {
+  const paint =
+    (coat: Uint8Array): ((value: Skin) => void) =>
+    (value: Skin): void => {
+      value.binding.material = {
+        family: 'painterly',
+        rim: 0.3,
+        bands: 0.5,
+        map: sha(coat),
+        vertexColours: true,
+      }
+    }
+  const sample = fixture({
+    first: paint(COAT_A),
+    skin: paint(COAT_B),
+    textures: [COAT_A, COAT_B],
+  })
+  validateSkinAssets(sample.source, sample.assets)
+  expect(skinLookTextureRefs(sample.source).toSorted()).toEqual(
+    [sha(COAT_A), sha(COAT_B)].toSorted(),
+  )
+})

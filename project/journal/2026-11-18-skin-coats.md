@@ -8,3 +8,5 @@ maps, sheen, rim and glow; everything else of the material stays shared. `pbr-fu
 
 A texture sampler row may name a skin's texture too (`skinLookTextureRefs`, `skin-textures.ts`), so a hull's maps keep
 the hull book's repeat wrap and anisotropy 4.
+
+A painterly skin's coat is its `map`, so Nalati's wolf coats ride the same variant table.

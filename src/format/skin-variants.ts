@@ -28,8 +28,9 @@ type Source = Pick<Shardfile, 'rows' | 'files'>
 type Look = ShardRows['looks'][number]
 const FIRST = 0
 const REST = 1
-/** A coat: what a variant or phone skin may wear of its own (OF27b), its maps, its fur's sheen and rim, and its glow. */
+/** A coat: what a variant or phone skin may wear of its own (OF27b), its maps (a painterly `map`), its fur's sheen and rim, and its glow. */
 const COAT: ReadonlySet<string> = new Set([
+  'map',
   'maps',
   'sheen',
   'rim',
