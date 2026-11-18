@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.41.0 (2026-11-18)
+
+- A creature skin can now wear its own texture maps and a coat per variant, so a deer or wolf can carry a painted hide instead of flat colour.
+- Skins can set a soft sheen and a rim light, for fur that catches the light at its edges.
+- A painterly variant wears its own map, so the stylised look keeps its painted detail.
+
 ## v0.40.0 (2026-11-18)
 
 - Creatures can carry socket attachments on their body, and actors can declare channels with their own looks.
