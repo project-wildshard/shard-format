@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.38.0 (2026-11-18)
+
+- Memory gates refuse only armed zones (J426): Driftwood and Nalati are armed, and every check refuses them back over the line.
+- Every other zone's memory gates report and never refuse (J424).
+
 ## v0.37.1 (2026-11-18)
 
 - Nine's and Pine's memory ratchet rows match the engine's full check of their pinned products, so engine can pin this format.
