@@ -47,20 +47,23 @@ interface CreatureBody {
   lock?: string[]
   hits?: 'rest' | 'clip'
 }
+const trailCount = pipe(
+  number(),
+  integer(),
+  minValue(MIN_TRAIL),
+  maxValue(MAX_TRAIL),
+)
+const trailSpacing = pipe(
+  scalar,
+  minValue(Number.MIN_VALUE),
+  maxValue(MAX_SPACING),
+)
+const trailObject = strictObject({ count: trailCount, spacing: trailSpacing })
 const bodyObject = strictObject({
   skeleton: exactOptional(
     picklist(['quadruped', 'biped', 'serpent'], 'Unknown creature skeleton'),
   ),
-  trail: exactOptional(
-    strictObject({
-      count: pipe(number(), integer(), minValue(MIN_TRAIL), maxValue(MAX_TRAIL)),
-      spacing: pipe(
-        scalar,
-        minValue(Number.MIN_VALUE),
-        maxValue(MAX_SPACING),
-      ),
-    }),
-  ),
+  trail: exactOptional(trailObject),
   size: picklist(
     ['tiny', 'small', 'medium', 'large', 'giant'],
     'Unknown creature size',
@@ -96,7 +99,7 @@ const CreatureBodySchema: GenericSchema<CreatureBody> = pipe(
       readonly trail?: CreatureTrail
       readonly volumes?: readonly { readonly part: string }[]
     }): boolean => {
-      // a serpent without its trail is the check above's refusal
+      // A serpent without its trail is the check above's refusal
       const defaults =
         body.skeleton === undefined ||
         (body.skeleton === 'serpent' && body.trail === undefined)

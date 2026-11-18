@@ -3,10 +3,7 @@ import { expect, test } from 'vitest'
 import {
   CREATURE_SKELETONS,
   MIN_VOLUME_RADIUS,
-  creatureContract,
-  serpentContract,
   skeletonBones,
-  trailBoneNames,
 } from './creature-skeletons.ts'
 
 import type { SkeletonContract, SkeletonVolume } from './creature-skeletons.ts'
@@ -81,23 +78,4 @@ test('the contract check rejects a disconnected chain and duplicate joint', (): 
       chains: { duplicate: { parent: 'body', bones: ['body'] } },
     })
   }).toThrow()
-})
-
-test('a serpent contract is its trail: head first, a capsule a segment, core in the middle (ONE-FORMAT CC23)', (): void => {
-  const contract = serpentContract({ count: 14, spacing: 1.6 })
-  verify(contract)
-  expect(skeletonBones(contract)).toEqual(trailBoneNames(14))
-  expect(trailBoneNames(4)).toEqual(['head', 'seg1', 'seg2', 'tail'])
-  expect(contract.sockets['core']?.bone).toBe('seg7')
-  expect(contract.sockets['tail']?.bone).toBe('tail')
-  expect(contract.lock).toBe('head')
-  const segments = contract.volumes.slice(1)
-  expect(contract.volumes[0]?.part).toBe('head')
-  expect(segments.map((volume: SkeletonVolume): string => volume.bone)).toEqual(trailBoneNames(14).slice(1))
-  for (const volume of segments) {
-    expect(volume).toMatchObject({ shape: 'capsule', halfLength: 0.8, multiplier: 0.5 })
-  }
-  expect(creatureContract({ skeleton: 'serpent', trail: { count: 14, spacing: 1.6 } })).toEqual(contract)
-  expect(creatureContract({ skeleton: 'biped' })).toBe(CREATURE_SKELETONS.biped)
-  expect((): SkeletonContract => creatureContract({ skeleton: 'serpent' })).toThrow('trail row')
 })

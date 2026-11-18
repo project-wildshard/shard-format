@@ -132,9 +132,16 @@ const SEGMENT_MULTIPLIER = 0.5
 const SEGMENT_RADIUS = 0.6
 const HALF = 2
 /** Trail bone names, head first: `head`, `seg1` … `seg<count-2>`, `tail`. */
+function trailBoneName(index: number, count: number): string {
+  if (index === ZERO) {
+    return 'head'
+  }
+  return index === count - ONE ? 'tail' : `seg${String(index)}`
+}
 function trailBoneNames(count: number): readonly string[] {
-  return Array.from({ length: count }, (_unused: unknown, index: number): string =>
-    index === ZERO ? 'head' : index === count - ONE ? 'tail' : `seg${String(index)}`,
+  return Array.from(
+    { length: count },
+    (_unused: unknown, index: number): string => trailBoneName(index, count),
   )
 }
 /**
@@ -145,17 +152,15 @@ function trailBoneNames(count: number): readonly string[] {
 function serpentContract(trail: CreatureTrail): SkeletonContract {
   const bones = trailBoneNames(trail.count)
   const core = bones[Math.floor(trail.count / HALF)] ?? 'head'
-  const segments = bones.slice(ONE).map(
-    (bone: string): SkeletonVolume => ({
-      part: bone,
-      bone,
-      shape: 'capsule',
-      radius: SEGMENT_RADIUS,
-      halfLength: trail.spacing / HALF,
-      axis: 'z',
-      multiplier: SEGMENT_MULTIPLIER,
-    }),
-  )
+  const segments = bones.slice(ONE).map((bone: string): SkeletonVolume => ({
+    part: bone,
+    bone,
+    shape: 'capsule',
+    radius: SEGMENT_RADIUS,
+    halfLength: trail.spacing / HALF,
+    axis: 'z',
+    multiplier: SEGMENT_MULTIPLIER,
+  }))
   return {
     root: 'head',
     chains: { spine: { parent: 'head', bones: bones.slice(ONE) } },

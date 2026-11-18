@@ -7,3 +7,4 @@
 - `CREATURE_SKELETONS` now types only the fixed skeletons; `creatureContract(body)` is the one lookup, so any reader
   that indexed the table by a body's skeleton has to take the serpent's trail into account (the body volume count and
   the mount seat rule moved to it).
+- Ratchet follow-up: the trail schema in named pieces, no nested ternary, the serpent cases in `creature-serpent.test.ts`.
