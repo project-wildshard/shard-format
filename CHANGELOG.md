@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.39.0 (2026-11-18)
+
+- Use the shard's named budget tier to cap authored material graphs and post passes. Explicit graph budgets can narrow the cap.
+
 ## v0.38.1 (2026-11-18)
 
 - Pine, Nine and every light zone are armed (J426): each memory check now refuses them back over their line.
