@@ -99,10 +99,17 @@ function check(ends: Ends, learned: Learned, raw: RawFrame): readonly string[] {
     learned.projected.get(ANIMAL),
     learned.projected.get(PLAYER),
   ]
-  const sent = learned.room.get(ANIMAL)?.row.length ?? 0
-  const want = Array.from(
-    { length: sent - 1 },
-    (_unused: unknown, at: number): number => (tick + at + 1) % 2,
+  // Each local animal column by id: the room's word where the room sends it
+  // ((tick + its sender index) % 2, `mood` sitting first), else the local
+  // default, 0, for a field the room lacks (an older room, CC28's channels).
+  const sent = learned.room.get(ANIMAL)?.row ?? []
+  const want = (animal?.local.row ?? []).map(
+    (column: { readonly id: number }): number => {
+      const at = sent.findIndex(
+        (theirs: { readonly id: number }): boolean => theirs.id === column.id,
+      )
+      return at < 0 ? 0 : (tick + at) % 2
+    },
   )
   const got = [...projectRow(animal?.row ?? [], raw.rows.get(1) ?? [])]
   const owner = projectRow(player?.owner ?? [], raw.owner)

@@ -28,16 +28,33 @@ const without = (wireClass: WireClass, name: string): WireClass => ({
   ),
 })
 const MOOD: WireClassField = { id: 24, name: 'mood', node: { kind: 'bool' } }
-const LOCAL: readonly WireClass[] = WIRE_CLASSES
+/** The recordings' sender: the wire before CC28's animal fields (ids 25 to 29), which the recordings never carried. */
+const RECORDED = 24
+const LOCAL: readonly WireClass[] = WIRE_CLASSES.map(
+  (entry: WireClass): WireClass =>
+    entry === ANIMAL
+      ? {
+          ...ANIMAL,
+          fields: ANIMAL.fields.filter(
+            (field: WireClassField): boolean => field.id <= RECORDED,
+          ),
+        }
+      : entry,
+)
+const RECORDED_ANIMAL = LOCAL.find(
+  (entry: WireClass): boolean => entry.id === ANIMAL.id,
+)
 /** An older receiver: no `animal.rideable`, and no `encounter` class at all. */
 const OLDER = LOCAL.filter(
   (entry: WireClass): boolean => entry.name !== 'encounter',
 ).map((entry: WireClass): WireClass =>
-  entry === ANIMAL ? without(ANIMAL, 'rideable') : entry,
+  entry === RECORDED_ANIMAL ? without(entry, 'rideable') : entry,
 )
 /** A newer receiver: an `animal.mood` the sender has never heard of. */
 const NEWER = LOCAL.map((entry: WireClass): WireClass =>
-  entry === ANIMAL ? { ...ANIMAL, fields: [...ANIMAL.fields, MOOD] } : entry,
+  entry === RECORDED_ANIMAL
+    ? { ...entry, fields: [...entry.fields, MOOD] }
+    : entry,
 )
 /** Where `rideable` sits in the sender's animal row. */
 const RIDEABLE = ANIMAL.fields

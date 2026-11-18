@@ -1,7 +1,7 @@
 {
   "version": 1,
   "wireMajor": 1,
-  "wireMinor": 0,
+  "wireMinor": 1,
   "maxRowFields": 32,
   "tableLimits": {
     "maxDepth": 8,
@@ -9,7 +9,7 @@
     "maxNodes": 4096,
     "maxMessageBytes": 65536
   },
-  "v0SchemaHash": 2038956392,
+  "v0SchemaHash": 2012830190,
   "messages": [
     {
       "id": 1,
@@ -3139,7 +3139,7 @@
       "id": 2,
       "name": "animal",
       "relevance": 160,
-      "rowFields": 18,
+      "rowFields": 23,
       "fields": [
         {
           "id": 1,
@@ -3476,6 +3476,84 @@
           "default": "",
           "since": 0,
           "send": "initial",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 25,
+          "name": "channel1",
+          "node": {
+            "kind": "quant",
+            "min": 0,
+            "max": 1,
+            "bits": 8
+          },
+          "default": 0,
+          "since": 0,
+          "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 26,
+          "name": "channel2",
+          "node": {
+            "kind": "quant",
+            "min": 0,
+            "max": 1,
+            "bits": 8
+          },
+          "default": 0,
+          "since": 0,
+          "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 27,
+          "name": "channel3",
+          "node": {
+            "kind": "quant",
+            "min": 0,
+            "max": 1,
+            "bits": 8
+          },
+          "default": 0,
+          "since": 0,
+          "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 28,
+          "name": "channel4",
+          "node": {
+            "kind": "quant",
+            "min": 0,
+            "max": 1,
+            "bits": 8
+          },
+          "default": 0,
+          "since": 0,
+          "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 29,
+          "name": "lockable",
+          "node": {
+            "kind": "enum",
+            "values": [
+              "row",
+              "on",
+              "off"
+            ],
+            "default": "row"
+          },
+          "default": "row",
+          "since": 0,
+          "send": "all",
           "predicted": false,
           "required": false
         }

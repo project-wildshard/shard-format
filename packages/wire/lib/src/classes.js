@@ -20,6 +20,8 @@ const ANIMAL_STATES = [
     'hide',
     'sidestep',
 ];
+/** A creature's lock answer: its species row's, or a script's override. */
+const LOCKABLE = ['row', 'on', 'off'];
 /** A boss or elite encounter's bar state. */
 const ENCOUNTER_STATES = [
     'dormant',
@@ -76,6 +78,17 @@ const ANIMAL = {
         { id: 23, name: 'seed', node: U32, ...INITIAL },
         // A declared shard's species id: two species may share one native `kind` (TE-ENG7). Empty for a native body.
         { id: 24, name: 'species', node: TEXT, ...INITIAL },
+        // ONE-FORMAT CC28: the body's four actor channels, in its `channels` order, each 0..1; a page binds looks to them.
+        { id: 25, name: 'channel1', node: UNIT_8 },
+        { id: 26, name: 'channel2', node: UNIT_8 },
+        { id: 27, name: 'channel3', node: UNIT_8 },
+        { id: 28, name: 'channel4', node: UNIT_8 },
+        // CC32's `Do.lockable` answer over the species row: `row` keeps the row's, so lock and Tab agree on every page.
+        {
+            id: 29,
+            name: 'lockable',
+            node: { kind: 'enum', values: LOCKABLE, default: 'row' },
+        },
     ],
 };
 /** The `encounter` class: a boss or elite bar, anywhere in the cell. */
@@ -139,5 +152,5 @@ const WIRE_CLASSES = [
     STATE,
     FLAG,
 ];
-export { ANIMAL, ANIMAL_STATES, ENCOUNTER, ENCOUNTER_STATES, FLAG, SCRIPT, STATE, WIRE_CLASSES, };
+export { ANIMAL, ANIMAL_STATES, ENCOUNTER, ENCOUNTER_STATES, FLAG, LOCKABLE, SCRIPT, STATE, WIRE_CLASSES, };
 export { PLAYER } from './player.js';

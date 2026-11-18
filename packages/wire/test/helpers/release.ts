@@ -20,9 +20,27 @@ interface MutableLock {
   wireMinor: number
   [key: string]: unknown
 }
-const released = (): ReleaseLock => JSON.parse(wireLockText()) as ReleaseLock
-const copy = (): MutableLock =>
-  structuredClone(JSON.parse(wireLockText()) as MutableLock)
+/** Every `since` in a lock's tree, set to 0. */
+const sinceZero = (node: unknown): void => {
+  if (Array.isArray(node)) {
+    node.forEach(sinceZero)
+  } else if (typeof node === 'object' && node !== null) {
+    const entry = node as Mutable
+    if (typeof entry['since'] === 'number') {
+      entry['since'] = 0
+    }
+    Object.values(entry).forEach(sinceZero)
+  }
+}
+/** Today's lock as the fixtures' release: minor 0, every id since 0, whatever minor the wire is at. */
+const today = (): MutableLock => {
+  const lock = JSON.parse(wireLockText()) as MutableLock
+  lock.wireMinor = 0
+  sinceZero(lock)
+  return lock
+}
+const released = (): ReleaseLock => today() as unknown as ReleaseLock
+const copy = (): MutableLock => today()
 /** A field of `entry` by name; a fixture's target must exist. */
 const fieldNamed = (entry: Mutable, name: string): Mutable => {
   const found = (entry['fields'] as Mutable[]).find(

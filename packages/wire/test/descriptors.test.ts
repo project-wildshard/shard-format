@@ -46,8 +46,11 @@ function notName(field: WireClassField): boolean {
   return !PLAYER_ADDED.has(field.name)
 }
 
+/** `animal` fields added after the WS2 baseline: `species` (24), then CC28's channels and lock (25 to 29). */
+const ANIMAL_BASELINE_LAST = 23
+
 function notSpecies(field: WireClassField): boolean {
-  return field.name !== 'species'
+  return field.id <= ANIMAL_BASELINE_LAST
 }
 
 function withoutPlayerName(wireClass: WireClass): WireClass {
@@ -68,8 +71,9 @@ test('the committed lock is what the descriptors generate', (): void => {
 
 test('the descriptors write engine main and cfd6681 v0 hashes exactly', (): void => {
   // Engine main's NET_SCHEMA_HASH, which binds these descriptors (WR2), with
-  // `animal.species` (TE-ENG7) and `player.swing`, `heavy`, `air` (RP6).
-  assert.equal(v0SchemaHash(WIRE_CLASSES), 2_038_956_392)
+  // `animal.species` (TE-ENG7), `player.swing`, `heavy`, `air` (RP6) and the
+  // animal's four channels and lock answer (ONE-FORMAT CC28).
+  assert.equal(v0SchemaHash(WIRE_CLASSES), 2_012_830_190)
   // Without the player and animal fields added after the WS2 baseline:
   // exact cfd6681.
   assert.equal(
@@ -82,7 +86,7 @@ test('the descriptors write engine main and cfd6681 v0 hashes exactly', (): void
   )
 })
 
-test('against the WS2 baseline everything is kept and five fields added', (): void => {
+test('against the WS2 baseline everything is kept and ten fields added', (): void => {
   const result = checkWire(LOCK, baseline())
   assert.deepEqual(result.problems, [])
   assert.deepEqual(result.added, [
@@ -91,6 +95,11 @@ test('against the WS2 baseline everything is kept and five fields added', (): vo
     'player.heavy #56',
     'player.air #57',
     'animal.species #24',
+    'animal.channel1 #25',
+    'animal.channel2 #26',
+    'animal.channel3 #27',
+    'animal.channel4 #28',
+    'animal.lockable #29',
   ])
   // 99 class fields; 6 message, 15 event and 11 act tags; 69 event and 15
   // act body fields; 16 command forms.

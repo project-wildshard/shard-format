@@ -1,5 +1,7 @@
 /** A creature's AI state, as a view poses it. */
 declare const ANIMAL_STATES: readonly ['idle', 'graze', 'wander', 'alert', 'flee', 'charge', 'stalk', 'dead', 'attack', 'perch', 'rise', 'hide', 'sidestep'];
+/** A creature's lock answer: its species row's, or a script's override. */
+declare const LOCKABLE: readonly ['row', 'on', 'off'];
 /** A boss or elite encounter's bar state. */
 declare const ENCOUNTER_STATES: readonly ['dormant', 'armed', 'intro', 'fight', 'beat', 'victory', 'absent', 'idle', 'aware', 'engaged', 'leash', 'dead', 'broken', 'retired'];
 /** The `animal` class: look once in the spawn, the rest as delta rows. */
@@ -195,6 +197,50 @@ declare const ANIMAL: {
         readonly node: {
             readonly kind: 'text';
             readonly maxBytes: 255;
+        };
+    }, {
+        readonly id: 25;
+        readonly name: 'channel1';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+    }, {
+        readonly id: 26;
+        readonly name: 'channel2';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+    }, {
+        readonly id: 27;
+        readonly name: 'channel3';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+    }, {
+        readonly id: 28;
+        readonly name: 'channel4';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+    }, {
+        readonly id: 29;
+        readonly name: 'lockable';
+        readonly node: {
+            readonly kind: 'enum';
+            readonly values: readonly ["row", "on", "off"];
+            readonly default: 'row';
         };
     }];
 };
@@ -1042,6 +1088,50 @@ declare const WIRE_CLASSES: readonly [{
             readonly kind: 'text';
             readonly maxBytes: 255;
         };
+    }, {
+        readonly id: 25;
+        readonly name: 'channel1';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+    }, {
+        readonly id: 26;
+        readonly name: 'channel2';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+    }, {
+        readonly id: 27;
+        readonly name: 'channel3';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+    }, {
+        readonly id: 28;
+        readonly name: 'channel4';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+    }, {
+        readonly id: 29;
+        readonly name: 'lockable';
+        readonly node: {
+            readonly kind: 'enum';
+            readonly values: readonly ["row", "on", "off"];
+            readonly default: 'row';
+        };
     }];
 }, {
     readonly id: 3;
@@ -1229,5 +1319,5 @@ declare const WIRE_CLASSES: readonly [{
     readonly name: 'flag';
     readonly fields: readonly [];
 }];
-export { ANIMAL, ANIMAL_STATES, ENCOUNTER, ENCOUNTER_STATES, FLAG, SCRIPT, STATE, WIRE_CLASSES, };
+export { ANIMAL, ANIMAL_STATES, ENCOUNTER, ENCOUNTER_STATES, FLAG, LOCKABLE, SCRIPT, STATE, WIRE_CLASSES, };
 export { PLAYER } from './player.ts';
