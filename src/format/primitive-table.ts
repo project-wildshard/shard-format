@@ -134,7 +134,7 @@ const TABLE: readonly Primitive[] = [
   {
     name: 'patrol',
     row: 'OF37',
-    on: 'later',
+    on: { section: 'actors/creatures', path: ['creatures', 'patrols'] },
     hosts: ['encounter.patrol', 'timed.encounters'],
   },
   {

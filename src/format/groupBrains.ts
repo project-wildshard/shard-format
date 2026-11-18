@@ -1,5 +1,6 @@
 import * as v from 'valibot';
 
+
 /** Built-in guarded group states shared by its wire rows and native owner. */
 export const GUARDED_STALLION_STATES: readonly ['watch', 'warn', 'display', 'charge', 'wheel', 'lead', 'beaten', 'ridden'] = ['watch', 'warn', 'display', 'charge', 'wheel', 'lead', 'beaten', 'ridden'] as const;
 
@@ -247,3 +248,6 @@ export type GuardedHerdGuestRows = {
     references?: Record<string, string>;
     plans?: true;
 } & GroupGuestBindingRows;
+/** ONE-FORMAT OF37a: patrols sit beside the group controllers, so their rules live with them. */
+export { CreaturePatrolsSchema, patrolRules, patrolsAdmitted } from './creature-patrols.ts';
+export type { CreaturePatrol } from './creature-patrols.ts';
