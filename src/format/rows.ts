@@ -21,7 +21,8 @@ const nonnegative = v.pipe(finite, v.minValue(0), v.maxValue(10000000));
 const unit = v.pipe(finite, v.minValue(0), v.maxValue(1));
 const dimension = v.pipe(positive, v.maxValue(20));
 /** A flyer's bake has no legs (OF11a): legs are nonnegative, the body stays positive. */
-const legs = v.pipe(nonnegative, v.maxValue(20));
+const NO_LEGS = 0;
+const legs = v.union([v.literal(NO_LEGS), dimension]);
 const duration = v.pipe(positive, v.maxValue(86400));
 const ordered = v.pipe(v.tuple([positive, positive]), v.check(([a, b]) => a <= b, 'ordered range'));
 const shape = v.variant('kind', [
