@@ -25,8 +25,7 @@ const PIN_RUNS: readonly (readonly [name: string, hash: string])[] = [
 ]
 // SERVER-PARITY SS7 and SS11: the two older Pine pins (revision 2, 346 MB, and an earlier 327 MB one) run pine.life on
 // page.life and are refused, the grandfather list (`script-side-grandfather.ts`) being empty since SS11; Pine revision 4,
-// live on every channel, runs the correct view row pine.ambient. J408 now refuses
-// its over-1.5GB estimate instead of grandfathering the old warning policy.
+// live on every channel, runs the correct view row pine.ambient; its J408 report (J424) is shardfile-pine-live-pin.test.ts.
 const PINE_OLD_PINS: readonly (readonly [name: string, hash: string])[] = [
   [
     '346 MB',
@@ -37,8 +36,6 @@ const PINE_OLD_PINS: readonly (readonly [name: string, hash: string])[] = [
     '0e246ab03210d777619bf1fb09bbaa9da1bbcaea5093a8adfce913508762f084',
   ],
 ]
-const PINE_LIVE_PIN =
-  '1b6dcfb16c2cfe595fe4feee9420809a4830a74662efdcf088de5cb1b8f8ac9f'
 const PINE_REFUSAL =
   'Script side refused: sim script pine.life runs in page-only feature page.life (actors/page-life.json), which no server host runs'
 
@@ -70,35 +67,6 @@ describe.each(PIN_RUNS)('the %s pin', (_name: string, hash: string): void => {
       expect(result.shard).toEqual(old.shard)
       expect([result.complete, result.pending]).toEqual([true, []])
       expect(result.heldBytes).toBeLessThan(64_000_000)
-    },
-    300_000,
-  )
-})
-
-describe('the Pine revision 4 pin (live)', (): void => {
-  const file = path.join(PINS, `${PINE_LIVE_PIN}.tar`)
-  test.skipIf(!existsSync(file))(
-    'is refused over the J408 phone line by both validators',
-    async (): Promise<void> => {
-      await prepareAssetDecoders()
-      const files = readTar(readFileSync(file))
-      expect((): unknown =>
-        validateShardfileFolder(
-          {
-            read: (name: string): Uint8Array =>
-              files.get(name) ?? new Uint8Array(),
-            paths: (): Iterable<string> => files.keys(),
-          },
-          { hash: sha256, readThrough: true },
-        ),
-      ).toThrow('over the 1.5 GB phone line')
-      await expect(
-        validateShardfileStream(
-          (): AsyncIterable<Uint8Array> =>
-            createReadStream(file, { highWaterMark: CHUNK }),
-          nodeStreamPorts({ brotli: false }),
-        ),
-      ).rejects.toThrow('over the 1.5 GB phone line')
     },
     300_000,
   )
