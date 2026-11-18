@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.37.1 (2026-11-18)
+
+- Nine's and Pine's memory ratchet rows match the engine's full check of their pinned products, so engine can pin this format.
+
 ## v0.37.0 (2026-11-18)
 
 - The memory ratchet steps down to epoch 8: Nine, Pine and Nalati must stay at or under their new, lower readings.
