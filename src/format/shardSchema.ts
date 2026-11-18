@@ -1,4 +1,4 @@
-import { creatureSizeRules } from './creature-sizes.ts';
+import { creatureSizeRules, spawnCapacity } from './creature-sizes.ts';
 import { readSpeciesPrograms } from './speciesPrograms.ts';
 import type { StrikeDebrisPolicy } from './strike-debris.ts';
 import { strikeDebrisCatalogueRules } from './strike-debris.ts';
@@ -367,7 +367,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   const crowdMembers = s.crowds.reduce((sum, row) => sum + row.count, 0);
   if (crowdMembers > 4096) errors.push('declared crowd member capacity');
   if (s.crowds.some(row => Math.abs(row.x) > CHUNK_HALF || Math.abs(row.z) > CHUNK_HALF)) errors.push('declared crowd home in cell');
-  if (s.creatures.spawns.length + crowdMembers > s.serverBudget.entities) errors.push('declared entity capacity');
+  if (spawnCapacity(s.creatures.spawns) + crowdMembers > s.serverBudget.entities) errors.push('declared entity capacity');
   errors.push(...creatureSizeRules(s.rows.species, s.creatures.spawns));
   for (const spawn of s.creatures.spawns) if (!species.get(spawn.species)?.variants.some((row) => row.id === spawn.variant) || (spawn.strike !== null && !strikes.has(spawn.strike))) errors.push('declared spawn species/variant/strike');
   errors.push(...encounterRules(s.encounters, s.creatures.spawns.map((spawn) => spawn.id), s.ui.filter((row) => row.kind === 'bossPanel')));

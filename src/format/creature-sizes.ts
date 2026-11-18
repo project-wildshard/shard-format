@@ -11,6 +11,10 @@ interface CreatureSizePolicy {
   readonly maxHeight?: number
 }
 const GIANT_HEIGHT = 15
+/** One row's full count may weigh at most one giant: 16 medium, 4 large. */
+const COUNT_WEIGHT_CAP = 16
+const ONE_CREATURE = 1
+const NO_CREATURES = 0
 const DEFAULT_SCALE = 1
 const BODY_HEIGHT_FACTOR = 2
 const MAX_VARIANT_SCALE = 1
@@ -46,6 +50,7 @@ interface SizedSpawn {
   readonly species: string
   readonly scale: number
   readonly rank?: CreatureRank
+  readonly count?: { readonly per: number; readonly max: number }
 }
 
 function creatureScale(
@@ -72,17 +77,30 @@ function creatureHeight(
   )
   return modelHeight * creatureScale(body, spawnScale)
 }
+function countRules(
+  row: SizedSpecies,
+  spawns: readonly SizedSpawn[],
+): string[] {
+  const weight = CREATURE_SIZES[row.body?.size ?? 'medium'].cellWeight
+  return spawns.flatMap((spawn): string[] =>
+    spawn.species === row.id &&
+    spawn.count !== undefined &&
+    spawn.count.max * weight > COUNT_WEIGHT_CAP
+      ? [`spawn ${spawn.id}: count ceiling outweighs its size class`]
+      : [],
+  )
+}
 function speciesSizeRules(
   row: SizedSpecies,
   spawns: readonly SizedSpawn[],
 ): string[] {
   const { body } = row
   if (body === undefined) {
-    return []
+    return countRules(row, spawns)
   }
   const cap = CREATURE_SIZES[body.size].maxHeight
   if (cap === undefined) {
-    return []
+    return countRules(row, spawns)
   }
   const oversized = row.variants.some(
     (variant): boolean =>
@@ -91,6 +109,7 @@ function speciesSizeRules(
   const errors = oversized ? [`species ${row.id}: giant exceeds ${cap} m`] : []
   return [
     ...errors,
+    ...countRules(row, spawns),
     ...spawns.flatMap((spawn): string[] =>
       spawn.species === row.id &&
       creatureHeight(
@@ -110,5 +129,19 @@ function creatureSizeRules(
   return species.flatMap((row): string[] => speciesSizeRules(row, spawns))
 }
 
-export { CREATURE_SIZES, creatureScale, creatureHeight, creatureSizeRules }
+/** The most creatures the rows can hold at once: a counted row at its ceiling. */
+function spawnCapacity(spawns: readonly Pick<SizedSpawn, 'count'>[]): number {
+  return spawns.reduce(
+    (sum, spawn): number => sum + (spawn.count?.max ?? ONE_CREATURE),
+    NO_CREATURES,
+  )
+}
+
+export {
+  CREATURE_SIZES,
+  creatureScale,
+  creatureHeight,
+  creatureSizeRules,
+  spawnCapacity,
+}
 export type { CreatureSizePolicy }
