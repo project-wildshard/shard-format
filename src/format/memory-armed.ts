@@ -31,15 +31,30 @@ function zoneArmed(slug?: string): boolean {
   return slug !== undefined && Object.hasOwn(ARMED_ZONES, slug)
 }
 
-/** The J410 line an armed zone's offline estimate refuses over, or undefined for a zone that only reports. */
+/** A rebuild of the same source moves the computed estimate by packing and compression drift only. */
+const ARMED_ALLOWANCE = 0.005
+
+/** What an armed zone's offline estimate refuses over: the J410 line, or, when the conservative estimate of a source
+ *  that EM11 measured under the line already reads over it (Nine's playing), that reading at arming plus the
+ *  allowance, so the gate locks in the measured state and refuses any growth. Undefined for a zone that only reports. */
 function armedLine(
   slug: string | undefined,
   kind: ArmedKind,
 ): number | undefined {
-  return zoneArmed(slug) ? ARMED_LINES[kind] : undefined
+  const zone =
+    slug === undefined || !zoneArmed(slug) ? undefined : ARMED_ZONES[slug]
+  if (zone === undefined) {
+    return undefined
+  }
+  const armedBytes = kind === 'playing' ? zone.playingBytes : zone.loadingBytes
+  return Math.max(
+    ARMED_LINES[kind],
+    armedBytes + Math.floor(armedBytes * ARMED_ALLOWANCE),
+  )
 }
 
 export {
+  ARMED_ALLOWANCE,
   ARMED_LINES,
   ARMED_ZONES,
   type ArmedKind,

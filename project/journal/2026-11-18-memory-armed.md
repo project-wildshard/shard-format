@@ -17,3 +17,10 @@ other zone reports, J412 baseline or not.
 
 Driftwood arms first, at its epoch-8 estimate of `e736730`: 820.9 / 1,157.5 MB (codex-nalati's locked pairs read
 990.5 / 1,344.7 MB on the EM11 upper). `memory-armed.test.ts` shows an over-the-line Driftwood refusing and Nine reporting.
+
+Later the same day: Nalati (`1d5014e8`, 945.7 / 1,328.9 MB), Pine (`400ed4b7`, 920.7 / 1,298.8 MB) and Nine (`8779b872`)
+armed as their measured boots passed. Nine's conservative estimate reads 1,023.5 MB playing, over the 1.0 GB line, while
+EM11 reads its upper at 0.938 GB; so an armed zone's estimate now refuses over the larger of the line and its armed
+reading plus 0.5% (`ARMED_ALLOWANCE`): Nine locks at its measured state and any growth refuses. The 22 light zones arm at
+their engine-pinned products' epoch-8 estimates (data shards, no runtime reading); every light pin validates armed. The
+four heavy pins are refused armed (stale epoch-1 readings; Pine's declared 1,627 MB) until engine re-pins them.

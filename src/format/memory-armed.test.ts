@@ -5,6 +5,7 @@ import { expect, test } from 'vitest'
 import { BUDGET_TIERS } from './budget-tiers.ts'
 import { MEMORY_GATES } from './contentBounds.ts'
 import {
+  ARMED_ALLOWANCE,
   ARMED_LINES,
   ARMED_ZONES,
   armedLine,
@@ -19,7 +20,7 @@ import { offlineMemoryAdmission } from './shardfile-assets.ts'
 import type { MemoryAdmissionRequest } from './memoryAdmission.ts'
 
 const ARMED = 'driftwood-isle'
-const UNARMED = 'nine-dragon-stack'
+const UNARMED = 'template'
 
 function request(owner: string, loadingBytes: number): MemoryAdmissionRequest {
   return {
@@ -40,18 +41,39 @@ function stale(slug: string): string | undefined {
   })[0]?.severity
 }
 
-test('J426: the list arms Driftwood at the J410 lines, each zone under them when armed', (): void => {
+test('J426: the list arms Driftwood at the J410 lines', (): void => {
   expect(ARMED_LINES).toEqual({ playing: 1e9, loading: 1.5e9 })
   expect(zoneArmed(ARMED)).toBe(true)
   expect(zoneArmed(UNARMED)).toBe(false)
-  expect(zoneArmed()).toBe(false)
-  expect(zoneArmed('toString')).toBe(false)
+  expect([zoneArmed(), zoneArmed('toString')]).toEqual([false, false])
+})
+
+test('J426: every armed zone is under the loading line, with its estimate inside its own lock', (): void => {
   for (const [slug, zone] of Object.entries(ARMED_ZONES)) {
-    expect(zone.playingBytes, slug).toBeLessThanOrEqual(ARMED_LINES.playing)
+    // A zone arms only under the lines, but its conservative estimate may read over one: the gate locks there.
+    expect(armedLine(slug, 'playing'), slug).toBeGreaterThanOrEqual(
+      zone.playingBytes,
+    )
+    expect(armedLine(slug, 'loading'), slug).toBeGreaterThanOrEqual(
+      zone.loadingBytes,
+    )
     expect(zone.loadingBytes, slug).toBeLessThanOrEqual(ARMED_LINES.loading)
     expect(zone.evidence.length, slug).toBeGreaterThan(0)
     expect(zone.armed, slug).toMatch(/^\d{4}-\d{2}-\d{2}$/u)
   }
+})
+
+test('J426: Nine, armed with its estimate over the playing line, locks at that reading plus the allowance', (): void => {
+  const nine = ARMED_ZONES['nine-dragon-stack']?.playingBytes ?? 0
+  const lock = nine + Math.floor(nine * ARMED_ALLOWANCE)
+  expect(nine).toBeGreaterThan(ARMED_LINES.playing)
+  expect(armedLine('nine-dragon-stack', 'playing')).toBe(lock)
+  expect(
+    hardLineIssue('playing', lock + 1, {
+      slug: 'nine-dragon-stack',
+      line: lock,
+    }).severity,
+  ).toBe('refusal')
 })
 
 test('J426: an armed Driftwood over its offline-estimate line refuses; at the line it passes', (): void => {

@@ -106,7 +106,7 @@ test.each(['warn', 'refuse'] as const)(
     ).toMatchObject({ severity: 'refusal', limit: MEMORY_HARD_BYTES })
     expect(over.pass).toBe(false)
     const unarmed = performanceReport(
-      heavy(corpus(), 1.7e9, 'nine-dragon-stack'),
+      heavy(corpus(), 1.7e9, 'template'),
       unmeasured,
       policy,
     )
@@ -162,7 +162,7 @@ test('MG4: the offline admission accepts over the 1.2 GB cap but refuses an arme
   const offline = offlineMemoryAdmission('warn')
   expect(offline.accept(request(1.3e9))).toBe(true)
   expect(offline.accept(request(1.6e9))).toBe(false)
-  expect(offline.accept(request(1.6e9, 'nine-dragon-stack'))).toBe(true)
+  expect(offline.accept(request(1.6e9, 'template'))).toBe(true)
   expect(
     new MemoryAdmission((): boolean => true, MEMORY_HARD_BYTES).accept(
       request(1.6e9),
