@@ -1,4 +1,7 @@
+import { creatureRank } from './creature-ranks.ts'
+
 import type { CreatureBody, CreatureSize } from './creature-layers.ts'
+import type { CreatureRank } from './creature-ranks.ts'
 
 interface CreatureSizePolicy {
   readonly scale: number
@@ -42,6 +45,7 @@ interface SizedSpawn {
   readonly id: string
   readonly species: string
   readonly scale: number
+  readonly rank?: CreatureRank
 }
 
 function creatureScale(
@@ -89,7 +93,11 @@ function speciesSizeRules(
     ...errors,
     ...spawns.flatMap((spawn): string[] =>
       spawn.species === row.id &&
-      creatureHeight(body, row.dims, spawn.scale) > cap
+      creatureHeight(
+        body,
+        row.dims,
+        spawn.scale * creatureRank(spawn.rank).size,
+      ) > cap
         ? [`spawn ${spawn.id}: giant exceeds ${cap} m`]
         : [],
     ),
