@@ -20,6 +20,7 @@ import type { ShardfileVersion } from './version.ts';
 import { isJsonData, isJsonDataWithFileSchemas } from './json.ts';
 import { clientOwnershipRules } from './clientOwnership.ts';
 import { PLATFORM_DATA_SECTIONS } from './platformDataSections.ts';
+import { sectionSchemaIssue } from './section-versions.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 
 const path = v.pipe(v.string(), v.maxLength(240), v.regex(/^(?:[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\/)*[a-zA-Z0-9_-][a-zA-Z0-9_.-]*$/u));
@@ -81,7 +82,8 @@ function parseOutputIndexRows(input: unknown): OutputIndex {
   for (const entry of index.sections) {
     if (names.has(entry.name) || entry.path !== `sections/${entry.name}.json`) throw new Error('Duplicate or mismatched section path');
     names.add(entry.name);
-    if ((!OUTPUT_SECTIONS.some(row => row.name === entry.name) && !isPlatformDataSection(entry.name)) || entry.schema !== `wildshard:${entry.name}@1`) throw new Error('Unknown platform section schema');
+    const issue = sectionSchemaIssue(entry.name, entry.schema);
+    if (issue !== undefined) throw new Error(`Unknown platform section schema: ${issue}`);
   }
   const refs = new Set<string>(), logical = new Set<string>();
   for (const entry of index.files) {

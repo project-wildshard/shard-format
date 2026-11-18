@@ -2682,7 +2682,7 @@
    "import(group-exports)": 12,
    "import(max-dependencies)": 1,
    "import(no-namespace)": 1,
-   "typescript(explicit-function-return-type)": 11,
+   "typescript(explicit-function-return-type)": 10,
    "typescript(no-confusing-void-expression)": 1,
    "typescript(no-unsafe-type-assertion)": 1,
    "typescript(prefer-readonly-parameter-types)": 6,
