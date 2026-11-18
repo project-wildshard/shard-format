@@ -20,6 +20,14 @@
       "playingBytes": 945736154,
       "loadingBytes": 1328901899,
       "evidence": "shard-nalati 1d5014e8 built with format 0.37 (epoch 8); mini-resweep EM11 upper on the J420 stand-in: playing 0.940 GB less the worker, loading 1.470 GB (meta MEMORY-GATES)"
+    },
+    "pine-hollow": {
+      "armed": "2026-11-18",
+      "by": "mini-pinemem5",
+      "epoch": 8,
+      "playingBytes": 920666659,
+      "loadingBytes": 1298769921,
+      "evidence": "shard-pine-hollow 400ed4b7 built with format 0.37 (epoch 8); mini-pinemem6 prepared online boot on engine f0a96518, 9 pairs: playing upper 0.969 GB, loading upper 1.407 GB (meta 118a2b13)"
     }
   }
 }
