@@ -9,6 +9,7 @@ it('keeps the declared wire ids and separate view command range', () => {
   expect(SCRIPT_V1_LISTS.path).toBe(5);
   expect(SCRIPT_V1_COMMANDS.encounter).toBe(15);
   expect(SCRIPT_V1_COMMANDS['view.channel']).toBe(100);
+  expect([SCRIPT_V1_COMMANDS.lockable, SCRIPT_V1_COMMANDS.heal, SCRIPT_V1_COMMANDS.pull, SCRIPT_V1_COMMANDS.root]).toEqual([23, 24, 25, 26]);
   for (const table of [SCRIPT_V1_COMMANDS, SCRIPT_V1_EVENTS, SCRIPT_V1_LISTS, SCRIPT_V1_READS]) {
     expect(new Set(Object.values(table)).size).toBe(Object.keys(table).length);
   }
