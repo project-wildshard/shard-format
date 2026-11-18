@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.35.0 (2026-11-18)
+
+- Memory gates are ratchets: Nine, Pine, Nalati and Driftwood build while no worse than their current reading.
+- Those four zones report the 1.5 GB phone line and the runtime tier instead of refusing.
+- Every other zone still refuses over the 1.5 GB line and its runtime tier.
+
 ## v0.34.0 (2026-11-18)
 
 - The memory estimate pairs to a steadier phone bound (memory epoch 7), so measuring a zone more no longer raises it.
