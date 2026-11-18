@@ -1,24 +1,24 @@
 {
-  "epoch": 7,
-  "engine": "50092092",
+  "epoch": 8,
+  "engine": "0af7ccd8",
   "measured": "2026-11-18",
   "source": "meta MEMORY-GATES MG6 / ENGINE-MEMORY EM11; engine test/pins/shardfiles.json; memory-calibration.em11.json",
   "zones": [
     {
       "slug": "brasscap-mesa",
-      "revision": 4,
-      "tar": "9c3773e19c4910d0cdab132ad878b8f6e32a0c74a20174b686693c70d64c9869",
+      "revision": 6,
+      "tar": "f42fe0449a9393c090d9c72ca3790dfed7befd88b92407e17ea49aa6076d204b",
       "em11": {
         "runs": 4,
-        "playingMB": 630,
-        "playingHighMB": 701,
-        "loadingMB": 882,
-        "loadingHighMB": 1024
+        "playingMB": 591,
+        "playingHighMB": 657,
+        "loadingMB": 822,
+        "loadingHighMB": 950
       },
-      "playing": 790831927,
-      "loading": 1082652796,
+      "playing": 679221837,
+      "loading": 984731013,
       "terms": {
-        "content": 60095993,
+        "content": 60098063,
         "textures": 14372512,
         "gl": 0,
         "geometry": 22786772,
@@ -32,13 +32,13 @@
       "tar": "c10405befd5abe86e35e5dade8dcada9ee8a8cddf40b0a328eaa10b0f765a7d6",
       "em11": {
         "runs": 6,
-        "playingMB": 1006,
-        "playingHighMB": 1243,
-        "loadingMB": 1242,
-        "loadingHighMB": 1452
+        "playingMB": 895,
+        "playingHighMB": 998,
+        "loadingMB": 1167,
+        "loadingHighMB": 1366
       },
-      "playing": 1243000830,
-      "loading": 1499957683,
+      "playing": 998007932,
+      "loading": 1366000675,
       "terms": {
         "content": 174139026,
         "textures": 0,
@@ -54,13 +54,13 @@
       "tar": "5bc5adcf764acfd601d41fcea8c405ddca8ca4e98986f4944edfddea59b1356b",
       "em11": {
         "runs": 4,
-        "playingMB": 775,
-        "playingHighMB": 933,
-        "loadingMB": 1055,
-        "loadingHighMB": 1220
+        "playingMB": 721,
+        "playingHighMB": 853,
+        "loadingMB": 1021,
+        "loadingHighMB": 1171
       },
-      "playing": 944187690,
-      "loading": 1460355946,
+      "playing": 999952196,
+      "loading": 1415754105,
       "terms": {
         "content": 172368293,
         "textures": 147633364,
@@ -76,13 +76,13 @@
       "tar": "5764c86a258ac664ced0ba46860089738cca44d2f27a3f84abdd9ad80f79b0c3",
       "em11": {
         "runs": 4,
-        "playingMB": 549,
-        "playingHighMB": 618,
-        "loadingMB": 750,
-        "loadingHighMB": 886
+        "playingMB": 510,
+        "playingHighMB": 564,
+        "loadingMB": 690,
+        "loadingHighMB": 804
       },
-      "playing": 761618847,
-      "loading": 1016761963,
+      "playing": 636979847,
+      "loading": 925290035,
       "terms": {
         "content": 22645293,
         "textures": 4000000,
@@ -98,13 +98,13 @@
       "tar": "77b77fcc2174d6485c11db79f0327a219d2a450cd5b7af3b7bb7649823912e69",
       "em11": {
         "runs": 6,
-        "playingMB": 1060,
-        "playingHighMB": 1207,
-        "loadingMB": 1448,
-        "loadingHighMB": 1678
+        "playingMB": 969,
+        "playingHighMB": 1090,
+        "loadingMB": 1289,
+        "loadingHighMB": 1457
       },
-      "playing": 1460823580,
-      "loading": 1727027755,
+      "playing": 1170729121,
+      "loading": 1582259503,
       "terms": {
         "content": 271640471,
         "textures": 0,
@@ -120,13 +120,13 @@
       "tar": "0dd1fb1079166db5ef18420f3a3d18f18c0d4b38dcf540b1438b50f10adda6f5",
       "em11": {
         "runs": 6,
-        "playingMB": 1036,
-        "playingHighMB": 1175,
-        "loadingMB": 1656,
-        "loadingHighMB": 1908
+        "playingMB": 946,
+        "playingHighMB": 1066,
+        "loadingMB": 1410,
+        "loadingHighMB": 1601
       },
-      "playing": 1517894482,
-      "loading": 1908000605,
+      "playing": 1222390732,
+      "loading": 1666992954,
       "terms": {
         "content": 376168111,
         "textures": 0,
@@ -142,13 +142,13 @@
       "tar": "c32cd9fb9229b56be36fbf1d9834b963f547b962cb2e53d37afb71cfe198704e",
       "em11": {
         "runs": 3,
-        "playingMB": 528,
-        "playingHighMB": 590,
-        "loadingMB": 754,
-        "loadingHighMB": 882
+        "playingMB": 501,
+        "playingHighMB": 549,
+        "loadingMB": 700,
+        "loadingHighMB": 804
       },
-      "playing": 773148097,
-      "loading": 1053388564,
+      "playing": 665173554,
+      "loading": 967392441,
       "terms": {
         "content": 43581944,
         "textures": 17267880,
@@ -164,13 +164,13 @@
       "tar": "3b322eccd99e209f98bbe59e16f79de77375b6075bc91f379d67cefff7bcf740",
       "em11": {
         "runs": 3,
-        "playingMB": 555,
-        "playingHighMB": 614,
-        "loadingMB": 785,
-        "loadingHighMB": 914
+        "playingMB": 527,
+        "playingHighMB": 584,
+        "loadingMB": 733,
+        "loadingHighMB": 871
       },
-      "playing": 783974544,
-      "loading": 1073039934,
+      "playing": 675751489,
+      "loading": 982935896,
       "terms": {
         "content": 60512841,
         "textures": 17070020,
@@ -186,13 +186,13 @@
       "tar": "87841749dc3f7310559514f44986b5e5aa9b59d44584123584da3143eca75037",
       "em11": {
         "runs": 3,
-        "playingMB": 557,
-        "playingHighMB": 620,
-        "loadingMB": 783,
-        "loadingHighMB": 916
+        "playingMB": 529,
+        "playingHighMB": 589,
+        "loadingMB": 739,
+        "loadingHighMB": 855
       },
-      "playing": 788196422,
-      "loading": 1085394265,
+      "playing": 681768940,
+      "loading": 992453778,
       "terms": {
         "content": 69441362,
         "textures": 18499616,
@@ -208,13 +208,13 @@
       "tar": "3b65bfef7275d5baf721b334c5ef68b3dc057f9fcd30699f89a314c46967b76d",
       "em11": {
         "runs": 3,
-        "playingMB": 566,
-        "playingHighMB": 634,
-        "loadingMB": 791,
-        "loadingHighMB": 940
+        "playingMB": 532,
+        "playingHighMB": 596,
+        "loadingMB": 725,
+        "loadingHighMB": 836
       },
-      "playing": 791177827,
-      "loading": 1089462663,
+      "playing": 686478807,
+      "loading": 997958716,
       "terms": {
         "content": 69454411,
         "textures": 19875780,
@@ -230,13 +230,13 @@
       "tar": "e1a3a9325e8e98543b19f7c7b1017a2a1761af3954b017ff732ccf20ac89b4c0",
       "em11": {
         "runs": 3,
-        "playingMB": 547,
-        "playingHighMB": 611,
-        "loadingMB": 767,
-        "loadingHighMB": 908
+        "playingMB": 513,
+        "playingHighMB": 566,
+        "loadingMB": 707,
+        "loadingHighMB": 820
       },
-      "playing": 785913439,
-      "loading": 1075672769,
+      "playing": 679682616,
+      "loading": 987005255,
       "terms": {
         "content": 57933980,
         "textures": 18656192,
@@ -252,13 +252,13 @@
       "tar": "5bbdd51b8db97dc1ec8244e79638e45143e5532ba57d3447cb90d77e48a3d5b1",
       "em11": {
         "runs": 3,
-        "playingMB": 534,
-        "playingHighMB": 597,
-        "loadingMB": 764,
-        "loadingHighMB": 893
+        "playingMB": 513,
+        "playingHighMB": 566,
+        "loadingMB": 715,
+        "loadingHighMB": 830
       },
-      "playing": 779233422,
-      "loading": 1065661763,
+      "playing": 671308241,
+      "loading": 976533532,
       "terms": {
         "content": 53527980,
         "textures": 17307180,
@@ -274,13 +274,13 @@
       "tar": "ec7b8879a343eadcb5ca51313097d2c91883b47dba63c753d8516a698c6c0985",
       "em11": {
         "runs": 3,
-        "playingMB": 547,
-        "playingHighMB": 612,
-        "loadingMB": 769,
-        "loadingHighMB": 920
+        "playingMB": 520,
+        "playingHighMB": 575,
+        "loadingMB": 718,
+        "loadingHighMB": 837
       },
-      "playing": 791996978,
-      "loading": 1092866456,
+      "playing": 694731191,
+      "loading": 1007041500,
       "terms": {
         "content": 60881204,
         "textures": 25793960,
@@ -296,13 +296,13 @@
       "tar": "62fdb3cc7e4153ffc738fff5196666d180504bc0d625fd46446a5f1c85d3292d",
       "em11": {
         "runs": 3,
-        "playingMB": 547,
-        "playingHighMB": 611,
-        "loadingMB": 767,
-        "loadingHighMB": 923
+        "playingMB": 521,
+        "playingHighMB": 573,
+        "loadingMB": 723,
+        "loadingHighMB": 842
       },
-      "playing": 787451884,
-      "loading": 1081873232,
+      "playing": 683128342,
+      "loading": 992540003,
       "terms": {
         "content": 61987364,
         "textures": 20174728,
@@ -318,13 +318,13 @@
       "tar": "1f9fb1cba098c85bfc5a7175258f3f273d336a67c36001edce295e02ef7c752f",
       "em11": {
         "runs": 3,
-        "playingMB": 563,
-        "playingHighMB": 638,
-        "loadingMB": 789,
-        "loadingHighMB": 943
+        "playingMB": 529,
+        "playingHighMB": 593,
+        "loadingMB": 734,
+        "loadingHighMB": 845
       },
-      "playing": 787808345,
-      "loading": 1083638149,
+      "playing": 679945285,
+      "loading": 989938627,
       "terms": {
         "content": 69326701,
         "textures": 17356640,
@@ -340,13 +340,13 @@
       "tar": "19840339238bab41994463ca485a47f5ffe766bc4cf6ec33c5499151eddf74fc",
       "em11": {
         "runs": 3,
-        "playingMB": 568,
-        "playingHighMB": 641,
-        "loadingMB": 790,
-        "loadingHighMB": 919
+        "playingMB": 534,
+        "playingHighMB": 600,
+        "loadingMB": 733,
+        "loadingHighMB": 845
       },
-      "playing": 797133248,
-      "loading": 1099791059,
+      "playing": 693006386,
+      "loading": 1006944516,
       "terms": {
         "content": 76775514,
         "textures": 20331320,
@@ -362,13 +362,13 @@
       "tar": "d8fe11c2db67b199111e25e5ecbb86e59e3063c46a913317ba9e71dc9cc98210",
       "em11": {
         "runs": 3,
-        "playingMB": 568,
-        "playingHighMB": 634,
-        "loadingMB": 802,
-        "loadingHighMB": 968
+        "playingMB": 544,
+        "playingHighMB": 605,
+        "loadingMB": 749,
+        "loadingHighMB": 877
       },
-      "playing": 806550858,
-      "loading": 1120501002,
+      "playing": 709180040,
+      "loading": 1028237840,
       "terms": {
         "content": 83533091,
         "textures": 25710336,
@@ -384,13 +384,13 @@
       "tar": "e517f4814ef624fa6122ac3611d39cf59a56c54e4ecb126d2de983064ae2caa8",
       "em11": {
         "runs": 3,
-        "playingMB": 530,
-        "playingHighMB": 601,
-        "loadingMB": 759,
-        "loadingHighMB": 894
+        "playingMB": 507,
+        "playingHighMB": 555,
+        "loadingMB": 702,
+        "loadingHighMB": 809
       },
-      "playing": 778193537,
-      "loading": 1062671192,
+      "playing": 670516626,
+      "loading": 974863462,
       "terms": {
         "content": 50220997,
         "textures": 17504848,
@@ -406,13 +406,13 @@
       "tar": "2e37a04b0c9e7f6c0463f12b5cfce96d7e7c2f83868bc6341948d779dcbe5207",
       "em11": {
         "runs": 3,
-        "playingMB": 515,
-        "playingHighMB": 589,
-        "loadingMB": 732,
-        "loadingHighMB": 894
+        "playingMB": 488,
+        "playingHighMB": 540,
+        "loadingMB": 678,
+        "loadingHighMB": 822
       },
-      "playing": 766111700,
-      "loading": 1039495375,
+      "playing": 657567209,
+      "loading": 956173411,
       "terms": {
         "content": 32409250,
         "textures": 16814100,
@@ -428,13 +428,13 @@
       "tar": "9aa4a98390153c9e63ec79d1a9ca7c3c221b03a5017664206a34001b242df112",
       "em11": {
         "runs": 3,
-        "playingMB": 543,
-        "playingHighMB": 611,
-        "loadingMB": 767,
-        "loadingHighMB": 903
+        "playingMB": 514,
+        "playingHighMB": 570,
+        "loadingMB": 719,
+        "loadingHighMB": 831
       },
-      "playing": 779951085,
-      "loading": 1067595048,
+      "playing": 671985118,
+      "loading": 977835231,
       "terms": {
         "content": 55672944,
         "textures": 17274708,
@@ -450,13 +450,13 @@
       "tar": "a5633d8eee7f7e453b459fa3d4c3db3d60bddd07ad39036ba437ccd44655058a",
       "em11": {
         "runs": 3,
-        "playingMB": 540,
-        "playingHighMB": 606,
-        "loadingMB": 765,
-        "loadingHighMB": 894
+        "playingMB": 517,
+        "playingHighMB": 566,
+        "loadingMB": 719,
+        "loadingHighMB": 842
       },
-      "playing": 779722899,
-      "loading": 1066949875,
+      "playing": 671490214,
+      "loading": 977159704,
       "terms": {
         "content": 55477815,
         "textures": 17062352,
@@ -472,13 +472,13 @@
       "tar": "25331b613be193d8a1e67e72da521a56e431c19fa0de2fa3431df42a13941802",
       "em11": {
         "runs": 3,
-        "playingMB": 543,
-        "playingHighMB": 608,
-        "loadingMB": 767,
-        "loadingHighMB": 927
+        "playingMB": 520,
+        "playingHighMB": 574,
+        "loadingMB": 712,
+        "loadingHighMB": 843
       },
-      "playing": 782979582,
-      "loading": 1070855958,
+      "playing": 674717033,
+      "loading": 981241332,
       "terms": {
         "content": 58372740,
         "textures": 17038576,
@@ -494,13 +494,13 @@
       "tar": "4546f70ddac2dd08771fb315cb8a9156a0e21503ea72c120af73e31f90e64ead",
       "em11": {
         "runs": 3,
-        "playingMB": 547,
-        "playingHighMB": 617,
-        "loadingMB": 733,
-        "loadingHighMB": 878
+        "playingMB": 523,
+        "playingHighMB": 570,
+        "loadingMB": 678,
+        "loadingHighMB": 793
       },
-      "playing": 766275638,
-      "loading": 1041662452,
+      "playing": 657896658,
+      "loading": 957357794,
       "terms": {
         "content": 35006505,
         "textures": 16945876,
@@ -516,13 +516,13 @@
       "tar": "e42e2f5f57937695bae0eb0e17fdfbd5f238897d05b167cd38aa2b7ecebb0481",
       "em11": {
         "runs": 4,
-        "playingMB": 527,
-        "playingHighMB": 601,
-        "loadingMB": 746,
-        "loadingHighMB": 895
+        "playingMB": 505,
+        "playingHighMB": 556,
+        "loadingMB": 694,
+        "loadingHighMB": 813
       },
-      "playing": 761597876,
-      "loading": 1016728410,
+      "playing": 636958876,
+      "loading": 925256481,
       "terms": {
         "content": 22603351,
         "textures": 4000000,
@@ -538,13 +538,13 @@
       "tar": "2afc6270c9534acc9d6578686bf87479c63872ac58799cef416d13b3b8b0281b",
       "em11": {
         "runs": 6,
-        "playingMB": 1038,
-        "playingHighMB": 1203,
-        "loadingMB": 1410,
-        "loadingHighMB": 1723
+        "playingMB": 972,
+        "playingHighMB": 1090,
+        "loadingMB": 1329,
+        "loadingHighMB": 1527
       },
-      "playing": 1579538587,
-      "loading": 1864333372,
+      "playing": 1261461455,
+      "loading": 1696691833,
       "terms": {
         "content": 321092760,
         "textures": 0,
@@ -560,13 +560,13 @@
       "tar": "f4a1d611ccccb29e8b277d43b2ccca5fa574913410426065e5ee0e312e508538",
       "em11": {
         "runs": 4,
-        "playingMB": 693,
-        "playingHighMB": 821,
-        "loadingMB": 1000,
-        "loadingHighMB": 1173
+        "playingMB": 652,
+        "playingHighMB": 772,
+        "loadingMB": 949,
+        "loadingHighMB": 1108
       },
-      "playing": 821003114,
-      "loading": 1173014578,
+      "playing": 772000529,
+      "loading": 1108011593,
       "terms": {
         "content": 66246475,
         "textures": 64220076,
@@ -582,13 +582,13 @@
       "tar": "6016f17082d028aa64bae79373759595dd7a82b1033c4393ccd2070a57a62f48",
       "em11": {
         "runs": 4,
-        "playingMB": 605,
-        "playingHighMB": 674,
-        "loadingMB": 850,
-        "loadingHighMB": 1027
+        "playingMB": 571,
+        "playingHighMB": 635,
+        "loadingMB": 795,
+        "loadingHighMB": 916
       },
-      "playing": 787398852,
-      "loading": 1074869407,
+      "playing": 677719837,
+      "loading": 982253398,
       "terms": {
         "content": 53898111,
         "textures": 15910816,
