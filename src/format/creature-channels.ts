@@ -23,11 +23,12 @@ import {
 
 import type { GenericSchema } from 'valibot'
 
+const ZERO = 0
 const ONE = 1
 const MAX_CHANNELS = 4
 const MAX_ID = 128
 const id = pipe(string(), regex(/^[a-z][a-zA-Z0-9.:-]*$/u), maxLength(MAX_ID))
-const unit = pipe(number(), finite(), minValue(0), maxValue(ONE))
+const unit = pipe(number(), finite(), minValue(ZERO), maxValue(ONE))
 const colour = tuple([unit, unit, unit])
 
 interface CreatureChannel {
@@ -80,8 +81,12 @@ const CreatureLookSwapSchema: GenericSchema<CreatureLookSwap> = strictObject({
 
 /** Every channel name a body's `bind` and `swap` read. */
 function boundChannels(body: {
-  readonly bind?: Readonly<CreatureChannelBind>
-  readonly swap?: Readonly<CreatureLookSwap>
+  readonly bind?: {
+    readonly tint?: { readonly channel: string }
+    readonly emissive?: { readonly channel: string }
+    readonly opacity?: string
+  }
+  readonly swap?: { readonly channel: string }
 }): readonly string[] {
   const { bind, swap } = body
   return [
@@ -95,8 +100,12 @@ function boundChannels(body: {
 /** A body binds only channels it declares. */
 function channelsDeclared(body: {
   readonly channels?: readonly { readonly name: string }[]
-  readonly bind?: Readonly<CreatureChannelBind>
-  readonly swap?: Readonly<CreatureLookSwap>
+  readonly bind?: {
+    readonly tint?: { readonly channel: string }
+    readonly emissive?: { readonly channel: string }
+    readonly opacity?: string
+  }
+  readonly swap?: { readonly channel: string }
 }): boolean {
   const names = new Set(
     (body.channels ?? []).map(
