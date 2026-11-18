@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.36.0 (2026-11-18)
+
+- The memory estimate is refitted to the current engine (memory epoch 8): Nine reads 1.45 GB loading, Pine 1.30 GB.
+- Every zone's estimate falls except Far Reach's playing, which stays under 1.0 GB.
+
 ## v0.35.0 (2026-11-18)
 
 - Memory gates are ratchets: Nine, Pine, Nalati and Driftwood build while no worse than their current reading.
