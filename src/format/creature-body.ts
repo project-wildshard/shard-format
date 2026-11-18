@@ -15,6 +15,11 @@ import {
 } from 'valibot'
 
 import {
+  CreatureAttachmentsSchema,
+  attachmentsResolve,
+  volumeChannelsDeclared,
+} from './creature-attachments.ts'
+import {
   CreatureChannelBindSchema,
   CreatureChannelsSchema,
   CreatureLookSwapSchema,
@@ -27,6 +32,7 @@ import {
   MAX_VOLUMES,
 } from './creature-volumes.ts'
 
+import type { CreatureAttachment } from './creature-attachments.ts'
 import type {
   CreatureChannel,
   CreatureChannelBind,
@@ -63,6 +69,8 @@ interface CreatureBody {
   bind?: CreatureChannelBind
   /** A second look drawn while a channel is high. */
   swap?: CreatureLookSwap
+  /** ONE-FORMAT CC30a: at most eight parts hung on sockets, shown by channel, hidden by a broken part. */
+  attachments?: CreatureAttachment[]
 }
 const trailCount = pipe(
   number(),
@@ -93,6 +101,7 @@ const bodyObject = strictObject({
   channels: exactOptional(CreatureChannelsSchema),
   bind: exactOptional(CreatureChannelBindSchema),
   swap: exactOptional(CreatureLookSwapSchema),
+  attachments: exactOptional(CreatureAttachmentsSchema),
 })
 const CreatureBodySchema: GenericSchema<CreatureBody> = pipe(
   bodyObject,
@@ -141,6 +150,14 @@ const CreatureBodySchema: GenericSchema<CreatureBody> = pipe(
   check<CreatureBody, 'A creature binds an undeclared channel'>(
     channelsDeclared,
     'A creature binds an undeclared channel',
+  ),
+  check<CreatureBody, 'A part breaks into an undeclared channel'>(
+    volumeChannelsDeclared,
+    'A part breaks into an undeclared channel',
+  ),
+  check<CreatureBody, 'A creature attachment does not resolve'>(
+    attachmentsResolve,
+    'A creature attachment does not resolve',
   ),
 )
 

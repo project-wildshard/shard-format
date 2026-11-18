@@ -92,3 +92,16 @@ to channels: `tint` and `emissive` move toward a colour as their channel goes
 0 to 1, and `opacity` is a channel's value. `swap` draws a second look while
 a channel is at or above `at` (0.5 when omitted); that look must exist. A
 bound or swapped channel must be declared.
+
+## Attachments (ONE-FORMAT CC30a)
+
+A body may hang up to eight `attachments` on its sockets: a skeleton
+contract's socket (`hand.R`, `chest`, a serpent's `core`), or any bone
+of a GLB's own rig. Each draws one to four parts, the boss socket rig's
+`{ id, geometry, material }` shape, where `geometry` is a library GLB's
+hash and `material` a `look.materials` id, at an optional `at` offset in
+the socket's frame. `when` shows it only while a channel is at its `at`
+(0.5 when omitted) or above. `part` names a body volume that has `hp`
+and a break `channel`: the break sets that channel to 1, so the part
+reaches every page broken and the attachment hides. `desktop` drops it
+on the phone tier. A volume's break channel must be declared.

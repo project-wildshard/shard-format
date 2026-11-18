@@ -24,6 +24,8 @@ interface CreatureVolume extends SkeletonVolume {
   at?: [number, number, number]
   /** Part hp (ONE-FORMAT CC31): the part breaks at 0, once; later hits pass to the next volume. */
   hp?: number
+  /** ONE-FORMAT CC30a: a body channel this part's break sets to 1, so every page sees it broken. */
+  channel?: string
 }
 const ZERO = 0
 const ONE = 1
@@ -41,6 +43,11 @@ const scalar = pipe(number(), finite())
 const extent = pipe(scalar, minValue(ZERO), maxValue(MAX_EXTENT))
 const offset = pipe(scalar, minValue(-MAX_EXTENT), maxValue(MAX_EXTENT))
 const partHp = pipe(scalar, minValue(Number.MIN_VALUE), maxValue(MAX_PART_HP))
+const channelName = pipe(
+  string(),
+  regex(/^[a-z][a-zA-Z0-9.:-]*$/u),
+  maxLength(MAX_NAME),
+)
 const volumeObject = strictObject({
   part: CreatureSocketNameSchema,
   bone: CreatureSocketNameSchema,
@@ -51,6 +58,7 @@ const volumeObject = strictObject({
   multiplier: pipe(scalar, minValue(ZERO), maxValue(MAX_MULTIPLIER)),
   at: exactOptional(tuple([offset, offset, offset])),
   hp: exactOptional(partHp),
+  channel: exactOptional(channelName),
 })
 const CreatureVolumeSchema: GenericSchema<CreatureVolume> = pipe(
   volumeObject,
