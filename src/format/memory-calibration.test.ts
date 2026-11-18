@@ -25,7 +25,9 @@ const PHONE_PLAYING_BYTES = 1e9
 /** Zones EM11 puts under a line that the estimate refuses. Epochs 6 and 7: none. Epoch 8 (engine `0af7ccd8`): EM11 reads
  *  Nalati's loading bound at 1,457 MB, under 1.5 GB; keeping that verdict forced a 4.6x geometry weight and raised Nine's
  *  loading estimate 260 MB, so the fit exempts it and Nalati stays under its J412 ratchet (1,582 MB, was 1,727). */
-const REFUSED_OVER_EM11: ReadonlySet<string> = new Set<string>(['nalati-grasslands'])
+const REFUSED_OVER_EM11: ReadonlySet<string> = new Set<string>([
+  'nalati-grasslands',
+])
 /** MG11's ten zones: Showcase ships Ink Cel and Pastel, and Open Plots its 17 plots. */
 const SHOWCASE = new Set(['ink-cel-valley', 'pastel-plain'])
 
