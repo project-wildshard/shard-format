@@ -97,9 +97,10 @@ export const TextureSamplersSchema: v.GenericSchema<TextureSamplersInput, Textur
   wrap: v.exactOptional(v.picklist(['repeat', 'clamp', 'mirror'])), anisotropy: v.exactOptional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(16))),
   filter: v.exactOptional(v.picklist(['linear', 'nearest'])), mips: v.exactOptional(v.picklist(['file', 'gpu'])),
 })), v.check((rows) => Object.keys(rows).length <= 256, 'bounded texture samplers'));
-/** Each sampler row names a texture of the look's material catalogue (a graph file's are its row's dependencies). */
-export function textureSamplerRules(look: Pick<Shardfile['look'], 'materials' | 'samplers'>, files: readonly { readonly hash: string; readonly dependencies: readonly string[] }[] = []): string[] {
-  const rows = new Map(files.map((file) => [file.hash, file])), refs = new Set(materialTextureRefs(look.materials));
+/** Each sampler row names a texture of the look's material catalogue (a graph file's are its row's dependencies) or of a skin. */
+export function textureSamplerRules(look: Pick<Shardfile['look'], 'materials' | 'samplers'>, files: readonly { readonly hash: string; readonly dependencies: readonly string[] }[] = [], skinTextures: readonly string[] = []): string[] {
+  // OF27b: a skin's material textures (`skinLookTextureRefs`) take a sampler too (the hull book's repeat, anisotropy 4)
+  const rows = new Map(files.map((file) => [file.hash, file])), refs = new Set([...materialTextureRefs(look.materials), ...skinTextures]);
   for (const material of Object.values(look.materials)) if (material.family === 'graph' && 'file' in material) for (const ref of rows.get(material.file)?.dependencies ?? []) refs.add(ref);
   return Object.keys(look.samplers ?? {}).flatMap((ref) => (refs.has(ref) ? [] : [`samplers ${ref}: not a texture of the look's material catalogue`]));
 }

@@ -5,3 +5,6 @@ look can carry. A skin file's dependencies are its GLB, then its PBR material's 
 once each: `skinFileDependencies`), so the library closure loads them. A variant or phone skin may wear its own coat:
 maps, sheen, rim and glow; everything else of the material stays shared. `pbr-fur.ts` adds the PBR family's `sheen`
 (amount, linear colour, roughness) and `rim` (linear). No skin in the corpus named a texture before.
+
+A texture sampler row may name a skin's texture too (`skinLookTextureRefs`, `skin-textures.ts`), so a hull's maps keep
+the hull book's repeat wrap and anisotropy 4.

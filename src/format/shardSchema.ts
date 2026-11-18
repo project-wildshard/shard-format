@@ -58,6 +58,7 @@ import { AccentSchema } from './accent.ts';
 import { MapSchema, PresentationSchema } from './presentation.ts';
 import { MigrationsSchema, migrationRules } from './migrations.ts';
 import { skinLookRules } from './skinAssets.ts';
+import { skinLookTextureRefs } from './skin-textures.ts';
 import { attachmentFileRules } from './creature-attachments.ts';
 import { MaterialsSchema, FamilyLooksSchema, MaterialCurvesSchema, TextureSamplersSchema, materialExists, materialTextureRefs, materialGraphRules, materialCurveRules, textureSamplerRules, graphBindingSources } from './materials.ts';
 import { PostStackSchema, postStackRules } from './postStack.ts';
@@ -266,7 +267,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   errors.push(...stateRules(s.state));
   if ((s.clientChannels?.length ?? 0) > 0 && !pageOwner && s.runtime?.binds?.includes('clientChannels') !== true) errors.push('native visual channels require their declared page or runtime owner');
   if (s.runtime?.binds?.includes('state') === true && (s.state.player.length > 0 || s.state.shared.some((field) => field.privacy !== 'host' && !(field.privacy === 'public' && field.type !== 'string' && (s.runtime?.spawns?.bosses.length ?? 0) > 0)))) errors.push('runtime-bound state supports host fields and retained-actor numeric fields');
-  errors.push(...materialGraphRules(s), ...materialCurveRules(s), ...textureSamplerRules(s.look, s.files), ...postStackRules(s), ...lookSkyRules(s.look.sky?.graph, graphBindingSources(s)));
+  errors.push(...materialGraphRules(s), ...materialCurveRules(s), ...textureSamplerRules(s.look, s.files, skinLookTextureRefs(s)), ...postStackRules(s), ...lookSkyRules(s.look.sky?.graph, graphBindingSources(s)));
   const materialRefs = materialTextureRefs(s.look.materials), libraryClosure = new Set<string>();
   const libraryPending = [...s.library];
   while (libraryPending.length > 0) {

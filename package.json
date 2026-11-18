@@ -349,6 +349,7 @@
     "./shardSections": "./src/format/shardSections.ts",
     "./sketch": "./src/format/sketch.ts",
     "./skinAssets": "./src/format/skinAssets.ts",
+    "./skinTextures": "./src/format/skin-textures.ts",
     "./skinData": "./src/format/skinData.ts",
     "./skinLayers": "./src/format/skinLayers.ts",
     "./skins": "./src/format/skins.ts",

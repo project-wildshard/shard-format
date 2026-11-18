@@ -9,10 +9,12 @@ import { expect, test } from 'vitest'
 
 import { fixture } from '../ci/skin-variants-fixture.ts'
 import { parseFamilyMaterial } from './materialFamilies.ts'
+import { textureSamplerRules } from './materials.ts'
 import {
   resolveSkinLookFiles,
   skinFileDependencies,
   skinLookRules,
+  skinLookTextureRefs,
   validateSkinAssets,
 } from './skinAssets.ts'
 
@@ -171,4 +173,18 @@ test('the PBR family takes a fur sheen and rim, bounded', (): void => {
       parseFamilyMaterial({ family: 'pbr', ...bad }),
     ).toThrow()
   }
+})
+
+test('a skin texture takes a sampler; a stray sampler still refuses', (): void => {
+  const sample = coated()
+  const skins = skinLookTextureRefs(sample.source)
+  expect(skins.toSorted()).toEqual(
+    [sha(COAT_A), sha(COAT_B), sha(NORMAL)].toSorted(),
+  )
+  const look = {
+    materials: {},
+    samplers: { [sha(COAT_B)]: { wrap: 'repeat' as const, anisotropy: 4 } },
+  }
+  expect(textureSamplerRules(look, sample.source.files, skins)).toEqual([])
+  expect(textureSamplerRules(look, sample.source.files)).toHaveLength(1)
 })
