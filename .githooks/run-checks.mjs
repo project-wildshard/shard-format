@@ -27,11 +27,12 @@ const LINTABLE = /\.(?:ts|tsx|js|mjs|cjs)$/;
 const FORMATTABLE = /\.(?:ts|tsx|js|mjs|cjs|json|jsonc)$/;
 
 // A push that only deletes plan/* branches (`git push --delete origin plan/<slug>`
-// after a landing, J240) sends no commit, so there is nothing to check. Any
-// other deleted ref, or any update pushed alongside, keeps the gate.
+// after a landing, J240) or a shipped release/vX.Y.Z branch (release.sh
+// --merge-back, after main has the merge) sends no commit, so there is nothing
+// to check. Any other deleted ref, or any update pushed alongside, keeps the gate.
 if (lane === 'push') {
   const lines = (process.env.WS_PUSH_REFS ?? '').split('\n').map((line) => line.trim().split(/\s+/u)).filter((row) => row[0] !== '');
-  if (lines.length > 0 && lines.every(([, local = '', remote = '']) => /^0+$/u.test(local) && /^refs\/heads\/plan\/[a-z0-9][a-z0-9._-]*$/u.test(remote))) {
+  if (lines.length > 0 && lines.every(([, local = '', remote = '']) => /^0+$/u.test(local) && /^refs\/heads\/(?:plan\/[a-z0-9][a-z0-9._-]*|release\/v\d+\.\d+\.\d+)$/u.test(remote))) {
     console.error(`  - delete-only push of ${lines.map(([, , remote]) => remote).join(', ')}: no commit leaves this machine; push lane skipped`);
     process.exit(0);
   }

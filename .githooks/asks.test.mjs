@@ -12,7 +12,7 @@ const none = () => false;
 
 describe('ask rules', () => {
   test('accepts every status in the vocabulary', () => {
-    for (const status of ['open (2026-11-04)', 'in flight (2026-11-04, shardfile-99)', 'needs pick (2026-11-04)',
+    for (const status of ['open (2026-11-04)', 'in flight (2026-11-04, shard-format-99)', 'needs pick (2026-11-04)',
       'done (2026-11-04): abc1234', 'dropped (2026-11-04): Jake: "nah"']) {
       assert.deepEqual(checkAsk('A1', ask('A1', status), none), [], status);
     }

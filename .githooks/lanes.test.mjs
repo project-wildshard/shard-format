@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ENV, ok, roots, sandbox } from './test-helpers.mjs';
@@ -18,6 +18,26 @@ describe('check lanes', () => {
   // A script that records the file arguments pnpm passed it.
   const record = (file) => `node -e "require('fs').writeFileSync('${file}', process.argv.slice(1).join(' '))" --`;
 
+  test('binary tools install frozen before the push checks and stale locks block them', () => {
+    const box = sandbox();
+    toolchain(box, pass);
+    box.write('package.json', JSON.stringify({ private: true, scripts: pass, binDependencies: { typescript: '7.0.2' } }));
+    const bin = join(box.root, 'fake-bin');
+    mkdirSync(bin);
+    const runner = join(bin, 'pnpm');
+    writeFileSync(runner, '#!/bin/sh\necho "$*" >> calls\nif [ "$1" = exec ]; then exit "${FROZEN_STATUS:-0}"; fi\n');
+    chmodSync(runner, 0o755);
+    const env = { ...ENV, PATH: `${bin}:${process.env.PATH}` };
+    const run = () => spawnSync(process.execPath, ['.githooks/run-checks.mjs', 'push'], { cwd: box.root, env, encoding: 'utf8' });
+    assert.equal(run().status, 0);
+    assert.deepEqual(readFileSync(join(box.root, 'calls'), 'utf8').trim().split('\n'), ['exec npr install --frozen', 'run --silent check']);
+    rmSync(join(box.root, 'calls'));
+    env.FROZEN_STATUS = '7';
+    const refused = run();
+    assert.equal(refused.status, 7, refused.stderr);
+    assert.match(refused.stderr, /frozen binary tool install failed/);
+    assert.equal(readFileSync(join(box.root, 'calls'), 'utf8').trim(), 'exec npr install --frozen');
+  });
   test('no package.json scripts: lanes stay dormant', () => {
     const result = sandbox().commit({ 'src/a.ts': 'export {};\n' }, MSG);
     assert.equal(result.status, 0, result.stderr);
