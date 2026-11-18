@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.31.0 (2026-11-18)
+
+- The memory estimate now follows the engine's measured phone model, so checks and uploads stop refusing zones a phone runs.
+- Pine Hollow's loading estimate falls from 2.27 to 2.07 GB and Nalati's from 2.26 to 1.80 GB.
+- Runtime readings taken under memory epoch 3 stay current: no runtime home needs to re-measure.
+
 ## v0.29.0 (2026-11-17)
 
 - Sections switch primitives on: `derivePrimitives` lists the primitives a built shard's sections turn on (weather and sky today).
