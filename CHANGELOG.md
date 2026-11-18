@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.28.0 (2026-11-17)
+
+- Give creature abilities a knockback distance or a ring or lane warning.
+- Describe a creature projectile with launch speed, gravity and collision radius.
+
 ## v0.27.0 (2026-11-17)
 
 - Name creature skin clips freely and map look states or abilities to those clips.
