@@ -16,7 +16,7 @@ import { assembleOutputShardfile, parseOutputIndex } from './outputIndex.ts'
 import { mountSharesBlob } from './shardfile-reads.ts'
 import { readTar } from './tar.ts'
 
-// EM11 (mini-estcal2, 2026-11-17 23:15-23:55 Cancun): engine `scripts/memory/measure.mjs` on engine main `6b432a2a` with
+// EM11 (mini-estcal2, 2026-11-17 23:33-23:45 Cancun): engine `scripts/memory/measure.mjs` on engine main `6b432a2a` with
 // all 27 catalogue pins, Mac mini, headless Playwright WebKit, phone tier Low, cold boots (3 runs; 2 for each Open Plots
 // plot), through `phone-model.json` (refit at 2048 MiB, `72e30a23`). Per zone: runs, then playing (settled) central and
 // upper bound, then loading peak central and upper bound, decimal MB. The central figure is the median run's; the upper

@@ -10,7 +10,7 @@ Pine at 2,276 MB while EM11 read it at 1.5-1.7 GB loading and 1.1-1.2 GB playing
 runs and no Pine cut could reach MG9's close.
 
 **The pairs.** Engine main `6b432a2a` with all 27 catalogue pins, `scripts/memory/measure.mjs` on the Mac mini, headless
-Playwright WebKit as a phone at Low, cold: 3 runs per zone, 2 per Open Plots plot (64 runs, 23:15-23:55 Cancún). Each run
+Playwright WebKit as a phone at Low, cold: 3 runs per zone, 2 per Open Plots plot (64 runs, 23:33-23:45 Cancún). Each run
 goes through EM11's chain; the estimate is held to the highest run's upper bound, settled (playing) and peak (loading).
 
 **The model.** Per phase, phone bytes = engine + weights x the product's terms:
