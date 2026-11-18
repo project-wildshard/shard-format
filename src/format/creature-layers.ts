@@ -20,9 +20,12 @@ import {
   union,
 } from 'valibot'
 
+import { CreatureSocketNameSchema } from './creature-volumes.ts'
+import { CreatureSkinClipNameSchema } from './skinData.ts'
 import { HuntTuningSchema } from './speciesPrograms.ts'
 
 import type { CreatureBody } from './creature-body.ts'
+import type { CreatureSkinClipName } from './skinData.ts'
 import type { SpeciesData } from './speciesPrograms.ts'
 import type { GenericSchema } from 'valibot'
 
@@ -79,7 +82,10 @@ interface CreatureAbility {
   speed?: number
   windup?: number
   duration?: number
+  from?: string
+  clip?: CreatureSkinClipName
 }
+type CreatureAbilityInput = Omit<CreatureAbility, 'clip'> & { clip?: string }
 interface CreaturePresentation {
   blood: boolean
   sounds: {
@@ -196,7 +202,10 @@ const CreatureSensesSchema: GenericSchema<CreatureSenses> = strictObject(
   },
   'Unknown creature sense',
 )
-const CreatureAbilitySchema: GenericSchema<CreatureAbility> = strictObject({
+const CreatureAbilitySchema: GenericSchema<
+  CreatureAbilityInput,
+  CreatureAbility
+> = strictObject({
   use: id,
   range: union([radius, orderedRadius]),
   cooldown: time,
@@ -206,6 +215,8 @@ const CreatureAbilitySchema: GenericSchema<CreatureAbility> = strictObject({
   speed: exactOptional(amount),
   windup: exactOptional(time),
   duration: exactOptional(time),
+  from: exactOptional(CreatureSocketNameSchema),
+  clip: exactOptional(CreatureSkinClipNameSchema),
 })
 const callVariants = pipe(array(sound), maxLength(MAX_CALLS))
 const CreaturePresentationSchema: GenericSchema<CreaturePresentation> =
@@ -227,6 +238,7 @@ export {
   CreaturePresentationSchema,
 }
 export type {
+  CreatureAbilityInput,
   CreatureType,
   CreatureSkeleton,
   CreatureSize,

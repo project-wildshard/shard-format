@@ -188,6 +188,29 @@ test('ability range is ordered', (): void => {
   )
 })
 
+test('an ability admits its named socket and authored clip while omitted fields stay absent', (): void => {
+  const original = rows(layered)
+  const changed = structuredClone(original)
+  const source = changed.species[0]?.abilities?.[0]
+  Object.assign(source ?? {}, { from: 'hand.R', clip: 'swing' })
+  expect(parseRows(changed).species[0]?.abilities?.[0]).toMatchObject({
+    from: 'hand.R',
+    clip: 'swing',
+  })
+  expect(parseRows(original)).toEqual(original)
+  expect(original.species[0]?.abilities?.[0]).not.toHaveProperty('from')
+  expect(original.species[0]?.abilities?.[0]).not.toHaveProperty('clip')
+})
+
+test.each([{ from: '../hand' }, { from: 42 }, { clip: 'Swing!!!' }])(
+  'an ability refuses malformed socket or clip fields %o',
+  (field: Readonly<Record<string, unknown>>): void => {
+    const changed = structuredClone(rows(layered))
+    Object.assign(changed.species[0]?.abilities?.[0] ?? {}, field)
+    expect((): ShardRows => parseRows(changed)).toThrow('Invalid')
+  },
+)
+
 test('ability health gate is a fraction', (): void => {
   const changed = structuredClone(rows(layered))
   Object.assign(changed.species[0]?.abilities?.[0] ?? {}, { hpBelow: 1.1 })
