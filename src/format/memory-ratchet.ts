@@ -4,8 +4,10 @@
  * OF10c1a runtime tier and the MG5 stale-reading check refuse a zone only when it is worse than its baseline here;
  * at or under the baseline they report. A zone with no row keeps every refusing gate.
  *
- * Each baseline is the zone's reading on 2026-11-18 under memory epoch 7 (MEMORY-GATES MG8, mini-mg8): the largest of
- * the engine-pinned product's estimates (admission and performance report) and the current source's, in decimal bytes. A cut ratchets the row down; a zone
+ * Each baseline is the zone's reading on 2026-11-18 under memory epoch 8 (MEMORY-GATES MG10, mini-pinemem5; epoch 7
+ * mini-mg8): the largest of the engine-pinned product's estimates (admission and performance report) and the current
+ * source's, in decimal bytes. Pine's playing and loading rows are its pinned product's declared admission (the epoch-8
+ * estimate reads 1,261 / 1,697 MB). A cut ratchets the row down; a zone
  * that passes a line loses that field, and the line refuses again. `staleRevision` is the pinned product's
  * `identity.revision`: it admits that revision's pre-epoch-3 runtime reading; any later revision must carry a current one.
  */
@@ -18,24 +20,22 @@ interface MemoryBaseline {
 
 const MEMORY_RATCHET: Readonly<Record<string, MemoryBaseline>> = Object.freeze({
   'driftwood-isle': {
-    loading: 1_616_043_903,
     runtime: 538_863_164,
     staleRevision: 2,
   },
   'nalati-grasslands': {
-    loading: 1_731_454_480,
+    loading: 1_582_259_503,
     runtime: 700_846_587,
     staleRevision: 1,
   },
   'nine-dragon-stack': {
-    playing: 1_530_989_917,
-    loading: 1_928_953_301,
+    loading: 1_666_992_954,
     runtime: 547_365_098,
     staleRevision: 1,
   },
   'pine-hollow': {
-    playing: 1_648_479_456,
-    loading: 1_982_254_656,
+    playing: 1_627_187_329,
+    loading: 1_707_187_329,
     runtime: 550_909_717,
     staleRevision: 1,
   },
