@@ -34,10 +34,14 @@ export function contentCost(input: ContentCostInput): { playing: number; loading
   const resident = input.l0 + input.l1 + input.far + input.libraries + input.sims + input.commons + (input.products ?? 0) + (input.near ?? 0) + bootResident(input.boot);
   const page = input.page ?? 0, accounted = resident + page;
   const base = (input.engineBase ?? C.engineBase) + page + Math.ceil(resident * C.residentFactor);
+  // MG6 epoch 4: a cold boot with its phone terms is EM11's phone chain, fitted to the measured product (boot-memory-cost.ts);
+  // the grid caps above stay with runtime admission, which passes no boot.
+  const phone = input.boot?.phonePlaying === undefined || input.boot.phoneFloor === undefined ? undefined
+    : { playing: input.boot.phonePlaying, loading: Math.max(input.boot.phonePlaying, input.boot.phoneFloor) };
+  if (phone !== undefined) { return { ...phone, accounted }; }
   const playing = base + input.overlap;
   // The boot phases and playing churn share the same allocation headroom.
-  // MG6 epoch 3: the boot peak is also bounded below by what the phone-tier probe measures; the larger reading wins.
-  const loading = input.boot === undefined ? playing + input.overlap : Math.max(base + bootOverlap(input.overlap, input.boot), input.boot.phoneFloor ?? NO_BYTES);
+  const loading = input.boot === undefined ? playing + input.overlap : base + bootOverlap(input.overlap, input.boot);
   return { playing, loading, accounted };
 }
 

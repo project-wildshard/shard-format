@@ -4,6 +4,7 @@ import { expect, test } from 'vitest'
 
 import {
   MEMORY_EPOCH,
+  OLDEST_CURRENT_EPOCH,
   staleRuntimeCost,
   staleRuntimeIssues,
 } from './memory-epoch.ts'
@@ -32,7 +33,12 @@ test('MG5: a reading names its epoch; a missing one is the legacy epoch 1', (): 
 })
 
 test('MG5: an older epoch is stale and names the re-measure; a current one is not', (): void => {
-  expect(MEMORY_EPOCH).toBe(3)
+  expect(MEMORY_EPOCH).toBe(4)
+  // MG6 epoch 4 converts readings differently but takes them as epoch 3 did: epoch-3 readings stay current.
+  expect(OLDEST_CURRENT_EPOCH).toBe(3)
+  expect(staleRuntimeCost({ epoch: 3 })).toBe('')
+  expect(staleRuntimeCost({ epoch: 4 })).toBe('')
+  expect(staleRuntimeCost({ epoch: 2 })).toContain('memory epoch 2, current 3')
   const legacy = parse(RuntimeCostSchema, nine)
   expect(staleRuntimeCost(legacy, 1)).toBe('')
   expect(staleRuntimeCost(legacy)).toBe(

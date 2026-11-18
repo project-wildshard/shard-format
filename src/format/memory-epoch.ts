@@ -2,7 +2,10 @@
  * `runtimeCost` reading must have been taken against. It rises when the model changes what it charges (MG6 adds shader
  * compile, load transients, far slabs and paint arrays); from then a reading from an older epoch is refused until the
  * shard re-measures. A reading with no `epoch` is epoch 1, the model before MG6. */
-const MEMORY_EPOCH = 3
+const MEMORY_EPOCH = 4
+/** MG6 epoch 4 (mini-estcal2) changed how the estimate converts a reading (EM11's chain), not how a reading is taken:
+ * epoch 3's paired Simulator WebContent + GL protocol stands, so a reading from epoch 3 on is current. */
+const OLDEST_CURRENT_EPOCH = 3
 const LEGACY_EPOCH = 1
 
 interface EpochRow {
@@ -17,10 +20,10 @@ interface StaleRuntimeIssue {
   readonly severity: 'refusal'
 }
 
-/** Why a runtime reading is stale against `current`, or empty when it is current. */
+/** Why a runtime reading is stale, older than `current` (the oldest current epoch), or empty when it is current. */
 function staleRuntimeCost(
   row: EpochRow,
-  current: number = MEMORY_EPOCH,
+  current: number = OLDEST_CURRENT_EPOCH,
 ): string {
   const epoch = row.epoch ?? LEGACY_EPOCH
   if (epoch >= current) {
@@ -33,7 +36,7 @@ function staleRuntimeCost(
  * `current`. Takes the shard's `runtime` (null for a data-only shard). */
 function staleRuntimeIssues(
   runtime: Readonly<{ cost?: EpochRow | undefined }> | null,
-  current: number = MEMORY_EPOCH,
+  current: number = OLDEST_CURRENT_EPOCH,
 ): StaleRuntimeIssue[] {
   const rows: EpochRow[] = []
   const cost = runtime === null ? undefined : runtime.cost
@@ -54,4 +57,9 @@ function staleRuntimeIssues(
     }))
 }
 
-export { MEMORY_EPOCH, staleRuntimeCost, staleRuntimeIssues }
+export {
+  MEMORY_EPOCH,
+  OLDEST_CURRENT_EPOCH,
+  staleRuntimeCost,
+  staleRuntimeIssues,
+}
