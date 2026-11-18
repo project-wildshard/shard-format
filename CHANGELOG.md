@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.27.0 (2026-11-17)
+
+- Name creature skin clips freely and map look states or abilities to those clips.
+- Author a named origin socket and clip on a creature ability.
+- Use the unified shard terminology throughout the format.
+
 ## v0.26.0 (2026-11-17)
 
 - Memory checks now use the phone-calibrated model; v0.25.0 was cut just before it landed.
