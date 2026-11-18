@@ -1,6 +1,7 @@
 // oxlint-disable typescript/prefer-readonly-parameter-types -- test fixtures edit their own copies
 // MEMORY-GATES MG4 (J408, Jake 2026-11-17): a worst playing estimate over 1.5 GB refuses in every offline gate,
-// whatever the policy or memoryGates.json's report-only switch. Under the line nothing changes.
+// whatever the policy or memoryGates.json's report-only switch. Under the line nothing changes. J424 / J426
+// (2026-11-18): it refuses only an armed zone (`memory-armed.json`); every other zone reports.
 import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
@@ -58,20 +59,29 @@ function corpus(): Shardfile {
   ).shard
 }
 
-/** The corpus shard with its sim's resident budget raised so the worst estimate lands at about `playing`. */
-function heavy(shard: Shardfile, playing: number): Shardfile {
+/** The corpus shard with its sim's resident budget raised so the worst estimate lands at about `playing`, named as the
+ *  armed Driftwood (J426) unless `slug` says otherwise. */
+function heavy(
+  shard: Shardfile,
+  playing: number,
+  slug = 'driftwood-isle',
+): Shardfile {
   const base = performanceReport(shard, unmeasured, 'warn').memory.worst.playing
   const sim = shard.budgets.sim.resident + Math.ceil((playing - base) / 1.11)
   return {
     ...shard,
+    identity: { ...shard.identity, slug },
     budgets: { ...shard.budgets, sim: { ...shard.budgets.sim, resident: sim } },
   }
 }
 
-const request = (playingBytes: number): MemoryAdmissionRequest => ({
+const request = (
+  playingBytes: number,
+  owner = 'driftwood-isle',
+): MemoryAdmissionRequest => ({
   stage: 'actual',
-  owner: 'nine',
-  id: 'nine:worst',
+  owner,
+  id: `${owner}:worst`,
   claimedBytes: 1,
   accountedBytes: 1,
   playingBytes,
@@ -85,7 +95,7 @@ test('MG4: the hard line is engine MEMORY_AMBER, 1.5 GB', (): void => {
 })
 
 test.each(['warn', 'refuse'] as const)(
-  'MG4: an over-line worst estimate refuses under %s, report-only or not',
+  'MG4: an armed zone over the line refuses under %s, report-only or not; an unarmed one reports',
   (policy): void => {
     const over = performanceReport(heavy(corpus(), 1.7e9), unmeasured, policy)
     expect(over.memory.worst.playing).toBeGreaterThan(MEMORY_HARD_BYTES)
@@ -95,6 +105,16 @@ test.each(['warn', 'refuse'] as const)(
       ),
     ).toMatchObject({ severity: 'refusal', limit: MEMORY_HARD_BYTES })
     expect(over.pass).toBe(false)
+    const unarmed = performanceReport(
+      heavy(corpus(), 1.7e9, 'nine-dragon-stack'),
+      unmeasured,
+      policy,
+    )
+    expect(
+      unarmed.issues.find(
+        (issue): boolean => issue.code === 'perf-playing-memory',
+      ),
+    ).toMatchObject({ severity: 'warning', limit: MEMORY_HARD_BYTES })
   },
 )
 
@@ -138,10 +158,11 @@ test.each(['warn', 'refuse'] as const)(
   },
 )
 
-test('MG4: the offline admission accepts over the 1.2 GB cap but refuses over the hard line, Developer or not', (): void => {
+test('MG4: the offline admission accepts over the 1.2 GB cap but refuses an armed zone over the hard line, Developer or not', (): void => {
   const offline = offlineMemoryAdmission('warn')
   expect(offline.accept(request(1.3e9))).toBe(true)
   expect(offline.accept(request(1.6e9))).toBe(false)
+  expect(offline.accept(request(1.6e9, 'nine-dragon-stack'))).toBe(true)
   expect(
     new MemoryAdmission((): boolean => true, MEMORY_HARD_BYTES).accept(
       request(1.6e9),

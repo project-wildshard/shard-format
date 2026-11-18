@@ -20,6 +20,7 @@
     "!src/format/*.test.ts",
     "!src/format/*.golden-specs.ts",
     "src/format/memoryGates.json",
+    "src/format/memory-armed.json",
     "src/format/seeded-rng.golden.json",
     "src/format/terrain-field.golden.json",
     "src/format/baked-terrain.golden.json",

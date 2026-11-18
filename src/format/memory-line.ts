@@ -2,6 +2,7 @@ import { parse } from 'valibot'
 
 import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
+import { armedLine } from './memory-armed.ts'
 import { ratchetNote, ratchetSeverity } from './memory-ratchet.ts'
 import { runtimeAccountedBytes, RuntimeCostSchema } from './runtimeCost.ts'
 
@@ -24,12 +25,12 @@ function overHardLine(bytes: number): string {
   return ` (over the ${(MEMORY_HARD_BYTES / GB).toFixed(DIGITS)} GB phone line, J408: a phone would close the page)`
 }
 
-/** J408 (MG4): the issue for a worst-playing or loading estimate over the hard line. J412: a refusal only over the
- * zone's ratchet baseline (`memory-ratchet.ts`); at or under it, a report. */
+/** J408 (MG4): the issue for a worst-playing or loading estimate over the hard line, or over `zone.line`. J424 /
+ * J426: a refusal only for an armed zone (`memory-armed.ts`); every other zone reports. */
 function hardLineIssue(
   kind: 'playing' | 'loading',
   bytes: number,
-  slug?: string,
+  zone?: string | Readonly<{ slug: string; line: number }>,
 ): {
   readonly code: 'perf-playing-memory' | 'perf-loading-memory'
   readonly metric: string
@@ -37,15 +38,18 @@ function hardLineIssue(
   readonly limit: number
   readonly severity: 'refusal' | 'warning'
 } {
-  const severity = ratchetSeverity(slug, kind, {
-    line: MEMORY_HARD_BYTES,
-    actual: bytes,
-  })
+  const { slug, line } =
+    typeof zone === 'object' ? zone : { slug: zone, line: MEMORY_HARD_BYTES }
+  const severity = ratchetSeverity(slug, kind, { line, actual: bytes })
+  const over =
+    line === MEMORY_HARD_BYTES
+      ? overHardLine(bytes)
+      : ` (over the ${(line / GB).toFixed(DIGITS)} GB ${kind} line, J410; ${slug ?? ''} is armed, J426)`
   return {
     code: `perf-${kind}-memory`,
-    metric: `worst ${kind} total bytes${overHardLine(bytes)}${severity === 'warning' ? ratchetNote(slug, kind) : ''}`,
+    metric: `worst ${kind} total bytes${over}${severity === 'warning' ? ratchetNote(slug, kind) : ''}`,
     actual: bytes,
-    limit: MEMORY_HARD_BYTES,
+    limit: line,
     severity,
   }
 }
@@ -108,10 +112,14 @@ function offlineMemoryIssues(
     commons: runtime + commons,
     boot: bootMemoryCosts(source, sections, { mountedImages, index }),
   })
+  // J426: an armed zone's calibrated estimate answers to the J410 lines; every other zone's reports over J408's.
+  const { slug } = source.identity
+  const line = (kind: 'playing' | 'loading'): number =>
+    armedLine(slug, kind) ?? MEMORY_HARD_BYTES
   return (['playing', 'loading'] as const)
-    .filter((kind): boolean => cost[kind] > MEMORY_HARD_BYTES)
+    .filter((kind): boolean => cost[kind] > line(kind))
     .map((kind): ReturnType<typeof hardLineIssue> =>
-      hardLineIssue(kind, cost[kind], source.identity.slug),
+      hardLineIssue(kind, cost[kind], { slug, line: line(kind) }),
     )
 }
 

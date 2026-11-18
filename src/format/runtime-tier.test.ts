@@ -15,8 +15,9 @@ const nine = {
   epoch: 3,
 }
 
-test('OF10c1a: a runtime over its named tier refuses with a named error', (): void => {
+test('OF10c1a: an armed runtime over its named tier refuses with a named error', (): void => {
   const issues = runtimeTierIssues({
+    identity: { slug: 'driftwood-isle' },
     runtime: { cost: nine },
     budgets: { tier: 'small' },
   })
@@ -29,6 +30,13 @@ test('OF10c1a: a runtime over its named tier refuses with a named error', (): vo
     }),
   ])
   expect(issues[0]?.metric).toContain('small tier')
+  // J424: a zone not armed (J426) reports the same reading.
+  expect(
+    runtimeTierIssues({
+      runtime: { cost: nine },
+      budgets: { tier: 'small' },
+    })[0]?.severity,
+  ).toBe('warning')
 })
 
 test('OF10c1a: a runtime inside its tier passes; no runtime or no cost has nothing to check', (): void => {

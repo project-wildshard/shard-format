@@ -1,0 +1,17 @@
+{
+  "$doc": "J426 (Jake, 2026-11-18): the one armed-zone list. A zone named here has done the work to get under the J410 lines, and from then on every memory gate refuses it back over them, with no override flag and no report-only fallback: the format's offline estimate over lines.playingBytes / lines.loadingBytes (check, validate, cook, upload), the declared worst-location total over the J408 1.5 GB line, the runtime tier and a stale runtime reading; engine's ledger, footprint and boot-line guards read the same list. A zone not named here reports only (J424). Each zone's playingBytes / loadingBytes are its offline estimate when it was armed (memory epoch in `epoch`), kept as the record, not as the limit. Decimal bytes. Format memory-armed.ts reads this; engine reads @wildshard/format/src/format/memory-armed.json.",
+  "lines": {
+    "playingBytes": 1000000000,
+    "loadingBytes": 1500000000
+  },
+  "zones": {
+    "driftwood-isle": {
+      "armed": "2026-11-18",
+      "by": "mini-pinemem5",
+      "epoch": 8,
+      "playingBytes": 820905616,
+      "loadingBytes": 1157545785,
+      "evidence": "shard-driftwood e736730 built with format 0.37 (epoch 8); codex-nalati locked pairs on the EM11 upper read 990.5 / 1,344.7 MB (meta MEMORY-GATES)"
+    }
+  }
+}

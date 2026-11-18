@@ -376,6 +376,6 @@ export function performanceReportLines(report: PerformanceReport): string[] {
 
 /** Offline soft-cap policy and the fixed J408 line for playing and loading. */
 export function offlineMemoryAdmission(policy: 'warn' | 'refuse'): MemoryAdmission {
-  // J412: the line holds each zone at its ratchet baseline when that is higher (`memory-ratchet.ts`).
+  // J424 / J426: the J408 line refuses only an armed zone (`memory-armed.ts`); every other zone reports.
   return new MemoryAdmission(() => policy === 'warn' || MEMORY_GATES.reportOnly, (owner, kind): number => ratchetLimit(owner, kind, MEMORY_HARD_BYTES));
 }

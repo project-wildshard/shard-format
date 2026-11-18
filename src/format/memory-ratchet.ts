@@ -1,3 +1,5 @@
+import { zoneArmed } from './memory-armed.ts'
+
 /**
  * J411 / J412 (Jake, 2026-11-18): memory gates are ratchets. "With these new gates we should definitely be landing
  * improvements even if they don't meet the new high standards." The J408 phone line (1.5 GB playing and loading), the
@@ -9,7 +11,8 @@
  * source's, in decimal bytes. Nine's and Pine's loading rows are engine's full-check performance report of the pinned
  * product (the offline estimate reads 1,667 and 1,697 MB); Pine's playing row is its declared admission. A cut ratchets
  * the row down; a zone
- * that passes a line loses that field, and the line refuses again. `staleRevision` is the pinned product's
+ * that passes a line loses that field. J424 / J426 (2026-11-18): the baselines only report now; a zone refuses only once
+ * it is armed (`memory-armed.ts`), and then over the line itself. `staleRevision` is the pinned product's
  * `identity.revision`: it admits that revision's pre-epoch-3 runtime reading; any later revision must carry a current one.
  */
 interface MemoryBaseline {
@@ -48,21 +51,17 @@ const RATCHET_ALLOWANCE = 0.005
 
 type RatchetMetric = 'playing' | 'loading' | 'runtime'
 
-/** The bytes over which `slug` refuses on `metric`: the line, or its baseline plus the allowance when that is higher. */
+/** The bytes over which `slug` refuses on `metric`. J426 (on J424): an armed zone (`memory-armed.json`) refuses over
+ * `line`; every other zone reports only, so its limit is unbounded. The baselines above are kept for the report. */
 function ratchetLimit(
   slug: string | undefined,
-  metric: RatchetMetric,
+  _metric: RatchetMetric,
   line: number,
 ): number {
-  const baseline =
-    slug === undefined ? undefined : MEMORY_RATCHET[slug]?.[metric]
-  if (baseline === undefined) {
-    return line
-  }
-  return Math.max(line, baseline + Math.floor(baseline * RATCHET_ALLOWANCE))
+  return zoneArmed(slug) ? line : Number.POSITIVE_INFINITY
 }
 
-/** 'refusal' over the ratchet, 'warning' over the line but within the zone's baseline. */
+/** 'refusal' for an armed zone over the line, 'warning' for every other reading over it. */
 function ratchetSeverity(
   slug: string | undefined,
   metric: RatchetMetric,
@@ -73,25 +72,25 @@ function ratchetSeverity(
     : 'warning'
 }
 
-/** The words a reported (not refused) issue carries. */
+/** The words a reported (not refused) issue carries: why it only reports, and the zone's J412 baseline if it has one. */
 function ratchetNote(slug: string | undefined, metric: RatchetMetric): string {
+  if (zoneArmed(slug)) {
+    return ''
+  }
   const baseline =
     slug === undefined ? undefined : MEMORY_RATCHET[slug]?.[metric]
+  const zone = slug ?? 'this shard'
   return baseline === undefined
-    ? ''
-    : ` (report-only, J412 ratchet: ${slug ?? ''} baseline ${String(baseline)})`
+    ? ` (report-only, J424: ${zone} is not armed)`
+    : ` (report-only, J424: ${zone} is not armed; J412 baseline ${String(baseline)})`
 }
 
-/** True when `revision` of `slug` is the pinned product whose stale reading the ratchet admits. */
+/** True when a stale runtime reading only reports: J424, every zone not armed (J426). */
 function staleReadingAdmitted(
   slug: string | undefined,
-  revision: number | undefined,
+  _revision: number | undefined,
 ): boolean {
-  return (
-    slug !== undefined &&
-    revision !== undefined &&
-    MEMORY_RATCHET[slug]?.staleRevision === revision
-  )
+  return !zoneArmed(slug)
 }
 
 export {

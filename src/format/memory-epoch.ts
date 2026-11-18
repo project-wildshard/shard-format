@@ -38,9 +38,9 @@ function staleRuntimeCost(
   return `native resident measurement is stale: memory epoch ${String(epoch)}, current ${String(current)} (J408): re-measure the runtime home`
 }
 
-/** A refusal, whatever the policy, for a runtime home's reading and for its images-first reading, each stale against
- * `current`. Takes the shard's `runtime` (null for a data-only shard). J412: a report instead for exactly the pinned
- * revision the ratchet names (`memory-ratchet.ts` `staleRevision`), given its `identity`. */
+/** A refusal, whatever the policy, for an armed runtime home's reading and for its images-first reading, each stale against
+ * `current`. Takes the shard's `runtime` (null for a data-only shard). J424 / J426: a refusal only for an armed zone
+ * (`memory-armed.ts`), given its `identity`; every other shard reports. */
 function staleRuntimeIssues(
   runtime: Readonly<{ cost?: EpochRow | undefined }> | null,
   current: number = OLDEST_CURRENT_EPOCH,
@@ -59,7 +59,7 @@ function staleRuntimeIssues(
     .filter((row: EpochRow): boolean => staleRuntimeCost(row, current) !== '')
     .map((row: EpochRow): StaleRuntimeIssue => ({
       code: 'perf-native-resident-unmeasured',
-      metric: `${staleRuntimeCost(row, current)}${admitted ? ' (report-only, J412 ratchet: the pinned revision)' : ''}`,
+      metric: `${staleRuntimeCost(row, current)}${admitted ? ' (report-only, J424: the zone is not armed)' : ''}`,
       actual: row.epoch ?? LEGACY_EPOCH,
       limit: current,
       severity: admitted ? 'warning' : 'refusal',

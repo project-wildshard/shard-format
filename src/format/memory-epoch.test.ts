@@ -51,12 +51,23 @@ test('MG5: an older epoch is stale and names the re-measure; a current one is no
   expect(staleRuntimeCost({ epoch: 3 }, 2)).toBe('')
 })
 
-test('MG5: the report refuses each stale reading, the images-first one included', (): void => {
-  expect(staleRuntimeIssues({}, 2)).toEqual([])
+test('MG5: the report refuses each stale reading of an armed zone, the images-first one included', (): void => {
+  const armed = { slug: 'driftwood-isle', revision: 9 }
+  expect(staleRuntimeIssues({}, 2, armed)).toEqual([])
   expect(
-    staleRuntimeIssues({ cost: { epoch: 2, imagesFirst: { epoch: 2 } } }, 2),
+    staleRuntimeIssues(
+      { cost: { epoch: 2, imagesFirst: { epoch: 2 } } },
+      2,
+      armed,
+    ),
   ).toEqual([])
-  expect(staleRuntimeIssues({ cost: { imagesFirst: {} } }, 2)).toMatchObject([
+  // J424: a zone not armed (J426) only reports its stale reading.
+  expect(
+    staleRuntimeIssues({ cost: { imagesFirst: {} } }, 2)[0]?.severity,
+  ).toBe('warning')
+  expect(
+    staleRuntimeIssues({ cost: { imagesFirst: {} } }, 2, armed),
+  ).toMatchObject([
     {
       code: 'perf-native-resident-unmeasured',
       actual: 1,
