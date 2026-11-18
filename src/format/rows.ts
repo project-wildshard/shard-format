@@ -20,6 +20,8 @@ const positive = v.pipe(finite, v.minValue(0.000001), v.maxValue(10000000));
 const nonnegative = v.pipe(finite, v.minValue(0), v.maxValue(10000000));
 const unit = v.pipe(finite, v.minValue(0), v.maxValue(1));
 const dimension = v.pipe(positive, v.maxValue(20));
+/** A flyer's bake has no legs (OF11a): legs are nonnegative, the body stays positive. */
+const legs = v.pipe(nonnegative, v.maxValue(20));
 const duration = v.pipe(positive, v.maxValue(86400));
 const ordered = v.pipe(v.tuple([positive, positive]), v.check(([a, b]) => a <= b, 'ordered range'));
 const shape = v.variant('kind', [
@@ -40,7 +42,7 @@ const day = v.strictObject({ id, units: v.literal('hour'), start: hour,
   sun: v.strictObject({ maxElevation: v.pipe(finite, v.minValue(0), v.maxValue(90)), azimuthOffset: v.pipe(finite, v.minValue(-180), v.maxValue(180)) }),
   fixed: v.strictObject({ midday: hour, golden: hour, sunset: hour, night: hour }), presets: v.strictObject({ dawn: hour, noon: hour, dusk: hour, night: hour }) });
 const mods = v.strictObject({ speed: positive, chargeDist: positive, damageTaken: positive, chargeDamage: nonnegative, relentless: v.boolean() });
-const dims = v.strictObject({ bodyY: dimension, bodyHalfLen: dimension, bodyRadius: dimension, headRadius: dimension, legLen: dimension,
+const dims = v.strictObject({ bodyY: dimension, bodyHalfLen: dimension, bodyRadius: dimension, headRadius: dimension, legLen: legs,
   feet: v.pipe(v.array(v.tuple([finite, finite])), v.maxLength(16)), halfWidth: dimension });
 const variant = v.strictObject({ id, label: text, rarity: v.picklist(['common', 'uncommon', 'rare', 'legendary']), weight: nonnegative, scale: ordered, hp: positive, mods });
 const flight = v.strictObject({ altitude: v.pipe(finite, v.minValue(-250), v.maxValue(250)),
