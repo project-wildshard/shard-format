@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.37.0 (2026-11-18)
+
+- The memory ratchet steps down to epoch 8: Nine, Pine and Nalati must stay at or under their new, lower readings.
+- Driftwood and Nine's playing reading now pass the 1.5 GB line, so that line refuses them again.
+
 ## v0.36.0 (2026-11-18)
 
 - The memory estimate is refitted to the current engine (memory epoch 8): Nine reads 1.45 GB loading, Pine 1.30 GB.
