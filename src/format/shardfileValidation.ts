@@ -22,6 +22,7 @@ import type { RecordingMeasure } from './audio-measure.ts';
 import { issueError, withIssueCode as coded } from './issue-codes.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
 import { memoryContext, offlineMemoryIssues } from './memory-line.ts';
+import { runtimeTierIssues } from './runtime-tier.ts';
 import type { MemoryContext } from './memory-line.ts';
 import { mountedImageBytes, NO_BYTES } from './boot-memory-cost.ts';
 
@@ -111,7 +112,7 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
 
 /** Refuse the declared targets a policy treats as refusals, before any byte is read or executed. */
 export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse', context: MemoryContext = new Map()): void {
-  const issues = [...staleRuntimeIssues(source.runtime), ...offlineMemoryIssues(source, context), ...performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal')];
+  const issues = [...staleRuntimeIssues(source.runtime), ...offlineMemoryIssues(source, context), ...runtimeTierIssues(source), ...performanceTargetIssues(source, policy).filter(issue => issue.severity === 'refusal')];
   if (issues.length === 0) return;
   throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
 }

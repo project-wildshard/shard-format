@@ -305,6 +305,7 @@
     "./rows": "./src/format/rows.ts",
     "./runtime": "./src/format/runtime.ts",
     "./runtimeBinds": "./src/format/runtimeBinds.ts",
+    "./runtime-tier": "./src/format/runtime-tier.ts",
     "./runtimeCost": "./src/format/runtimeCost.ts",
     "./runtimeSpawns": "./src/format/runtimeSpawns.ts",
     "./scalarChannel": "./src/format/scalarChannel.ts",
