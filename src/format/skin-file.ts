@@ -35,6 +35,9 @@ function skinLookParameters(
   return {
     skin: look.output.skin,
     attackSpan: clips.output.attackSpan,
+    ...(row.animation.clipMap === undefined
+      ? {}
+      : { clipMap: row.animation.clipMap }),
     ...(look.output.variants === undefined
       ? {}
       : { variants: look.output.variants }),

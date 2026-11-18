@@ -4082,8 +4082,6 @@
    "eslint(no-continue)": 1,
    "eslint(no-magic-numbers)": 19,
    "eslint(prefer-named-capture-group)": 2,
-   "import(exports-last)": 12,
-   "import(group-exports)": 13,
    "import(no-namespace)": 1,
    "typescript(explicit-function-return-type)": 7,
    "typescript(no-unsafe-type-assertion)": 2,

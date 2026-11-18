@@ -1,4 +1,6 @@
 import * as v from 'valibot';
+import { CreatureSkinClipNameSchema } from './skinData.ts';
+import type { CreatureSkinClipName } from './skinData.ts';
 
 /** The look recipe for an exported skin, and its animation recipe. */
 const SKIN_LOOK_RECIPE = 'platform.skin';
@@ -18,13 +20,30 @@ interface SkinVariantsFields { version: typeof VARIANTS_VERSION; skins: Record<s
 type SkinVariants = { [Key in keyof SkinVariantsFields]: SkinVariantsFields[Key] };
 const SkinVariantsSchema: v.GenericSchema<SkinVariants> = v.strictObject({ version: v.literal(VARIANTS_VERSION),
   skins: variantSkins });
+type SkinClipState = 'idle' | 'idle.graze' | 'walk' | 'attack' | 'hit' | 'die';
+interface SkinClipMap<Name extends string = CreatureSkinClipName> {
+  states?: Partial<Record<SkinClipState, Name>>;
+  abilities?: Record<string, Name>;
+}
+const MAX_ABILITY_ID = 128;
+const MAX_ABILITY_CLIPS = 32;
+const clipSlot = v.exactOptional(CreatureSkinClipNameSchema);
+const abilityName = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9.:-]*$/u), v.maxLength(MAX_ABILITY_ID));
+const stateClips = v.strictObject({
+  idle: clipSlot, 'idle.graze': clipSlot, walk: clipSlot, attack: clipSlot, hit: clipSlot, die: clipSlot,
+});
+const abilityClips = v.pipe(v.record(abilityName, CreatureSkinClipNameSchema), v.maxEntries(MAX_ABILITY_CLIPS));
+const SkinClipMapSchema: v.GenericSchema<SkinClipMap<string>, SkinClipMap> = v.strictObject({
+  states: v.exactOptional(stateClips),
+  abilities: v.exactOptional(abilityClips),
+});
 /** The animation recipe's parameters. */
 const SkinClipParametersSchema: v.GenericSchema<SkinClipParametersRowsInput, SkinClipParametersRows> = v.strictObject({ attackSpan: v.optional(v.pipe(v.number(), v.finite(), v.minValue(0.05), v.maxValue(10)), 1) });
 /** The content-addressed skin file: one export row and its binding (validated together by the SF9c parsers). */
 const ShardSkinFileSchema: v.GenericSchema<ShardSkinFileRowsInput, ShardSkinFileRows> = v.strictObject({ row: v.unknown(), binding: v.unknown() });
 
 /** A parsed skin look: the file it names and the attack span its clip was sampled with. */
-interface SkinLookParameters { skin: string; variants?: string; attackSpan: number }
+interface SkinLookParameters { skin: string; variants?: string; attackSpan: number; clipMap?: SkinClipMap }
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 type SkinLookParametersRowsInput = SkinLookParametersRows;
@@ -48,4 +67,4 @@ interface ShardSkinFileRowsFields {
 }
 type ShardSkinFileRows = { [Key in keyof ShardSkinFileRowsFields]: ShardSkinFileRowsFields[Key] };
 
-export { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE, SkinLookParametersSchema, type SkinVariants, SkinVariantsSchema, SkinClipParametersSchema, ShardSkinFileSchema, type SkinLookParameters, type SkinLookParametersRowsInput, type SkinLookParametersRows, type SkinClipParametersRowsInput, type SkinClipParametersRows, type ShardSkinFileRowsInput, type ShardSkinFileRows };
+export { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE, SkinLookParametersSchema, type SkinVariants, SkinVariantsSchema, SkinClipParametersSchema, SkinClipMapSchema, ShardSkinFileSchema, type SkinClipMap, type SkinClipState, type SkinLookParameters, type SkinLookParametersRowsInput, type SkinLookParametersRows, type SkinClipParametersRowsInput, type SkinClipParametersRows, type ShardSkinFileRowsInput, type ShardSkinFileRows };

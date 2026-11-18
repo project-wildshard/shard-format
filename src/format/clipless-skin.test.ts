@@ -15,8 +15,16 @@ import { expect, test } from 'vitest'
 import { fixture } from '../ci/skin-variants-fixture.ts'
 import { parseRows } from './rows.ts'
 import { parseGlb, prepareAssetDecoders } from './shardfile-assets.ts'
-import { parseSkinFile, validateSkinAssets } from './skinAssets.ts'
-import { parseSkinRows, parseSkinBindings } from './skinData.ts'
+import {
+  parseSkinFile,
+  skinLookParameters,
+  validateSkinAssets,
+} from './skinAssets.ts'
+import {
+  parseSkinRows,
+  parseSkinBindings,
+  SkinClipNameSchema,
+} from './skinData.ts'
 
 const hash = (bytes: Readonly<Uint8Array>): string =>
   createHash('sha256').update(bytes).digest('hex')
@@ -122,8 +130,66 @@ test('clipless bindings still refuse unknown loops and retain clip and joint cap
     parseSkinRows([{ ...row, rig: { ...row.rig, joints: [[]] } }]),
   ).toThrow('joints')
   expect((): unknown =>
-    parseSkinRows([{ ...row, rig: { ...row.rig, clips: ['foreign'] } }]),
+    parseSkinRows([{ ...row, rig: { ...row.rig, clips: ['../foreign'] } }]),
   ).toThrow('clips')
+})
+
+test('skin rows admit a named clip without widening the legacy animation families', (): void => {
+  const named = parseSkinRows([
+    { ...row, rig: { ...row.rig, clips: ['attack', 'swing'] } },
+  ])
+  expect(named[0]?.rig.clips).toEqual(['attack', 'swing'])
+  expect(
+    parseSkinBindings([{ ...binding, loops: ['swing'] }], named)[0]?.loops,
+  ).toEqual(['swing'])
+  expect((): unknown => parse(SkinClipNameSchema, 'swing')).toThrow()
+  const oversized = 'x'.repeat(65)
+  for (const wrong of ['Swing', 'hit..swing', oversized]) {
+    expect((): unknown =>
+      parseSkinRows([{ ...row, rig: { ...row.rig, clips: [wrong] } }]),
+    ).toThrow('clips')
+  }
+})
+
+function checkedAnimation(
+  animation: unknown,
+): ReturnType<typeof parseRows>['looks'] {
+  const { look, source } = fixture()
+  return parseRows({ ...source.rows, looks: [{ ...look, animation }] }).looks
+}
+
+test('a skin look maps states and an ability to named clips without changing an older look', (): void => {
+  const { look } = fixture()
+  const clipMap = {
+    states: { walk: 'sneak', attack: 'attack' },
+    abilities: { swing: 'swing' },
+  }
+  const [admitted] = checkedAnimation({ ...look.animation, clipMap })
+  expect(admitted && skinLookParameters(admitted).clipMap).toEqual(clipMap)
+  expect(skinLookParameters(look)).not.toHaveProperty('clipMap')
+})
+
+test('clip maps refuse malformed actions, excess entries and other recipes', (): void => {
+  const { look } = fixture()
+  for (const wrong of [
+    { states: { unchecked: 'walk' } },
+    { abilities: { swing: '../swing' } },
+    {
+      abilities: Object.fromEntries(
+        Array.from({ length: 33 }, (_entry, index): [string, string] => [
+          `swing${index}`,
+          'swing',
+        ]),
+      ),
+    },
+  ]) {
+    expect((): unknown =>
+      checkedAnimation({ ...look.animation, clipMap: wrong }),
+    ).toThrow('Invalid')
+  }
+  expect((): unknown =>
+    checkedAnimation({ ...look.animation, recipe: 'other.clip', clipMap: {} }),
+  ).toThrow('Clip maps require platform.clips')
 })
 
 test('the existing animated corpus still admits unchanged', (): void => {
