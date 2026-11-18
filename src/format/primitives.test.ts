@@ -10,6 +10,7 @@ import {
   PRIMITIVES,
   derivePrimitives,
   primitiveOfHost,
+  switchesOf,
 } from './primitives.ts'
 import {
   ACCEPTED_SECTION_VERSIONS,
@@ -101,8 +102,8 @@ test('OF17a: every switch names a registered section, and families and hosts are
   const families = PRIMITIVES.map((row): string => row.name)
   expect(new Set(families).size).toBe(families.length)
   for (const row of PRIMITIVES) {
-    if (typeof row.on === 'object') {
-      expect(ACCEPTED_SECTION_VERSIONS[row.on.section]).toBeDefined()
+    for (const rule of switchesOf(row.on)) {
+      expect(ACCEPTED_SECTION_VERSIONS[rule.section]).toBeDefined()
     }
   }
   const hosts = PRIMITIVES.flatMap((row): readonly string[] => row.hosts)
@@ -137,4 +138,91 @@ test('OF17a: every native-assembly server host belongs to one family or is out o
   expect(orphans).toEqual([])
   expect(primitiveOfHost('weather.native')).toBe('weather')
   expect(primitiveOfHost('quest.chapter')).toBeUndefined()
+})
+
+/** Families an otherwise empty product derives from one section, beyond the always-on ones. */
+function from(section: string, value: unknown): string[] {
+  const always = names(new Map())
+  return names(new Map([[section, value]])).filter(
+    (name): boolean => !always.includes(name),
+  )
+}
+const spawn = { id: 'wolf:1', species: 'wolf', variant: 'grey' }
+const sword = { id: 'sword', kind: 'weapon' }
+
+test('OF17d: families a shard already declares switch on from their sections', (): void => {
+  expect(from('actors/creatures', { creatures: { spawns: [spawn] } })).toEqual([
+    'population',
+  ])
+  expect(
+    from('actors/creatures', {
+      creatures: { spawns: [spawn, { ...spawn, id: 'wolf:2', rank: 'elite' }] },
+    }),
+  ).toEqual(['population', 'elites'])
+  expect(
+    from('combat/encounters', { encounters: [{ id: 'warden', kind: 'boss' }] }),
+  ).toEqual(['boss'])
+  expect(
+    from('combat/encounters', { encounters: [{ id: 'alpha', kind: 'elite' }] }),
+  ).toEqual(['elites'])
+  expect(
+    from('actors/spawns', {
+      runtime: { spawns: { bosses: [{ id: 'wyrm' }] } },
+    }),
+  ).toEqual(['boss'])
+  expect(from('combat/items', { items: { rows: [sword] } })).toEqual([
+    'held.melee',
+  ])
+  expect(
+    from('combat/items', { items: { rows: [{ ...sword, ranged: {} }] } }),
+  ).toEqual(['held.ranged'])
+  expect(
+    from('world/water', { water: [{ id: 'sea', kind: 'sea', level: 0 }] }),
+  ).toEqual(['water.sea'])
+  expect(from('state/modes', { modes: { grapple: [{ id: 'hook' }] } })).toEqual(
+    ['grapple'],
+  )
+  expect(
+    from('world/edge', { entryways: [{ edge: 'north', kind: 'portalLink' }] }),
+  ).toEqual(['portal'])
+})
+
+test('OF17d: the same sections without the declaring rows switch nothing on', (): void => {
+  expect(from('actors/creatures', { creatures: { spawns: [] } })).toEqual([])
+  expect(
+    from('combat/encounters', { encounters: [{ id: 'x', kind: 'mini' }] }),
+  ).toEqual([])
+  expect(
+    from('actors/spawns', { runtime: { spawns: { bosses: [] } } }),
+  ).toEqual([])
+  expect(
+    from('combat/items', { items: { rows: [{ id: 'lamp', kind: 'tool' }] } }),
+  ).toEqual([])
+  expect(
+    from('world/water', { water: [{ id: 'pond', kind: 'pool', level: 0 }] }),
+  ).toEqual([])
+  expect(from('state/modes', { modes: { traverse: [] } })).toEqual([])
+  expect(
+    from('world/edge', { entryways: [{ edge: 'north', kind: 'ground' }] }),
+  ).toEqual([])
+})
+
+test('OF17d: the first matching switch names the section and version', (): void => {
+  const sections = new Map<string, unknown>([
+    ['combat/encounters', { encounters: [{ id: 'warden', kind: 'boss' }] }],
+    ['actors/spawns', { runtime: { spawns: { bosses: [{ id: 'wyrm' }] } } }],
+  ])
+  expect(
+    derivePrimitives(sections).find((row): boolean => row.name === 'boss'),
+  ).toEqual({ name: 'boss', section: 'combat/encounters', version: 1 })
+  sections.delete('combat/encounters')
+  expect(
+    derivePrimitives(sections).find((row): boolean => row.name === 'boss'),
+  ).toEqual({ name: 'boss', section: 'actors/spawns', version: 1 })
+})
+
+test('OF17d: the handwritten corpus derives its declared families', (): void => {
+  expect(names(corpusSections())).toEqual(
+    expect.arrayContaining(['collision', 'plumbing']),
+  )
 })

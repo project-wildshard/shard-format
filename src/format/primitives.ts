@@ -1,187 +1,27 @@
+import { PRIMITIVES } from './primitive-table.ts'
 import { ACCEPTED_SECTION_VERSIONS, FIRST_VERSION } from './section-versions.ts'
+
+import type { Primitive, PrimitiveSwitch } from './primitive-table.ts'
 
 /**
  * ONE-FORMAT OF17a (J365 (6), J367 (5), Q-T22 option (b), Q-T27 (a)): no host list ships. A section switches a primitive
  * on, and the server works out the list from the product's sections. The families and their hosts are the verdict
- * table, meta `docs/plans/one-format/HOSTS.md` (OF16a), pending Jake's corrections (OF16b).
+ * table, meta `docs/plans/one-format/HOSTS.md` (OF16a), approved by Jake (OF16b, J420).
  *
- * `on` says what turns a family on: `always` (every product has it), a section path whose value is a non-empty array or
- * object, or `later` while its row (`row`) has not given it a section yet. A family's version is its section's `@N`
- * (`ACCEPTED_SECTION_VERSIONS`): changes are additive, and a removal follows SHARD-COMPAT's rollout.
+ * `on` says what turns a family on: `always` (every product has it), one or more section paths whose value is a non-empty
+ * array or object (the first that matches names the section), or `later` while its row (`row`) has not given it a section
+ * yet. OF17d: a family a shard already declares in an existing section switches on from it. A family's version is its
+ * section's `@N` (`ACCEPTED_SECTION_VERSIONS`): changes are additive, and a removal follows SHARD-COMPAT's rollout.
  */
 /** An empty array or object switches nothing on. */
 const NONE = 0
 
-interface PrimitiveSwitch {
-  readonly section: string
-  readonly path: readonly string[]
-  /** When set, the family is on only if some row of the list at `path` has this key. */
-  readonly having?: string
-}
-interface Primitive {
-  readonly name: string
-  /** The ONE-FORMAT row that builds it. */
-  readonly row: string
-  /** The server hosts and page features it replaces (HOSTS.md). A host split across two families sits in the first. */
-  readonly hosts: readonly string[]
-  readonly on: PrimitiveSwitch | 'always' | 'later'
-}
 /** One family the server switched on, at the version of the section that switched it; no `section` for `always`. */
 interface DerivedPrimitive {
   readonly name: string
   readonly section?: string
   readonly version: number
 }
-
-const TABLE: readonly Primitive[] = [
-  {
-    name: 'collision',
-    row: 'OF41',
-    on: 'always',
-    hosts: ['collision', 'collision.pieces'],
-  },
-  {
-    name: 'plumbing',
-    row: 'OF18',
-    on: 'always',
-    hosts: [
-      'commands',
-      'decisions',
-      'engine.creatures.update',
-      'strings.register',
-      'content.catalogue',
-      'debug.expose',
-      'audio.cues',
-      'audio.scene',
-      'player.enter',
-      'bag.finds',
-      'state.adventure',
-    ],
-  },
-  {
-    name: 'population',
-    row: 'OF29',
-    on: 'later',
-    hosts: [
-      'population.roster',
-      'population.spawn-script',
-      'population.shelter',
-      'population.environment',
-      'population.mixed',
-      'population.poses',
-      'population.reactions',
-      'population.settle',
-      'population.homes',
-      'population.wildlife',
-    ],
-  },
-  {
-    name: 'elites',
-    row: 'OF33',
-    on: 'later',
-    hosts: [
-      'population.elites',
-      'population.elites-ready',
-      'riding.elites',
-      'riding.elites-ready',
-      'elite.entry',
-      'elite.construct',
-    ],
-  },
-  {
-    name: 'boss',
-    row: 'OF34',
-    on: 'later',
-    hosts: ['boss.ground', 'boss.spawned', 'boss.held'],
-  },
-  {
-    name: 'boss.arena',
-    row: 'OF34',
-    on: 'later',
-    hosts: ['boss.arena', 'boss.open-arena'],
-  },
-  {
-    name: 'riding',
-    row: 'CC40',
-    on: {
-      section: 'actors/species',
-      path: ['rows', 'species'],
-      having: 'mount',
-    },
-    hosts: [
-      'riding.mounted',
-      'riding.roster',
-      'riding.groups',
-      'riding.hunt',
-      'riding.trample',
-      'riding.environment',
-      'riding.taming',
-      'riding.session',
-      'taming.entry',
-    ],
-  },
-  {
-    name: 'patrol',
-    row: 'OF37',
-    on: 'later',
-    hosts: ['encounter.patrol', 'timed.encounters'],
-  },
-  {
-    name: 'held.melee',
-    row: 'OF38',
-    on: 'later',
-    hosts: [
-      'item.swept',
-      'held.melee',
-      'held.arms',
-      'held.claims',
-      'held.cosmetics',
-    ],
-  },
-  {
-    name: 'held.ranged',
-    row: 'OF38',
-    on: 'later',
-    hosts: [
-      'item.ranged',
-      'combat.motion',
-      'ammunition',
-      'loadout',
-      'held.ranged-feel',
-      'held.ranged-page',
-      'combat.targets',
-    ],
-  },
-  {
-    name: 'sky',
-    row: 'OF41',
-    on: { section: 'world/days', path: ['rows', 'days'] },
-    hosts: ['day.toon', 'day.keyed-sky', 'day.declared'],
-  },
-  {
-    name: 'weather',
-    row: 'OF41',
-    on: { section: 'world/weather', path: ['rows', 'weather'] },
-    hosts: [
-      'weather.program',
-      'weather.native',
-      'weather.forest',
-      'weather.fields',
-    ],
-  },
-  {
-    name: 'water.sea',
-    row: 'OF40',
-    on: 'later',
-    hosts: ['water.sea', 'world.water'],
-  },
-  { name: 'water.field', row: 'OF40', on: 'later', hosts: ['water.field'] },
-  { name: 'grapple', row: 'OF41', on: 'later', hosts: ['grapple'] },
-  { name: 'portal', row: 'OF41', on: 'later', hosts: ['portal.ride'] },
-]
-const PRIMITIVES: readonly Primitive[] = Object.freeze(
-  TABLE.map((row): Primitive => Object.freeze(row)),
-)
 
 /** Hosts HOSTS.md leaves out of the primitives: quest (Q-S5), opened as it is; Nalati's stealth entry (Q-S4). */
 const OUT_OF_SCOPE_HOSTS: readonly string[] = Object.freeze([
@@ -224,17 +64,40 @@ function filled(value: unknown): boolean {
     Object.keys(value).length > NONE
   )
 }
-function switchedOn(value: unknown, having: string | undefined): boolean {
+function rowCounts(row: unknown, rule: PrimitiveSwitch): boolean {
+  if (typeof row !== 'object' || row === null) {
+    return false
+  }
+  const { having, equals, lacking } = rule
+  if (lacking !== undefined && Object.hasOwn(row, lacking)) {
+    return false
+  }
   if (having === undefined) {
+    return true
+  }
+  if (!Object.hasOwn(row, having)) {
+    return false
+  }
+  return (
+    equals === undefined ||
+    Object.getOwnPropertyDescriptor(row, having)?.value === equals
+  )
+}
+function switchedOn(value: unknown, rule: PrimitiveSwitch): boolean {
+  if (rule.having === undefined && rule.lacking === undefined) {
     return filled(value)
   }
   return (
     Array.isArray(value) &&
-    value.some(
-      (row: unknown): boolean =>
-        typeof row === 'object' && row !== null && Object.hasOwn(row, having),
-    )
+    value.some((row: unknown): boolean => rowCounts(row, rule))
   )
+}
+/** A family's switches, as a list. */
+function switchesOf(on: Primitive['on']): readonly PrimitiveSwitch[] {
+  if (on === 'always' || on === 'later') {
+    return []
+  }
+  return 'section' in on ? [on] : on
 }
 function newest(section: string): number {
   return Math.max(...(ACCEPTED_SECTION_VERSIONS[section] ?? [FIRST_VERSION]))
@@ -253,13 +116,13 @@ function derivePrimitives(
     if (row.on === 'always') {
       return [{ name: row.name, version: FIRST_VERSION }]
     }
-    if (
-      row.on === 'later' ||
-      !switchedOn(at(sections.get(row.on.section), row.on.path), row.on.having)
-    ) {
+    const hit = switchesOf(row.on).find((rule: PrimitiveSwitch): boolean =>
+      switchedOn(at(sections.get(rule.section), rule.path), rule),
+    )
+    if (hit === undefined) {
       return []
     }
-    const { section } = row.on
+    const { section } = hit
     return [
       {
         name: row.name,
@@ -270,5 +133,7 @@ function derivePrimitives(
   })
 }
 
-export type { DerivedPrimitive, Primitive, PrimitiveSwitch }
-export { OUT_OF_SCOPE_HOSTS, PRIMITIVES, derivePrimitives, primitiveOfHost }
+export type { DerivedPrimitive }
+export type { Primitive, PrimitiveSwitch } from './primitive-table.ts'
+export { PRIMITIVES } from './primitive-table.ts'
+export { OUT_OF_SCOPE_HOSTS, derivePrimitives, primitiveOfHost, switchesOf }
