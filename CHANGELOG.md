@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.40.0 (2026-11-18)
+
+- Creatures can carry socket attachments on their body, and actors can declare channels with their own looks.
+- Creatures can give a body part its own hit points on a volume, and serpents have their own body contract.
+- Scripts can lock, heal, pull and root, add brain hooks and hit tags, and pick abilities.
+- Encounters can bring in adds when a fight changes phase.
+
 ## v0.39.0 (2026-11-18)
 
 - Use the shard's named budget tier to cap authored material graphs and post passes. Explicit graph budgets can narrow the cap.
