@@ -12,6 +12,14 @@
       "playingBytes": 820905616,
       "loadingBytes": 1157545785,
       "evidence": "shard-driftwood e736730 built with format 0.37 (epoch 8); codex-nalati locked pairs on the EM11 upper read 990.5 / 1,344.7 MB (meta MEMORY-GATES)"
+    },
+    "nalati-grasslands": {
+      "armed": "2026-11-18",
+      "by": "mini-pinemem5",
+      "epoch": 8,
+      "playingBytes": 945736154,
+      "loadingBytes": 1328901899,
+      "evidence": "shard-nalati 1d5014e8 built with format 0.37 (epoch 8); mini-resweep EM11 upper on the J420 stand-in: playing 0.940 GB less the worker, loading 1.470 GB (meta MEMORY-GATES)"
     }
   }
 }
