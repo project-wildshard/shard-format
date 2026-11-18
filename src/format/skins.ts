@@ -8,7 +8,7 @@ const SKIN_LOOK_RECIPE = 'platform.skin';
 const SKIN_CLIPS_RECIPE = 'platform.clips';
 const hash = v.pipe(v.string(), v.regex(/^[0-9a-f]{64}$/u));
 /** The look row's parameters. */
-const SkinLookParametersSchema: v.GenericSchema<SkinLookParametersRowsInput, SkinLookParametersRows> = v.strictObject({ skin: hash, variants: v.exactOptional(hash) });
+const SkinLookParametersSchema: v.GenericSchema<SkinLookParametersRowsInput, SkinLookParametersRows> = v.strictObject({ skin: hash, variants: v.exactOptional(hash), phone: v.exactOptional(hash) });
 /** Complete variant-to-skin declarations in one ordinary content-addressed JSON file. */
 const VARIANTS_VERSION = 1;
 const MIN_VARIANTS = 1;
@@ -43,13 +43,15 @@ const SkinClipParametersSchema: v.GenericSchema<SkinClipParametersRowsInput, Ski
 const ShardSkinFileSchema: v.GenericSchema<ShardSkinFileRowsInput, ShardSkinFileRows> = v.strictObject({ row: v.unknown(), binding: v.unknown() });
 
 /** A parsed skin look: the file it names and the attack span its clip was sampled with. */
-interface SkinLookParameters { skin: string; variants?: string; attackSpan: number; clipMap?: SkinClipMap }
+/** `phone` (ONE-FORMAT CC51b) names a lighter skin file the phone tier draws instead: same rig, clips, sockets and material. */
+interface SkinLookParameters { skin: string; variants?: string; phone?: string; attackSpan: number; clipMap?: SkinClipMap }
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 type SkinLookParametersRowsInput = SkinLookParametersRows;
 interface SkinLookParametersRowsFields {
     skin: string;
     variants?: string;
+    phone?: string;
 }
 type SkinLookParametersRows = { [Key in keyof SkinLookParametersRowsFields]: SkinLookParametersRowsFields[Key] };
 interface SkinClipParametersRowsInputFields {

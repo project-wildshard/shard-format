@@ -20,6 +20,8 @@ interface ResolvedSkinFile {
 interface SkinLookFiles {
   readonly skin: ResolvedSkinFile
   readonly variants?: ReadonlyMap<string, ResolvedSkinFile>
+  /** The phone tier's lighter mesh (ONE-FORMAT CC51b): the same contract as `skin`, at most its triangles. */
+  readonly phone?: ResolvedSkinFile
 }
 type Source = Pick<Shardfile, 'rows' | 'files'>
 type Look = ShardRows['looks'][number]
@@ -166,6 +168,33 @@ function resolveVariants(
   return variants
 }
 
+function phoneLook(
+  skin: ResolvedSkinFile,
+  {
+    phone: hash,
+    look,
+    read,
+    variants,
+  }: {
+    phone: string
+    look: Look
+    read: (hash: string) => ResolvedSkinFile
+    variants: string | undefined
+  },
+): SkinLookFiles {
+  if (variants !== undefined) {
+    throw new Error(`skin look ${look.id}: a variant look has no phone skin`)
+  }
+  const phone = read(hash)
+  if (skinContract(phone) !== skinContract(skin)) {
+    throw new Error(`skin look ${look.id}: phone skin rig or material differs`)
+  }
+  if (phone.row.cost.triangles > skin.row.cost.triangles) {
+    throw new Error(`skin look ${look.id}: phone skin draws more triangles`)
+  }
+  return { skin, phone }
+}
+
 /** Resolve exact variant coverage and compatible rig/material declarations once at admission/load. */
 function resolveSkinLookFiles(
   source: Source,
@@ -175,6 +204,14 @@ function resolveSkinLookFiles(
   const parameters = skinLookParameters(look)
   const read = skinReader(source, assets)
   const skin = read(parameters.skin)
+  if (parameters.phone !== undefined) {
+    return phoneLook(skin, {
+      phone: parameters.phone,
+      look,
+      read,
+      variants: parameters.variants,
+    })
+  }
   if (parameters.variants === undefined) {
     return { skin }
   }
@@ -186,5 +223,14 @@ function resolveSkinLookFiles(
   return { skin, variants }
 }
 
-export { resolveSkinLookFiles }
+/** Every skin file a look draws: its skin, each variant's and the phone tier's. */
+function lookSkins(resolved: SkinLookFiles): ResolvedSkinFile[] {
+  return [
+    resolved.skin,
+    ...(resolved.variants?.values() ?? []),
+    ...(resolved.phone === undefined ? [] : [resolved.phone]),
+  ]
+}
+
+export { lookSkins, resolveSkinLookFiles }
 export type { ResolvedSkinFile, SkinLookFiles }

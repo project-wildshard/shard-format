@@ -21,18 +21,25 @@ import { SkinGlbMaterialsSchema, SkinPrimitiveSchema, skinMaterialsFault, skinPa
 
 import { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE } from './skins.ts';
 import type { SkinLookParameters } from './skins.ts';
-import { resolveSkinLookFiles } from './skin-variants.ts';
+import { lookSkins, resolveSkinLookFiles } from './skin-variants.ts';
 import { skinLookParameters } from './skin-file.ts';
+
+/** An optional look reference names a library `json` file. */
+function libraryJson(library: readonly string[], kinds: ReadonlyMap<string, string>, hash: string | undefined): boolean {
+  return hash === undefined || kinds.get(hash) === 'json' && library.includes(hash);
+}
 
 /** Shardfile reference rules for skin looks: a library `json` file whose dependencies are exactly its row's `glb`. */
 function skinLookRules(source: Pick<Shardfile, 'rows' | 'files' | 'library'>): string[] {
   const errors: string[] = [], files = new Map(source.files.map((file) => [file.hash, file]));
+  const kinds = new Map<string, string>(); for (const file of source.files) {kinds.set(file.hash, file.kind);}
   for (const row of source.rows.looks) {
     if (row.recipe !== SKIN_LOOK_RECIPE) { if (row.animation.recipe === SKIN_CLIPS_RECIPE) {errors.push('skin clips without a skin look');} continue; }
     let parameters: SkinLookParameters; try { parameters = skinLookParameters(row); } catch { errors.push('skin look parameters'); continue; }
-    const { skin, variants } = parameters, file = files.get(skin), glb = file?.dependencies.length === 1 ? files.get(file.dependencies[0] ?? '') : undefined;
+    const { skin, variants, phone } = parameters, file = files.get(skin), glb = file?.dependencies.length === 1 ? files.get(file.dependencies[0] ?? '') : undefined;
     if (file?.kind !== 'json' || glb?.kind !== 'glb' || !source.library.includes(skin)) {errors.push('skin look file references');}
-    if (variants !== undefined && (files.get(variants)?.kind !== 'json' || !source.library.includes(variants))) {errors.push('skin variant table references');}
+    if (!libraryJson(source.library, kinds, variants)) {errors.push('skin variant table references');}
+    if (!libraryJson(source.library, kinds, phone)) {errors.push('skin phone file references');}
   }
   return errors;
 }
@@ -76,7 +83,7 @@ function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'> & { readon
   for (const look of source.rows.looks) {
     if (look.recipe !== SKIN_LOOK_RECIPE) {continue;}
     const resolved = resolveSkinLookFiles(source, look, assets);
-    const skins = new Map([resolved.skin, ...(resolved.variants?.values() ?? [])].map((skin): [string, typeof resolved.skin] => [skin.hash, skin]));
+    const skins = new Map(lookSkins(resolved).map((skin): [string, typeof resolved.skin] => [skin.hash, skin]));
     for (const { row, binding } of skins.values()) {
 
     validateCreatureBones(look.species, row.rig.sockets);

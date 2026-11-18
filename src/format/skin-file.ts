@@ -41,6 +41,7 @@ function skinLookParameters(
     ...(look.output.variants === undefined
       ? {}
       : { variants: look.output.variants }),
+    ...(look.output.phone === undefined ? {} : { phone: look.output.phone }),
   }
 }
 
