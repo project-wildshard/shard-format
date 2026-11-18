@@ -26,6 +26,7 @@ import { CreatureSkinClipNameSchema } from './skinData.ts'
 import { StrikeTellKindSchema } from './spawnCombat.ts'
 import { HuntTuningSchema } from './speciesPrograms.ts'
 
+import type { CreatureAttackable } from './creature-attackable.ts'
 import type { CreatureBody } from './creature-body.ts'
 import type { CreatureMount } from './creature-mount.ts'
 import type { CreatureProjectile } from './creature-projectile.ts'
@@ -115,6 +116,8 @@ interface CreatureLayers {
   presentation?: CreaturePresentation
   /** CC40a: rideable by the riding primitive. */
   mount?: CreatureMount
+  /** OF38a: whether its creatures can be attacked, and by what (J420 (2)); absent, by anything. */
+  attackable?: CreatureAttackable
 }
 
 const ZERO = 0
@@ -289,4 +292,9 @@ export type {
 
 export { CreatureBodySchema } from './creature-body.ts'
 export { CreatureMountSchema, creatureMountRules } from './creature-mount.ts'
+export {
+  CreatureAttackableSchema,
+  attackableBy,
+} from './creature-attackable.ts'
+export type { CreatureAttackable } from './creature-attackable.ts'
 export type { CreatureBody } from './creature-body.ts'

@@ -7,7 +7,7 @@ import * as v from 'valibot';
 import { isJsonData } from './json.ts';
 import { sketchReference } from './sketch.ts';
 import { JournalRowSchema, journalRowRules } from './compendiumRows.ts';
-import { CreatureMountSchema, creatureMountRules, CreatureTypeSchema, CreatureBodySchema, CreatureTemperamentSchema, CreatureSensesSchema, CreatureAbilitySchema, CreaturePresentationSchema } from './creature-layers.ts';
+import { CreatureAttackableSchema, CreatureMountSchema, creatureMountRules, CreatureTypeSchema, CreatureBodySchema, CreatureTemperamentSchema, CreatureSensesSchema, CreatureAbilitySchema, CreaturePresentationSchema } from './creature-layers.ts';
 import type { CreatureAbilityInput, CreatureLayers } from './creature-layers.ts';
 import { creatureSizeRules } from './creature-sizes.ts';
 import { SKIN_CLIPS_RECIPE, SkinClipMapSchema } from './skins.ts';
@@ -52,7 +52,8 @@ const species = v.strictObject({ id, kind: id, label: text, capExempt: v.exactOp
   variants: v.pipe(v.array(variant), v.minLength(1), v.maxLength(64)),
   type: v.exactOptional(CreatureTypeSchema), body: v.exactOptional(CreatureBodySchema),
   temperament: v.exactOptional(CreatureTemperamentSchema), senses: v.exactOptional(CreatureSensesSchema),
-  abilities: v.exactOptional(abilities), presentation: v.exactOptional(CreaturePresentationSchema), mount: v.exactOptional(CreatureMountSchema) });
+  abilities: v.exactOptional(abilities), presentation: v.exactOptional(CreaturePresentationSchema), mount: v.exactOptional(CreatureMountSchema),
+  attackable: v.exactOptional(CreatureAttackableSchema) });
 const parameter = v.union([finite, v.boolean(), text, v.pipe(v.array(finite), v.maxLength(16))]);
 const animationParameters = v.record(id, parameter);
 const lookAnimation = v.strictObject({
