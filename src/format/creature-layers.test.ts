@@ -291,3 +291,16 @@ test('pursuit keeps its own numeric parameters instead of requiring hunt fields'
   }
   expect(rows(species).species[0]?.temperament?.tuning).toEqual(tuning)
 })
+
+test('a serpent body declares its trail, and only a serpent does (ONE-FORMAT CC23)', (): void => {
+  const serpent = { skeleton: 'serpent', trail: { count: 14, spacing: 1.6 }, size: 'giant', scale: 1, look: 'fixture.look' }
+  expect(rows({ ...legacy, body: serpent }).species[0]?.body).toEqual(serpent)
+  const { trail: _trail, ...bare } = serpent
+  expect((): ShardRows => rows({ ...legacy, body: bare })).toThrow('A serpent has a trail row and only a serpent has one')
+  expect((): ShardRows => rows({ ...legacy, body: { ...serpent, skeleton: 'quadruped' } })).toThrow('A serpent has a trail row')
+  for (const trail of [{ count: 2, spacing: 1 }, { count: 17, spacing: 1 }, { count: 4.5, spacing: 1 }, { count: 4, spacing: 0 }, { count: 4, spacing: 11 }]) {
+    expect((): ShardRows => rows({ ...legacy, body: { ...serpent, trail } })).toThrow()
+  }
+  // the head ball plus one volume a segment: 16 trail bones is the most
+  expect(rows({ ...legacy, body: { ...serpent, trail: { count: 16, spacing: 1 } } }).species[0]?.body?.trail?.count).toBe(16)
+})

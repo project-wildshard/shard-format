@@ -48,7 +48,7 @@ type CreatureType =
   | 'aquatic'
   | 'critter'
   | 'aberration'
-type CreatureSkeleton = 'quadruped' | 'biped'
+type CreatureSkeleton = 'quadruped' | 'biped' | 'serpent'
 type CreatureSize = 'tiny' | 'small' | 'medium' | 'large' | 'giant'
 type CreatureReaction = 'passive' | 'skittish' | 'neutral' | 'aggressive'
 type CreatureTuningScalar = number | boolean | string

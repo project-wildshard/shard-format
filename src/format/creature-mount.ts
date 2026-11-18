@@ -10,10 +10,11 @@ import {
   strictObject,
 } from 'valibot'
 
-import { CREATURE_SKELETONS } from './creature-skeletons.ts'
+import { creatureContract } from './creature-skeletons.ts'
 import { CreatureSocketNameSchema } from './creature-volumes.ts'
 
 import type { CreatureSkeleton } from './creature-layers.ts'
+import type { CreatureTrail } from './creature-skeletons.ts'
 import type { GenericSchema } from 'valibot'
 
 /** The seat socket both kit skeletons name. */
@@ -78,6 +79,7 @@ interface MountedSpecies {
   readonly flight?: unknown
   readonly body?: {
     readonly skeleton?: CreatureSkeleton
+    readonly trail?: CreatureTrail
     readonly volumes?: readonly { readonly part: string }[]
   }
 }
@@ -92,7 +94,13 @@ function seatKnown(seat: string, body: MountedSpecies['body']): boolean {
   // A GLB with its own rig names its sockets in its skin; admission checks the seat there.
   return (
     body?.skeleton === undefined ||
-    Object.hasOwn(CREATURE_SKELETONS[body.skeleton].sockets, seat)
+    Object.hasOwn(
+      creatureContract({
+        skeleton: body.skeleton,
+        ...(body.trail === undefined ? {} : { trail: body.trail }),
+      }).sockets,
+      seat,
+    )
   )
 }
 

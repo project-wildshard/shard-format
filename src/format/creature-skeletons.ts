@@ -1,5 +1,8 @@
 import type { CreatureSkeleton } from './creature-layers.ts'
 
+/** The skeletons whose bones never change with the body; a serpent's count comes from its `trail` row. */
+type FixedSkeleton = Exclude<CreatureSkeleton, 'serpent'>
+
 interface SkeletonChain {
   readonly parent: string
   readonly bones: readonly string[]
@@ -115,11 +118,71 @@ const BIPED: SkeletonContract = {
   volumes: [bodyVolume('chest', 'y'), HEAD],
   clips: CLIPS,
 }
-const CREATURE_SKELETONS: Readonly<Record<CreatureSkeleton, SkeletonContract>> =
-  {
-    quadruped: QUADRUPED,
-    biped: BIPED,
+const CREATURE_SKELETONS: Readonly<Record<FixedSkeleton, SkeletonContract>> = {
+  quadruped: QUADRUPED,
+  biped: BIPED,
+}
+
+/** A serpent's trail row (ONE-FORMAT CC23): `count` bones `spacing` metres apart along the root's path. */
+interface CreatureTrail {
+  readonly count: number
+  readonly spacing: number
+}
+const SEGMENT_MULTIPLIER = 0.5
+const SEGMENT_RADIUS = 0.6
+const HALF = 2
+/** Trail bone names, head first: `head`, `seg1` … `seg<count-2>`, `tail`. */
+function trailBoneNames(count: number): readonly string[] {
+  return Array.from({ length: count }, (_unused: unknown, index: number): string =>
+    index === ZERO ? 'head' : index === count - ONE ? 'tail' : `seg${String(index)}`,
+  )
+}
+/**
+ * The serpent (ONE-FORMAT CC23): every bone is a trail bone following the head's path, so the chain is the whole
+ * body. Sockets `head`, `mouth`, `core` (the middle bone) and `tail`; one capsule per segment at x0.5 and the head
+ * ball at x2. Buried segments' volumes are off (the engine's poser); the lock stays on the head.
+ */
+function serpentContract(trail: CreatureTrail): SkeletonContract {
+  const bones = trailBoneNames(trail.count)
+  const core = bones[Math.floor(trail.count / HALF)] ?? 'head'
+  const segments = bones.slice(ONE).map(
+    (bone: string): SkeletonVolume => ({
+      part: bone,
+      bone,
+      shape: 'capsule',
+      radius: SEGMENT_RADIUS,
+      halfLength: trail.spacing / HALF,
+      axis: 'z',
+      multiplier: SEGMENT_MULTIPLIER,
+    }),
+  )
+  return {
+    root: 'head',
+    chains: { spine: { parent: 'head', bones: bones.slice(ONE) } },
+    sockets: {
+      head: socket('head'),
+      mouth: { bone: 'head', at: [ZERO, ZERO, MOUTH_FORWARD] },
+      core: socket(core),
+      tail: socket('tail'),
+    },
+    lock: 'head',
+    volumes: [HEAD, ...segments],
+    clips: CLIPS,
   }
+}
+/** The one contract a body declares: a fixed skeleton's, or a serpent's built from its trail row. */
+function creatureContract(body: {
+  readonly skeleton: CreatureSkeleton
+  readonly trail?: CreatureTrail
+}): SkeletonContract {
+  if (body.skeleton !== 'serpent') {
+    return CREATURE_SKELETONS[body.skeleton]
+  }
+  if (body.trail === undefined) {
+    throw new Error('A serpent needs its trail row')
+  }
+  return serpentContract(body.trail)
+}
 
 /** Importers and posers share this list, rather than inferring a creature kind. */
 function skeletonBones(
@@ -133,5 +196,19 @@ function skeletonBones(
   ]
 }
 
-export { CREATURE_SKELETONS, MIN_VOLUME_RADIUS, skeletonBones }
-export type { SkeletonChain, SkeletonSocket, SkeletonVolume, SkeletonContract }
+export {
+  CREATURE_SKELETONS,
+  MIN_VOLUME_RADIUS,
+  creatureContract,
+  serpentContract,
+  skeletonBones,
+  trailBoneNames,
+}
+export type {
+  CreatureTrail,
+  FixedSkeleton,
+  SkeletonChain,
+  SkeletonSocket,
+  SkeletonVolume,
+  SkeletonContract,
+}
