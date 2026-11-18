@@ -1,0 +1,315 @@
+{
+  "engine": "50092092",
+  "measured": "2026-11-18",
+  "instrument": "minimal",
+  "model": {
+    "measured": "2026-11-18",
+    "alpha": {
+      "low": 0.309,
+      "high": 0.744
+    },
+    "scale": {
+      "low": 0.648,
+      "high": 0.911
+    }
+  },
+  "zones": {
+    "brasscap-mesa": {
+      "runs": 4,
+      "playingMB": 630,
+      "playingHighMB": 699,
+      "loadingMB": 882,
+      "loadingHighMB": 1019,
+      "settledWebContentMB": 482,
+      "settledGpuMB": 297,
+      "peakWebContentMB": 644,
+      "peakGpuMB": 487
+    },
+    "driftwood-isle": {
+      "runs": 6,
+      "playingMB": 1006,
+      "playingHighMB": 1266,
+      "loadingMB": 1242,
+      "loadingHighMB": 1442,
+      "settledWebContentMB": 737,
+      "settledGpuMB": 516,
+      "peakWebContentMB": 891,
+      "peakGpuMB": 710
+    },
+    "far-reach": {
+      "runs": 4,
+      "playingMB": 775,
+      "playingHighMB": 925,
+      "loadingMB": 1055,
+      "loadingHighMB": 1210,
+      "settledWebContentMB": 511,
+      "settledGpuMB": 519,
+      "peakWebContentMB": 770,
+      "peakGpuMB": 664
+    },
+    "ink-cel-valley": {
+      "runs": 4,
+      "playingMB": 549,
+      "playingHighMB": 612,
+      "loadingMB": 750,
+      "loadingHighMB": 879,
+      "settledWebContentMB": 415,
+      "settledGpuMB": 271,
+      "peakWebContentMB": 523,
+      "peakGpuMB": 466
+    },
+    "nalati-grasslands": {
+      "runs": 6,
+      "playingMB": 1060,
+      "playingHighMB": 1198,
+      "loadingMB": 1448,
+      "loadingHighMB": 1658,
+      "settledWebContentMB": 793,
+      "settledGpuMB": 523,
+      "peakWebContentMB": 1089,
+      "peakGpuMB": 705
+    },
+    "nine-dragon-stack": {
+      "runs": 6,
+      "playingMB": 1036,
+      "playingHighMB": 1170,
+      "loadingMB": 1656,
+      "loadingHighMB": 1905,
+      "settledWebContentMB": 763,
+      "settledGpuMB": 535,
+      "peakWebContentMB": 1299,
+      "peakGpuMB": 701
+    },
+    "open-plot-alien-plain": {
+      "runs": 3,
+      "playingMB": 528,
+      "playingHighMB": 582,
+      "loadingMB": 754,
+      "loadingHighMB": 873,
+      "settledWebContentMB": 406,
+      "settledGpuMB": 248,
+      "peakWebContentMB": 529,
+      "peakGpuMB": 444
+    },
+    "open-plot-clockwork-canyon": {
+      "runs": 3,
+      "playingMB": 555,
+      "playingHighMB": 613,
+      "loadingMB": 785,
+      "loadingHighMB": 911,
+      "settledWebContentMB": 426,
+      "settledGpuMB": 263,
+      "peakWebContentMB": 553,
+      "peakGpuMB": 459
+    },
+    "open-plot-coral-drift": {
+      "runs": 3,
+      "playingMB": 557,
+      "playingHighMB": 615,
+      "loadingMB": 783,
+      "loadingHighMB": 909,
+      "settledWebContentMB": 427,
+      "settledGpuMB": 266,
+      "peakWebContentMB": 551,
+      "peakGpuMB": 462
+    },
+    "open-plot-desert-ruin": {
+      "runs": 3,
+      "playingMB": 566,
+      "playingHighMB": 627,
+      "loadingMB": 791,
+      "loadingHighMB": 924,
+      "settledWebContentMB": 434,
+      "settledGpuMB": 270,
+      "peakWebContentMB": 558,
+      "peakGpuMB": 464
+    },
+    "open-plot-ember-forge": {
+      "runs": 3,
+      "playingMB": 547,
+      "playingHighMB": 604,
+      "loadingMB": 767,
+      "loadingHighMB": 899,
+      "settledWebContentMB": 420,
+      "settledGpuMB": 260,
+      "peakWebContentMB": 537,
+      "peakGpuMB": 455
+    },
+    "open-plot-fossil-badlands": {
+      "runs": 3,
+      "playingMB": 534,
+      "playingHighMB": 594,
+      "loadingMB": 764,
+      "loadingHighMB": 889,
+      "settledWebContentMB": 410,
+      "settledGpuMB": 254,
+      "peakWebContentMB": 535,
+      "peakGpuMB": 453
+    },
+    "open-plot-frostline-peaks": {
+      "runs": 3,
+      "playingMB": 547,
+      "playingHighMB": 609,
+      "loadingMB": 769,
+      "loadingHighMB": 907,
+      "settledWebContentMB": 416,
+      "settledGpuMB": 267,
+      "peakWebContentMB": 540,
+      "peakGpuMB": 462
+    },
+    "open-plot-jungle-ziggurat": {
+      "runs": 3,
+      "playingMB": 547,
+      "playingHighMB": 607,
+      "loadingMB": 767,
+      "loadingHighMB": 901,
+      "settledWebContentMB": 418,
+      "settledGpuMB": 264,
+      "peakWebContentMB": 532,
+      "peakGpuMB": 458
+    },
+    "open-plot-lantern-bayou": {
+      "runs": 3,
+      "playingMB": 563,
+      "playingHighMB": 627,
+      "loadingMB": 789,
+      "loadingHighMB": 920,
+      "settledWebContentMB": 428,
+      "settledGpuMB": 274,
+      "peakWebContentMB": 552,
+      "peakGpuMB": 469
+    },
+    "open-plot-mosslight-ruins": {
+      "runs": 3,
+      "playingMB": 568,
+      "playingHighMB": 636,
+      "loadingMB": 790,
+      "loadingHighMB": 918,
+      "settledWebContentMB": 427,
+      "settledGpuMB": 283,
+      "peakWebContentMB": 549,
+      "peakGpuMB": 477
+    },
+    "open-plot-night-market": {
+      "runs": 3,
+      "playingMB": 568,
+      "playingHighMB": 630,
+      "loadingMB": 802,
+      "loadingHighMB": 950,
+      "settledWebContentMB": 430,
+      "settledGpuMB": 279,
+      "peakWebContentMB": 560,
+      "peakGpuMB": 476
+    },
+    "open-plot-patchwork-fairground": {
+      "runs": 3,
+      "playingMB": 530,
+      "playingHighMB": 586,
+      "loadingMB": 759,
+      "loadingHighMB": 880,
+      "settledWebContentMB": 406,
+      "settledGpuMB": 251,
+      "peakWebContentMB": 532,
+      "peakGpuMB": 451
+    },
+    "open-plot-saltwind-lighthouse": {
+      "runs": 3,
+      "playingMB": 515,
+      "playingHighMB": 576,
+      "loadingMB": 732,
+      "loadingHighMB": 873,
+      "settledWebContentMB": 400,
+      "settledGpuMB": 237,
+      "peakWebContentMB": 514,
+      "peakGpuMB": 433
+    },
+    "open-plot-sky-harbor": {
+      "runs": 3,
+      "playingMB": 543,
+      "playingHighMB": 601,
+      "loadingMB": 767,
+      "loadingHighMB": 894,
+      "settledWebContentMB": 416,
+      "settledGpuMB": 259,
+      "peakWebContentMB": 537,
+      "peakGpuMB": 454
+    },
+    "open-plot-sky-race": {
+      "runs": 3,
+      "playingMB": 540,
+      "playingHighMB": 602,
+      "loadingMB": 765,
+      "loadingHighMB": 890,
+      "settledWebContentMB": 411,
+      "settledGpuMB": 260,
+      "peakWebContentMB": 536,
+      "peakGpuMB": 454
+    },
+    "open-plot-starfall-observatory": {
+      "runs": 3,
+      "playingMB": 543,
+      "playingHighMB": 605,
+      "loadingMB": 767,
+      "loadingHighMB": 910,
+      "settledWebContentMB": 416,
+      "settledGpuMB": 262,
+      "peakWebContentMB": 534,
+      "peakGpuMB": 460
+    },
+    "open-plot-thin-ice": {
+      "runs": 3,
+      "playingMB": 547,
+      "playingHighMB": 607,
+      "loadingMB": 733,
+      "loadingHighMB": 863,
+      "settledWebContentMB": 428,
+      "settledGpuMB": 242,
+      "peakWebContentMB": 511,
+      "peakGpuMB": 439
+    },
+    "pastel-plain": {
+      "runs": 4,
+      "playingMB": 527,
+      "playingHighMB": 598,
+      "loadingMB": 746,
+      "loadingHighMB": 889,
+      "settledWebContentMB": 399,
+      "settledGpuMB": 262,
+      "peakWebContentMB": 525,
+      "peakGpuMB": 465
+    },
+    "pine-hollow": {
+      "runs": 6,
+      "playingMB": 1038,
+      "playingHighMB": 1200,
+      "loadingMB": 1410,
+      "loadingHighMB": 1711,
+      "settledWebContentMB": 789,
+      "settledGpuMB": 487,
+      "peakWebContentMB": 1080,
+      "peakGpuMB": 656
+    },
+    "sunscar-dunes": {
+      "runs": 4,
+      "playingMB": 693,
+      "playingHighMB": 818,
+      "loadingMB": 1000,
+      "loadingHighMB": 1163,
+      "settledWebContentMB": 469,
+      "settledGpuMB": 443,
+      "peakWebContentMB": 705,
+      "peakGpuMB": 614
+    },
+    "template": {
+      "runs": 4,
+      "playingMB": 605,
+      "playingHighMB": 671,
+      "loadingMB": 850,
+      "loadingHighMB": 1015,
+      "settledWebContentMB": 460,
+      "settledGpuMB": 292,
+      "peakWebContentMB": 613,
+      "peakGpuMB": 480
+    }
+  }
+}
