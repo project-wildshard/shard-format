@@ -16,7 +16,7 @@ const {NetClient}=await fromEngine('src/client/engine/net/client.ts');
 const {NetRoom}=await fromEngine('src/server/engine/net/room.ts');
 const {SimNetWorld}=await fromEngine('src/server/engine/net/simWorld.ts');
 const {loadHeadlessProduct}=await fromEngine('src/server/host/headlessProduct.ts');
-const {createTrustedHeadlessResident}=await fromEngine('src/server/host/headlessRuntime.ts');
+const {createNativeHeadlessResident}=await fromEngine('src/server/host/headlessRuntime.ts');
 const {runtimeAssets}=await fromEngine('test/fixtures/engine-lift/product.ts');
 const {loadRapier}=await fromEngine('src/shared/engine/physics/rapier.ts');
 const {leadPlayer}=await fromEngine('src/shared/engine/sim/leadPlayer.ts');
@@ -43,7 +43,7 @@ process.chdir(root);
 const directory=join(root,'out/sunscar-dunes');
 const product=await loadHeadlessProduct(directory);
 const rapier=await loadRapier(readFileSync(root+'/public/assets/physics/rapier.wasm'));
-const resident=await createTrustedHeadlessResident({product,shard:product.shardfile,assets:runtimeAssets(product,directory),rapier},undefined,{room:true});
+const resident=await createNativeHeadlessResident({product,shard:product.shardfile,assets:runtimeAssets(product,directory),rapier},undefined,{room:true});
 let recipe,base;
 try{
  const actor=[...resident.host.entities.values()].find(actor=>actor.snapshot().flight===null);assert.ok(actor);

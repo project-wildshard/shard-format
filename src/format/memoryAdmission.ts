@@ -8,7 +8,7 @@ export interface AdmissionMeasurement {
   readonly residentBaseBytes?: number;
   readonly rev: string; readonly device: string; readonly evidence: string;
 }
-/** Trusted callers report only the total-memory envelope here. Parser, hash, script and content-understatement guards are separate. */
+/** Host-owned callers report only the total-memory envelope here. Parser, hash, script and content-understatement guards are separate. */
 export interface MemoryAdmissionRequest {
   readonly stage: 'runtime' | 'declared' | 'actual' | 'resident';
   readonly owner: string; readonly id: string;

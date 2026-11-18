@@ -12,7 +12,7 @@ export function acceptsShardfileCost(memory: MemoryAdmission | undefined, source
     claimedBytes: cost.accounted, accountedBytes: cost.accounted, playingBytes: cost.playing, loadingBytes: cost.loading });
 }
 
-/** Reapply the current trusted memory policy to a previously validated exact declaration. */
+/** Reapply the current host-owned memory policy to a previously validated exact declaration. */
 export function acceptValidatedCost(source: Shardfile, cost: ReturnType<typeof worstContentCost>, memory?: MemoryAdmission): void {
   if (!acceptsShardfileCost(memory, source, 'declared', cost)) throw new Error(`declared worst-location total exceeds envelope: play ${cost.playing}, load ${cost.loading}${overHardLine(Math.max(cost.playing, cost.loading))}`);
 }
@@ -44,7 +44,7 @@ export function textureLibrarySource(source: Shardfile, assets: ReadonlyMap<stri
   return { ...source, budgets: { ...source.budgets, library: { ...source.budgets.library, resident: Math.max(0, source.budgets.library.resident - saving) } } };
 }
 
-/** Trusted device's exact library projection, with all existing conservative neighbour and fallback ceilings retained. */
+/** Host-owned device's exact library projection, with all existing conservative neighbour and fallback ceilings retained. */
 export function* deviceLibraryCostSteps(source: Shardfile, assets: ReadonlyMap<string, Uint8Array>, support?: TextureTranscodeSupport, deviceCosts?: ReadonlyMap<string, Ktx2DeviceCosts>): Generator<void, ReturnType<typeof worstContentCost>> {
   const commons = Object.values(source.requires.commonsCosts).reduce((sum, row) => sum + row.decoded + row.gpu, 0);
   return yield* worstContentCostSteps(textureLibrarySource(source, assets, support, deviceCosts), commons);

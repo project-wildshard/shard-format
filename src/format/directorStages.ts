@@ -69,14 +69,14 @@ export type DirectorAction = DirectorStagesData['stages'][number]['do'][number];
 export function parseDirectorStages(input: unknown): DirectorStagesData { return v.parse(DirectorStagesSchema, input); }
 
 
-/** Root-owned pacing rows with distinct identities; an AS handler is installed only through explicit trusted bindings. */
+/** Root-owned pacing rows with distinct identities; an AS handler is installed only through explicit native bindings. */
 export const DirectorsSchema: v.GenericSchema<DirectorsDataInput, DirectorsData> = v.pipe(v.array(DirectorStagesSchema), v.maxLength(16), v.check(rows => new Set(rows.map(row => row.id)).size === rows.length, 'Unique director identities'));
 
 /** Describe stock data-only support: quest flags, bounded day inputs and flag actions.
- * Other admitted actions need trusted native owners; emit is not AssemblyScript delivery. */
+ * Other admitted actions need native owners; emit is not AssemblyScript delivery. */
 export function directorDataHostIssues(data: DirectorStagesData): readonly string[] {
   const issues: string[] = [];
-  if (data.script !== null) issues.push('script requires a trusted typed director host');
+  if (data.script !== null) issues.push('script requires a host-owned typed director host');
   for (const [inputName, binding] of Object.entries(data.inputs)) {
     if (!binding.startsWith('flag:') && directorDayRange(binding) === null) issues.push(`input ${inputName} (${binding}) requires a native observation owner`);
   }

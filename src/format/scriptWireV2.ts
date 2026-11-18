@@ -36,7 +36,7 @@ export function writeV2Frame(view: DataView,layout: V2Layout,frame: V2Frame,coun
 }
 /** Reuse the last immutable count shape within one existing owner. Every call
  * validates current counts and captures a fresh detached header; no caller
- * authority or mutable input is retained as a trusted template. */
+ * authority or mutable input is retained as a host-owned template. */
 export function createV2FrameWriter(layout: V2Layout): (view: DataView,frame: V2Frame,counts: ReadonlyMap<number,number>) => V2FrameAuthority {
   let previous: readonly number[] | undefined;
   let available: number[] | undefined;

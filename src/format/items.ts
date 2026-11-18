@@ -5,7 +5,7 @@ import * as v from 'valibot';
 import { MeleeContactsSchema, NativeMeleeRowSchema, WeaponProfileSchema, type MeleeContactRow } from './weaponProfiles.ts';
 import { isJsonData } from './json.ts';
 
-/** The bounded authored family/context name, also checked by the trusted family installer. */
+/** The bounded authored family/context name, also checked by the native family installer. */
 export const ItemFamilyNameSchema: v.GenericSchema<ItemFamilyNameRowsInput, ItemFamilyNameRows> = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9.-]*$/u), v.maxLength(128));
 const name = ItemFamilyNameSchema;
 const weaponId: v.GenericSchema<`weapon.${string}`> = v.custom<`weapon.${string}`>((value) => typeof value === 'string' && /^weapon\.[a-z][a-zA-Z0-9.-]*$/u.test(value) && value.length <= 128);

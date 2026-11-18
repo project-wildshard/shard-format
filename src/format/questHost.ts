@@ -105,7 +105,7 @@ export const QuestHostSchema: v.GenericSchema<unknown, QuestHostRow> = v.pipe(ra
 /** Compile the bounded graph, command and stage composition without installing runtime services. */
 export function parseQuestHost(input: unknown): QuestHostRow { return v.parse(QuestHostSchema, input); }
 
-/** Root admission binds a native quest host to declared flags and its existing hybrid quest owner. */
+/** Root admission binds a native quest host to declared flags and its existing runtime quest owner. */
 export function questHostBindingRules(row: QuestHostRow | null | undefined, flags: readonly string[], bound: boolean): readonly string[] {
   if (row === null || row === undefined) return [];
   const errors: string[] = [];

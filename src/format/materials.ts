@@ -11,7 +11,7 @@ import type { Shardfile } from './shardSchema.ts';
 
 const graph = v.pipe(v.unknown(), v.rawTransform(({ dataset, addIssue, NEVER }): GraphIr => {
   if (!isJsonData(dataset.value)) { addIssue({ message: 'material graph is plain JSON data' }); return NEVER; }
-  const checked = validateGraph(dataset.value, { trustedBudget: true });
+  const checked = validateGraph(dataset.value, { declaredBudget: true });
   if (!checked.ok) { addIssue({ message: checked.errors.join('; ') }); return NEVER; }
   // a catalogue slot holds a material or the shard's declared fog (O11: a material selects it by id), never a post pass
   if (checked.graph.kind === 'post') { addIssue({ message: 'material slot requires a material or fog graph, not a post pass' }); return NEVER; }
@@ -38,7 +38,7 @@ export function presetLooks(familyLooks: Shardfile['look']['familyLooks']): { to
 /**
  * A graph file's JSON (SF59): `file` returns an admitted file's bytes (undefined: not present). Throws when the file is
  * missing, past the inline slot's byte bound, or not UTF-8 JSON; the graph itself is validated by the caller under the
- * author caps (a graph file is authored content, never a trusted preset).
+ * author caps (a graph file is authored content, never a native preset).
  */
 export function graphFileJson(hash: string, file: (hash: string) => Uint8Array | undefined): unknown {
   const bytes = file(hash);
@@ -47,13 +47,13 @@ export function graphFileJson(hash: string, file: (hash: string) => Uint8Array |
   try { return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)); } catch { throw new Error(`material graph file ${hash} is not UTF-8 JSON`); }
 }
 /**
- * A graph material's IR (D74: graph files): a graph file's JSON, its bytes from `file`, validated under the trusted budget
+ * A graph material's IR (D74: graph files): a graph file's JSON, its bytes from `file`, validated under the host-owned budget
  * (product admission already held it to its caps and bindings, `graphFileRules`), or an inline entry's IR. Throws for a
  * preset reference or a missing or invalid file.
  */
 export function materialGraphIr(entry: MaterialEntry, file: (hash: string) => Uint8Array | undefined): GraphIr {
   if (entry.family !== 'graph' || !('file' in entry)) throw new Error('material graph IR needs a graph file (a built shard file carries no inline graph)');
-  const checked = validateGraph(graphFileJson(entry.file, file), { trustedBudget: true });
+  const checked = validateGraph(graphFileJson(entry.file, file), { declaredBudget: true });
   if (!checked.ok) throw new Error(`material graph file ${entry.file}: ${checked.errors.join('; ')}`);
   return checked.graph;
 }
@@ -130,7 +130,7 @@ export interface GraphBindingSources { readonly day: ReadonlyMap<string, 'float'
 /**
  * The admitted binding names of a shardfile (SF59): the canonical dotted day-key channels its look keys carry and its
  * declared public i32 / f64 state fields as `shared.<field>` / `player.<field>`, plus, as for material curves
- * (`curveStateFields`), its host-owned numeric fields when a trusted runtime binds `state` (the runtime hands the client
+ * (`curveStateFields`), its host-owned numeric fields when a native runtime binds `state` (the runtime hands the client
  * their live values). Admission and the client's compile both use these lists, never a compiler default that allows any name.
  */
 export function graphBindingSources(source: Pick<Shardfile, 'look' | 'state'> & Partial<Pick<Shardfile, 'runtime' | 'questHost'>>): GraphBindingSources {
@@ -151,7 +151,7 @@ function numericFields(state: Shardfile['state'], privacy: 'public' | 'host'): s
 
 /**
  * Check graph uniform bindings against admitted day channels and public numeric state declarations. A preset reference
- * must be expressible as a built-in preset (`presetRefusal`, the rule the engine's preset door applies; the trusted preset
+ * must be expressible as a built-in preset (`presetRefusal`, the rule the engine's preset door applies; the native preset
  * programs are held to `PRESET_GRAPH_BUDGET` by the engine's own tests, never the author caps); a graph file must be a
  * JSON file of the library closure (`files` / `library` given: its bytes are validated by product admission, `graphFileRules`).
  */
@@ -167,7 +167,7 @@ export function materialGraphRules(source: Pick<Shardfile, 'look' | 'state'> & P
       continue;
     }
     if ('preset' in material) { const refusal = presetRefusal(material.preset); if (refusal !== null) errors.push(`material ${materialId}: ${refusal}`); continue; }
-    const checked = validateGraph(material.graph, { dayKeys: [...dayChannels.keys()], stateFields, trustedBudget: source.runtime !== null && source.runtime !== undefined || hasDeclaredClientPage(source) });
+    const checked = validateGraph(material.graph, { dayKeys: [...dayChannels.keys()], stateFields, declaredBudget: source.runtime !== null && source.runtime !== undefined || hasDeclaredClientPage(source) });
     if (!checked.ok) { errors.push(...checked.errors.map((error) => `material ${materialId}: ${error}`)); continue; }
     errors.push(...bindingTypeErrors(materialId, checked.graph, dayChannels));
     const fog = checked.graph.effectState?.fog;
@@ -192,7 +192,7 @@ export function graphFileRules(source: Pick<Shardfile, 'look' | 'state' | 'files
     if (material.family !== 'graph' || !('file' in material)) continue;
     let ir: unknown;
     try { ir = graphFileJson(material.file, bytes); } catch (error) { errors.push(`material ${materialId}: ${error instanceof Error ? error.message : 'graph file'}`); continue; }
-    const checked = validateGraph(ir, { dayKeys: [...dayChannels.keys()], stateFields, trustedBudget: source.runtime !== null && source.runtime !== undefined || hasDeclaredClientPage(source) });
+    const checked = validateGraph(ir, { dayKeys: [...dayChannels.keys()], stateFields, declaredBudget: source.runtime !== null && source.runtime !== undefined || hasDeclaredClientPage(source) });
     if (!checked.ok) { errors.push(...checked.errors.map((error) => `material ${materialId}: ${error}`)); continue; }
     if (checked.graph.kind === 'post') { errors.push(`material ${materialId}: a graph file in a material slot holds a material or fog graph, not a post pass`); continue; }
     const fog = checked.graph.effectState?.fog, target = typeof fog === 'string' ? source.look.materials[fog] : undefined;
@@ -261,7 +261,7 @@ export function curveAt(curve: Curve, d: number): number {
 
 /**
  * State-bound material curves (`look.curves`): per catalogue family entry, numbers that move with a declared public numeric
- * state field (`shared.<name>` / `player.<name>`), or a host-owned numeric shared field when a trusted runtime binds
+ * state field (`shared.<name>` / `player.<name>`), or a host-owned numeric shared field when a native runtime binds
  * `state` (its runtime hands the client the live value), each the curve's value at the field's live value (clamped 0 … 1). A
  * `param` is a dot path into the entry with its defaults filled (`ground.shade.tint.0`) that resolves to a number its
  * family can move without a new program (`MOVABLE_FAMILY_PARAMS`). The client evaluates them in its material tick, only
@@ -291,7 +291,7 @@ export function curvedParams(params: FamilyMaterialParams, curves: readonly { re
   return out;
 }
 /**
- * The fields a material curve may read: every public numeric field, and, when a trusted runtime binds `state`
+ * The fields a material curve may read: every public numeric field, and, when a native runtime binds `state`
  * (`runtime.binds`), its host-owned numeric shared fields too (the runtime hands the client their live values).
  */
 function curveStateFields(source: Pick<Shardfile, 'state' | 'runtime'> & Partial<Pick<Shardfile, 'questHost'>>): ReadonlySet<string> {

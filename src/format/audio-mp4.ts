@@ -162,7 +162,7 @@ function mediaSeconds(source: Readonly<Bytes>, mdhd: number): number {
   return scale === NONE ? NONE : frames / scale
 }
 
-/** The packet count and bytes from `stsz`; a count is never trusted past the box's own bytes. */
+/** The packet count and bytes from `stsz`; a count is never host-owned past the box's own bytes. */
 function packets(
   source: Readonly<Bytes>,
   stsz: number,

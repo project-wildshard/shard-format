@@ -33,7 +33,7 @@ import type { GenericSchema } from 'valibot'
 // `placements` are `src/game/shared/grid/singleplayer.json` today, field for
 // field. A cell's `slug` keeps the authored spelling, so `_template` stays
 // `_template` although its product's `identity.slug` cannot start with an
-// underscore: `shardSlugOf` is the one mapping, as `firstPartyInstance` does.
+// underscore: `shardSlugOf` is the one mapping, as `catalogueInstance` does.
 
 const FORMAT_VERSION = 0
 const MIN_SIZE = 1

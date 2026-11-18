@@ -171,14 +171,14 @@ function listOk(rows: readonly ClientChannelProgram[]): boolean {
 }
 /** Visual property identity, never an authoritative player or shared field. */
 
-/** Strictly parse detached author data before the trusted view owner binds it. */
+/** Strictly parse detached author data before the native view owner binds it. */
 export function parseClientChannels(input: unknown): ClientChannelProgram[] { return v.parse(ClientChannelsSchema, input); }
 
 /** Bounded read-only numeric capabilities for a privately owned playback group. */
-/** Admit only bounded paths; trusted owners are supplied separately and are never writable channels. */
+/** Admit only bounded paths; native owners are supplied separately and are never writable channels. */
 export function parseClientChannelInputs(input: unknown): v.InferOutput<typeof numericInputs> { return v.parse(numericInputs, input); }
 
-/** Data-only private scene construction: geometry, textures and graph materials stay in trusted owned ports. */
+/** Data-only private scene construction: geometry, textures and graph materials stay in host-owned owned ports. */
 const sceneCoordinate = v.pipe(v.number(), v.finite(), v.minValue(-1e5), v.maxValue(1e5));
 const sceneVector = v.tuple([sceneCoordinate, sceneCoordinate, sceneCoordinate]);
 const sceneChildren = v.pipe(v.array(name), v.maxLength(128));

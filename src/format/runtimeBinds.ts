@@ -2,11 +2,11 @@ import type { Shardfile } from './shardSchema.ts';
 import * as v from 'valibot';
 
 /**
- * The behaviour sections a trusted hybrid runtime may bind (SHARD-PLATFORM M3, the runtime-owner binding, E435). A hybrid
+ * The behaviour sections a native runtime may bind (SHARD-PLATFORM M3, the runtime-owner binding, E435). A runtime shard
  * shard's runtime owns its world and its play scope; a section named here stays declared data in the shardfile, validated
  * like every row, and the platform installs it into that runtime's play scope through the same installers the template
- * uses (`@wildshard/game/shardfile/hybridRows`). The data client never installs a bound section a second time, and a bound
- * section's rows do not make a hybrid shardfile "non-empty": only an unbound behaviour row sends a hybrid shard down the
+ * uses (`@wildshard/game/shardfile/runtimeBoundRows`). The data client never installs a bound section a second time, and a bound
+ * section's rows do not make a runtime shardfile "non-empty": only an unbound behaviour row sends a runtime shard down the
  * full shardfile loader.
  *
  * - `quests`: quest graphs, flags and dialogue; the runtime supplies its flags and places world-piece markers.
@@ -25,14 +25,14 @@ import * as v from 'valibot';
  *   Its Wasm roots remain verified product files and never create a data-client host.
  * - `clientChannels`: copied clock/state observations and bounded straight-line numeric expressions; the runtime
  *   binds private visual targets, never authoritative state or player objects.
- * - `terrain`: a trusted runtime owns the terrain queries and draw construction. The data client omits those rows;
+ * - `terrain`: a native runtime owns the terrain queries and draw construction. The data client omits those rows;
  *   unbound drawn tiles use the page's shared tile streamer. Edge rows remain platform data.
- * - `loot`: the trusted runtime consumes the original economy rows; only the secondary data client omits them.
+ * - `loot`: the native runtime consumes the original economy rows; only the secondary data client omits them.
  * - `props` (G227): the compiled props section (tiles, library models, panels, far proxy), bound the same way; the
  *   runtime keeps the behaviour of the pieces it dresses.
  */
 export const RUNTIME_BOUND_SECTIONS = ['quests', 'ledger', 'items', 'spawns', 'state', 'terrain', 'props', 'modes', 'clientChannels', 'movers', 'loot'] as const;
-/** One section a trusted runtime binds rather than the data client. */
+/** One section a native runtime binds rather than the data client. */
 export type RuntimeBoundSection = (typeof RUNTIME_BOUND_SECTIONS)[number];
 /** `runtime.binds`: the declared capability that replaces the implicit "empty apart from audio, edges and colliders" rule. */
 export const RuntimeBindsSchema: v.GenericSchema<RuntimeBindsRowsInput, RuntimeBindsRows> = v.pipe(v.array(v.picklist(RUNTIME_BOUND_SECTIONS)), v.maxLength(RUNTIME_BOUND_SECTIONS.length),

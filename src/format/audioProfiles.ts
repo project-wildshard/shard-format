@@ -289,7 +289,7 @@ export interface AudioAmbienceRouting { probes?: ({ kind: 'bounds'; id: string; 
   prewarmMissing?: boolean; list: { id: string; ir: string; weight: string; level: AudioMixExpr; feeds?:
   string[]; }[]; }; zoneNames: string[]; samples?: { startDelay: number; tap: string; beds: { id: string; out:
   string; panned: boolean; }[]; }; activeGains?: [ string, string | number ][]; }
-/** Bounded zone/mixer data. Terrain, moving emitters and bespoke synthesis remain trusted runtime ports. */
+/** Bounded zone/mixer data. Terrain, moving emitters and bespoke synthesis remain native runtime ports. */
 /** Sampled loop levels and seeded distant calls; native mixers own playback. */
 const sampleInterval = v.pipe(v.tuple([v.pipe(finite,v.minValue(0),v.maxValue(600)),v.pipe(finite,v.minValue(0),v.maxValue(600))]),v.check(row=>row[0]<=row[1]));
 export const AudioSampleMixSchema: v.GenericSchema<AudioSampleMix> = v.pipe(v.strictObject({

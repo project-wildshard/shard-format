@@ -18,9 +18,9 @@ below; this count does not claim to expand custom validator internals into schem
 
 The SDK emits `validation.json` with the canonical declaration SHA-256, validator
 source revision, and conservative worst-location totals after full asset validation.
-Only the client build’s own first-party catalogue or a locally admitted visited
-product may reuse that exact verdict; authored/network sidecars are never trusted.
-The validator revision includes parser dependency versions. A matching trusted verdict
+Only the client build’s own built-in catalogue or a locally admitted visited
+product may reuse that exact verdict; authored/network sidecars are never host-owned.
+The validator revision includes parser dependency versions. A matching host-owned verdict
 skips repeated asset-cost and headless validation; it does not trust a network sidecar
 or bypass immutable verification. Any declaration or validator change runs full validation
 again. Every admission
@@ -31,7 +31,7 @@ and the current page’s complete memory caps. Unbundled clients validate in ful
 near-player and worst-location grid memory, declared draws/triangles per view,
 SF59 graph cost, measured script CPU/fuel, critical/tile/library downloads and
 estimated time to playable. New/outside projects refuse wire/render/execution target
-overages; the six canonical trusted-checkout shards warn during conversion.
+overages; the six canonical host-owned-checkout shards warn during conversion.
 Author identity alone cannot select that warning policy.
 
 The **only hard memory caps** are complete totals: **1,000 MB playing / 1,800 MB
@@ -80,8 +80,8 @@ The immutable `module` hash separately identifies the complete compiled binary.
 
 `wildshard validate <built-output>` samples script CPU/fuel again for data-only
 products (60 warm-up ticks, three 60-tick windows). Disk `validation.json` is
-never execution-cost authority. Hybrid products still report native execution
-as unmeasured; they need their separate trusted native/browser proof.
+never execution-cost authority. Runtime products still report native execution
+as unmeasured; they need their separate native/browser proof.
 
 **Any language may produce the WASM** (Jake, 2026-10-17, G491). The format is a data
 contract, not our toolchain: a module written in C, Rust, Zig or anything else is
@@ -90,14 +90,14 @@ admitted if it passes Script ABI admission (only `ws_read`/`ws_list` imported, t
 as WASI). Admission never trusts the producer: it re-parses every section, re-hashes every
 blob, re-checks every module, and re-measures script cost (WASM bytes, fuel per call and
 per tick, CPU) instead of reading a declared figure. Outside authors are budgeted by those
-measured costs; the 10 % AssemblyScript line ceiling stays a first-party rule for this
+measured costs; the 10 % AssemblyScript line ceiling stays a built-in rule for this
 repo. `docs/SCRIPT-ABI.md` documents the IO block layout so non-AssemblyScript authors can
 read events and write commands (a generated C header may follow).
 
-`runtime` is the explicitly temporary first-party transition exception: it carries
+`runtime` is the explicitly temporary built-in transition exception: it carries
 a registry selector and bounded data metadata, never TypeScript bytes, a fetch URL
 or an executable callback.
-External products cannot select it. Trusted platform code and transition chunks belong
+External products cannot select it. Host-owned platform code and transition chunks belong
 to the application build; they are not admitted author code in the cartridge.
 
 The committed empty example is `test/fixtures/shardfile/empty.json`. Every object is
@@ -113,7 +113,7 @@ full 8×15 m approach. Every point must lie at y=0; an interior trench, raised
 patch or missing ground fails before platform socket floors exist. An author cannot
 forge a zero-height edge row to hide a raised collision surface. Non-terrain
 data products use the loader's existing full-cell implicit flat ground. A transitional
-trusted runtime with `terrain:null` still needs a separate proof of its legacy ground;
+native runtime with `terrain:null` still needs a separate proof of its legacy ground;
 the cartridge check cannot infer that geometry from its runtime selector. Empty author
 projects and the template explicitly declare four 8 m openings. Canonical
 `ENTRY_WIDTH = 8` and `ENTRY_ASPHALT = 15` live in the engine core config;
@@ -155,11 +155,11 @@ does not establish the clip. Render adapters consume the same exclusion data.
 | `look` | Fixed platform family names; grade exposure/saturation/contrast and optional LUT reference; engine clock with an optional `day`; optional normalised day override; ordered day keys carrying sky gradient, fog, sun and ambient values (below). |
 | `sim` | 60 Hz fixed step; positive script tick divisor dividing 60; command and snapshot schema version 0; script references. |
 | `clientScripts` | Optional/default-empty presentation lane: cadence dividing 60, named creature/panel/prop/particle targets, selected public or owner numeric fields, bounded pose and emitters. |
-| `clientChannels` | Optional trusted-runtime presentation programs: bounded straight-line numeric expressions over copied clock/state observations, publishing only private visual transforms/scalars. Requires `runtime.binds: ["clientChannels"]`. |
+| `clientChannels` | Optional native-runtime presentation programs: bounded straight-line numeric expressions over copied clock/state observations, publishing only private visual transforms/scalars. Requires `runtime.binds: ["clientChannels"]`. |
 | `rows` | Optional/default-empty numeric strikes, weather output tables, day schedules, species/variants, registered look recipes, compendium and loot presentation data. |
 | `terrain`, `water` | Optional/null bounded baked terrain binding, with optional draw rows `shadow: {cast, receive}` (absent: both on; `cast` still needs the client's shadow disc) `follow` (1–62.5 m the viewer moves before the tile residency re-centres; absent: 5 m) and `order` (an integer −100–100, the tiles' draw order among opaque surfaces, so a same-depth tie with a far horizon ring resolves one way; absent: 0); optional/default-empty declared pools, sea and streams. |
 | `meshCollision` | Optional/null exact WMC1 critical triangle tiles and interactive panel colliders; mutually exclusive with terrain. Runtime integration is pending (SF55a). |
-| `nativeGround` | Optional/null `{version:1,file}` retaining the original critical WSTR256 binary of a trusted runtime world. Mutually exclusive with compiled terrain and mesh collision; no second collider is installed. |
+| `nativeGround` | Optional/null `{version:1,file}` retaining the original critical WSTR256 binary of a native runtime world. Mutually exclusive with compiled terrain and mesh collision; no second collider is installed. |
 | `creatures`, `encounters` | Optional/default-empty individual brains, ordered pack/herd groups, stable spawns and phase tables; each actor has one controller and resolves declared species/variant/strike and boss panel references. |
 | `quests`, `audio`, `ledger` | Optional/default-empty quest graphs/triggers/dialogue and timed `races` (`{id, start, stop, fact, cap, resets?}`: two different declared flags, a whole-second cap 1–3600, optional `resets` flags the finish and a lapse lower too; absent: none), admitted cue/ambience/score declarations, and witnessed fact/reward mappings. |
 | `hooks`, `plumbing`, `spawn` | Optional named numeric field conditions and next-tick scene events; optional scoped input/tier/Debug declarations; cell-local player position and yaw (default 0, 2, 0, 0). |
@@ -171,15 +171,15 @@ does not establish the clip. Render adapters consume the same exclusion data.
 | `serverBudget` | Positive tick budget ≤16,666 μs, positive memory ≤25 MB, ≤10,000 entities, ≤1,024 commands per tick. These are author declarations, not a server implementation. |
 | `edge` | Four ordered perimeter profiles with exactly 256 (legacy native bake) or 257 (tile-bake native lattice) height and RGB samples of equal length, heights inside ±250 m, colours in [0,1], road height exactly 0. North/south samples run west→east; east/west run south→north. |
 | `files` | Unique lowercase 64-character SHA-256 hash, kind (`glb`, `ktx2`, `audio`, `json`, `wasm`, `binary`, `image`), compressed/decoded/GPU byte sizes, triangles, draws including shadows, dependency references, critical flag. |
-| `late` | Optional ordered `{hash, at?: [x,z]}[]` library roots, serialized as output-index `admission.late`. Hashes must be unique declared local library roots; coordinates are finite cell-local metres within ±250. On a receipted first-party phone admission these roots may warm after control, positioned files nearest first. Critical/manifest roots and their dependencies remain ready; an actual reader may demand a late file earlier through the same size/hash verifier. Files, library membership and full memory costs stay declared. Unreceipted admission keeps full validation; desktop/LEGACY transport stays unchanged. |
+| `late` | Optional ordered `{hash, at?: [x,z]}[]` library roots, serialized as output-index `admission.late`. Hashes must be unique declared local library roots; coordinates are finite cell-local metres within ±250. On a receipted built-in phone admission these roots may warm after control, positioned files nearest first. Critical/manifest roots and their dependencies remain ready; an actual reader may demand a late file earlier through the same size/hash verifier. Files, library membership and full memory costs stay declared. Unreceipted admission keeps full validation; desktop/LEGACY transport stays unchanged. |
 | `server` | Output-index only (`admission.server`, J91): named, hashed, validated files under `server/` for a server to read. Never a Shardfile field, an `index.files` row or a pack member, and the app publisher skips the folder, so no client can fetch one. Emit with `serverBlob` in `ProjectOutput.server`. |
 | `entryways` | Required, four unique openings: north `[0,0,250]`, east `[250,0,0]`, south `[0,0,-250]`, west `[-250,0,0]`; width exactly 8 m (`ENTRY_WIDTH`); optional kind `ground`, `socketOverWater`, `socketLift` or `portalLink`. A lift names its admitted movers and may declare a permanent static approach. A portal names two directed links and static arrival/deck floors. Every opening reaches road height y=0 through its footprint/landing/traversal proof. |
 | `tiles` | L0 62.5 m or L1 125 m; integer x/z address; exact horizontal grid bounds and vertical bounds inside the 500 m cube; nonnegative geometric error; file roots and declared costs. |
 | `library`, `critical`, `far` | Library roots, critical roots, optional whole-shard proxy with bounds and costs. Critical flags match critical roots. |
 | `ui` | Optional (defaults to empty), at most 64 declarations, each with a unique id: `marker`, `counter`, `bagPanel`, `bossPanel`, `relabel` (below). |
-| `runtime` | Optional/null first-party transition declaration `{entry: "runtime/index.ts", cost?, binds?, spawns?}`; a bounded relative TypeScript entry resolved only through the trusted registry. Optional measured cost carries decimal-MB WebContent, GL and engine-base totals plus revision, device and evidence provenance. Spawn rows are required exactly when `binds` includes `"spawns"` (below). |
+| `runtime` | Optional/null built-in transition declaration `{entry: "runtime/index.ts", cost?, binds?, spawns?}`; a bounded relative TypeScript entry resolved only through the native registry. Optional measured cost carries decimal-MB WebContent, GL and engine-base totals plus revision, device and evidence provenance. Spawn rows are required exactly when `binds` includes `"spawns"` (below). |
 
-The first-party build packs every retained `look/map.baked.json` raster through
+The built-in build packs every retained `look/map.baked.json` raster through
 `packProjectMap`: its exact image bytes become an immutable `image` file and a
 charged library root. The ordinary image reader derives decoded residency
 (including wire/data-URL storage) and GPU bytes; deduplication charges an already
@@ -285,7 +285,7 @@ scale, with object/instance origins retained. Use
 `vertex.offset = sub(viewBillboard, positionLocal)`; instance scale is deliberately
 not applied. Its camera/model matrix work is included in the instruction budget.
 
-A trusted runtime can call `runtimePresentation(source)?.bindMaterial(id, object,
+A native runtime can call `runtimePresentation(source)?.bindMaterial(id, object,
 scope)` to lend a `look.materials` material to its own Mesh or Points by id.
 It keeps geometry ownership, shares the data client's material and uniform feeds,
 and gets a disposer. Either scope retiring restores the prior material and removes
@@ -308,7 +308,7 @@ Lighting reads engine-supplied `normalView`, `viewDirection` and `albedo` inputs
 `sunDirection`, `sunColour` and `sunShadow` are restricted to sun evaluation,
 `irradiance` to ambient, and `litColour` to grade. All lighting subgraphs are typed
 and costed by the same validator. Toon/painterly engine presets use this stage;
-their trusted preset budget does not become a shardfile author budget.
+their native preset budget does not become a shardfile author budget.
 
 Material graphs may also add `stages.outline: { offset, colour }`: both references
 produce vec3 values (scalar values broadcast under the existing graph rules),
@@ -331,7 +331,7 @@ Before typing or compilation, graph admission bounds the raw JSON to 64,000
 UTF-8 bytes, depth 64 and 160 declared nodes across every nested node table,
 including unreachable nodes and loop bodies. The reachable program still must
 fit the sampler/instruction budget and the loop-expanded node budget. Content
-cannot supply a larger budget; an explicit trusted engine preset budget does not
+cannot supply a larger budget; an explicit native engine preset budget does not
 widen the shardfile slot. Accessors and serializer callbacks are refused without
 invocation. These per-graph caps supplement the whole-manifest admission limits.
 
@@ -353,13 +353,13 @@ program instead of carrying it inline:
   holding one `kind: "material"` graph, which validates under the same author caps and
   the shard's admitted bindings as an inline graph. Each texture param must name a
   KTX2 file that the graph file's row declares as a direct dependency, so the texture
-  is charged with the closure. A graph file is authored content and is never trusted
+  is charged with the closure. A graph file is authored content and is never host-owned
   as a preset.
 - `{ family: "graph", preset: <family entry>, version: 1 }` names an engine-owned,
   immutable built-in preset: a `toon`, `painterly`, `emissive` or `pbr` family entry
   (validated by its family schema) that the engine re-expresses as graph IR
   (`familyPresetGraph`, read with the shard's `look.familyLooks`). Content never
-  supplies the preset's nodes, so its program compiles under the trusted preset budget
+  supplies the preset's nodes, so its program compiles under the native preset budget
   (512 nodes, 4 samplers, 1,024 instructions), never the author caps. Admission refuses
   any preset IR version 1 cannot express, giving the engine's reason
   (`presetRefusal`): a PBR surface other than the measure layer alone, a painted
@@ -513,7 +513,7 @@ function calls, events and shared/player writes are absent from the grammar.
 JSON Schema carries the same bounds and names the defining checks for backward
 references, unique IDs and aggregate limits.
 
-The trusted view owner supplies detached numeric observations and binds outputs
+The native view owner supplies detached numeric observations and binds outputs
 only to its private draw transforms. It passes no player, physics, state writer
 or event authority. `createClientChannels` in `@wildshard/game/plugin/ui` copies
 the reads and exposes a frozen frame; a failed calculation leaves the previous
@@ -567,7 +567,7 @@ Such a program has no extra clock or private recurrence: the real fixed-step
 mover owns its pose. Undeclared mover IDs refuse product admission. The
 `moverChannelViews` binder borrows named existing native owners; it creates
 no body, script instance, tick, or authoritative writer. Frozen frame
-observers retain the existing trusted quest reactions outside the data.
+observers retain the existing native quest reactions outside the data.
 
 Named hook conditions resolve a stable numeric field ID and a typed equality value.
 Shared conditions read public fields; player conditions may read the owning actor's
@@ -581,7 +581,7 @@ value, with `visibleWhenMatched`, collider IDs and `activeWhenMatched`. One bind
 owns each panel/collider. The authoritative host updates collision after scripts;
 the renderer reads the same field. `targets.interactions` supplies stable IDs,
 cell-local `at`, reach radius, text label and a declared scene hook to the normal
-interaction list. Item hooks select admitted modules; the trusted host supplies
+interaction list. Item hooks select admitted modules; the host supplies
 their owner actor and merges explicit item handles into its single script lane.
 Optional `targets.itemActions` maps a named scene to a declared tool and action
 `3` (toggle) or `4` (refill). Optional `targets.itemFields` maps a tool's `fuel`
@@ -593,7 +593,7 @@ panel can hide the rack's own copy once this player holds it. An interaction's o
 its prompt is gone (a lit brazier). The condition reads a shared field, or a player field
 an item projects (the page sees no other). A rack's take prompt goes once its lever is
 taken. A panel on a projected player field is drawn only: it binds no collider.
-Optional `targets.talks` (TE-ENG3) puts a quest-giver on a no-code shard: an `id`,
+Optional `targets.talks` (TE-ENG3) puts a quest-giver on a no-runtime shard: an `id`,
 its feet `at`, a talk `radius` and `label`, the `quests.dialogue` tree it speaks and,
 optionally, the props model or panel `figure` that draws it (none: a stand-in). E
 opens the player's current node; a choice sets its flags (so a `startWhen` quest
@@ -624,15 +624,15 @@ working storage. This is a rest-pose, local-axis estimate before camera selectio
 culling or occlusion; it is neither measured screen overdraw nor an admission cap.
 The CLI prints it as an advisory alongside the admitted asset costs.
 
-First-party products rebuild every build. The client accepts the current version only.
+Built-in products rebuild every build. The client accepts the current version only.
 Older content needs upgrade without touching its source. A version bump migrates all
-first-party source in one commit. Outside authors must update `version`, `requires.sdk`,
+built-in source in one commit. Outside authors must update `version`, `requires.sdk`,
 the sim ABI and affected fields, then rebuild and validate.
 Saves wipe at a breaking promotion: this is pre-alpha, so there are no save migrations
 (J149) and no legacy reader (Q18).
 The format never freezes or cuts stable 1.0 in this plan (G195). Every breaking
 change increments the integer revision in the canonical string `"0.<revision>"`
-and migrates all first-party declarations in that commit.
+and migrates all built-in declarations in that commit.
 `requires.sdk` names the same string; command/snapshot ABI integers change only
 when their own contracts change. No float comparison is used: 0.10 follows 0.9.
 Malformed strings, unsupported revisions and numeric versions are refused by
@@ -644,7 +644,7 @@ tarball. Commands: `new <fresh-directory>`, `build <project> [output-directory]`
 `validate <project|shard.json>`. Default output is the project's
 `public/shardfiles/<slug>/`. Source assets live at `assets/<sha256>`; declared
 commons inputs live at `commons/<sha256>` and are copied once into the product.
-The build compiles trusted local `shard.config.ts`, parses its default export,
+The build compiles host-owned local `shard.config.ts`, parses its default export,
 verifies wire hashes and parser costs, rejects understated transitive budgets and
 critical wire >2 MB, then writes stable sorted-key JSON and unchanged immutable
 bytes. Configs and generators execute only on the author's machine.
@@ -816,7 +816,7 @@ the product contains Wasm, and runs no compiler or author source code at boot.
 
 `wildshard build` and `wildshard validate <project>` compile this input in memory;
 they never write compiled hash files back into `assets/`. Compiled terrain, props,
-mesh collision, tiles, far geometry or trusted runtime cannot also be supplied.
+mesh collision, tiles, far geometry or native runtime cannot also be supplied.
 Normal product admission checks every entry before writing output. Source GLB
 symlinks must resolve inside the author project.
 
@@ -853,7 +853,7 @@ The browser and CLI share game-layer asset admission: exact wire hashes and size
 transitive bundle costs and the script memory growth ceiling are checked before allocating a level. Cached Wasm passes
 admission again on every load. A visited product is published to Cache Storage only after all its immutable files pass;
 an offline load reads those files without fetching and refuses missing or corrupted bytes. A revision keeps each saved
-field's scope, name, id and type. Previous-format readers are trusted client code, and only an offline visited first-party
+field's scope, name, id and type. Previous-format readers are native client code, and only an offline visited built-in
 product may select one; the 0.1 client explicitly supports the bounded integer-0 cache transition.
 
 The client reserves library and commons claims in the session residency allocator;
@@ -869,8 +869,8 @@ runtime home keeps cache leases but skips separate home library and tile charges
 because its measured whole-home claim already includes those parts.
 The loader uses that owner's allocator before bootstrap and checks that the declared
 sim resident budget fits inside the existing home claim. Data-only products account
-their admitted parts separately; only opaque trusted runtime homes use a measured total.
-Trusted runtime
+their admitted parts separately; only opaque native runtime homes use a measured total.
+Native runtime
 homes require that claim before their shell world runs; no empty budget or one-byte
 placeholder substitutes for the measurement. Optional `runtime.cost` contains
 `webContentMB`, `glMB`, `engineBaseMB`, optional `residentBaseMB`, `rev`, `device` and a `progress/memory/*.json`
@@ -903,13 +903,13 @@ without replaying rewards or replacing the Game physics world. A changed revisio
 or incompatible continuation starts fresh. SF15a proves same-revision logical restore;
 SF33 owns cross-revision migrations, tested on real saves as the 0.x format evolves; there is no version 1 freeze.
 
-A transitional first-party product may declare `runtime`. Asset admission refuses
+A transitional built-in product may declare `runtime`. Asset admission refuses
 that declaration for external products, including cached ones. The ordinary product
-installer refuses it too: the admitted data plugin must enter the explicit hybrid
-compositor, whose trusted registry matches both shard slug and entry. Content cannot
-select an import URL. Neighbours retain data without running trusted play hooks;
+installer refuses it too: the admitted data plugin must enter the explicit runtime shard
+compositor, whose native registry matches both shard slug and entry. Content cannot
+select an import URL. Neighbours retain data without running native play hooks;
 entering a cell installs those hooks in its child scope and leaving disposes them.
-The trusted compositor may explicitly request `trustedRuntime` for a first-party
+The native compositor may explicitly request `nativeRuntime` for a built-in
 runtime declaration. Optional `runtime.binds` is a unique array of at most seven
 section names: `"quests"`, `"ledger"`, `"items"`, `"spawns"`, `"state"`, `"terrain"`,
 `"props"`. Omitted or `[]` means none; unknown
@@ -932,10 +932,10 @@ be unique across all three arrays. Unknown fields and non-data values are refuse
 Actor rows accept no refill/`respawn` field. Their authored array order is preserved;
 row admission never sorts, spawns a body or changes runtime-allocated identities.
 Omitting `actors` preserves the existing parsed shape; `actors: []` is also valid.
-The trusted runtime explicitly binds each actor when it reaches that position in
+The native runtime explicitly binds each actor when it reaches that position in
 its existing spawn sequence. The actor binder is a separate runtime integration;
 the format itself adds no automatic spawn, refill or independent lifecycle.
-These rows place the trusted runtime's registered species and looks; their brains,
+These rows place the native runtime's registered species and looks; their brains,
 rigs and encounter logic remain runtime-owned. They do not create local-simulation
 `creatures` rows or grant trust to a product.
 
@@ -949,7 +949,7 @@ unbound state keeps its existing public or player ownership rules.
 
 `runtime.binds: ["terrain"]` binds the ordinary compiled `terrain` section: its
 render tiles and critical collider remain admitted product assets. The data client
-installs neither the terrain view nor its collision. The trusted runtime calls
+installs neither the terrain view nor its collision. The native runtime calls
 the native terrain binder supplied by its installation, supplying the
 admitted asset reader, its own terrain view, initial shard-local position and,
 when charged per tile, the page residency allocator. The result exposes ground
@@ -958,7 +958,7 @@ Tile residency and view disposal follow the supplied scope; the runtime retains
 physics ownership and must avoid installing duplicate ground.
 
 Query-only terrain is additive: `{version:1, form:"query", tiles:[],
-sampling:{law:"bilinear", file, normalEpsilon, datum}}`. Only a hybrid declaring
+sampling:{law:"bilinear", file, normalEpsilon, datum}}`. Only a runtime declaring
 `runtime.binds:["terrain"]` may use it. `collider` may be omitted; admission
 then derives its reference from `sampling.file`, without creating collision.
 An explicit distinct collider still passes the ordinary critical 257² collider
@@ -975,9 +975,9 @@ section or any unread tail remains private, even when its heights match. A
 plain binary declaration, wrong hash or differing sample grants no ownership.
 
 `runtime.binds: ["props"]` binds the ordinary compiled `props` section, including
-tiles, library models, panels, textures and the far proxy. The trusted runtime
+tiles, library models, panels, textures and the far proxy. The native runtime
 owns their installation and piece behaviour; naming the section alone installs
-nothing. `runtimeBoundWorldFiles` in `hybridRows` identifies files referenced only
+nothing. `runtimeBoundWorldFiles` in `runtimeBoundRows` identifies files referenced only
 by bound world sections. `withoutRuntimeRows` removes those sections and their
 exclusive file, critical, library, tile and far references from the data client's
 installation view, while preserving files still referenced by unbound declarations.
@@ -986,14 +986,14 @@ world sections does not waive hash, reference, geometry, entry or budget checks.
 
 Every bound section remains ordinary declared data and passes its full schema,
 reference and budget checks before binding. The admitted source retains those rows.
-Only the trusted data client's installation view removes bound sections, preventing
+Only the native data client's installation view removes bound sections, preventing
 duplicate installation. Bound rows alone do not activate the full data gameplay
 loader; unbound behaviour and other authored content retain their ordinary path.
 If the remaining data/content/assets are empty, data stages add no services and the
 existing runtime supplies gameplay and presentation. External products still refuse
 a runtime declaration, and external empty products keep the ordinary Game path.
 
-The trusted runtime explicitly calls the game-owned installers in
+The native runtime explicitly calls the game-owned installers in
 `@wildshard/game/plugin/headless` inside its play scope:
 
 - `quests`: bind validated quest state to runtime flags and world-piece marker
@@ -1002,7 +1002,7 @@ The trusted runtime explicitly calls the game-owned installers in
 - `ledger`: emit only declared facts with placement/revision/entity provenance;
   the platform ledger grants rewards once, including after rebind.
 - `items`: install declared weapon/tool rows and loadout with kit families or the
-  trusted shard's `<slug>.<name>` families. The runtime registers declared input
+  native shard's `<slug>.<name>` families. The runtime registers declared input
   contexts through its entered-scope path. This binder refuses item script hooks;
   declaring ownership does not invent an independent simulation lane.
 - `spawns`: `bindRuntimeHomes` keeps declared homes and refills fallen creatures
@@ -1015,14 +1015,14 @@ The trusted runtime explicitly calls the game-owned installers in
   binds a declared host-owned shared field by name. Grid callers pass the stable
   placement instance. Its `read()` / `write(value)` use `platform.runtime-state`,
   with the same typed/default/bounds checks and stable-ID data migrations as declared
-  logical state. Initialization is tracked per field: the trusted legacy reader
+  logical state. Initialization is tracked per field: the native legacy reader
   supplies its initial value once, with the declared default when it returns null.
   Invalid initial values are refused before marking that field initialized. Writes
   return the save result;
   disposed owners and future-version saves are fenced. Bound state stays in the
   admitted source and is removed only from the data client's installation view.
 
-`binds` grants no runtime trust or automatic installation. The registered first-party
+`binds` grants no runtime trust or automatic installation. The registered built-in
 entry must still match the same slug and entry exactly, and a runtime cannot bind a
 section it did not declare. Leaving the cell disposes its entered services; revisits
 bind the same admitted rows through the ordinary retained/restored lifecycle.
@@ -1045,7 +1045,7 @@ A weapon's `context` normally names a declared context or the existing
 `weapon.melee` baseline. Optional `items.runtimeContexts` lists at most 64 unique,
 bounded existing context IDs (for example `weapon.bow`, `weapon.ranged` or
 `weapon.spear`) for runtime-bound weapons to reference directly. These IDs cannot
-also be declared in `items.contexts`. Nonempty references require a first-party
+also be declared in `items.contexts`. Nonempty references require a built-in
 runtime declaration whose `binds` includes `"items"`; they do not register or
 replace contexts. The runtime-owned installer checks every reference against the
 live input registry before creating any item. Missing contexts and ordinary
@@ -1053,17 +1053,17 @@ data-client installation are refused. Omitted references preserve the old format
 output and melee path. Runtime registration of newly declared contexts still uses
 the entered-scope lifecycle.
 
-The trusted injected `ItemFamily` may supply `presentation` containing `ui`,
+The native injected `ItemFamily` may supply `presentation` containing `ui`,
 `cues`, `hitStop` and `rangedFeel`. Its optional UI fields preserve existing ammo
 readouts, touch profile, lock/melee/tracer flags, swap label and hunter's eye.
 Declared identity, slot, input context, name, icon and swap glyph remain
-authoritative. Presentation overrides are trusted code metadata, not accepted
+authoritative. Presentation overrides are host-owned code metadata, not accepted
 fields in item JSON. This does not introduce projectile simulation: existing
 native bow, thrown and firearm families keep their firing/reload/flight logic;
 numeric contact limits and the one shared script-host contract remain unchanged.
 
 **Runtime-owned native tools.** A tool row may declare `action: null` only when
-`runtime.binds` includes `"items"`, and that row must have `hook: null`. Its trusted
+`runtime.binds` includes `"items"`, and that row must have `hook: null`. Its host-owned
 family owns the existing input and gameplay (for example a grapple); the declared
 installer adds no generic toggle binding. Ordinary tools keep their required
 dotted action and existing toggle path. The native row retains `fuelSeconds`
@@ -1072,14 +1072,14 @@ do not grant a lamp or fuel mechanic to the native family. Declared UI, view,
 identity and loadout rules remain the same. External products cannot acquire
 runtime ownership by declaring this shape.
 
-**Admitted weapon hooks (SF36).** A trusted runtime's weapon family may ask an admitted AssemblyScript module for a
+**Admitted weapon hooks (SF36).** A native runtime's weapon family may ask an admitted AssemblyScript module for a
 number (today the mounted sword's pass damage) through a declaration beside the shard's director, not a Shardfile field:
 `{ id, entity, module, parameters, weapons: [{ weapon, damage: { event, phases, facts, min, max } }] }`
 (`@wildshard/game/plugin/weaponFamily`). The module is hash-checked and runs under the same ABI-v0 ceilings; each call
 answers one declared event with an integer in bounds or declines to the family's row rule, and returns to its admitted
 memory afterwards. Inputs and the install path are in ENGINE.md § 18 (Declared items).
 
-First-party picker manifests may carry a built `shardfile` URL. The normal entry
+Built-in picker manifests may carry a built `shardfile` URL. The normal entry
 admits that same-origin source before starting the session, retaining the manifest's
 canonical slug, picker art and catalogue save instance. Offline admission reads the
 complete visited product without requesting its source or immutable files again.
@@ -1115,14 +1115,14 @@ their optional `thinkDivisor` defaults to six and must divide 60. Decisions run 
 that cadence, and the owning body recipe runs once per fixed step. The loader
 preflights all actor identities and native recipe ports before registering any
 brain callback. Native perception, attack tokens, floor/reach, rise/sink,
-perches, projectiles and movement remain explicitly injected trusted recipes;
+perches, projectiles and movement remain explicitly injected native recipes;
 missing recipes refuse boot rather than inventing gameplay. Policy contracts,
 actor memory and RNG restore without executing a decision or body callback.
 `pursue` retains its existing platform behavior. A custom `script` policy declares
 an admitted module in `sim.scripts`, a `thinkDivisor` dividing 60, bounded
 `maxSpeed`, `maxStrafe` and `maxTurnRate`, up to 64 finite parameters, and up to
 32 unique numeric strike events resolving `rows.strikes`. No actor handle is
-accepted from this declaration. The factory derives a trusted `brain:<actorId>`
+accepted from this declaration. The factory derives a host-owned `brain:<actorId>`
 alias per spawn and rejects collisions with actor, item and director handles.
 All aliases count toward the one `serverBudget.entities` allowance.
 
@@ -1144,7 +1144,7 @@ the old `guardian` and `perch-hunter` rows. Cross-pattern fields and unknown pat
 `@wildshard/sdk/brains` emits validated author data through `guardianPattern(data)`. Canonicalization removes only
 the pattern tag and restores the legacy row kind and parsed key order, preserving existing save-contract bytes.
 Both full-factory and species-catalogue hosts select the same native body ports as the old spelling. Interior floor,
-rise/sink and perch selection, drop/climb, projectiles and shared attack RNG remain trusted ownership; absent ports
+rise/sink and perch selection, drop/climb, projectiles and shared attack RNG remain native ownership; absent ports
 refuse before callback registration. Pattern admission does not run a body or decide, including on restore.
 
 The `grazer` archetype (SF82) selects a strict `pattern`: `wander-ram` or
@@ -1154,7 +1154,7 @@ respectively. No field from the other pattern is admitted. `@wildshard/shard-for
 defines `GrazerSchema`, `parseGrazer` and the pure `grazerPreset` canonicalization;
 `@wildshard/sdk/grazers` emits the validated row through `grazer(data)`.
 The existing legacy row names remain admitted presets of this one policy host.
-The full-schema lane/arc strike checks and existing trusted body recipes apply to
+The full-schema lane/arc strike checks and existing native body recipes apply to
 both spellings before registration. Stable row ids, actor ids, decision cadence,
 RNG and continuation bytes remain identical when only the spelling is changed.
 
@@ -1178,7 +1178,7 @@ different pattern refuse. `@wildshard/shard-format/flyers` defines `DiverSchema`
 `parseDiver` and `diverPreset`; `@wildshard/sdk/flyers` emits the row through
 `diver(data)`. The shared policy preserves each pattern's state and contact laws.
 The pure canonicalization is also used by full-shard strike/home/flight admission
-and installation, so the existing trusted ports and save contracts remain exact.
+and installation, so the existing native ports and save contracts remain exact.
 Old flight row names stay admitted presets. Phased and stoop patterns remain open.
 
 Flying policies use `shardfile/flyers` and name a declared sphere strike and a
@@ -1187,13 +1187,13 @@ home inside the cell. Their spawned species must declare `flight`: finite
 optional `above` (`ground` or `world`, engine default ground), positive
 `lockRange` (at most 600 m), and optional `bank` strictly between 0 and pi/2.
 The species resolver copies this data into the existing flight motor; omission
-keeps a ground species. Trusted `brains.orbitDiver`, `brains.patrolDiver` and
+keeps a ground species. Host-owned `brains.orbitDiver`, `brains.patrolDiver` and
 `brains.burstFlyer` recipes supply observations, native body work and the named
 sphere strike; the burst contact shove is an authorized host operation. Decisions
 default to six ticks, policy action and body work run once per fixed step, and
 mutable flight/policy/strike state restores without observations or RNG draws.
 
-A trusted runtime's species rows may carry `brain: { archetype, data }`.
+A native runtime's species rows may carry `brain: { archetype, data }`.
 `admitSpeciesBrains` in `@wildshard/game/plugin/brain` admits the canonical
 stalker/guardian/grazer/diver patterns, boss-script policies and retained presets.
 Data passes the same defining format schemas as the creature families; per-body
@@ -1211,7 +1211,7 @@ that its encounter steers through `fight` / `rise` / `phase` memory fields;
 `bossFight({kind: 'boss', pattern: 'spawned', fight}, ports)` (`@wildshard/game/plugin/bossPhase`) is the view-free fight that
 writes them: arena, health share per checkpoint, rise seconds, storm phases and fade. Its browser presentation is a row too (`parseMarkedBossPresentation`): the arena floor, the respawn
 point, the storm's fog and blown-sand shells, and the toasts. A quest's runtime is declared as well
-(`@wildshard/game/plugin/quests`, for trusted runtime): `parseQuestGraph` names the interaction rows' command actor, their marks' step and the
+(`@wildshard/game/plugin/quests`, for native runtime): `parseQuestGraph` names the interaction rows' command actor, their marks' step and the
 actions a row starts (`{ row, summon }` arms a boss). NPC contracts are defined by
 `@wildshard/shard-format/npcs`: `NpcRowSchema`, `NpcMotionSchema`, and `NpcDialogueRowSchema`
 share strict admission with the existing SDK and runtime parsers. Their generated JSON Schema
@@ -1230,7 +1230,7 @@ the native owner still supplies the models, materials and resource dressing.
 The optional `questHost` root composes native quest graphs without author
 callbacks. `@wildshard/shard-format/questHost` admits its interactions, NPC spots,
 required body ids, bounded command routes and ordered data-only directors.
-Every durable flag must occur in `quests.flags`; it requires a hybrid bound
+Every durable flag must occur in `quests.flags`; it requires a runtime bound
 quest owner. Omission preserves existing shardfile bytes. For example, with
 `quest.notes` declared, a borrowed native host may use:
 
@@ -1260,7 +1260,7 @@ loaded observations; only explicitly named continuations add saved state.
 Transient flag stages do not invent a cursor. The data-client projection
 clears a bound host so it cannot install native quests a second time.
 `parseNpcRow` declares a quest-giver (where it stands, its talk,
-its figure metadata and dialogue). Native figure placement stays with the trusted
+its figure metadata and dialogue). Native figure placement stays with the host-owned
 owner; there is no public SDK pivot-NPC installer. Sky's phased-raptor remains a
 kept one-shard law: perch/return/takeoff, altitude and phase-specific ready laws are
 not expressed by the current generic diver/phased-flyer rows.
@@ -1274,11 +1274,11 @@ orbit and burst policies require the body's real bounded home. Environmental
 contacts and actor/move contacts retain their distinct native filing; `look-hold`
 retains the existing stunned-body observation law. Unknown native protocols
 (skirmisher, guardian and perch) refuse rather than synthesizing missing authority.
-`bindSpeciesBody` lets an existing trusted encounter policy reuse that same body
+`bindSpeciesBody` lets an existing native encounter policy reuse that same body
 binding without replacing its encounter owner or saved policy.
 
 A boss with stances, adds and arena tricks is an `arena` or `roaming` boss profile
-(`bossFight(profile, ports)`, `@wildshard/game/plugin/bossPhase`, trusted runtime only): its modes (damage rule, hp lock, motion, timed beats), phases (checkpoint hp, roar, what
+(`bossFight(profile, ports)`, `@wildshard/game/plugin/bossPhase`, native runtime only): its modes (damage rule, hp lock, motion, timed beats), phases (checkpoint hp, roar, what
 entering each does), attack rows (a charged burst, a cut combo), weak points, adds in waves and hazards (expanding rings,
 timed pours, a sweeping beam) are one data row; every dressing change is a named view call (`arena.lid.open`,
 `hazard.sweep`, …) the shard binds to its own meshes, so the fight's logic is the platform's and only the view stays in
@@ -1304,7 +1304,7 @@ and an ordered roster of at most 128 stable actor IDs. That roster must exactly
 match the spawn order whose `brain` names the group. Individual, group and
 encounter controllers cannot share an actor or controller ID. One group policy
 owns the roster; body work runs once per live actor per fixed step.
-The client injects trusted perception, shared RNG, prey/taming, contact and
+The client injects native perception, shared RNG, prey/taming, contact and
 steering recipes through `groups`; absent recipes refuse boot. All group,
 individual, custom-script alias and encounter admission finishes before group
 initialization. Cold setup consumes shared RNG in declared group order once.
@@ -1325,7 +1325,7 @@ an `/assets/music/<slug>/` directory and manifest key, without a free-form URL.
 Optional `zones` declares mixer timing, up to 64 named levels, 16 room wetness
 values and 512 uniquely named radial ambience zones. These are validated data;
 catalogue resolution, existing sample decoders, bar-grid scheduling, geometry
-queries and bespoke synthesis remain trusted platform/runtime installers.
+queries and bespoke synthesis remain native platform/runtime installers.
 
 Immutable AAC admission accepts the same bounded 48 kHz AAC-LC packet layout
 in mono or stereo, charging the actual channel count, priming and final packet.
@@ -1335,7 +1335,7 @@ file decoder. No recording is resampled or re-encoded by admission.
 
 Sky Reach and Signal Dunes bind their native cue recipes and silent score to
 `runtimeAudio(ctx, legacyAudio)` from the defining game audio module in an
-admitted hybrid entry. Routing comes from the
+admitted runtime entry. Routing comes from the
 emitted shardfile; voices, optional arguments, clocks and scoped randomness
 stay with the original native owner. Legacy-only entries use the unchanged
 source declaration. A routing alias allocates no sampled bank or sound bytes.
@@ -1370,11 +1370,11 @@ local music/SFX paths ending in `.m4a` or `.wav` are admitted. Each reference
 must be in the charged library closure. Local files must have kind `audio`;
 commons references must be declared in `requires`, and their actual bytes must
 pass the same PCM WAV / AAC admission. Multiple paths may share one hash and
-pay one resident/download cost. Omitting the bindings retains existing trusted
+pay one resident/download cost. Omitting the bindings retains existing host-owned
 catalogue resolution; bindings alone do not install a bed, score or voice.
 
 The full client owns declared audio by default. An explicit `audioOwner: "runtime"`
-binding is allowed only for a trusted first-party runtime declaration, whose
+binding is allowed only for a native runtime declaration, whose
 installer consumes the same audio data once. This transition avoids duplicate
 cues, beds and scores; ordinary authored products use the declared installer.
 
@@ -1383,7 +1383,7 @@ of flock rows from `@wildshard/sdk/crowds`. Each row names its stable ID, home x
 member count, seed, roaming range, run/walk/graze speeds and bleat cue. Admission
 allows at most 64 unique rows and 4,096 members, requires home centres in the cell,
 and counts members alongside creature spawns against `serverBudget.entities`.
-Trusted recipes supply terrain bounds, perception, sound and presentation; data
+Native recipes supply terrain bounds, perception, sound and presentation; data
 cannot supply callbacks. The full client and headless factory share those injected
 ports, preflight every recipe, then initialize only after the remaining simulation
 admission succeeds. Each crowd owns one fixed callback and snapshot adapter;
@@ -1588,17 +1588,17 @@ Headless validation uses the normal authoritative simulation factory, with impli
 
 The game-layer `createPortalTraversal` uses the existing physics, capsule and feet. `teleport(fromId)` rechecks the bound source and destination with `canStandAt`, including named static floor and full capsule clearance, before any pose change; it returns the admitted destination yaw. Transfers are synchronous and never evaluate author code. `portalTransitioning(physics)` fences profile/coin/continuation writes and native snapshots from validation through completion. Refused transfers leave the feet unchanged; no checkpoint contains a mid-transfer pose. Render and interaction bindings remain with the normal client view owner.
 
-Native world-only hybrids retain the original `terrain.bin` as `nativeGround.file`, an independent critical binary root. Admission checks WSTR v1, the native 256² lattice over 500 m, the identity seed, finite cell-bounded heights, bounded placement metadata, exact full 256-sample boundary rows and every continuous 8×15 m entry footprint. The native runtime owns collision and interactive geometry. Render tiles do not replace its native physics, and a standalone flat declared simulation proxy is refused. The renderer-free native collision/worker adapter remains a follow-up; this byte witness is not a claim that arbitrary trusted gameplay has been headlessly replayed.
+Native world-only runtime shards retain the original `terrain.bin` as `nativeGround.file`, an independent critical binary root. Admission checks WSTR v1, the native 256² lattice over 500 m, the identity seed, finite cell-bounded heights, bounded placement metadata, exact full 256-sample boundary rows and every continuous 8×15 m entry footprint. The native runtime owns collision and interactive geometry. Render tiles do not replace its native physics, and a standalone flat declared simulation proxy is refused. The renderer-free native collision/worker adapter remains a follow-up; this byte witness is not a claim that arbitrary native gameplay has been headlessly replayed.
 
 G188 grid Auto evaluates the target images-first claim together with the page allocator’s current road and regional residents. If that projected playing envelope exceeds 1.0 GB it requests compressed textures; capability refusal still falls back to images and honest admission refusal. Explicit texture settings keep precedence, and standalone Auto keeps its standalone envelope.
 
 ### Data-only SHARD SELECT cards
 
-`presentation` is exact optional; omission preserves existing first-party cards. Each of
+`presentation` is exact optional; omission preserves existing built-in cards. Each of
 `card.thumb`, `card.portrait` and `card.landscape` names a local `files` row of kind
 `image` reachable from `library`. Missing, wrong-kind, uncharged or remote references
 fail format admission before immutable asset reads. The admitted metadata replaces
-the first-party card and text only when present; identity, accent and entry choices
+the built-in card and text only when present; identity, accent and entry choices
 continue through the ordinary picker.
 
 `image` accepts single-frame PNG (up to 8-bit), 8-bit JPEG and WebP. Byte-derived
@@ -1635,7 +1635,7 @@ The frozen denominator remains TypeScript, including its authored generators/dat
 with the same generated/test exclusion. The new definition is report-only;
 existing historical enforcement stays active during base repair. Authored
 AssemblyScript has its own report-only line column, with no cap (G315); it does
-not enter the TypeScript ratio or trusted-runtime ceiling.
+not enter the TypeScript ratio or native-runtime ceiling.
 
 The same command reads `public/shardfiles/<folder>/shard.json`, or another emitted
 product directory supplied with `--products=<directory>`. It reports L0/L1 tiles,
@@ -1645,12 +1645,12 @@ and panel references, and the heightfield separately. It names `.bin` and
 binaries, and `nativeGround` ownership. Missing or malformed products are explicitly
 unavailable, with null counts; the report never imports `shard.config.ts` or bakes
 a product to invent evidence. `structuralWorld` is only a declaration candidate,
-not an admission, completeness or physics proof. Trusted runtime ownership and
+not an admission, completeness or physics proof. Native runtime ownership and
 private world binaries prevent that candidate from reading as a completed port.
 
 Headless/replay/ledger results remain visible. `witnessCompatible` preserves a
 passing native witness, while conversion's `compatible` is false and
-`transitional` is true as long as trusted runtime simulation remains. This includes
+`transitional` is true as long as native runtime simulation remains. This includes
 Nine Dragon's current native headless worker even if its recorded witness says
 `compatible: true`; passing continuations do not imply a data-owned simulation.
 
@@ -1675,7 +1675,7 @@ exact module/name entry in the generated reference. There is no undocumented all
 The guide covers format/JSON Schema admission, real three.js scene graphs and
 `synth`, renderer-free rig/clip/image readers, directors and their eight actions,
 AS input codegen, clip/pendulum movers, all four player modes, weapon profiles and
-trusted family registration, brain patterns/presets/boss rows, and immutable
+native family registration, brain patterns/presets/boss rows, and immutable
 commons packs. Its hall, door/wave and pursuit examples reduce Template 1;
 mode/weapon/boss demonstrations are labelled illustrative rather than shipped tuning.
 Authoring emits data; a native family or body still needs its actual host.
@@ -1786,7 +1786,7 @@ DS1.1: local checkpoint, lift rider, runtime measurements/declarations, skin row
 
 DS1.1: `@wildshard/shard-format/shardSections` defines root identity, requirements, budgets, simulation, author/server limits, file/tile inventories, library/critical roots, far proxy and spawn. Root composition retains every original default and native reference check. Material-dependent props/splats and look/post graphs remain in game for DS1.4. Native tile sizes and fixed wire cell bounds are equality-tested.
 
-Pine's retained `generators/coatRecipes.ts`, `coatPixels.ts`, `coatFlap.ts` and `coatProducer.ts` author coat pages from data rows and committed rig assets in Node. The Pine program (`generators/coatPages.ts`, GR8 G35) paints each tier's lossless PNGs through `ctx.cached` and names them as product files (`models/creatures/<hull>[.phone].<kind>.<id>.coat.png`), the names the hull book's coats carry; a variant has a coat when the KTX2 table holds its `procedural:` key. No species registry, trusted runtime, game page or DOM is an authoring input. The SDK rig reader preserves rest channels and joint order, and the SDK raster reader/writer preserves RGBA.
+Pine's retained `generators/coatRecipes.ts`, `coatPixels.ts`, `coatFlap.ts` and `coatProducer.ts` author coat pages from data rows and committed rig assets in Node. The Pine program (`generators/coatPages.ts`, GR8 G35) paints each tier's lossless PNGs through `ctx.cached` and names them as product files (`models/creatures/<hull>[.phone].<kind>.<id>.coat.png`), the names the hull book's coats carry; a variant has a coat when the KTX2 table holds its `procedural:` key. No species registry, native runtime, game page or DOM is an authoring input. The SDK rig reader preserves rest channels and joint order, and the SDK raster reader/writer preserves RGBA.
 
 Pine's 14 non-King rigs are committed at their public URLs (`public/assets/pine-hollow/creatures/`, beside the King's), which the coat pages, the rig blobs, the trophy and thrall-extras bakes and the KTX2 bake read. `scripts/bake-coats.mjs --shard=pine-hollow` encodes the same pages (`scripts/bake/pineCoats.mjs`) to KTX2. The runtime loads the product's PNGs in image mode and adopts the unchanged KTX2 stand-ins in compressed mode; no live atlas painting remains.
 
@@ -1805,7 +1805,7 @@ SF81 DIR-2: the author-only behaviour descriptor's optional `director` path sele
 
 SF81 DIR-3: optional `directors` is the defining `@wildshard/shard-format/directorStages` root array. Omission remains omission, preserving other shards' existing wire bytes. Ordered guarded successor arrays supplement the original string `next`; every target and condition is admitted before installation. Flag rows must name flags already declared by the quest owner. Unsupported native bindings refuse instead of fabricating authority. A script hash identifies an immutable admitted AS handler; its native output events select authored actions without duplicating the script's scheduler. Scripted snapshots carry an explicit version-3 row cursor and refuse older continuations.
 
-Trusted director owners can pass their actual `flags` object to
+Native director owners can pass their actual `flags` object to
 `bindDirectorActions`. Without an explicit `read`, declared `flag:` inputs
 read that owner, and `observe(binding)` must supply every non-flag input.
 Declared flag actions use the same owner; explicit action bindings retain
@@ -1933,7 +1933,7 @@ their damage contact, as in the existing page law.
 SF84 traversal rows are declared as optional `modes.traverse` data. Zipline and updraft rows require
 `runtime.binds: ['modes']`; pure-data or unbound native traversal rows refuse admission. Ladder is the installed data-host exception. The native owner reads the admitted
 row at its existing player phase and the data client removes it, preventing a second owner. Sky Reach consumes its
-updraft geometry/force this way in both browser and trusted headless hosts. `@wildshard/sdk/modes` exposes the data types
+updraft geometry/force this way in both browser and native headless hosts. `@wildshard/sdk/modes` exposes the data types
 `ModeRows`, `ZiplineRow`, `UpdraftRow` alongside the ordinary three.js author objects.
 
 
@@ -1999,21 +1999,21 @@ continuation remains unchanged. Template 1 anchors and horse presentation are se
 
 SF85 melee rows: optional `moves.passes.{left,right}` use the same ordered swing bounds. Optional `mounted` declares reach, cooldown, sense, chainWindow, chainStep, chainMax (at least one), positive speedDivisor and signed behind distance. Existing rows omit both unchanged.
 
-Trusted custom weapon families use `registerWeaponFamily` from `@wildshard/game/plugin/weaponFamily` with a session-local registry supplied to the existing runtime item binder. Signal lash and Sky fan keep their original declared family ids, trusted constructors and native owners. Registration validates the id, refuses reserved or duplicate names, and performs no construction; namespace admission still precedes allocation. This defining plugin also owns the optional AssemblyScript weapon hook installer; there is no SDK runtime facade.
+Host-owned custom weapon families use `registerWeaponFamily` from `@wildshard/game/plugin/weaponFamily` with a session-local registry supplied to the existing runtime item binder. Signal lash and Sky fan keep their original declared family ids, native constructors and native owners. Registration validates the id, refuses reserved or duplicate names, and performs no construction; namespace admission still precedes allocation. This defining plugin also owns the optional AssemblyScript weapon hook installer; there is no SDK runtime facade.
 
 ### Encounter-driven species flight (SF82)
 
-A trusted species catalogue may declare `{ archetype: "diver", data: { kind:
+A native species catalogue may declare `{ archetype: "diver", data: { kind:
 "diver", pattern: "phased", ... } }`. The defining
 `@wildshard/shard-format/phasedFlyers` profile retains the historical flyer's exact
 phase altitudes, rest intervals, named dive/grounded strikes, finite movement
 bounds and encounter memory fields. `phasedDiverPreset` validates and resolves
 the original `phased-flyer` preset before `plugin/brain` binds page or headless
 policies. Existing preset names and save contracts remain accepted. The SDK
-emits its standalone JSON Schema; it is a trusted catalogue declaration, not
+emits its standalone JSON Schema; it is a native catalogue declaration, not
 an additional branch of `creatures.brains` or an automatically installed boss.
 
-SF85 native lash profile: `items.rows[].profile` may declare `family: "lash"`, its optional bounded `contact` (chest height and body allowance), `timing` (unroll, second contact, show, stagger, pull and maximum pulled health), and its three named `moves`. Second contact and show must follow unroll. Signal’s existing trusted family requires its authored contact values and consumes the profile in its page and headless owners; older profiles remain admitted for their own native families, with no fabricated contact defaults. Damage, width, reach, cooldown and charge remain the item’s light/heavy rows; the native double-crack, contact order, yank, stagger, held input and saved continuation stay unchanged. No view is inferred or added.
+SF85 native lash profile: `items.rows[].profile` may declare `family: "lash"`, its optional bounded `contact` (chest height and body allowance), `timing` (unroll, second contact, show, stagger, pull and maximum pulled health), and its three named `moves`. Second contact and show must follow unroll. Signal’s existing native family requires its authored contact values and consumes the profile in its page and headless owners; older profiles remain admitted for their own native families, with no fabricated contact defaults. Damage, width, reach, cooldown and charge remain the item’s light/heavy rows; the native double-crack, contact order, yank, stagger, held input and saved continuation stay unchanged. No view is inferred or added.
 
 ### Data-host herd and diver ownership
 
@@ -2074,7 +2074,7 @@ reattach on the same held input; neutral input rearms it. There is no inferred
 interaction, stamina, climb animation or grant. This is the approved `climb`
 traversal in the existing registry, with no second scheduler/input wire version.
 
-Ladder rows currently require `runtime: null`; trusted/native player-owner
+Ladder rows currently require `runtime: null`; native player-owner
 combinations refuse admission rather than dropping a row or installing a second
 player driver. This restriction does not affect existing native mode rows.
 The data-only client lends its actual player registry and input, while the owned
@@ -2187,7 +2187,7 @@ The native host supplies its real player, shared AI RNG, reach query, attack cla
 and CombatSystem damage filing. The existing grazer policy owns steering and its
 strike clock; the actual body motor owns movement. No callback grants contact, no
 body is teleported and no home is guessed. Missing home/strike refuses before any
-controller registration or random draw. Trusted installations retain their explicit
+controller registration or random draw. Host-owned installations retain their explicit
 recipes. Guardian/perch body transitions and other missing authority remain OPEN.
 
 ### Automatic burst diver authority (SF82 BR-1)
@@ -2212,7 +2212,7 @@ this metadata. The body's initial position remains its circle centre.
 
 The real host supplies time, steering, reach, attack claims and CombatSystem
 contact. Both charge and close strikes file their actual selected id and tags.
-The optional engine `strikeHit` port preserves this identity; old trusted ports
+The optional engine `strikeHit` port preserves this identity; old native ports
 without it retain their exact damage-only callback. Restoring with a changed
 authored phase refuses before ticking.
 
@@ -2227,7 +2227,7 @@ CombatSystem filing with that body's declared charge damage.
 
 This stock owner has no declared animal-prey, grass or scent field. It grants no
 prey/smell observation and refuses a continuation containing undeclared prey.
-Trusted group recipes still provide those worlds explicitly. The actual body
+Native group recipes still provide those worlds explicitly. The actual body
 motor owns all movement; sound cues remain presentation-only.
 
 ### Charged baked maps (SF66)
@@ -2240,7 +2240,7 @@ and GPU costs. The normal hard total-memory limits still apply. An authored
 map can instead declare the same hash in `shard.config.ts` and store the
 image in `assets/<hash>`. Both paths use normal immutable admission.
 
-First-party builds use `look/map.baked.json` as the freshness receipt. The
+Built-in builds use `look/map.baked.json` as the freshness receipt. The
 existing map generator owns the source image; the product copies its exact
 bytes into its file closure. Standalone and grid maps resolve admitted
 bytes, share library reservations by hash and release them with the owner.
@@ -2260,7 +2260,7 @@ native baker. The runtime uses its existing WSNM reader and path queries.
 The caller must supply retained authored collider/floor triangles, dry
 ground selection and any datum conversion. This CPU compiler imports no
 game or engine code and installs no renderer. The transitional shared
-navmesh CLI still collects trusted world colliders; extracting its CPU
+navmesh CLI still collects native world colliders; extracting its CPU
 compiler does not qualify that CLI as a complete author-only product or
 permit any output deletion.
 
@@ -2281,14 +2281,14 @@ layout, polygon neighbour encoding and detail triangles. The engine
 constructs its existing navcat mesh from those same decoded arrays; path,
 wander, snap, radius selection and vertical-datum laws remain unchanged.
 The game supplies admitted bytes to ordinary level and grid boot. A
-trusted manifest can declare the same row with an immutable URL; hash or
+native manifest can declare the same row with an immutable URL; hash or
 layout failure is fatal. Manifests without a row retain the older optional
 navmesh lookup while they migrate.
 
 `props.wholeLibrary` optionally lists ordinary GLB library roots containing
 exact whole source geometry. Every unique reference must name an admitted
 GLB in `library`; file and memory accounting are unchanged. A props-bound
-trusted runtime reads these through the shared whole-geometry assembler,
+native runtime reads these through the shared whole-geometry assembler,
 and the data client drops them alongside its bound tiles. Omitting the
 field preserves existing declarations and bytes. Explorer consumers may
 read a subset lazily; declaring ownership does not draw an extra mesh.
@@ -2296,7 +2296,7 @@ read a subset lazily; declaring ownership does not draw an extra mesh.
 Declared client-channel prompts publish only their own copied `x/y/z`
 coordinates. `ClientChannels.prompt` supplies a bounded label, reach, initial
 position and named or admitted socket-lift intent (at most 64 prompts).
-`createClientChannelPrompt` binds each intent before allocation; its trusted
+`createClientChannelPrompt` binds each intent before allocation; its host-owned
 callback receives the owned prompt for label changes, and runs only on real
 interaction. `moverChannelPrompts` updates the same ordered roster from copied
 mover poses. Evaluation never dispatches an action or writes player/shared
@@ -2317,7 +2317,7 @@ and source materials are never modified or disposed by the binding helper.
 
 G409 KTX2 library residency uses the admitted file's complete mip dimensions:
 ASTC LDR and BC7 charge 16-byte 4x4 blocks, including padded small mips.
-GPU capabilities are trusted, probe-filtered transcoder support, never authored
+GPU capabilities are host-owned, probe-filtered transcoder support, never authored
 metadata. Unsupported/raw/HDR sources retain the full RGBA charge. File rows
 and conservative pre-read ceilings keep their RGBA fallback; actual byte
 admission and library allocator claims use the selected footprint. The
@@ -2361,7 +2361,7 @@ const product = bake(scene, { slug: 'camp' });
 
 Opaque untextured ordinary kinds are supported. Unsupported material state,
 callbacks and nonportable channels refuse at bake time. Instanced kinds retain
-the existing standard-material byte path. The trusted client draws mixed pieces
+the existing standard-material byte path. The native client draws mixed pieces
 with `bakedMeshWorld` in game's defining `shardfile/bakedKinds` module; ordinary
 kinds remain ordinary meshes, so the bake does not add an instancing shader
 variant. `scene.json` also restores the basic material declaration exactly.

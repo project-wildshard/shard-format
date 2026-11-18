@@ -305,7 +305,7 @@ export function validatePropDrawBounds(source: Shardfile, assets: ReadonlyMap<st
   for (const ref of [...props.panels.map(row => row.file), ...props.wholeLibrary ?? [], ...props.far === null ? [] : [props.far]]) validate(ref);
 }
 
-/** Report deterministic declared bounds and measured native execution; the caller supplies trusted provenance policy. */
+/** Report deterministic declared bounds and measured native execution; the caller supplies host-owned provenance policy. */
 export function performanceReport(source: Shardfile, observations: PerformanceObservations, options: PerformancePolicy | PerformanceOptions = 'refuse'): PerformanceReport {
   const resolved: PerformanceOptions = typeof options === 'string' ? { policy: options, sections: new Map<string, unknown>() } : options, { policy } = resolved;
   const native = { resident: source.runtime?.cost === undefined ? 0 : runtimeOfflineBytes(source.runtime.cost), evidence: source.runtime?.cost?.evidence ?? null, unmeasuredViewAndDownload: source.runtime !== null };

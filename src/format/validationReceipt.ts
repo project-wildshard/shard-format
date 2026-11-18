@@ -119,7 +119,7 @@ export async function validationSourceBytesPaced(source: unknown, pause: () => P
 }
 /** The build hashes the engine/game validator sources; unbundled clients always validate in full. */
 export function validationRevision(): string | null { return typeof __SHARDFILE_VALIDATOR__ === 'string' ? __SHARDFILE_VALIDATOR__ : null; }
-/** Cache metadata is trusted local storage, but stale or malformed verdicts are never accepted. */
+/** Cache metadata is host-owned local storage, but stale or malformed verdicts are never accepted. */
 export function readValidationReceipt(input: unknown, sourceHash: string): ValidationReceipt | null {
   if (typeof input !== 'object' || input === null || !('revision' in input) || typeof input.revision !== 'string' || input.revision !== validationRevision() || !('sourceHash' in input) || input.sourceHash !== sourceHash || !('worst' in input)) return null;
   const indexHash: unknown = 'indexHash' in input ? input.indexHash : undefined;
@@ -133,7 +133,7 @@ export function readValidationReceipt(input: unknown, sourceHash: string): Valid
   if (typeof cost.playing !== 'number' || typeof cost.loading !== 'number' || typeof cost.accounted !== 'number' || typeof cost.location[0] !== 'number' || typeof cost.location[1] !== 'number') return null;
   return { revision: input.revision, sourceHash, ...(typeof indexHash === 'string' ? { indexHash } : {}),...(typeof residentBytes==='number'?{residentBytes}:{}), worst: { playing: cost.playing, loading: cost.loading, accounted: cost.accounted, location: [cost.location[0], cost.location[1]] } };
 }
-/** Only the client build's own validated first-party catalogue can skip a first asset-header validation. */
+/** Only the client build's own validated built-in catalogue can skip a first asset-header validation. */
 export function builtValidationReceipt(sourceHash: string, indexHash?: string): ValidationReceipt | null {
   const rows: unknown = typeof __SHARDFILE_VERDICTS__ === 'object' ? __SHARDFILE_VERDICTS__ : null;
   if (!Array.isArray(rows)) return null;

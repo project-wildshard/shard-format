@@ -6,7 +6,7 @@
 > The engine host columns were copied from engine `8f613824` (SHARD-AUTHORING SA19).
 
 A shard is data. A shard file never carries code that engine imports: it declares names, and engine runs only the
-**trusted hosts** compiled into it, on the page (the browser client) and on the server (rooms, and the worker that runs
+**host-owned hosts** compiled into it, on the page (the browser client) and on the server (rooms, and the worker that runs
 the server's code inside every page, offline included). This page lists every name a shard may declare, which engine
 host serves it, and what validation refuses. An agent can read it without reading engine.
 

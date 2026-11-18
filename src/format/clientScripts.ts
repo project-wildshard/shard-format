@@ -25,7 +25,7 @@ export function clientScriptViewCost(data: ShardClientScripts): { capacity: numb
   const capacity = Math.min(CLIENT_SCRIPT_LIMITS.particlesLive, data.bindings.reduce((sum, binding) => sum + binding.emitters.reduce((n, row) => n + row.live, 0), 0));
   return { capacity, decoded: capacity * 56, gpu: capacity * 32, triangles: 0, draws: capacity > 0 ? 1 : 0 };
 }
-/** A declared visual anchor resolved by trusted composition, never by a bytecode physics query. */
+/** A declared visual anchor resolved by native composition, never by a bytecode physics query. */
 export type ClientScriptTarget = ShardClientScripts['bindings'][number]['target'];
 /** Minimal format view for admission and projection, independent of rendering and author callbacks. */
 export interface ClientScriptContent {

@@ -67,7 +67,7 @@ being read. Exit 0 prints `ok <slug> r<revision>: ...`; exit 3 is an
 invalid product. It never runs script bytes: that execution proof is
 sharddev's and the cook worker's (F3 (b)).
 
-All ten first-party products built by singleplayer at `36d00c6645`
+All ten built-in products built by singleplayer at `36d00c6645`
 pass it.
 
 ## Dependencies

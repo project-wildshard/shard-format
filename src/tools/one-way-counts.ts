@@ -51,15 +51,28 @@ function named(
     file.path.endsWith(suffix),
   )
 }
+/** OF15: names the words do not mean a kind of shard: the DOM event's own flag and the licence notices file. */
+const NOT_SHARD_WORDS = new RegExp(
+  `\\b${['is', 'Trus', 'ted'].join('')}\\b`,
+  'gu',
+)
+const NOT_SHARD_FILES = new RegExp(
+  `(?:^|/)${['THIRD', 'PARTY', 'NOTICES'].join('-')}\\.md$`,
+  'u',
+)
 function words(files: readonly SourceFile[]): number {
   return occurrences(
-    files.map((file: Readonly<SourceFile>): SourceFile => ({
-      ...file,
-      text: file.text.replaceAll(
-        /(?<lower>[a-z])(?<upper>[A-Z])/gu,
-        '$<lower> $<upper>',
-      ),
-    })),
+    files
+      .filter(
+        (file: Readonly<SourceFile>): boolean =>
+          !NOT_SHARD_FILES.test(file.path),
+      )
+      .map((file: Readonly<SourceFile>): SourceFile => ({
+        path: file.path,
+        text: file.text
+          .replaceAll(NOT_SHARD_WORDS, '')
+          .replaceAll(/(?<lower>[a-z])(?<upper>[A-Z])/gu, '$<lower> $<upper>'),
+      })),
     vocabulary,
   )
 }

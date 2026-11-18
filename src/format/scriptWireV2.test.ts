@@ -33,7 +33,7 @@ test('v2 refuses every mutated header input byte and every directory authority f
   }
   const authority = write();view.setUint32(1024+128+9*24+16,3,true);expect(() => validateV2Frame(view,layout,authority)).toThrow('directory');
 });
-test('v2 output counts agree with trusted capacity and view frames cannot publish sim commands', () => {
+test('v2 output counts agree with host-owned capacity and view frames cannot publish sim commands', () => {
   const view = new DataView(new ArrayBuffer(65536)), layout = layoutV2(1024,1,new Map([[1,1],[10,2],[11,1],[17,1],[18,2]]));
   const authority = writeV2Frame(view,layout,{ lane: 3,module: 1,sequence: 1,tick: 60,due: 1,dt: 1/60,alpha: .5,frame: 1 },new Map([[1,1]]));
   expect(validateV2Frame(view,layout,authority)[16]).toBe(1);

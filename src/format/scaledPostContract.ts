@@ -6,7 +6,7 @@ const number = v.pipe(v.number(), v.finite());
 const name = v.pipe(v.string(), v.minLength(1), v.maxLength(256));
 const storageSchema = v.picklist(['float16', 'unorm8']);
 const graph = v.custom<GraphIr>(input => {
-  const checked = validateGraph(input, { trustedBudget: true });
+  const checked = validateGraph(input, { declaredBudget: true });
   return checked.ok && checked.graph.kind === 'post';
 }, 'Invalid scaled post graph');
 const term = v.union([number, name, v.null(), v.strictObject({ param: name }),
@@ -22,7 +22,7 @@ const schema: v.GenericSchema<unknown, ScaledPostRow> = v.strictObject({
   settings: v.record(name, number), when: v.exactOptional(name), outputs: v.record(name, name), drawnOnly: v.exactOptional(v.boolean()),
 });
 
-/** Complete native post preflight. Graphs keep the executor's trusted budget;
+/** Complete native post preflight. Graphs keep the executor's host-owned budget;
  * target order, storage variants and draw/output references retain its rules.
  * The executor still checks these contracts before allocating and compiling. */
 export function parseScaledPostRow(input: unknown): ScaledPostRow {

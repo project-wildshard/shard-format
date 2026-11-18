@@ -35,7 +35,7 @@ export const ChallengeGrazerSchema: v.SchemaWithPipe<readonly [v.StrictObjectSch
   windupField: v.pipe(v.string(), v.regex(/^[a-z][a-z0-9._:-]*$/u), v.maxLength(128)),
   recoveryField: v.pipe(v.string(), v.regex(/^[a-z][a-z0-9._:-]*$/u), v.maxLength(128)),
 }), v.check(row => distinctChallenge(row), 'Distinct challenge strikes and fields, ordered perception'));
-/** Admitted timed challenge policy; stable actor phase and contact recipes arrive from trusted loader ports. */
+/** Admitted timed challenge policy; stable actor phase and contact recipes arrive from native loader ports. */
 
 /** Reject nonfinite tuning, unknown fields and conflicting identities before installation. */
 export function parseChallengeGrazer(data: unknown): ShardChallengeGrazer { return v.parse(ChallengeGrazerSchema, data); }
@@ -56,7 +56,7 @@ export const GrazerSchema: v.VariantSchema<'pattern', readonly [
   v.pipe(v.strictObject({ ...ChallengeGrazerSchema.pipe[0].entries, kind: v.literal('grazer'), pattern: v.literal('circle-challenge') }),
     v.check(row => distinctChallenge(row), 'Distinct challenge strikes and fields, ordered perception')),
 ]);
-/** Admitted grazer data; floor, RNG and body authority remain trusted pattern-specific ports. */
+/** Admitted grazer data; floor, RNG and body authority remain native pattern-specific ports. */
 
 /** Admit either pattern without constructing a policy, body or random stream. */
 export function parseGrazer(data: unknown): ShardGrazer { return v.parse(GrazerSchema, data); }

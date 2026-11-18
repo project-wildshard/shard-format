@@ -75,7 +75,7 @@ export const ThrownWeaponProfileSchema: v.SchemaWithPipe<readonly [v.StrictObjec
 }), v.check(row => row.carried <= row.pool, 'Carried thrown weapons fit the native pool'));
 
 /** Native timed lash contacts: bounded unroll/double-crack clocks, pull/stagger reactions and named pipeline moves.
- * The profile supplies values only; the trusted family retains its contact ordering and continuation. */
+ * The profile supplies values only; the native family retains its contact ordering and continuation. */
 export const LashWeaponProfileSchema: v.SchemaWithPipe<readonly [v.StrictObjectSchema<{ readonly family: v.GenericSchema<LashWeaponProfileRowsInput['family'], LashWeaponProfileRows['family']>; readonly contact: v.ExactOptionalSchema<v.GenericSchema<Exclude<LashWeaponProfileRowsInput['contact'], undefined>, Exclude<LashWeaponProfileRows['contact'], undefined>>, undefined>; readonly timing: v.GenericSchema<LashWeaponProfileRowsInput['timing'], LashWeaponProfileRows['timing']>; readonly moves: v.GenericSchema<LashWeaponProfileRowsInput['moves'], LashWeaponProfileRows['moves']>; }, undefined>, v.CheckAction<{ [K in keyof LashWeaponProfileRows]: LashWeaponProfileRows[K] }, 'Ordered native lash contacts'>]> = v.pipe(v.strictObject({
   family: v.literal('lash'),
   contact: v.exactOptional(v.strictObject({ chestHeight: scalar, bodyAllowance: scalar })),
@@ -93,7 +93,7 @@ const reaction = v.variant('kind', [
   v.strictObject({ when: v.picklist(['before', 'survived']), kind: v.literal('stagger'),
     strength: scalar, aboveHealth: v.exactOptional(scalar) }),
 ]);
-/** Ordered cone/lane contacts, with authority supplied by the trusted owner rather than JSON. */
+/** Ordered cone/lane contacts, with authority supplied by the native owner rather than JSON. */
 export const MeleeContactRowSchema: v.GenericSchema<MeleeContactDataInput, MeleeContactData> = v.pipe(v.strictObject({
   lane: v.picklist(['primary', 'secondary']), heavy: v.boolean(), cooldown: seconds,
   shape: v.picklist(['cone', 'lane']), reach: v.pipe(positive, v.maxValue(20)),

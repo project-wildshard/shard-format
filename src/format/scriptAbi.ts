@@ -10,5 +10,5 @@ export const SCRIPT_IMPORTS: Readonly<Record<string, readonly number[]>> = Objec
   finite32: [0x7d, 0x7d], finite64: [0x7c, 0x7c],
 });
 
-/** Read-only declared numeric parameters; the host supplies the trusted calling entity to the query adapter. */
+/** Read-only declared numeric parameters; the host supplies the host-owned calling entity to the query adapter. */
 export const SCRIPT_PARAMETER_QUERY = 410;

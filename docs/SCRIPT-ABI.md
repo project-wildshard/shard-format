@@ -516,7 +516,7 @@ refuse, rather than selecting a different compiler or admission path. Both
 `compileScriptV2` and `admitScriptV2` accept explicit revision requests and
 refuse unsupported values before entering their pipelines. Metadata parsing
 does not execute Wasm or verify the content hash: the native asset owner still
-verifies bytes and executable admission before constructing its selected lane. The host supplies the full trusted IO byte
+verifies bytes and executable admission before constructing its selected lane. The host supplies the full host-owned IO byte
 length (default 656 for header/directory only), also used to reserve compiler
 static data and stack outside the wire area. The
 [`ScriptModuleV2`](../src/engine/script/moduleV2.ts) primitive admits one sim or
@@ -531,7 +531,7 @@ native/v0/v1 path without reading the optional v2 declaration; on snapshots
 strict versioned metadata. Setting changes apply at the next owner entry,
 never by hot swapping writers. This selector grants no execution authority:
 the selected owner verifies and copies bytes, admits that copy with its lane,
-trusted IO size and explicit compiler/admission revisions, compiles the same
+host-owned IO size and explicit compiler/admission revisions, compiles the same
 copy, then calls the getters and ws_init. Refusal never instantiates a guest.
 
 The build-only compileDualScriptV2 receives one captured authored closure
@@ -712,7 +712,7 @@ zero in 2.0. A changed transform has `changed=1`, otherwise zero. Kind 17's coun
 admitted record count and header offset 72 equals the sum of changed flags;
 identity fields must match the target assigned to that position. Kind 18 publishes
 the complete declared channel bank or none: its count and header offset 76 are
-both its capacity or both zero. Frozen targets are excluded by the host's trusted
+both its capacity or both zero. Frozen targets are excluded by the host's host-owned
 binding table even when the guest writes those positions.
 
 A declared view program ([format/viewProgram.ts](../src/format/viewProgram.ts)) names where each bank value lands:

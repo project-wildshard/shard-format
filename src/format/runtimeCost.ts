@@ -4,7 +4,7 @@ import { RUNTIME_RESIDENT_FACTOR } from './wireLimits.ts';
 const mb = v.pipe(v.number(), v.finite(), v.minValue(0));
 const FIRST_EPOCH = 1;
 const epochNumber = v.pipe(v.number(), v.integer(), v.minValue(FIRST_EPOCH));
-/** Reviewed trusted-runtime measurements, kept with their shard rather than presenting an empty data budget as its cost. */
+/** Reviewed native-runtime measurements, kept with their shard rather than presenting an empty data budget as its cost. */
 export const MemoryMeasurementSchema: v.StrictObjectSchema<{ readonly webContentMB: v.GenericSchema<MemoryMeasurementRowsInput['webContentMB'], MemoryMeasurementRows['webContentMB']>; readonly glMB: v.GenericSchema<MemoryMeasurementRowsInput['glMB'], MemoryMeasurementRows['glMB']>; readonly engineBaseMB: v.GenericSchema<MemoryMeasurementRowsInput['engineBaseMB'], MemoryMeasurementRows['engineBaseMB']>; readonly residentBaseMB: v.ExactOptionalSchema<v.GenericSchema<Exclude<MemoryMeasurementRowsInput['residentBaseMB'], undefined>, Exclude<MemoryMeasurementRows['residentBaseMB'], undefined>>, undefined>; readonly rev: v.GenericSchema<MemoryMeasurementRowsInput['rev'], MemoryMeasurementRows['rev']>; readonly device: v.GenericSchema<MemoryMeasurementRowsInput['device'], MemoryMeasurementRows['device']>; readonly evidence: v.GenericSchema<MemoryMeasurementRowsInput['evidence'], MemoryMeasurementRows['evidence']>; readonly epoch: v.ExactOptionalSchema<v.GenericSchema<Exclude<MemoryMeasurementRowsInput['epoch'], undefined>, Exclude<MemoryMeasurementRows['epoch'], undefined>>, undefined>; }, undefined> = v.strictObject({
   webContentMB: mb, glMB: mb, engineBaseMB: mb,
   /** Matched settled pre-entry resident set. When present, subtract it instead of the dated engine-only calibration. */

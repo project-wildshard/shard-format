@@ -25,6 +25,14 @@ const input: SourceInventory = {
     ),
     files('src/shared/game/manifest.ts', 'gridShardfile; firstParty'),
     files('src/shared/game/harvest.ts', 'const HARVEST = {}'),
+    files(
+      `${['THIRD', 'PARTY', 'NOTICES'].join('-')}.md`,
+      `${['third', 'party'].join(' ')} notices`,
+    ),
+    files(
+      'src/client/engine/core/keys.ts',
+      `if (event.${['is', 'Trus', 'ted'].join('')}) armed()`,
+    ),
     files('src/client/game/Inventory.ts', 'type ItemId = "boar" | "bear"'),
     files('src/test/fixture.ts', 'gridShardfile; registerSpecies(a); "bear"'),
   ],

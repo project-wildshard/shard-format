@@ -11,12 +11,12 @@ const home = v.strictObject({ id, kind, look: id, at, yaw: finite, respawn: v.pi
 const boss = v.strictObject({ id, kind, look: id, at, yaw: finite });
 
 /**
- * A trusted hybrid runtime's creatures as declared rows (SHARD-PLATFORM M3 / SF50-p, E435), the `spawns` section of
+ * A native runtime's creatures as declared rows (SHARD-PLATFORM M3 / SF50-p, E435), the `spawns` section of
  * `runtime.binds`. The runtime keeps its own species (rigs, brains, the hard 20 %); the rows declare WHERE they live and
  * WHO they are: each row's `id` is its stable declared key (a retained home uses it across respawn and cold restore).
  * One-shot actors keep their runtime-allocated identities and spawn order; `kind` / `look` name the runtime's registered
  * species and variant, and a home's `respawn` its refill delay.
- * The platform keeps the homes (`bindRuntimeHomes`, `bindRuntimeBoss` in ./hybridRows.ts); this is not the local sim's
+ * The platform keeps the homes (`bindRuntimeHomes`, `bindRuntimeBoss` in engine runtimeBoundRows); this is not the local sim's
  * `creatures` section (no brain, strike or species-catalogue rows: those stay the runtime's).
  */
 export const RuntimeSpawnsSchema: v.GenericSchema<RuntimeSpawnsInput, RuntimeSpawns> = v.pipe(v.strictObject({ homes: v.pipe(v.array(home), v.maxLength(256)), bosses: v.pipe(v.array(boss), v.maxLength(16)),

@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import type { ShardEntryways } from './entryways.ts';
 
-/** Original native WSTR terrain retained by a trusted world-only hybrid; this declaration never installs collision. */
+/** Original native WSTR terrain retained by a native world-only runtime shard; this declaration never installs collision. */
 export const NativeGroundSchema: v.GenericSchema<NativeGroundInput, NativeGround> = v.strictObject({ version: v.literal(1), file: v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u)) });
 /** The immutable native payload; resolution, seed and landscape identity derive from admitted bytes. */
 
@@ -17,11 +17,11 @@ export interface NativeGroundSource {
   edge: Record<ShardEntryways[number]['edge'], { heights: readonly number[] }>;
   entryways: ShardEntryways;
 }
-/** Native ground is an independent critical root with one trusted collision owner, never another compiled collider. */
+/** Native ground is an independent critical root with one host-owned collision owner, never another compiled collider. */
 export function nativeGroundRules(source: NativeGroundSource): string[] {
   const data = source.nativeGround; if (data === null) return [];
   const errors: string[] = [];
-  if (source.runtime === null) errors.push('native ground requires a trusted runtime declaration');
+  if (source.runtime === null) errors.push('native ground requires a native runtime declaration');
   if (source.terrain !== null || source.meshCollision !== null) errors.push('native ground and compiled collision are mutually exclusive');
   const file = source.files.find(row => row.hash === data.file);
   if (file?.kind !== 'binary' || file.dependencies.length > 0 || !source.critical.includes(data.file)) errors.push('native ground is an independent critical binary root');

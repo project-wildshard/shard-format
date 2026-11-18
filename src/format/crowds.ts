@@ -6,7 +6,7 @@ const finite = v.pipe(v.number(), v.finite());
 const coordinate = v.pipe(finite, v.minValue(-100000), v.maxValue(100000));
 const speed = v.pipe(finite, v.minValue(0), v.maxValue(15));
 
-/** Ordered instanced flock declaration; terrain, native view, prey and distance scheduling remain trusted ports. */
+/** Ordered instanced flock declaration; terrain, native view, prey and distance scheduling remain native ports. */
 export const FlockSchema: v.GenericSchema<ShardFlockInput, ShardFlock> = v.strictObject({
   id: key, kind: v.literal('flock'), x: coordinate, z: coordinate,
   count: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(256)),

@@ -22,7 +22,7 @@ export const OrbitDiverSchema: v.SchemaWithPipe<readonly [v.StrictObjectSchema<{
   noticeRadius: radius, giveUpRadius: radius, initialRestSeconds: radius, stalkMaxSeconds: positive,
   riseMargin: radius, targetHeight: radius, alignRadius: positive, alignTolerance: positive,
 }), v.check(row => orderedOrbit(row), 'Ordered orbit perception'));
-/** Admitted orbit/dive policy; native flight, token and contact execution remain trusted host ports. */
+/** Admitted orbit/dive policy; native flight, token and contact execution remain native host ports. */
 export type ShardOrbitDiver = v.InferOutput<typeof OrbitDiverSchema>;
 /** Validate overhead dive data without instantiating a creature or executing its native flight recipe. */
 export function parseOrbitDiver(data: unknown): ShardOrbitDiver { return v.parse(OrbitDiverSchema, data); }
@@ -41,7 +41,7 @@ export type ShardPatrolDiver = v.InferOutput<typeof PatrolDiverSchema>;
 /** Refuse invalid patrol timing, memory fields and speed before any callbacks register. */
 export function parsePatrolDiver(data: unknown): ShardPatrolDiver { return v.parse(PatrolDiverSchema, data); }
 
-/** Small-circle drift and telegraphed chest dart; contact shove is declared data and applied only by a trusted port. */
+/** Small-circle drift and telegraphed chest dart; contact shove is declared data and applied only by a native port. */
 export const BurstFlyerSchema: v.StrictObjectSchema<{ readonly id: v.GenericSchema<BurstFlyerRowsInput['id'], BurstFlyerRows['id']>; readonly kind: v.GenericSchema<BurstFlyerRowsInput['kind'], BurstFlyerRows['kind']>; readonly thinkDivisor: v.OptionalSchema<v.GenericSchema<Exclude<BurstFlyerRowsInput['thinkDivisor'], undefined>, Exclude<BurstFlyerRows['thinkDivisor'], undefined>>, 6>; readonly strike: v.GenericSchema<BurstFlyerRowsInput['strike'], BurstFlyerRows['strike']>; readonly home: v.GenericSchema<BurstFlyerRowsInput['home'], BurstFlyerRows['home']>; readonly circleSpeed: v.GenericSchema<BurstFlyerRowsInput['circleSpeed'], BurstFlyerRows['circleSpeed']>; readonly dartSpeed: v.GenericSchema<BurstFlyerRowsInput['dartSpeed'], BurstFlyerRows['dartSpeed']>; readonly noticeRadius: v.GenericSchema<BurstFlyerRowsInput['noticeRadius'], BurstFlyerRows['noticeRadius']>; readonly shoveSpeed: v.GenericSchema<BurstFlyerRowsInput['shoveSpeed'], BurstFlyerRows['shoveSpeed']>; readonly liftSpeed: v.GenericSchema<BurstFlyerRowsInput['liftSpeed'], BurstFlyerRows['liftSpeed']>; readonly targetHeight: v.GenericSchema<BurstFlyerRowsInput['targetHeight'], BurstFlyerRows['targetHeight']>; }, undefined> = v.strictObject({
   id: key, kind: v.literal('burst-flyer'), thinkDivisor: cadence, strike: key, home,
   circleSpeed: speed, dartSpeed: speed, noticeRadius: radius, shoveSpeed: speed, liftSpeed: speed, targetHeight: radius,

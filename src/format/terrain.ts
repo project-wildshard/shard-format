@@ -43,7 +43,7 @@ const metre = v.pipe(v.number(), v.finite(), v.minValue(-1000), v.maxValue(1000)
 const groundPoint = v.tuple([metre, metre]);
 const seed = v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(0xffffffff));
 /**
- * A hybrid shard's declared ground (G4): its baked terrain by key and seed, the trails, pads and pond its terrain metadata
+ * A runtime shard's declared ground (G4): its baked terrain by key and seed, the trails, pads and pond its terrain metadata
  * reads (grading masks, grass and forest clearings), its rest water level and render datum. Ordinary bodies use the
  * shardfile's water grammar; a ground-only basin borrows this field's mask and live water level. The game builds the
  * manifest ground from these rows (`declaredGround`); no shard code. Generated from the shard's own layout.

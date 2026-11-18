@@ -14,9 +14,9 @@ export const NavigationSchema: v.GenericSchema<NavigationInput, Navigation> = v.
     origin: point, tileSize: positive, tiles: v.pipe(v.array(v.tuple([coordinate, coordinate])), v.maxLength(4096)) })), v.minLength(1), v.maxLength(16)) });
 /** An admitted immutable navigation declaration, with exact WSNM bounds and ordered agent tile grids. */
 
-/** Trusted level transport: admitted product bytes or the manifest's declared immutable URL. */
+/** Native level transport: admitted product bytes or the manifest's declared immutable URL. */
 export type NavigationContent = { row: unknown; bytes: Uint8Array } | { row: unknown; url: string };
-/** Validate a declaration supplied by a trusted manifest or author boundary before any transport read. */
+/** Validate a declaration supplied by a native manifest or author boundary before any transport read. */
 export function parseNavigation(input: unknown): Navigation { return v.parse(NavigationSchema, input); }
 /** Build the declaration from original bytes without resampling, re-encoding or sorting tiles/layers. */
 export function describeNavigation(file: string, bytes: Uint8Array): Navigation {

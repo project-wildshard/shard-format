@@ -54,7 +54,7 @@ export const CONTENT_CAPS: { readonly l0: { readonly size: 62.5; readonly reside
   overlap: 80 * CONTENT_MB, residentFactor: 1.11, nearRadius: 150, shadowRadius: 80, pitch: 562.5,
 } as const;
 
-/** Trusted GPU/transcoder capabilities, never authored shard data. */
+/** Host-owned GPU/transcoder capabilities, never authored shard data. */
 export interface TextureTranscodeSupport { readonly astc: boolean; readonly bc7: boolean }
 /** Exact LDR mip residency, including padded 4x4 ASTC/BC7 blocks at the smallest mip levels. */
 export function textureMipBytes(width: number, height: number, levels: number, blocks: boolean): number {

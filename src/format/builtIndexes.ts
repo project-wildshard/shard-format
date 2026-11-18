@@ -1,6 +1,6 @@
 declare const __SHARDFILE_VERDICTS__: unknown;
 
-/** Build-owned address for one first-party index. The complete digest remains
+/** Build-owned address for one built-in index. The complete digest remains
  * admission authority; its short URL version is only a cache identity. */
 export function builtIndexHash(path: string): string | null {
   const rows: unknown = typeof __SHARDFILE_VERDICTS__ === 'object' ? __SHARDFILE_VERDICTS__ : null;
@@ -16,7 +16,7 @@ export function builtIndexHash(path: string): string | null {
   return found;
 }
 
-/** The exact first-party index hashes this client build validated; null for an unbundled client or a build with none. */
+/** The exact built-in index hashes this client build validated; null for an unbundled client or a build with none. */
 export function builtIndexHashes(): ReadonlySet<string> | null {
   const rows: unknown = typeof __SHARDFILE_VERDICTS__ === 'object' ? __SHARDFILE_VERDICTS__ : null;
   if (!Array.isArray(rows)) return null;
