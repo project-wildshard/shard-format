@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.32.0 (2026-11-18)
+
+- The phone memory estimate now counts only the files a phone downloads, so heavy zones read closer to what a phone holds.
+- The estimate is refitted to cleaner Mac memory readings (memory epoch 5); Driftwood now passes the 1.5 GB loading line.
+
 ## v0.31.0 (2026-11-18)
 
 - The memory estimate now follows the engine's measured phone model, so checks and uploads stop refusing zones a phone runs.
