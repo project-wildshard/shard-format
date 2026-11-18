@@ -7,7 +7,10 @@ const coord = v.pipe(finite, v.minValue(-250), v.maxValue(250));
 const point = v.tuple([coord, coord, coord]);
 const positive = v.pipe(finite, v.minValue(0.001), v.maxValue(500));
 const duration = v.pipe(finite, v.minValue(0), v.maxValue(60));
-const phase = v.strictObject({ at: v.pipe(finite, v.minValue(0.001), v.maxValue(1)), name: label, caption: label, speed: v.pipe(finite, v.minValue(0), v.maxValue(15)), stopDistance: v.pipe(finite, v.minValue(0), v.maxValue(50)), turnRate: v.pipe(finite, v.minValue(0), v.maxValue(30)) });
+// ONE-FORMAT CC59: a phase's `adds` are spawn rows that wait out of the world until the fight reaches that phase.
+const MAX_ADDS = 8;
+const adds = v.exactOptional(v.pipe(v.array(id), v.nonEmpty(), v.maxLength(MAX_ADDS)));
+const phase = v.strictObject({ at: v.pipe(finite, v.minValue(0.001), v.maxValue(1)), name: label, caption: label, speed: v.pipe(finite, v.minValue(0), v.maxValue(15)), stopDistance: v.pipe(finite, v.minValue(0), v.maxValue(50)), turnRate: v.pipe(finite, v.minValue(0), v.maxValue(30)), adds });
 /**
  * ONE-FORMAT OF34a (J420 (1), Jake 2026-11-18): every boss is three parts. `boss` is the one fight: it `start`s `placed`
  * (its body stands in the world from load, as before), `spawned` (no body until a player enters the arena) or `resident`
@@ -29,7 +32,11 @@ function bossOnly(row: Readonly<{ kind: 'elite' | 'boss'; start?: (typeof BOSS_S
 const encounter = v.pipe(v.strictObject({ id, entity: id, kind: v.picklist(['elite', 'boss']), panel: v.nullable(id), name: label, title: label, retry: label,
   start, capExempt, arena, intro: duration, introShort: duration,
   respawn: v.strictObject({ at: point, yaw: finite }), phases: v.pipe(v.array(phase), v.minLength(1), v.maxLength(16)) }),
-v.check((e) => e.phases[0]?.at === 1 && e.phases.every((p, i) => i === 0 || p.at < (e.phases[i - 1]?.at ?? 0)), 'descending phase thresholds starting at 1'),
+v.check((e): boolean => {
+  let last = Number.POSITIVE_INFINITY;
+  for (const step of e.phases) { if (!(step.at < last)) { return false; } last = step.at; }
+  return e.phases[0]?.at === 1;
+}, 'descending phase thresholds starting at 1'),
 v.check<ShardEncounters[number], string>(bossOnly, 'Only a boss has a start or capExempt'));
 /** Elite/boss phase tables with checkpoints/retry, neutral steering data and declared panel references. */
 export const EncountersSchema: v.GenericSchema<ShardEncountersInput, ShardEncounters> = v.pipe(v.array(encounter), v.maxLength(64), v.check((rows) => new Set(rows.map((e) => e.id)).size === rows.length && new Set(rows.map((e) => e.entity)).size === rows.length, 'unique encounter ids and actors'));
@@ -41,6 +48,11 @@ export function encounterRules(rows: ShardEncounters, entities: readonly string[
   for (const row of rows) {
     if (!entities.includes(row.entity)) errors.push('declared encounter actor');
     if (row.panel !== null && !panels.some((p) => p.id === row.panel && p.encounter === row.id)) errors.push('declared matching boss panel');
+    for (const step of row.phases) {
+      for (const add of step.adds ?? []) {
+        if (add === row.entity || !entities.includes(add)) { errors.push('phase adds name other declared spawns'); }
+      }
+    }
   }
   return [...new Set(errors)];
 }
@@ -83,5 +95,6 @@ export type ShardEncounters = ({
         speed: number;
         stopDistance: number;
         turnRate: number;
+        adds?: string[];
     })[];
 })[];

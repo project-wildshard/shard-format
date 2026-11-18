@@ -1182,11 +1182,11 @@
   },
   "src/format/encounters.ts": {
    "eslint(curly)": 2,
-   "eslint(id-length)": 7,
-   "eslint(no-magic-numbers)": 25,
+   "eslint(id-length)": 5,
+   "eslint(no-magic-numbers)": 22,
    "import(group-exports)": 4,
    "import(no-namespace)": 1,
-   "typescript(explicit-function-return-type)": 6,
+   "typescript(explicit-function-return-type)": 4,
    "typescript(prefer-readonly-parameter-types)": 7,
    "unicorn(max-nested-calls)": 3
   },
