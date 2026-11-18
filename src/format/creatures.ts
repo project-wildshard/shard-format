@@ -14,7 +14,10 @@ import { DiverSchema, OrbitDiverSchema, PatrolDiverSchema, BurstFlyerSchema } fr
 /** One creature spawn row; input and output differ only in the home they carry. */
 interface CreatureSpawnRow<Home> { perchBody?: string; group?: string; rank?: 'veteran' | 'elite' | 'champion' | 'legendary'; count?: { per: number; max: number }; when?: { quest?: { id: string; stage: number }; time?: 'day' | 'night'; wave?: { set: string; index: number } }; phaseOffset?: number | undefined; respawn?: number | undefined; home?: Home | undefined; id: string; species: string; variant: string; brain: (string) | null; strike: (string) | null; seed: number; scale: number; at: [number, number, number]; yaw: number; }
 
-const id = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.:-]*$/u), v.maxLength(128));
+const ID_LENGTH = 128;
+const id = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.:-]*$/u), v.maxLength(ID_LENGTH));
+/** A species row id may carry capitals (OF11a): the spawn that places it names it the same way. */
+const speciesId = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9.:-]*$/u), v.maxLength(ID_LENGTH));
 const finite = v.pipe(v.number(), v.finite());
 const radius = v.pipe(finite, v.minValue(0), v.maxValue(500));
 const speed = v.pipe(finite, v.minValue(0), v.maxValue(15));
@@ -82,7 +85,7 @@ const questWhen = v.strictObject({ id, stage });
 const waveWhen = v.strictObject({ set: id, index: countPart });
 const timeWhen = v.picklist(['day', 'night'], 'unknown spawn time');
 const when = v.strictObject({ quest: v.exactOptional(questWhen), time: v.exactOptional(timeWhen), wave: v.exactOptional(waveWhen) }, 'unknown spawn condition');
-const spawn = v.strictObject({ perchBody: v.exactOptional(id), group: v.exactOptional(id), rank: v.exactOptional(rank), count: v.exactOptional(count), when: v.exactOptional(when), phaseOffset: v.optional(phase), home: v.optional(CreatureHomeSchema), respawn: v.optional(respawn), id, species: id, variant: id, brain: v.nullable(id), strike: v.nullable(id), seed: v.pipe(finite, v.integer(), v.minValue(0), v.maxValue(0xffffffff)), scale: v.pipe(finite, v.minValue(0.1), v.maxValue(10)), at: v.tuple([coord, coord, coord]), yaw: finite });
+const spawn = v.strictObject({ perchBody: v.exactOptional(id), group: v.exactOptional(id), rank: v.exactOptional(rank), count: v.exactOptional(count), when: v.exactOptional(when), phaseOffset: v.optional(phase), home: v.optional(CreatureHomeSchema), respawn: v.optional(respawn), id, species: speciesId, variant: id, brain: v.nullable(id), strike: v.nullable(id), seed: v.pipe(finite, v.integer(), v.minValue(0), v.maxValue(0xffffffff)), scale: v.pipe(finite, v.minValue(0.1), v.maxValue(10)), at: v.tuple([coord, coord, coord]), yaw: finite });
 /** Pure-data creature archetypes and stable spawn layouts, expanded before the local sim boots. */
 export const CreaturesSchema: v.GenericSchema<ShardCreaturesInput, ShardCreatures> = v.pipe(v.strictObject({ perchBodies: v.exactOptional(CreaturePerchBodiesSchema), brains: v.pipe(v.array(v.variant('kind', [brain, SkirmisherSchema, GuardianSchema, PerchHunterSchema, ScriptBrainSchema, RamGrazerSchema, ChallengeGrazerSchema, OrbitDiverSchema, PatrolDiverSchema, BurstFlyerSchema, GrazerSchema, DiverSchema, GuardianPatternsSchema, StalkerSchema])), v.maxLength(64)), groups: v.optional(v.pipe(v.array(GroupBrainSchema), v.maxLength(64)), []), patrols: v.exactOptional(CreaturePatrolsSchema), spawns: v.pipe(v.array(spawn), v.maxLength(10000)) }),
 v.check((c) => creatureRules(c).length === 0 && patrolsAdmitted(c.patrols ?? [], c.spawns, c.groups), 'creature reference rules'));
