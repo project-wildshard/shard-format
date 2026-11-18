@@ -22,14 +22,15 @@ interface MutableLock {
 }
 /** Every `since` in a lock's tree, set to 0. */
 const sinceZero = (node: unknown): void => {
-  if (Array.isArray(node)) {
-    node.forEach(sinceZero)
-  } else if (typeof node === 'object' && node !== null) {
-    const entry = node as Mutable
-    if (typeof entry['since'] === 'number') {
-      entry['since'] = 0
-    }
-    Object.values(entry).forEach(sinceZero)
+  if (typeof node !== 'object' || node === null) {
+    return
+  }
+  const entry = node as Mutable
+  if (typeof entry['since'] === 'number') {
+    entry['since'] = 0
+  }
+  for (const child of Object.values(entry)) {
+    sinceZero(child)
   }
 }
 /** Today's lock as the fixtures' release: minor 0, every id since 0, whatever minor the wire is at. */
@@ -39,7 +40,7 @@ const today = (): MutableLock => {
   sinceZero(lock)
   return lock
 }
-const released = (): ReleaseLock => today() as unknown as ReleaseLock
+const released = (): ReleaseLock => today()
 const copy = (): MutableLock => today()
 /** A field of `entry` by name; a fixture's target must exist. */
 const fieldNamed = (entry: Mutable, name: string): Mutable => {

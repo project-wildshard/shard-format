@@ -44,17 +44,20 @@ test('the released client plays a HEAD room, and a HEAD client the released room
   )
 })
 
+/** A codec's animal field ids. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- a codec is a set of module namespaces
+const ids = (codec: Codec): readonly number[] =>
+  (
+    codec.classes.WIRE_CLASSES.find(
+      (entry: { readonly id: number }): boolean => entry.id === ANIMAL_ID,
+    )?.fields ?? []
+  ).map((field: { readonly id: number }): number => field.id)
+
 // ONE-FORMAT CC28: the animal's four actor channels and its lock answer are
 // row fields a released client lacks: it skips them and plays on, and a HEAD
 // client in a released room reads each at its default.
 test('an old client skips the animal channel fields both ways', async (): Promise<void> => {
   const released = await releasedCodec(BEFORE_CHANNELS)
-  const ids = (codec: Codec): readonly number[] =>
-    (
-      codec.classes.WIRE_CLASSES.find(
-        (entry: { readonly id: number }): boolean => entry.id === ANIMAL_ID,
-      )?.fields ?? []
-    ).map((field: { readonly id: number }): number => field.id)
   const added = ids(HEAD).filter(
     (id: number): boolean => !ids(released).includes(id),
   )

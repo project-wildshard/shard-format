@@ -30,16 +30,18 @@ const without = (wireClass: WireClass, name: string): WireClass => ({
 const MOOD: WireClassField = { id: 24, name: 'mood', node: { kind: 'bool' } }
 /** The recordings' sender: the wire before CC28's animal fields (ids 25 to 29), which the recordings never carried. */
 const RECORDED = 24
+/** The animal as recorded: its fields up to `RECORDED`. */
+function recorded(animal: WireClass): WireClass {
+  return {
+    ...animal,
+    fields: animal.fields.filter(
+      (field: WireClassField): boolean => field.id <= RECORDED,
+    ),
+  }
+}
 const LOCAL: readonly WireClass[] = WIRE_CLASSES.map(
   (entry: WireClass): WireClass =>
-    entry === ANIMAL
-      ? {
-          ...ANIMAL,
-          fields: ANIMAL.fields.filter(
-            (field: WireClassField): boolean => field.id <= RECORDED,
-          ),
-        }
-      : entry,
+    entry === ANIMAL ? recorded(ANIMAL) : entry,
 )
 const RECORDED_ANIMAL = LOCAL.find(
   (entry: WireClass): boolean => entry.id === ANIMAL.id,

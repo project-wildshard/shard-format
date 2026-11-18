@@ -18,3 +18,6 @@ each local column by id, with the default where the room lacks it.
 Fixtures that took "today's lock" as minor 0 now normalise it to minor 0,
 and the projection test's recordings are read as the wire they were
 recorded with (animal fields up to 24).
+
+The first push met the lint: the same tests, rewritten without a forEach
+walk, an inner helper or a spread inside a map.

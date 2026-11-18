@@ -108,7 +108,7 @@ function check(ends: Ends, learned: Learned, raw: RawFrame): readonly string[] {
       const at = sent.findIndex(
         (theirs: { readonly id: number }): boolean => theirs.id === column.id,
       )
-      return at < 0 ? 0 : (tick + at) % 2
+      return at === -1 ? 0 : (tick + at) % 2
     },
   )
   const got = [...projectRow(animal?.row ?? [], raw.rows.get(1) ?? [])]
