@@ -27,6 +27,7 @@ import { StrikeTellKindSchema } from './spawnCombat.ts'
 import { HuntTuningSchema } from './speciesPrograms.ts'
 
 import type { CreatureBody } from './creature-body.ts'
+import type { CreatureMount } from './creature-mount.ts'
 import type { CreatureProjectile } from './creature-projectile.ts'
 import type { CreatureSkinClipName } from './skinData.ts'
 import type { StrikeTellKind } from './spawnCombat.ts'
@@ -112,6 +113,8 @@ interface CreatureLayers {
   senses?: CreatureSenses
   abilities?: CreatureAbility[]
   presentation?: CreaturePresentation
+  /** CC40a: rideable by the riding primitive. */
+  mount?: CreatureMount
 }
 
 const ZERO = 0
@@ -285,4 +288,5 @@ export type {
 }
 
 export { CreatureBodySchema } from './creature-body.ts'
+export { CreatureMountSchema, creatureMountRules } from './creature-mount.ts'
 export type { CreatureBody } from './creature-body.ts'

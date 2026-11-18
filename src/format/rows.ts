@@ -7,7 +7,7 @@ import * as v from 'valibot';
 import { isJsonData } from './json.ts';
 import { sketchReference } from './sketch.ts';
 import { JournalRowSchema, journalRowRules } from './compendiumRows.ts';
-import { CreatureTypeSchema, CreatureBodySchema, CreatureTemperamentSchema, CreatureSensesSchema, CreatureAbilitySchema, CreaturePresentationSchema } from './creature-layers.ts';
+import { CreatureMountSchema, creatureMountRules, CreatureTypeSchema, CreatureBodySchema, CreatureTemperamentSchema, CreatureSensesSchema, CreatureAbilitySchema, CreaturePresentationSchema } from './creature-layers.ts';
 import type { CreatureAbilityInput, CreatureLayers } from './creature-layers.ts';
 import { creatureSizeRules } from './creature-sizes.ts';
 import { SKIN_CLIPS_RECIPE, SkinClipMapSchema } from './skins.ts';
@@ -52,7 +52,7 @@ const species = v.strictObject({ id, kind: id, label: text, capExempt: v.exactOp
   variants: v.pipe(v.array(variant), v.minLength(1), v.maxLength(64)),
   type: v.exactOptional(CreatureTypeSchema), body: v.exactOptional(CreatureBodySchema),
   temperament: v.exactOptional(CreatureTemperamentSchema), senses: v.exactOptional(CreatureSensesSchema),
-  abilities: v.exactOptional(abilities), presentation: v.exactOptional(CreaturePresentationSchema) });
+  abilities: v.exactOptional(abilities), presentation: v.exactOptional(CreaturePresentationSchema), mount: v.exactOptional(CreatureMountSchema) });
 const parameter = v.union([finite, v.boolean(), text, v.pipe(v.array(finite), v.maxLength(16))]);
 const animationParameters = v.record(id, parameter);
 const lookAnimation = v.strictObject({
@@ -82,7 +82,7 @@ function rowRules(rows: ShardRows): string[] {
   }
   for (const d of rows.days) if (d.schedule[0]?.from !== 0 || d.schedule.at(-1)?.to !== 24 || d.schedule.some((s, i) => s.from >= s.to || (i > 0 && d.schedule[i - 1]?.to !== s.from))) errors.push('complete ordered day schedule');
   const speciesIds = new Set(rows.species.map((s) => s.id));
-  errors.push(...strikeDebrisCatalogueRules(rows), ...creatureSizeRules(rows.species));
+  errors.push(...strikeDebrisCatalogueRules(rows), ...creatureSizeRules(rows.species), ...creatureMountRules(rows.species));
   for (const s of rows.species) if (new Set(s.variants.map((r) => r.id)).size !== s.variants.length || s.variants.some((r) => r.scale[1] > 10)) errors.push('species variants');
   const strikeIds = new Set<string>();
   for (const strikeRow of rows.strikes) { strikeIds.add(strikeRow.id); }

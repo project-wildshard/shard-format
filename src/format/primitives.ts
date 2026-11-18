@@ -15,6 +15,8 @@ const NONE = 0
 interface PrimitiveSwitch {
   readonly section: string
   readonly path: readonly string[]
+  /** When set, the family is on only if some row of the list at `path` has this key. */
+  readonly having?: string
 }
 interface Primitive {
   readonly name: string
@@ -101,7 +103,11 @@ const TABLE: readonly Primitive[] = [
   {
     name: 'riding',
     row: 'CC40',
-    on: 'later',
+    on: {
+      section: 'actors/species',
+      path: ['rows', 'species'],
+      having: 'mount',
+    },
     hosts: [
       'riding.mounted',
       'riding.roster',
@@ -218,6 +224,18 @@ function filled(value: unknown): boolean {
     Object.keys(value).length > NONE
   )
 }
+function switchedOn(value: unknown, having: string | undefined): boolean {
+  if (having === undefined) {
+    return filled(value)
+  }
+  return (
+    Array.isArray(value) &&
+    value.some(
+      (row: unknown): boolean =>
+        typeof row === 'object' && row !== null && Object.hasOwn(row, having),
+    )
+  )
+}
 function newest(section: string): number {
   return Math.max(...(ACCEPTED_SECTION_VERSIONS[section] ?? [FIRST_VERSION]))
 }
@@ -237,7 +255,7 @@ function derivePrimitives(
     }
     if (
       row.on === 'later' ||
-      !filled(at(sections.get(row.on.section), row.on.path))
+      !switchedOn(at(sections.get(row.on.section), row.on.path), row.on.having)
     ) {
       return []
     }
