@@ -6,8 +6,9 @@
  *
  * Each baseline is the zone's reading on 2026-11-18 under memory epoch 8 (MEMORY-GATES MG10, mini-pinemem5; epoch 7
  * mini-mg8): the largest of the engine-pinned product's estimates (admission and performance report) and the current
- * source's, in decimal bytes. Pine's playing and loading rows are its pinned product's declared admission (the epoch-8
- * estimate reads 1,261 / 1,697 MB). A cut ratchets the row down; a zone
+ * source's, in decimal bytes. Nine's and Pine's loading rows are engine's full-check performance report of the pinned
+ * product (the offline estimate reads 1,667 and 1,697 MB); Pine's playing row is its declared admission. A cut ratchets
+ * the row down; a zone
  * that passes a line loses that field, and the line refuses again. `staleRevision` is the pinned product's
  * `identity.revision`: it admits that revision's pre-epoch-3 runtime reading; any later revision must carry a current one.
  */
@@ -29,13 +30,13 @@ const MEMORY_RATCHET: Readonly<Record<string, MemoryBaseline>> = Object.freeze({
     staleRevision: 1,
   },
   'nine-dragon-stack': {
-    loading: 1_666_992_954,
+    loading: 1_687_945_650,
     runtime: 547_365_098,
     staleRevision: 1,
   },
   'pine-hollow': {
     playing: 1_627_187_329,
-    loading: 1_707_187_329,
+    loading: 1_806_997_225,
     runtime: 550_909_717,
     staleRevision: 1,
   },
