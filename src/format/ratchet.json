@@ -831,7 +831,7 @@
    "eslint(id-length)": 23,
    "eslint(max-statements)": 1,
    "eslint(no-continue)": 1,
-   "eslint(no-magic-numbers)": 62,
+   "eslint(no-magic-numbers)": 61,
    "eslint(no-use-before-define)": 1,
    "eslint(sort-vars)": 1,
    "import(exports-last)": 11,
