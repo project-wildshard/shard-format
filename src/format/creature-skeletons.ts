@@ -28,6 +28,10 @@ interface SkeletonContract {
   readonly lock: string
   readonly volumes: readonly SkeletonVolume[]
   readonly clips: readonly string[]
+  /** Bones that follow the root's path, nearest first (CC23's serpent: every bone; CC58's horizontal biped: its tail). */
+  readonly trail?: readonly string[]
+  /** A forward pitch (radians about the bone's x axis) the poser gives one bone (CC58: a horizontal biped's spine). */
+  readonly pitch?: { readonly bone: string; readonly angle: number }
 }
 const ZERO = 0
 const ONE = 1
@@ -173,13 +177,61 @@ function serpentContract(trail: CreatureTrail): SkeletonContract {
     lock: 'head',
     volumes: [HEAD, ...segments],
     clips: CLIPS,
+    trail: bones,
   }
 }
-/** The one contract a body declares: a fixed skeleton's, or a serpent's built from its trail row. */
+/** A biped's stance (ONE-FORMAT CC58): `upright` is the plain biped; `horizontal` pitches the spine forward. */
+type BipedStance = 'upright' | 'horizontal'
+/** The horizontal biped's forward spine pitch: about 74 degrees, so the body leans out over the legs (Q-CC38). */
+const HORIZONTAL_SPINE_PITCH = 1.3
+const TAIL_MULTIPLIER = 0.5
+/** A horizontal biped's tail bones, hips outward: `tail1` … `tail<count>`. */
+function tailBoneNames(count: number): readonly string[] {
+  return Array.from(
+    { length: count },
+    (_unused: unknown, index: number): string => `tail${String(index + ONE)}`,
+  )
+}
+/**
+ * The horizontal biped (ONE-FORMAT CC58, Q-CC38: the T-Rex): the biped contract with its spine pitched forward and a
+ * `tail` chain off the hips whose `count` bones are trail bones, `spacing` metres apart along the path behind the hips.
+ * One capsule a tail bone at x0.5; the tail tip is the `tail` socket (a sweep's origin).
+ */
+function horizontalBipedContract(trail: CreatureTrail): SkeletonContract {
+  const tail = tailBoneNames(trail.count)
+  const tip = tail.at(-ONE) ?? 'hips'
+  return {
+    ...BIPED,
+    chains: { ...BIPED.chains, tail: { parent: 'hips', bones: tail } },
+    sockets: { ...BIPED.sockets, tail: socket(tip) },
+    volumes: [
+      ...BIPED.volumes,
+      ...tail.map((bone: string): SkeletonVolume => ({
+        part: bone,
+        bone,
+        shape: 'capsule',
+        radius: BODY_RADIUS,
+        halfLength: trail.spacing / HALF,
+        axis: 'z',
+        multiplier: TAIL_MULTIPLIER,
+      })),
+    ],
+    trail: tail,
+    pitch: { bone: 'spine', angle: HORIZONTAL_SPINE_PITCH },
+  }
+}
+/** The one contract a body declares: a fixed skeleton's, a serpent's built from its trail row, or a horizontal biped's. */
 function creatureContract(body: {
   readonly skeleton: CreatureSkeleton
+  readonly stance?: BipedStance
   readonly trail?: CreatureTrail
 }): SkeletonContract {
+  if (body.skeleton === 'biped' && body.stance === 'horizontal') {
+    if (body.trail === undefined) {
+      throw new Error('A horizontal biped needs its tail trail row')
+    }
+    return horizontalBipedContract(body.trail)
+  }
   if (body.skeleton !== 'serpent') {
     return CREATURE_SKELETONS[body.skeleton]
   }
@@ -203,13 +255,17 @@ function skeletonBones(
 
 export {
   CREATURE_SKELETONS,
+  HORIZONTAL_SPINE_PITCH,
   MIN_VOLUME_RADIUS,
   creatureContract,
+  horizontalBipedContract,
   serpentContract,
   skeletonBones,
+  tailBoneNames,
   trailBoneNames,
 }
 export type {
+  BipedStance,
   CreatureTrail,
   FixedSkeleton,
   SkeletonChain,

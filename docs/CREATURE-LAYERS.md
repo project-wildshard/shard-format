@@ -81,6 +81,20 @@ clip present in that list. This does not invent an idle animation or
 change a GLB. Joint order, required body/head and socket admission remain
 the same for animated and clipless rigs.
 
+## The horizontal biped (ONE-FORMAT CC58)
+
+A biped body may name a `stance`: `upright` (the plain biped, the
+default) or `horizontal` (Q-CC38: the T-Rex). A horizontal biped needs a
+`trail` row for its tail: `count` bones `tail1` to `tail<count>` in a
+`tail` chain off the hips, `spacing` metres apart, each following the
+path behind the hips like a serpent's trail bones. The contract pitches
+the `spine` bone forward by `HORIZONTAL_SPINE_PITCH` (1.3 rad), adds one
+capsule a tail bone at half damage and a `tail` socket on the tip, so a
+sweep can start `from: tail`. Only a biped has a stance, and only a
+serpent or a horizontal biped has a trail row. The contract's `trail`
+lists the bones that follow the path, so posers read it rather than the
+skeleton name.
+
 ## Actor channels (ONE-FORMAT CC28)
 
 A body may declare up to four `channels`, each a name and an optional
