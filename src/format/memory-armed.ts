@@ -32,9 +32,7 @@ interface HeldZone extends ArmedZone {
   readonly held: string
 }
 
-const HELD_ZONES: Readonly<Record<string, HeldZone>> = Object.freeze(
-  armed.held,
-)
+const HELD_ZONES: Readonly<Record<string, HeldZone>> = Object.freeze(armed.held)
 
 /** True when `slug` is in the armed list (J426). */
 function zoneArmed(slug?: string): boolean {
@@ -43,6 +41,15 @@ function zoneArmed(slug?: string): boolean {
 
 /** A rebuild of the same source moves the computed estimate by packing and compression drift only. */
 const ARMED_ALLOWANCE = 0.005
+
+/** The line a zone's entry locks at: the J410 line, or its reading at arming plus the allowance when that is higher. */
+function zoneLine(zone: ArmedZone, kind: ArmedKind): number {
+  const armedBytes = kind === 'playing' ? zone.playingBytes : zone.loadingBytes
+  return Math.max(
+    ARMED_LINES[kind],
+    armedBytes + Math.floor(armedBytes * ARMED_ALLOWANCE),
+  )
+}
 
 /** What an armed zone's offline estimate refuses over: the J410 line, or, when the conservative estimate of a source
  *  that EM11 measured under the line already reads over it (Nine's playing), that reading at arming plus the
@@ -54,15 +61,6 @@ function armedLine(
   const zone =
     slug === undefined || !zoneArmed(slug) ? undefined : ARMED_ZONES[slug]
   return zone === undefined ? undefined : zoneLine(zone, kind)
-}
-
-/** The line a zone's entry locks at: the J410 line, or its reading at arming plus the allowance when that is higher. */
-function zoneLine(zone: ArmedZone, kind: ArmedKind): number {
-  const armedBytes = kind === 'playing' ? zone.playingBytes : zone.loadingBytes
-  return Math.max(
-    ARMED_LINES[kind],
-    armedBytes + Math.floor(armedBytes * ARMED_ALLOWANCE),
-  )
 }
 
 export {

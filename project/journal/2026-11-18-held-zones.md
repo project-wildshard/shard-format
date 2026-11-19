@@ -7,3 +7,5 @@ armed list arms those zones on newer builds that engine does not pin yet, and Dr
 only and keeps the readings it was armed with, so re-arming is moving the entry back once its engine re-pin lands
 (MEMORY-GATES note for the mini). `zoneLine` names the lock rule so Nine's held entry still proves it; the tests that used
 Driftwood as their armed example now use Brasscap.
+
+The first push stopped on the src/format ratchet (use before define, a mutating sort, layout); the follow-up commit fixes those three.

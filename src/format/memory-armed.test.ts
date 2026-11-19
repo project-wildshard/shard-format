@@ -71,7 +71,9 @@ test('J426: Nine, armed with its estimate over the playing line, locks at that r
   const nine = entry?.playingBytes ?? 0
   const lock = nine + Math.floor(nine * ARMED_ALLOWANCE)
   expect(nine).toBeGreaterThan(ARMED_LINES.playing)
-  expect(entry === undefined ? undefined : zoneLine(entry, 'playing')).toBe(lock)
+  expect(entry === undefined ? undefined : zoneLine(entry, 'playing')).toBe(
+    lock,
+  )
   expect(
     hardLineIssue('playing', lock + 1, {
       slug: ARMED,
@@ -81,7 +83,12 @@ test('J426: Nine, armed with its estimate over the playing line, locks at that r
 })
 
 test('J424: a held zone reports only until engine re-pins it, and keeps the readings it re-arms with', (): void => {
-  expect(Object.keys(HELD_ZONES).sort()).toEqual(['driftwood-isle', 'nalati-grasslands', 'nine-dragon-stack', 'pine-hollow'])
+  expect(Object.keys(HELD_ZONES).toSorted()).toEqual([
+    'driftwood-isle',
+    'nalati-grasslands',
+    'nine-dragon-stack',
+    'pine-hollow',
+  ])
   for (const [slug, zone] of Object.entries(HELD_ZONES)) {
     expect(zoneArmed(slug), slug).toBe(false)
     expect(Object.hasOwn(ARMED_ZONES, slug), slug).toBe(false)
