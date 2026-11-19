@@ -13,7 +13,7 @@ The type label is for quest and journal filters; it never chooses a body.
 | body | Optional kit skeleton (quadruped or biped), size (tiny to giant), positive scale up to 10, and an existing look row id |
 | temperament | An open brain name, reaction (passive, skittish, neutral, aggressive), leash and assist radii, and home return speed/stop distance |
 | senses | Required notice radius; optional sight range/cone/graze radius, hearing radii for still/crouch/walk/sprint, and reveal radius |
-| abilities | At most 32 ordered strike references, each with range, cooldown and weight; optional health gate, damage, speed, windup and duration |
+| abilities | At most 32 ordered strike references, each with range, cooldown and weight; optional health gate, damage, speed, windup and duration; a push (`effect` `knockback` metres, or `impulse` m/s with `lift`) and an `aimHeight` above the target's feet |
 | presentation | Blood switch and sound names; optional call variants and an ordered call interval |
 
 Temperament modifiers are pack (boolean), territorial (radius), ambush
