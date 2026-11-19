@@ -8,3 +8,6 @@ from a server file the plan names (`server/swords.json`). ONE-FORMAT moves every
 swept policy (fixed step, slots with item, weapon, tags, combo and heavy moves, selection, eye, contact push, lunge),
 admitted by the schema `parseNativeSweptMeleeBinding` already used. Engine reads it when a native plan names no
 `item.swept` host (meta ONE-FORMAT OF22d2); Driftwood then writes the section and drops the host (OF22d3).
+
+The first push met the src/format lint ratchet: a new export statement in items.ts raised its counts. HeldMeleeSchema now
+shares ItemsSchema's export statement, and the test is kebab-case with named valibot imports.
