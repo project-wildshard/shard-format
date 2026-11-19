@@ -20,6 +20,15 @@ const DIRECTION = {
         { id: 3, name: 'z', node: SIGNED_UNIT_8 },
     ],
 };
+/** A unit direction at full width: a flight's aim, which a page flies for seconds. */
+const AIM = {
+    kind: 'struct',
+    fields: [
+        { id: 1, name: 'x', node: F32 },
+        { id: 2, name: 'y', node: F32 },
+        { id: 3, name: 'z', node: F32 },
+    ],
+};
 /** The events in an `events` record, by their v0 event tags. */
 const WIRE_EVENTS = [
     {
@@ -194,6 +203,23 @@ const WIRE_EVENTS = [
                     },
                 },
             },
+        ],
+    },
+    // ONE-FORMAT CC18c: a creature's strike launched a projectile. Every page
+    // flies it from here by the server's law (semi-implicit Euler at the sim
+    // rate, gravity down), so two pages draw one flight. Since minor 5: an
+    // older page skips it and draws no flight, as before.
+    {
+        id: 16,
+        name: 'flight',
+        since: 5,
+        fields: [
+            TICK,
+            { id: 2, name: 'source', node: REF },
+            { id: 3, name: 'at', node: POINT },
+            { id: 4, name: 'dir', node: AIM },
+            { id: 5, name: 'speed', node: F32 },
+            { id: 6, name: 'gravity', node: F32 },
         ],
     },
 ];

@@ -572,5 +572,94 @@ declare const WIRE_EVENTS: readonly [{
             };
         };
     }];
+}, {
+    readonly id: 16;
+    readonly name: 'flight';
+    readonly since: 5;
+    readonly fields: readonly [{
+        readonly id: 1;
+        readonly name: 'tick';
+        readonly node: {
+            readonly kind: 'uint';
+            readonly bits: 32;
+        };
+    }, {
+        readonly id: 2;
+        readonly name: 'source';
+        readonly node: {
+            readonly kind: 'ref';
+        };
+    }, {
+        readonly id: 3;
+        readonly name: 'at';
+        readonly node: {
+            readonly kind: 'struct';
+            readonly fields: readonly [{
+                readonly id: 1;
+                readonly name: 'x';
+                readonly node: {
+                    readonly kind: 'quant';
+                    readonly min: -260;
+                    readonly max: 260;
+                    readonly bits: 16;
+                };
+            }, {
+                readonly id: 2;
+                readonly name: 'y';
+                readonly node: {
+                    readonly kind: 'quant';
+                    readonly min: -260;
+                    readonly max: 260;
+                    readonly bits: 16;
+                };
+            }, {
+                readonly id: 3;
+                readonly name: 'z';
+                readonly node: {
+                    readonly kind: 'quant';
+                    readonly min: -260;
+                    readonly max: 260;
+                    readonly bits: 16;
+                };
+            }];
+        };
+    }, {
+        readonly id: 4;
+        readonly name: 'dir';
+        readonly node: {
+            readonly kind: 'struct';
+            readonly fields: readonly [{
+                readonly id: 1;
+                readonly name: 'x';
+                readonly node: {
+                    readonly kind: 'f32';
+                };
+            }, {
+                readonly id: 2;
+                readonly name: 'y';
+                readonly node: {
+                    readonly kind: 'f32';
+                };
+            }, {
+                readonly id: 3;
+                readonly name: 'z';
+                readonly node: {
+                    readonly kind: 'f32';
+                };
+            }];
+        };
+    }, {
+        readonly id: 5;
+        readonly name: 'speed';
+        readonly node: {
+            readonly kind: 'f32';
+        };
+    }, {
+        readonly id: 6;
+        readonly name: 'gravity';
+        readonly node: {
+            readonly kind: 'f32';
+        };
+    }];
 }];
 export { WIRE_EVENTS };

@@ -80,6 +80,17 @@ const EVENTS: readonly WireEvent[] = [
     fields: { ...DEATH, cause: { ...CAUSE, text: undefined } },
   },
   { event: 'player-died', fields: DEATH },
+  {
+    event: 'flight',
+    fields: {
+      tick: 6,
+      source: 3,
+      at: AT,
+      dir: { x: 0.6000000238418579, y: 0, z: -0.800000011920929 },
+      speed: 20,
+      gravity: 9.5,
+    },
+  },
   { event: 'spawn', fields: { handle: 2, cls: 2, id: 'animal:1' } },
 ]
 

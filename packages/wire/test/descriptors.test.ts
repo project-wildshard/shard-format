@@ -95,7 +95,7 @@ test('the descriptors write engine main and cfd6681 v0 hashes exactly', (): void
   )
 })
 
-test('against the WS2 baseline everything is kept and sixteen fields added', (): void => {
+test('against the WS2 baseline everything is kept and seventeen ids added', (): void => {
   const result = checkWire(LOCK, baseline())
   assert.deepEqual(result.problems, [])
   assert.deepEqual(result.added, [
@@ -115,6 +115,7 @@ test('against the WS2 baseline everything is kept and sixteen fields added', ():
     'animal.roadZ #31',
     'animal.ability #32',
     'animal.abilityT #33',
+    'event.flight #16',
   ])
   // 99 class fields; 6 message, 15 event and 11 act tags; 69 event and 15
   // act body fields; 16 command forms.

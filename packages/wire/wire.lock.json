@@ -1,7 +1,7 @@
 {
   "version": 1,
   "wireMajor": 1,
-  "wireMinor": 4,
+  "wireMinor": 5,
   "maxRowFields": 32,
   "tableLimits": {
     "maxDepth": 8,
@@ -1823,6 +1823,143 @@
         }
       ],
       "since": 0
+    },
+    {
+      "id": 16,
+      "name": "flight",
+      "fields": [
+        {
+          "id": 1,
+          "name": "tick",
+          "node": {
+            "kind": "uint",
+            "bits": 32
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 2,
+          "name": "source",
+          "node": {
+            "kind": "ref"
+          },
+          "default": null,
+          "since": 0
+        },
+        {
+          "id": 3,
+          "name": "at",
+          "node": {
+            "kind": "struct",
+            "fields": [
+              {
+                "id": 1,
+                "name": "x",
+                "node": {
+                  "kind": "quant",
+                  "min": -260,
+                  "max": 260,
+                  "bits": 16
+                },
+                "default": -260,
+                "since": 0
+              },
+              {
+                "id": 2,
+                "name": "y",
+                "node": {
+                  "kind": "quant",
+                  "min": -260,
+                  "max": 260,
+                  "bits": 16
+                },
+                "default": -260,
+                "since": 0
+              },
+              {
+                "id": 3,
+                "name": "z",
+                "node": {
+                  "kind": "quant",
+                  "min": -260,
+                  "max": 260,
+                  "bits": 16
+                },
+                "default": -260,
+                "since": 0
+              }
+            ]
+          },
+          "default": {
+            "x": -260,
+            "y": -260,
+            "z": -260
+          },
+          "since": 0
+        },
+        {
+          "id": 4,
+          "name": "dir",
+          "node": {
+            "kind": "struct",
+            "fields": [
+              {
+                "id": 1,
+                "name": "x",
+                "node": {
+                  "kind": "f32"
+                },
+                "default": 0,
+                "since": 0
+              },
+              {
+                "id": 2,
+                "name": "y",
+                "node": {
+                  "kind": "f32"
+                },
+                "default": 0,
+                "since": 0
+              },
+              {
+                "id": 3,
+                "name": "z",
+                "node": {
+                  "kind": "f32"
+                },
+                "default": 0,
+                "since": 0
+              }
+            ]
+          },
+          "default": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "since": 0
+        },
+        {
+          "id": 5,
+          "name": "speed",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        },
+        {
+          "id": 6,
+          "name": "gravity",
+          "node": {
+            "kind": "f32"
+          },
+          "default": 0,
+          "since": 0
+        }
+      ],
+      "since": 5
     }
   ],
   "acts": {
