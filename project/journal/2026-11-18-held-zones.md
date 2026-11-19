@@ -9,3 +9,5 @@ only and keeps the readings it was armed with, so re-arming is moving the entry 
 Driftwood as their armed example now use Brasscap.
 
 The first push stopped on the src/format ratchet (use before define, a mutating sort, layout); the follow-up commit fixes those three.
+
+The local Pine live-pin test now follows the list: it refuses Pine's historical rev 4 while Pine is armed and admits it with a report while Pine is held.

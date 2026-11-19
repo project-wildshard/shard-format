@@ -1,11 +1,13 @@
 // The historical Pine revision 4 product, from the local pin cache (absent on hosted CI). Both validators
-// refuse its over-line estimate after Pine's newer product qualified below the phone lines (J426).
+// refuse its over-line estimate while Pine is armed (J426), and admit it with a report while Pine is held (J424,
+// QA 11-18 row 29: engine still pins an older Pine).
 import { createHash } from 'node:crypto'
 import { createReadStream, existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 
 import { expect, test } from 'vitest'
 
+import { zoneArmed } from './memory-armed.ts'
 import { prepareAssetDecoders } from './shardfile-assets.ts'
 import { nodeStreamPorts } from './shardfile-stream-node.ts'
 import { validateShardfileStream } from './shardfile-stream.ts'
@@ -24,11 +26,11 @@ function sha256(bytes: Readonly<Uint8Array>): string {
 }
 
 test.skipIf(!existsSync(FILE))(
-  'both validators refuse historical Pine revision 4 after arming Pine',
+  'both validators refuse historical Pine revision 4 while Pine is armed, and admit it while held',
   async (): Promise<void> => {
     await prepareAssetDecoders()
     const files = readTar(readFileSync(FILE))
-    expect((): ReturnType<typeof validateShardfileFolder> =>
+    const folder = (): ReturnType<typeof validateShardfileFolder> =>
       validateShardfileFolder(
         {
           read: (name: string): Uint8Array =>
@@ -36,15 +38,19 @@ test.skipIf(!existsSync(FILE))(
           paths: (): Iterable<string> => files.keys(),
         },
         { hash: sha256, readThrough: true },
-      ),
-    ).toThrow(REFUSAL)
-    await expect(
-      validateShardfileStream(
-        (): AsyncIterable<Uint8Array> =>
-          createReadStream(FILE, { highWaterMark: CHUNK }),
-        nodeStreamPorts({ brotli: false }),
-      ),
-    ).rejects.toThrow(REFUSAL)
+      )
+    const stream = validateShardfileStream(
+      (): AsyncIterable<Uint8Array> =>
+        createReadStream(FILE, { highWaterMark: CHUNK }),
+      nodeStreamPorts({ brotli: false }),
+    )
+    if (zoneArmed('pine-hollow')) {
+      expect(folder).toThrow(REFUSAL)
+      await expect(stream).rejects.toThrow(REFUSAL)
+    } else {
+      expect(folder).not.toThrow()
+      await expect(stream).resolves.toBeDefined()
+    }
   },
   300_000,
 )
