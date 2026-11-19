@@ -5,8 +5,8 @@ import { parseRows } from './rows.ts'
 
 import type { StrikeRows } from './rows.ts'
 
-// ONE-FORMAT OF11b: Dunes' strider charge as a plain strike row. A lane charge runs past its target (`overshoot`) and
-// scores by horizontal distance (`farWeight`: beyond `beyond` metres its weight is `weight`, nearer it is the row's).
+// ONE-FORMAT OF11b: Dunes' strider charge as a plain strike row: a lane charge runs past its target (`overshoot`).
+// Its distance score is the challenge brain's own tuning (engine grazer.ts), so the row needs no score of its own.
 function charge(): StrikeRows {
   return {
     id: 'sunscar.strider.charge',
@@ -21,32 +21,26 @@ function charge(): StrikeRows {
     weight: 0.2,
     speed: 11,
     overshoot: 3,
-    farWeight: { beyond: 5, weight: 2 },
   }
 }
 
-test('a plain strike row carries a charge overshoot and a far weight', (): void => {
+test('a plain strike row carries a charge overshoot', (): void => {
   const rows = parseRows({ ...outputFixture().rows, strikes: [charge()] })
   expect(rows.strikes[0]?.overshoot).toBe(3)
-  expect(rows.strikes[0]?.farWeight).toEqual({ beyond: 5, weight: 2 })
 })
 
-test('a strike row without them keeps its bytes', (): void => {
-  const { overshoot: _overshoot, farWeight: _far, ...plain } = charge()
+test('a strike row without one keeps its bytes', (): void => {
+  const { overshoot: _overshoot, ...plain } = charge()
   const rows = parseRows({ ...outputFixture().rows, strikes: [plain] })
   expect(Object.keys(rows.strikes[0] ?? {})).not.toContain('overshoot')
-  expect(Object.keys(rows.strikes[0] ?? {})).not.toContain('farWeight')
 })
 
-test('overshoot and far weight are bounded', (): void => {
+test('overshoot is bounded', (): void => {
   const fixture = outputFixture().rows
   expect((): unknown =>
     parseRows({ ...fixture, strikes: [{ ...charge(), overshoot: -1 }] }),
   ).toThrow()
   expect((): unknown =>
-    parseRows({
-      ...fixture,
-      strikes: [{ ...charge(), farWeight: { beyond: 5, weight: -1 } }],
-    }),
+    parseRows({ ...fixture, strikes: [{ ...charge(), overshoot: 31 }] }),
   ).toThrow()
 })
