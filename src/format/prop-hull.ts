@@ -155,4 +155,57 @@ function propHullBounds(shape: HullPose): HullBounds {
   }
 }
 
-export { propHullBounds, solidHullWithinCell }
+type CapsulePose = Readonly<GlbVertex> & {
+  readonly halfHeight: number
+  readonly radius: number
+  readonly yaw?: number | undefined
+  readonly rot?: (Readonly<GlbVertex> & { readonly w: number }) | undefined
+}
+const BELOW = -1
+const ABOVE = 1
+const SIGNS = [BELOW, ABOVE] as const
+
+/** OF22a3: a capsule's local bounding box corners, posed as the capsule is. */
+function capsuleCorners(shape: CapsulePose): number[] {
+  const across = shape.radius
+  const along = shape.halfHeight + shape.radius
+  return SIGNS.flatMap((sx: number): number[] =>
+    SIGNS.flatMap((sy: number): number[] =>
+      SIGNS.flatMap((sz: number): number[] => [
+        sx * across,
+        sy * along,
+        sz * across,
+      ]),
+    ),
+  )
+}
+
+/** A conservative clearance envelope for the posed capsule. */
+function propCapsuleBounds(shape: CapsulePose): HullBounds {
+  return propHullBounds({ ...shape, points: capsuleCorners(shape) })
+}
+
+/** OF22a3: both posed end caps, swollen by the radius, stay inside the cell. */
+function solidCapsuleWithinCell(shape: CapsulePose): boolean {
+  const ends = pointsInWorld({
+    ...shape,
+    points: [ZERO, -shape.halfHeight, ZERO, ZERO, shape.halfHeight, ZERO],
+  })
+  return (
+    ends.length === SIGNS.length &&
+    ends.every(
+      (end: Readonly<GlbVertex>): boolean =>
+        Math.abs(end.x) + shape.radius <= CELL_HALF_WIDTH &&
+        Math.abs(end.z) + shape.radius <= CELL_HALF_WIDTH &&
+        end.y - shape.radius >= -CELL_BELOW &&
+        end.y + shape.radius <= CELL_ABOVE,
+    )
+  )
+}
+
+export {
+  propCapsuleBounds,
+  propHullBounds,
+  solidCapsuleWithinCell,
+  solidHullWithinCell,
+}

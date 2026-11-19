@@ -52,7 +52,7 @@ test.each([
   { ...hull, points: [...hull.points, 1e100, 0, 0] },
   {
     ...hull,
-    points: Array.from({ length: 5 }, (): number[] => hull.points).flat(),
+    points: Array.from({ length: 17 }, (): number[] => hull.points).flat(),
   },
   { ...hull, points: [...hull.points, 0, Infinity, 0] },
   { ...hull, x: 248 },

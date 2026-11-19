@@ -1,6 +1,6 @@
 import type { ShardEntryways } from './entryways.ts';
 import type { ShardProps } from './props.ts';
-import { propHullBounds } from './prop-hull.ts';
+import { propCapsuleBounds, propHullBounds } from './prop-hull.ts';
 import type { ShardWater } from './water.ts';
 import { entryFootprints, clipEntryPolygon, obstructsEntry, type EntryVertex, type EntryFootprint } from './entryGeometry.ts';
 import { PropExtent, visitGlbTriangles } from './shardfile-assets.ts';
@@ -53,6 +53,7 @@ export function validateEntrywayClearance(source: { entryways: ShardEntryways; p
     for (const row of props.colliders) for (const shape of row.shapes) {
       if (shape.kind === 'box') boxTriangles(shape, inspect);
       else if (shape.kind === 'hull') { boxTriangles(propHullBounds(shape), inspect); }
+      else if (shape.kind === 'capsule') { boxTriangles(propCapsuleBounds(shape), inspect); }
       else {
         const dx = shape.to.x - shape.from.x, dz = shape.to.z - shape.from.z, run = Math.hypot(dx, dz) / shape.count, rise = (shape.to.y - shape.from.y) / shape.count;
         for (let i = 0; i < shape.count; i++) {

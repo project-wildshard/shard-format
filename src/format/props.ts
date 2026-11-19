@@ -4,7 +4,7 @@ import { isJsonData } from './json.ts';
 import { PropMaterialsSchema, propMaterialTextureRefs, validatePropMaterials } from './propMaterials.ts';
 import { SplatTerrainSchema, validateSplatTerrain } from './splatTerrain.ts';
 import { glbPoint, glbTransform } from './glbTriangles.ts';
-import { solidHullWithinCell } from './prop-hull.ts';
+import { solidCapsuleWithinCell, solidHullWithinCell } from './prop-hull.ts';
 import type { GlbVertex } from './glbTriangles.ts';
 
 const ref = v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u));
@@ -16,9 +16,18 @@ const height = v.pipe(v.number(), v.finite(), v.minValue(-CELL_BELOW), v.maxValu
 const finite = v.pipe(v.number(), v.finite());
 const extent = v.pipe(finite, v.minValue(0.005), v.maxValue(250));
 const point = v.strictObject({ x: coord, y: height, z: coord });
-const surface = v.optional(v.picklist(['wood', 'stone', 'grass', 'sand', 'rock', 'metal', 'earth', 'felt']));
+/** OF22a3: a static solid's material is any engine contact material a bake tags (`planks`, `ground`, `flesh`, `shell` beside the body materials). */
+const SURFACES = ['wood', 'stone', 'grass', 'sand', 'rock', 'metal', 'earth', 'felt', 'planks', 'ground', 'flesh', 'shell'] as const;
+type PropSurface = typeof SURFACES[number];
+const surface = v.optional(v.picklist(SURFACES));
+const CONTACT_LEAST = 0;
+const CONTACT_FRICTION_MAX = 2;
+const GROUPS_MAX = 0xFF_FF_FF_FF;
+/** OF22a3: a baked solid's own contact: its friction, and its Rapier interaction groups (membership high 16 bits, filter low 16). */
+const contact = { friction: v.optional(v.pipe(v.number(), v.finite(), v.minValue(CONTACT_LEAST), v.maxValue(CONTACT_FRICTION_MAX))),
+  groups: v.optional(v.pipe(v.number(), v.integer(), v.minValue(CONTACT_LEAST), v.maxValue(GROUPS_MAX))) };
 const rotation = v.pipe(v.strictObject({ x: finite, y: finite, z: finite, w: finite }), v.check((q) => Math.abs(q.x ** 2 + q.y ** 2 + q.z ** 2 + q.w ** 2 - 1) < 1e-5, 'unit collider rotation'));
-const boxData = v.strictObject({ kind: v.literal('box'), x: coord, y: height, z: coord, hx: extent, hy: extent, hz: extent, yaw: v.optional(finite), rot: v.optional(rotation), surface });
+const boxData = v.strictObject({ kind: v.literal('box'), x: coord, y: height, z: coord, hx: extent, hy: extent, hz: extent, yaw: v.optional(finite), rot: v.optional(rotation), surface, ...contact });
 function boxWithinCell(b: v.InferOutput<typeof boxData>): boolean {
   const q = b.rot ?? { x: 0, y: Math.sin((b.yaw ?? 0) / 2), z: 0, w: Math.cos((b.yaw ?? 0) / 2) };
   const transform = glbTransform({ translation: [b.x, b.y, b.z], rotation: [q.x, q.y, q.z, q.w] });
@@ -33,19 +42,27 @@ interface PropHull extends GlbVertex {
   yaw?: number | undefined;
   // oxlint-disable-next-line eslint/id-length -- Quaternion components are part of the wire.
   rot?: (GlbVertex & { w: number }) | undefined;
-  surface?: 'wood' | 'stone' | 'grass' | 'sand' | 'rock' | 'metal' | 'earth' | 'felt' | undefined;
+  surface?: PropSurface | undefined;
+  friction?: number | undefined;
+  groups?: number | undefined;
 }
 const MIN_HULL_COORDS = 12;
-const MAX_HULL_COORDS = 192;
+/** OF22a3: up to 256 points, the largest hull a bake keeps (Driftwood's is 168). */
+const MAX_HULL_COORDS = 768;
 const AXES_PER_VERTEX = 3;
 const COLLIDER_UNIT = 1;
 const hullPoints = v.pipe(v.array(finite), v.minLength(MIN_HULL_COORDS), v.maxLength(MAX_HULL_COORDS));
 // oxlint-disable-next-line eslint/id-length -- A hull has the same cell-local pose as a prop box.
 const hullData = v.strictObject({ kind: v.literal('hull'), x: coord, y: height, z: coord, points: hullPoints,
-  yaw: v.optional(finite), rot: v.optional(rotation), surface });
+  yaw: v.optional(finite), rot: v.optional(rotation), surface, ...contact });
 const hull = v.pipe(hullData, v.check<v.InferOutput<typeof hullData>, string>(solidHullWithinCell, 'solid hull within cell'));
-const treads = v.pipe(v.strictObject({ kind: v.literal('treads'), from: point, to: point, width: extent, count: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(256)), surface }), v.check((t) => Math.hypot(t.to.x - t.from.x, t.to.z - t.from.z) > 0 && t.to.y >= t.from.y && [t.from, t.to].every((p) => Math.abs(p.x) + t.width / 2 <= 250 && Math.abs(p.z) + t.width / 2 <= 250), 'bounded nondegenerate stair'));
-const collider = v.strictObject({ id, panel: v.nullable(id), initialActive: v.boolean(), shapes: v.pipe(v.array(v.variant('kind', [box, treads, hull])), v.minLength(1), v.maxLength(256)) });
+const treads = v.pipe(v.strictObject({ kind: v.literal('treads'), from: point, to: point, width: extent, count: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(256)), surface, ...contact }), v.check((t) => Math.hypot(t.to.x - t.from.x, t.to.z - t.from.z) > 0 && t.to.y >= t.from.y && [t.from, t.to].every((p) => Math.abs(p.x) + t.width / 2 <= 250 && Math.abs(p.z) + t.width / 2 <= 250), 'bounded nondegenerate stair'));
+/** OF22a3: an upright capsule (or turned by `yaw`/`rot`): the straight part's half height and the radius, whole inside the cell. */
+// oxlint-disable-next-line eslint/id-length -- A capsule has the same cell-local pose as a prop box.
+const capsuleData = v.strictObject({ kind: v.literal('capsule'), x: coord, y: height, z: coord, halfHeight: extent, radius: extent,
+  yaw: v.optional(finite), rot: v.optional(rotation), surface, ...contact });
+const capsule = v.pipe(capsuleData, v.check<v.InferOutput<typeof capsuleData>, string>(solidCapsuleWithinCell, 'capsule within cell'));
+const collider = v.strictObject({ id, panel: v.nullable(id), initialActive: v.boolean(), shapes: v.pipe(v.array(v.variant('kind', [box, treads, hull, capsule])), v.minLength(1), v.maxLength(256)) });
 const BODY_EXTENT_MIN = 0.005;
 const BODY_EXTENT_MAX = 8;
 const BODY_DENSITY_MIN = 1;
@@ -81,8 +98,9 @@ function bodiesAdmitted(section: { readonly bodies?: readonly { readonly id: str
   const owned = new Set(rows.map((row): string => row.panel));
   return ids.size === rows.length && owned.size === rows.length && rows.every((row): boolean => declared.has(row.panel) && !claimed.has(row.panel));
 }
-type CostedShape = Readonly<{ kind: 'treads'; count: number }> | Readonly<{ kind: 'hull'; points: readonly number[] }> | Readonly<{ kind: 'box' }>;
-const COLLIDER_BUDGET = 2048;
+type CostedShape = Readonly<{ kind: 'treads'; count: number }> | Readonly<{ kind: 'hull'; points: readonly number[] }> | Readonly<{ kind: 'box' | 'capsule' }>;
+/** OF22a3: a baked island's solids (Driftwood: about 13,500 units, which its native bake admits today) fit; a hull point costs one unit. */
+const COLLIDER_BUDGET = 16_384;
 function withinColliderBudget(rows: readonly Readonly<{ shapes: readonly CostedShape[] }>[]): boolean {
   let total = 0;
   for (const row of rows) {
@@ -179,8 +197,10 @@ interface PropsDataFields {
                 z: number;
                 w: number;
             } | undefined;
-            surface?: 'wood' | 'stone' | 'grass' | 'sand' | 'rock' | 'metal' | 'earth' | 'felt' | undefined;
-        }) | PropHull | ({
+            surface?: PropSurface | undefined;
+            friction?: number | undefined;
+            groups?: number | undefined;
+        }) | PropHull | PropCapsule | ({
             kind: 'treads';
             from: {
                 x: number;
@@ -194,7 +214,9 @@ interface PropsDataFields {
             };
             width: number;
             count: number;
-            surface?: 'wood' | 'stone' | 'grass' | 'sand' | 'rock' | 'metal' | 'earth' | 'felt' | undefined;
+            surface?: PropSurface | undefined;
+            friction?: number | undefined;
+            groups?: number | undefined;
         }))[];
     })[];
     textures: ({
@@ -202,6 +224,18 @@ interface PropsDataFields {
         colour: string;
     })[];
     bodies?: PropsBody[];
+}
+/** OF22a3: a static capsule solid. */
+interface PropCapsule extends GlbVertex {
+    kind: 'capsule';
+    halfHeight: number;
+    radius: number;
+    yaw?: number | undefined;
+    // oxlint-disable-next-line eslint/id-length -- Quaternion components are part of the wire.
+    rot?: (GlbVertex & { w: number }) | undefined;
+    surface?: PropSurface | undefined;
+    friction?: number | undefined;
+    groups?: number | undefined;
 }
 /** SS9a: a point, or a cuboid's half extents, in metres. */
 interface PropsBodyVector { x: number; y: number; z: number }

@@ -22,7 +22,7 @@ function boxTop(box: Box): EntryVertex[][] {
 function staticTops(rows: readonly ShardProps['colliders'][number][]): EntryVertex[][] {
   return rows.flatMap(row => row.shapes.flatMap(shape => {
     if (shape.kind === 'box') return boxTop(shape);
-    if (shape.kind === 'hull') { return []; }
+    if (shape.kind === 'hull' || shape.kind === 'capsule') { return []; }
     const dx = shape.to.x - shape.from.x, dz = shape.to.z - shape.from.z, run = Math.hypot(dx, dz) / shape.count, rise = (shape.to.y - shape.from.y) / shape.count;
     return Array.from({ length: shape.count }, (_unused, i) => {
       const f = (i + 0.5) / shape.count, hy = Math.max(0.01, rise * (i + 1) / 2);
