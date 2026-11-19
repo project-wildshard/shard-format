@@ -22,7 +22,7 @@ function page(encounter: boolean): Shardfile {
     : ''
   const source: unknown = JSON.parse(
     `{"runtime":null,"questHost":{"page":{"version":1,"quest":"q"},"actors":{"ids":[]}},"quests":{"quests":[]},` +
-      `"questNpcs":[],"items":{"loadout":{"primary":null,"secondary":null,"tools":[]},"rows":[]},"rows":{"species":[]},` +
+      `"questNpcs":[],"items":{"loadout":{"primary":null,"secondary":null,"tools":[]},"rows":[]},"rows":{"species":[],"looks":[]},` +
       `"encounters":[${encounters}],"creatures":{"spawns":[{"id":"roc"}]},"crowds":[]}`,
   )
   if (!fields(source)) {

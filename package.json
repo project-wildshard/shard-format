@@ -446,7 +446,8 @@
     "./interact-table.golden.json": "./src/format/interact-table.golden.json",
     "./itemCatalogue": "./src/format/item-catalogue.ts",
     "./item-catalogue.golden.json": "./src/format/item-catalogue.golden.json",
-    "./baked-terrain.golden.json": "./src/format/baked-terrain.golden.json"
+    "./baked-terrain.golden.json": "./src/format/baked-terrain.golden.json",
+    "./rigLooks": "./src/format/rig-looks.ts"
   },
   "engines": {
     "node": ">=24.18.0"

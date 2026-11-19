@@ -15,7 +15,7 @@ function fields(value: unknown): value is Shardfile {
 function page(spawns: string, crowds: string): Shardfile {
   const source: unknown = JSON.parse(
     `{"runtime":null,"questHost":{"page":{"version":1,"quest":"q"},"actors":{"ids":[]}},"quests":{"quests":[]},` +
-      `"questNpcs":[],"items":{"loadout":{"primary":null,"secondary":null,"tools":[]},"rows":[]},"rows":{"species":[]},"encounters":[],` +
+      `"questNpcs":[],"items":{"loadout":{"primary":null,"secondary":null,"tools":[]},"rows":[]},"rows":{"species":[],"looks":[]},"encounters":[],` +
       `"creatures":{"spawns":[${spawns}]},"crowds":[${crowds}]}`,
   )
   if (!fields(source)) {

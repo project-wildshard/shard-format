@@ -2,17 +2,19 @@ import { hasDeclaredClientPage } from './runtimeBinds.ts';
 import type { Shardfile } from './shardSchema.ts';
 import { parseClientPlan } from './clientPlan.ts';
 import { parseNativeRuntimePlan, nativeRuntimeActorIds } from './nativeRuntimePlan.ts';
+import { pageDrawsDeclaredLooks, rigLookRules } from './rig-looks.ts';
 
 /** Cross-section ownership replaces the former runtime-only requirement. This
  * runs on author output and checked network/native products before allocation. */
 export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<string, unknown>): readonly string[] {
-  const raw = sections.get('client/plan');
+  const raw = sections.get('client/plan'), rigs = rigLookRules(source.rows.looks, sections);
   const features = raw === undefined ? [] : parseClientPlan(raw).features;
   const page = hasDeclaredClientPage(source), native = features.some(row => row.kind === 'population.homes');
-  if (!page && !native) return [];
-  const errors: string[] = [];
+  if (!page && !native) return rigs;
+  // OF19d1: a page drawing its declared bodies from their looks needs no species program
+  const errors: string[] = [...rigs], program = !pageDrawsDeclaredLooks(source, sections.get('sim/runtime-plan'), features);
   if (!page || source.runtime !== null) errors.push('Native client features require their typed data page owner');
-  for (const kind of ['world.scenes', 'motion.channels', 'species.program', 'held.melee', 'quest.page', 'population.homes'] as const)
+  for (const kind of ['world.scenes', 'motion.channels', ...program ? ['species.program'] as const : [], 'held.melee', 'quest.page', 'population.homes'] as const)
     if (!features.some(row => row.kind === kind)) errors.push(`Data page requires ${kind}`);
   const quest = features.find(row => row.kind === 'quest.page'), held = features.find(row => row.kind === 'held.melee');
   const declared = source.questHost?.page;
@@ -24,7 +26,7 @@ export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<st
   // ONE-FORMAT OF19b0/OF19c0: declared spawns, their species and encounters run beside the plan's keeper (the engine
   // refuses a body both own); declared crowds do not
   if (source.crowds.length > 0) errors.push('Data page native roster cannot also install declared crowds');
-  for (const name of ['world/scenes', 'world/targets', 'actors/species-programs', 'sim/runtime-plan', 'sim/scripts', 'look/painted'])
+  for (const name of ['world/scenes', 'world/targets', ...program ? ['actors/species-programs'] : [], 'sim/runtime-plan', 'sim/scripts', 'look/painted'])
     if (!sections.has(name)) errors.push(`Data page requires ${name}`);
   const channels = new Set(source.clientChannels?.map(row => row.id));
   for (const feature of features) if (feature.kind === 'motion.channels') {
