@@ -74,7 +74,7 @@ test('MG6 epoch 5: a desktop-tier file is no part of the phone estimate', (): vo
   expect(phone.geometry).toBe(6 * MB)
 })
 
-test('MG6 epoch 5: a data shard counts its mounted images, a runtime home leaves them to its reading', (): void => {
+test('MG6 epoch 5: a shard with no runtime counts its mounted images, a runtime home leaves them to its reading', (): void => {
   const mounted = 50 * MB
   expect(phoneTerms(product(), mounted).content).toBe(9 * MB + mounted)
   expect(phoneTerms(product(), mounted).textures).toBe(mounted)

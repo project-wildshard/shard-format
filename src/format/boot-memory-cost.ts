@@ -27,18 +27,18 @@ interface BootMemoryCosts {
 /** MG6 epoch 4: what the offline estimate reads of a product, in bytes; from epoch 5 only the files a phone fetches. */
 interface PhoneTerms {
   /** Every phone-tier client file's wire bytes plus its CPU-decoded bytes (audio aside), the commons the same way, and,
-   *  for a data shard, the decoded engine images the cook mounts: what a boot downloads and decodes. */
+   *  for a shard with no runtime, the decoded engine images the cook mounts: what a boot downloads and decodes. */
   readonly content: number
   /** GPU texture bytes: image and KTX2 files, commons GPU and mounted images; zero for a runtime home, whose `gl` stands
    *  in (its files carry every tier's variants: Pine ships 704 MB of texture bytes and holds 65 MB on a phone at Low). */
   readonly textures: number
-  /** A runtime home's paired GL reading [L]; zero for a data shard. */
+  /** A runtime home's paired GL reading [L]; zero for a shard with no runtime. */
   readonly gl: number
   /** GPU geometry bytes: GLB and binary files. */
   readonly geometry: number
   /** The shard's own declared sim residency at its growth limit (`budgets.sim`, `serverBudget.memory`). */
   readonly sims: number
-  /** A runtime home's paired Simulator WebContent + GL reading, whole; zero for a data shard. */
+  /** A runtime home's paired Simulator WebContent + GL reading, whole; zero for a shard with no runtime. */
   readonly runtimeReading: number
 }
 

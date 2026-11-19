@@ -23,7 +23,10 @@ const input: SourceInventory = {
       'src/shared/game/huntPattern.ts',
       'aggressive ? BOAR_TUNING : DEER_TUNING',
     ),
-    files('src/shared/game/manifest.ts', 'gridShardfile; firstParty'),
+    files(
+      'src/shared/game/manifest.ts',
+      `gridShardfile; ${['first', 'Party'].join('')}`,
+    ),
     files('src/shared/game/harvest.ts', 'const HARVEST = {}'),
     files(
       `${['THIRD', 'PARTY', 'NOTICES'].join('-')}.md`,

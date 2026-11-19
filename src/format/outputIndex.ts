@@ -30,7 +30,8 @@ const section = v.strictObject({ ...measuredFile, name: sectionName, schema: v.p
 const cookRow = v.exactOptional(v.strictObject({ ...measuredFile, path: v.literal('cook.json') }));
 const costs = v.omit(FilesSchema.pipe[0].item, ['kind']).entries;
 const fileSchema = v.strictObject({ ...costs, path, kind: v.picklist(['glb', 'ktx2', 'audio', 'json', 'wasm', 'tile', 'bin', 'image']), name: v.exactOptional(v.pipe(v.string(), v.maxLength(240))), tier: v.exactOptional(v.picklist(['phone', 'desktop'])), variantOf: v.exactOptional(v.pipe(v.string(), v.minLength(1), v.maxLength(240))), commons: v.exactOptional(v.literal(true)), jsonSchema: v.exactOptional(v.record(v.string(), v.unknown())) });
-const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['spawns']).entries, trust: v.literal('first-party'), files: v.pipe(v.array(v.strictObject({ ...measuredFile, lines: ShardNaturalSchema })), v.maxLength(0)), lines: v.literal(0) });
+/** `trust` is retired (OF1): new indexes omit it, old products still carry their value and nothing reads it. */
+const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['spawns']).entries, trust: v.exactOptional(v.unknown()), files: v.pipe(v.array(v.strictObject({ ...measuredFile, lines: ShardNaturalSchema })), v.maxLength(0)), lines: v.literal(0) });
 /** Format 2 inventories every emitted byte except its index and validation receipt. */
 export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputIndexRows> & { readonly entries: { readonly [Key in keyof OutputIndexRows]-?: v.GenericSchema<OutputIndexRowsInput[Key], OutputIndexRows[Key]> } } = v.strictObject({
   format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.picklist(['0.2', '0.3']), version: v.picklist(SHARDFILE_VERSIONS),
@@ -224,7 +225,7 @@ interface OutputIndexRowsInputFields {
         bytes: number;
     } | undefined;
     runtime: {
-        trust: "first-party";
+        trust?: unknown;
         files: {
             lines: number;
             path: string;
@@ -322,7 +323,7 @@ interface OutputIndexRowsFields {
         bytes: number;
     } | undefined;
     runtime: {
-        trust: "first-party";
+        trust?: unknown;
         files: {
             lines: number;
             path: string;
