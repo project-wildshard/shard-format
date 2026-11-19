@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.51.0 (2026-11-19)
+
+- A shard's sky, fog, colour grade and horizon can now live in its look section (look.level).
+- An older shard keeps them in its level manifest and looks exactly the same.
+- A lamp can follow a panel (the lamp panel binding).
+
 ## v0.50.0 (2026-11-19)
 
 - A creature look can draw its body from a scene library's rig: recipe `platform.rig`, naming the library and optionally the body.
