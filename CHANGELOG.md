@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.47.2 (2026-11-19)
+
+- A runtime plan page can stand declared creatures and bosses beside its own keeper.
+
 ## v0.47.1 (2026-11-19)
 
 - A runtime plan may keep no owner row, so a shard can move its boss to a declared encounter and keep its quest page.
