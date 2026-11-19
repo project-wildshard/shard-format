@@ -34,7 +34,9 @@ export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<st
   if (rawPlan !== undefined) {
     const plan = parseNativeRuntimePlan(rawPlan), owner = plan.recipe.population.owner;
     const bosses = features.filter(row => row.kind === 'boss.held' || row.kind === 'boss.spawned');
-    if (bosses.length !== 1 || bosses.some(row => row.actor !== owner.actor || (row.kind === 'boss.held') !== (owner.profile.pattern === 'held')))
+    // OF19c0b: a plan with no owner row has no keeper boss for a page boss feature to draw (its boss is declared)
+    if (owner === undefined ? bosses.length > 0 : bosses.length !== 1
+      || bosses.some(row => row.actor !== owner.actor || (row.kind === 'boss.held') !== (owner.profile.pattern === 'held')))
       errors.push('Data page requires its actual native encounter pattern');
     const actors = new Set(nativeRuntimeActorIds(plan));
     if (source.questHost?.actors.ids.some(id => !actors.has(id))) errors.push('Data page quest requires actual native actors');
