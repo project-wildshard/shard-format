@@ -1,0 +1,269 @@
+{
+  "actor": "roc",
+  "armed": true,
+  "definition": {
+    "id": "roc",
+    "intro": 1.5,
+    "introShort": 0.3,
+    "name": "Storm Roc",
+    "phases": [
+      {
+        "at": 1,
+        "caption": "It stoops from the storm",
+        "name": "It stoops from the storm"
+      },
+      {
+        "at": 0.66,
+        "caption": "Walls of gale",
+        "name": "Walls of gale"
+      },
+      {
+        "at": 0.33,
+        "caption": "Grounded on the dais",
+        "name": "Grounded on the dais"
+      }
+    ],
+    "retryTitle": "Face the Storm Roc again",
+    "reward": {},
+    "title": "Lord of the storm crown"
+  },
+  "profile": {
+    "fight": {
+      "arena": {
+        "floor": 42,
+        "r": 18,
+        "x": 0,
+        "z": -190
+      },
+      "hpShares": [1, 0.66, 0.33],
+      "respawn": {
+        "x": -12.953147256657838,
+        "y": 44.2,
+        "yaw": 0,
+        "z": -179.04685274334216
+      },
+      "rewardPoint": {
+        "x": 0,
+        "y": 44.3,
+        "z": -196
+      }
+    },
+    "kind": "boss",
+    "pattern": "held"
+  },
+  "reward": {
+    "amount": 25,
+    "when": "victory"
+  },
+  "saved": {
+    "defeated": false,
+    "kills": 0,
+    "rewardTaken": false
+  },
+  "stages": {
+    "id": "far.roc.encounter",
+    "inputs": {
+      "arena": "zone:boss.arena",
+      "beat": "event:boss.beat-ready",
+      "dead": "actor:boss.dead",
+      "intro": "event:boss.intro-ready",
+      "phase": "event:boss.phase-ready"
+    },
+    "script": null,
+    "stages": [
+      {
+        "do": [],
+        "id": "ready",
+        "next": [
+          {
+            "target": "arena",
+            "when": "arena"
+          },
+          {
+            "target": "intro",
+            "when": "intro"
+          },
+          {
+            "target": "beat",
+            "when": "beat"
+          },
+          {
+            "target": "dead",
+            "when": "dead"
+          },
+          {
+            "target": "phase",
+            "when": "phase"
+          }
+        ]
+      },
+      {
+        "do": [
+          {
+            "emit": "boss.intro",
+            "value": 0
+          }
+        ],
+        "id": "arena",
+        "next": [
+          {
+            "target": "arena",
+            "when": "arena"
+          },
+          {
+            "target": "intro",
+            "when": "intro"
+          },
+          {
+            "target": "beat",
+            "when": "beat"
+          },
+          {
+            "target": "dead",
+            "when": "dead"
+          },
+          {
+            "target": "phase",
+            "when": "phase"
+          }
+        ],
+        "when": "arena"
+      },
+      {
+        "do": [
+          {
+            "emit": "boss.fight",
+            "value": 0
+          }
+        ],
+        "id": "intro",
+        "next": [
+          {
+            "target": "arena",
+            "when": "arena"
+          },
+          {
+            "target": "intro",
+            "when": "intro"
+          },
+          {
+            "target": "beat",
+            "when": "beat"
+          },
+          {
+            "target": "dead",
+            "when": "dead"
+          },
+          {
+            "target": "phase",
+            "when": "phase"
+          }
+        ],
+        "when": "intro"
+      },
+      {
+        "do": [
+          {
+            "emit": "boss.resume",
+            "value": 0
+          }
+        ],
+        "id": "beat",
+        "next": [
+          {
+            "target": "arena",
+            "when": "arena"
+          },
+          {
+            "target": "intro",
+            "when": "intro"
+          },
+          {
+            "target": "beat",
+            "when": "beat"
+          },
+          {
+            "target": "dead",
+            "when": "dead"
+          },
+          {
+            "target": "phase",
+            "when": "phase"
+          }
+        ],
+        "when": "beat"
+      },
+      {
+        "do": [
+          {
+            "emit": "boss.won",
+            "value": 0
+          }
+        ],
+        "id": "dead",
+        "next": [
+          {
+            "target": "arena",
+            "when": "arena"
+          },
+          {
+            "target": "intro",
+            "when": "intro"
+          },
+          {
+            "target": "beat",
+            "when": "beat"
+          },
+          {
+            "target": "dead",
+            "when": "dead"
+          },
+          {
+            "target": "phase",
+            "when": "phase"
+          }
+        ],
+        "when": "dead"
+      },
+      {
+        "do": [
+          {
+            "emit": "boss.phase",
+            "value": 0
+          }
+        ],
+        "id": "phase",
+        "next": [
+          {
+            "target": "arena",
+            "when": "arena"
+          },
+          {
+            "target": "intro",
+            "when": "intro"
+          },
+          {
+            "target": "beat",
+            "when": "beat"
+          },
+          {
+            "target": "dead",
+            "when": "dead"
+          },
+          {
+            "target": "phase",
+            "when": "phase"
+          }
+        ],
+        "when": "phase"
+      }
+    ],
+    "version": 2
+  },
+  "step": "far.roc.encounter",
+  "victory": {
+    "fact": "far-reach.roc",
+    "flag": "far.roc.down",
+    "once": true
+  }
+}

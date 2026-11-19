@@ -35,12 +35,20 @@ export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<st
   if (rawPlan !== undefined) {
     const plan = parseNativeRuntimePlan(rawPlan), owner = plan.recipe.population.owner;
     const bosses = features.filter(row => row.kind === 'boss.held' || row.kind === 'boss.spawned');
-    // OF19c0b: a plan with no owner row has no keeper boss for a page boss feature to draw (its boss is declared)
-    const expected = owner === undefined ? [] : [owner];
+    const keeper = nativeRuntimeActorIds(plan);
+    // OF19c0b: a plan with no owner row has no keeper boss for a page boss feature to draw (its boss is declared). OF20c: nor
+    // does an owner row naming a declared spawn with a declared boss encounter; that encounter takes the row's flag, fact,
+    // purse and save, and the page draws it from the encounter's declared `ui` panel.
+    let fought = false;
+    let spawned = false;
+    for (const spawn of source.creatures.spawns) { spawned ||= spawn.id === owner?.actor; }
+    for (const row of source.encounters) { fought ||= row.kind === 'boss' && row.entity === owner?.actor; }
+    const declaredOwner = owner !== undefined && !keeper.includes(owner.actor) && spawned && fought;
+    const expected = owner === undefined || declaredOwner ? [] : [owner];
     if (bosses.length !== expected.length || bosses.some(row => row.actor !== owner?.actor || (row.kind === 'boss.held') !== (owner.profile.pattern === 'held')))
       errors.push('Data page requires its actual native encounter pattern');
     // A declared spawn is a body the quest may name too
-    const actors = new Set(nativeRuntimeActorIds(plan));
+    const actors = new Set(keeper);
     for (const spawn of source.creatures.spawns) { actors.add(spawn.id); }
     if (source.questHost?.actors.ids.some(id => !actors.has(id))) errors.push('Data page quest requires actual native actors');
   }
