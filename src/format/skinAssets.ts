@@ -17,10 +17,9 @@ import type { Shardfile } from './shardSchema.ts';
 import { parseGlbData as parseGlb } from './glbCost.ts';
 import { skinLayerDecoded } from './skinLayers.ts';
 import { MaterialsSchema } from './materials.ts';
-import { SkinGlbMaterialsSchema, SkinPrimitiveSchema, skinMaterialsFault, skinPartsFault, skinPrimitiveCount } from './skin-materials.ts';
+import { SkinGlbMaterialsSchema, SkinPrimitiveSchema, packedSpecies, skinMaterialsFault, skinPartsFault, skinPrimitiveCount } from './skin-materials.ts';
 
 import { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE } from './skins.ts';
-import type { SkinLookParameters } from './skins.ts';
 import { lookSkins, resolveSkinLookFiles } from './skin-variants.ts';
 import { skinLookParameters } from './skin-file.ts';
 
@@ -35,7 +34,7 @@ function skinLookRules(source: Pick<Shardfile, 'rows' | 'files' | 'library'>): s
   const kinds = new Map<string, string>(); for (const file of source.files) {kinds.set(file.hash, file.kind);}
   for (const row of source.rows.looks) {
     if (row.recipe !== SKIN_LOOK_RECIPE) { if (row.animation.recipe === SKIN_CLIPS_RECIPE) {errors.push('skin clips without a skin look');} continue; }
-    let parameters: SkinLookParameters; try { parameters = skinLookParameters(row); } catch { errors.push('skin look parameters'); continue; }
+    let parameters: ReturnType<typeof skinLookParameters>; try { parameters = skinLookParameters(row); } catch { errors.push('skin look parameters'); continue; }
     const { skin, variants, phone } = parameters, file = files.get(skin), glb = files.get(file?.dependencies[0] ?? '');
     // OF27b: a skin file depends on its GLB, then its material's textures (KTX2 files or commons)
     const textures = file?.dependencies.slice(1) ?? [];
@@ -47,20 +46,26 @@ function skinLookRules(source: Pick<Shardfile, 'rows' | 'files' | 'library'>): s
   return errors;
 }
 
+// ONE-FORMAT CC51c: a packed GLB's species is a node's subtree, and its clips the ones moving only that subtree
+const nodeChildren = v.optional(v.array(v.number()), []);
+const channelTarget = v.object({ node: v.optional(v.number()) });
+const clipChannels = v.optional(v.array(v.object({ target: channelTarget })), []);
 const glbRigSchema = v.object({
-  nodes: v.array(v.object({ name: v.optional(v.string()), mesh: v.optional(v.number()), skin: v.optional(v.number()) })),
+  nodes: v.array(v.object({ name: v.optional(v.string()), mesh: v.optional(v.number()), skin: v.optional(v.number()), children: nodeChildren })),
   meshes: v.array(v.object({ primitives: v.array(SkinPrimitiveSchema) })),
   materials: SkinGlbMaterialsSchema,
   skins: v.array(v.object({ joints: v.array(v.number()) })),
-  animations: v.optional(v.array(v.object({ name: v.optional(v.string()) })), []),
+  animations: v.optional(v.array(v.object({ name: v.optional(v.string()), channels: clipChannels })), []),
 });
 
 /** Check admitted GLB joint order, sockets and clips before a renderer allocates the creature view. */
 function validateRigBytes(glb: Uint8Array, row: SkinRow, parts: Readonly<Record<string, string>> | undefined): void {
   // ParseGlb already bounds and validates the header, JSON chunk and every node/accessor reference.
   const length = new DataView(glb.buffer, glb.byteOffset, glb.byteLength).getUint32(12, true);
-  const rig = v.parse(glbRigSchema, JSON.parse(new TextDecoder().decode(glb.subarray(20, 20 + length))));
   function fail(reason: string): never { throw new Error(`skin ${row.id}: ${reason}`); }
+  // ONE-FORMAT CC51c: a packed GLB's skin reads only its own species' nodes and clips (`./skin-materials`)
+  const parsed = v.parse(glbRigSchema, JSON.parse(new TextDecoder().decode(glb.subarray(20, 20 + length))));
+  const rig = { ...parsed, ...packedSpecies(parsed, row.rig.mesh, fail) };
   const named = rig.nodes.flatMap(node => node.name === undefined ? [] : [node.name]);
   const meshes = rig.nodes.filter(node => node.skin !== undefined && node.mesh !== undefined);
   const mesh = meshes[0];

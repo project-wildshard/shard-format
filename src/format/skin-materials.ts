@@ -159,8 +159,97 @@ function skinMaterialsFault(
     : `skin material ${graph} is a graph material: a skin part takes a family material`
 }
 
+/*
+ * ONE-FORMAT CC51c: one species of a packed skin GLB. A cell's pack step may put several small species in one GLB,
+ * each under its own node; their joints, sockets and clips keep their plain names, so two species on the same skeleton
+ * share every name. A skin row's `rig.mesh` names its species' node, and the skin reads only that node's subtree: its
+ * one skinned mesh, its joints and sockets, and the clips whose every channel moves a node in it. A row without
+ * `rig.mesh` reads the whole file, as before.
+ */
+
+/** The GLB node fields skin admission reads. */
+interface PackedNode {
+  readonly name?: string | undefined
+  readonly mesh?: number | undefined
+  readonly skin?: number | undefined
+  readonly children: readonly number[]
+}
+/** A GLB animation as skin admission reads it: its name and the nodes its channels move. */
+interface PackedClip {
+  readonly name?: string | undefined
+  readonly channels: readonly {
+    readonly target: { readonly node?: number | undefined }
+  }[]
+}
+/** The parts of a GLB a packed species is cut from. */
+interface PackedRig {
+  readonly nodes: readonly PackedNode[]
+  readonly animations: readonly PackedClip[]
+}
+type Fail = (reason: string) => never
+
+/** The one node named `mesh`. */
+function packedRoot(
+  nodes: readonly PackedNode[],
+  mesh: string,
+  fail: Fail,
+): number {
+  const roots = nodes.flatMap((node, index): number[] =>
+    node.name === mesh ? [index] : [],
+  )
+  const [root, other] = roots
+  if (root === undefined || other !== undefined) {
+    fail(`expected one packed node ${mesh}`)
+  }
+  return root
+}
+
+/** Every node under `root`, itself included; a node reached twice refuses. */
+function subtree(
+  nodes: readonly PackedNode[],
+  root: number,
+  fail: Fail,
+): ReadonlySet<number> {
+  const inside = new Set<number>()
+  const stack = [root]
+  for (let next = stack.pop(); next !== undefined; next = stack.pop()) {
+    if (inside.has(next)) {
+      fail(`packed node ${String(root)} reaches node ${String(next)} twice`)
+    }
+    inside.add(next)
+    stack.push(...(nodes[next]?.children ?? []))
+  }
+  return inside
+}
+
+/**
+ * The species `mesh` names, cut from `rig`: nodes outside its subtree keep their index but lose their name, mesh and
+ * skin, and clips moving any node outside it go. Without `mesh`, `rig` as it is.
+ */
+function packedSpecies(
+  rig: PackedRig,
+  mesh: string | undefined,
+  fail: Fail,
+): PackedRig {
+  if (mesh === undefined) {
+    return rig
+  }
+  const inside = subtree(rig.nodes, packedRoot(rig.nodes, mesh, fail), fail)
+  const owns = (channel: PackedClip['channels'][number]): boolean =>
+    channel.target.node !== undefined && inside.has(channel.target.node)
+  return {
+    nodes: rig.nodes.map((node, index): PackedNode =>
+      inside.has(index) ? node : { children: [] },
+    ),
+    animations: rig.animations.filter(
+      (clip): boolean => clip.channels.some(owns) && clip.channels.every(owns),
+    ),
+  }
+}
+
 export {
   SKIN_MATERIAL_PARTS,
+  packedSpecies,
   SkinGlbMaterialsSchema,
   SkinMaterialsSchema,
   SkinPrimitiveSchema,
@@ -168,5 +257,6 @@ export {
   skinPartsFault,
   skinPrimitiveCount,
   type SkinGlbMaterial,
+  type PackedRig,
   type SkinPrimitive,
 }

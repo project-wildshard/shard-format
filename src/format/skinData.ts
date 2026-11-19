@@ -25,10 +25,11 @@ const joint = v.pipe(v.string(), v.regex(/^[A-Za-z][A-Za-z0-9_.-]*$/u), v.maxLen
 const bytes = v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(25_000_000));
 
 /** One exported skin: the GLB hash and rig. Clips may be empty for a poser-driven
- * rig; loop bindings must still name a declared clip. */
+ * rig; loop bindings must still name a declared clip. `rig.mesh` (ONE-FORMAT CC51c) names the node holding this
+ * species in a packed GLB of several species: its skinned mesh, joints, sockets and clips are the ones under it. */
 const SkinRowSchema: v.GenericSchema<SkinRowInput, SkinRow> = v.object({
   id, file: hash, family: v.picklist(['toon', 'pbr']),
-  rig: v.strictObject({ skeleton: v.pipe(v.string(), v.regex(/^[a-z][A-Za-z0-9.]*$/u), v.maxLength(128)), joints: v.pipe(v.array(v.pipe(v.array(joint), v.minLength(1), v.maxLength(128))), v.length(1)), clips: v.pipe(v.array(CreatureSkinClipNameSchema), v.maxLength(32)), sockets: v.pipe(v.array(joint), v.maxLength(32)) }),
+  rig: v.strictObject({ skeleton: v.pipe(v.string(), v.regex(/^[a-z][A-Za-z0-9.]*$/u), v.maxLength(128)), joints: v.pipe(v.array(v.pipe(v.array(joint), v.minLength(1), v.maxLength(128))), v.length(1)), clips: v.pipe(v.array(CreatureSkinClipNameSchema), v.maxLength(32)), sockets: v.pipe(v.array(joint), v.maxLength(32)), mesh: v.exactOptional(joint) }),
   cost: v.strictObject({ decoded: bytes, gpu: bytes, triangles: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(400_000)), draws: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(512)) }),
 });
 /** A validated exported skin row. */
@@ -83,6 +84,7 @@ interface SkinRowInputFields {
         joints: ((string)[])[];
         clips: (SkinClipNameRowsInput)[];
         sockets: (string)[];
+        mesh?: string;
     };
     cost: {
         decoded: number;
@@ -101,6 +103,7 @@ interface SkinRowFields {
         joints: ((string)[])[];
         clips: CreatureSkinClipName[];
         sockets: (string)[];
+        mesh?: string;
     };
     cost: {
         decoded: number;
