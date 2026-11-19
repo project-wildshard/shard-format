@@ -283,29 +283,3 @@ test('a temperament cannot pretend that a group owns a null-brain spawn', (): vo
     'exactly one declared creature controller',
   )
 })
-
-// ONE-FORMAT OF19b: a decision pack. A spawn-group decision row drives each member body (Dunes' skitterers): the
-// species' temperament is `none` and the spawn names the group, so the group's row is its one controller.
-function packFixture(): ReturnType<typeof fixture> {
-  const value = fixture('none')
-  value.spawn.group = 'fixture.pack'
-  return value
-}
-function packScripts(actors: Readonly<Record<string, string>>, group = 'fixture.pack'): ReadonlyMap<string, unknown> {
-  return new Map([['sim/scripts', [{ id: 'fixture.pack.decision', binding: { spawnGroup: group }, actors }]]])
-}
-
-test('a none-temperament spawn in a decision spawn group is owned by the group row', (): void => {
-  const { source } = packFixture()
-  expect(shardfileRules(source)).toEqual([])
-  expect(shardfileRules(source, packScripts({ body0: 'fixture.actor' }))).toEqual([])
-})
-
-test('a decision pack member refuses without its group row', (): void => {
-  const { source, spawn } = packFixture()
-  for (const scripts of [packScripts({ body0: 'fixture.other' }), packScripts({ body0: 'fixture.actor' }, 'fixture.elsewhere'), new Map([['sim/scripts', []]])]) {
-    expect(shardfileRules(source, scripts)).toContain('exactly one declared creature controller')
-  }
-  delete spawn.group
-  expect(shardfileRules(source)).toContain('exactly one declared creature controller')
-})

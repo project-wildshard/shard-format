@@ -387,7 +387,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   errors.push(...groupBrainRules(s.creatures.groups, s.creatures.spawns, s.creatures.brains.map((row) => row.id), [...controlled]));
   const packRows = sections?.has('sim/scripts') === true ? sections.get('sim/scripts') : undefined;
   const packOwns = (spawn: string, group: string): boolean => packRows === undefined || (Array.isArray(packRows) && packRows.some((script: unknown): boolean => {
-    if (typeof script !== 'object' || script === null || !('binding' in script) || !('actors' in script)) return false;
+    if (typeof script !== 'object' || script === null || !('binding' in script) || !('actors' in script)) { return false; }
     const { binding, actors } = script;
     return typeof binding === 'object' && binding !== null && 'spawnGroup' in binding && binding.spawnGroup === group
       && typeof actors === 'object' && actors !== null && Object.values(actors).includes(spawn);
@@ -405,7 +405,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
     const brain = species.get(row.species)?.temperament?.brain;
     // OF19b: a decision pack. Temperament `none` and a spawn group: the group's `spawnGroup` decision row owns the body,
     // and where `sim/scripts` is in hand that row must list it.
-    if (brain === 'none' && row.group !== undefined) return !packOwns(row.id, row.group);
+    if (brain === 'none' && row.group !== undefined) { return !packOwns(row.id, row.group); }
     return brain === undefined || !(Object.hasOwn(inlineBrains, brain)
       || s.creatures.brains.some((declaration: { readonly id: string }): boolean => declaration.id === brain));
   })) errors.push('exactly one declared creature controller');
