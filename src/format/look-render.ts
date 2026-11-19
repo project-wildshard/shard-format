@@ -18,10 +18,13 @@ import {
   exactOptional,
   finite,
   integer,
+  maxLength,
   maxValue,
+  minLength,
   minValue,
   number,
   pipe,
+  string,
   strictObject,
   tuple,
 } from 'valibot'
@@ -140,6 +143,17 @@ const LookMotesSchema: GenericSchema<LookMotes, LookMotes> = pipe(
 )
 const LookVignetteSchema: GenericSchema<LookVignette, LookVignette> =
   strictObject({ offset: unit, darkness: unit })
+/** Meta MOSSGATE-ZONE MZ34: a lamp may follow a `props.panels` id (a brazier's fire lights with its flames). */
+interface LampPanel {
+  /** The panel it lights with: lit while that panel shows, dark while it is hidden */
+  panel?: string
+}
+const LAMP_PANEL_MAX = 128
+const lampPanel: GenericSchema<string, string> = pipe(
+  string(),
+  minLength(1),
+  maxLength(LAMP_PANEL_MAX),
+)
 
 export {
   LOOK_LIGHT_MOTES_MAX,
@@ -151,8 +165,10 @@ export {
   lampDecay,
   lampFlicker,
   lampHalo,
+  lampPanel,
 }
 export type {
+  LampPanel,
   LookLampFlicker,
   LookLampHalo,
   LookMotes,

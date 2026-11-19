@@ -50,26 +50,22 @@ import {
   lampDecay,
   lampFlicker,
   lampHalo,
-} from './look-render.ts'
-import {
-  LookSwingsSchema,
   lampPanel,
-  swingNumber,
-  swingsDeclared,
-} from './look-swing.ts'
+} from './look-render.ts'
+import { LookSwingsSchema, swingNumber, swingsDeclared } from './look-swing.ts'
 
 import type {
+  LampPanel,
   LookLampFlicker,
   LookLampHalo,
   LookMotes,
   LookShadow,
 } from './look-render.ts'
-import type { LampPanel, LookSwing } from './look-swing.ts'
+import type { LookSwing } from './look-swing.ts'
 import type { GenericSchema } from 'valibot'
 
 type Rgb = [number, number, number]
 type Point = [number, number, number]
-
 /** At most this many light pools in one look (one instanced draw). */
 const LOOK_LIGHT_POOLS_MAX = 64
 const NONE = 0
@@ -186,7 +182,6 @@ const colour: GenericSchema<Rgb, Rgb> = tuple([
   range(NONE, FULL),
 ])
 const point: GenericSchema<Point, Point> = tuple([real, real, real])
-
 const LookAoSchema: GenericSchema<LookAo, LookAo> = strictObject({
   intensity: range(NONE, AO_INTENSITY_MAX),
   radius: range(AO_RADIUS_MIN, AO_RADIUS_MAX),

@@ -66,7 +66,9 @@ test('a lamp names the panel it shows and hides with', (): void => {
   )
   expect(light?.lamps?.[0]?.panel).toBe('mossgate.flame-a')
   expect('panel' in (light?.lamps?.[1] ?? {})).toBe(false)
-  expect(() => read(look({ lamps: [{ ...lamp, panel: '' }] }))).toThrow()
+  expect((): unknown =>
+    read(look({ lamps: [{ ...lamp, panel: '' }] })),
+  ).toThrow()
 })
 
 test("a lamp's panel must be a declared props panel", (): void => {

@@ -336,8 +336,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   }
   if (s.runtime !== null && s.modes?.traverse.some(row => row.kind === 'ladder')) errors.push('ladder traversal requires the data-only player owner');
   errors.push(...skinLookRules(s), ...attachmentFileRules({ species: s.rows.species, files: s.files, library: s.library, materials: s.look.materials }));
-  errors.push(...clientScriptRules(s));
-  errors.push(...lampPanelErrors(s.look.light?.lamps ?? [], s.props?.panels ?? []));
+  errors.push(...clientScriptRules(s), ...lampPanelErrors(s.look.light?.lamps ?? [], s.props?.panels ?? []));
   if (s.props !== null) {
     try { validatePropsReferences(s.props, s); } catch { errors.push('declared prop references'); }
     if (!materialExists(s.look.materials, s.props.family)) errors.push('declared prop material');

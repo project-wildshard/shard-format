@@ -7,3 +7,4 @@ field shows or hides, and look lamps had no state binding, so a brazier's fire c
 lamp may now name the `props.panels` id it follows: the engine lights it while that panel shows. A lamp naming an
 undeclared panel is refused.
 The rule lives in `look-swing.ts` beside the swing check (`lampPanelErrors`), so `look-light.ts` stays under its line cap.
+Then the schema moved to `look-render.ts` beside the other lamp fields, the rule stayed in `look-swing.ts`, to pass the line cap and lint ratchet.

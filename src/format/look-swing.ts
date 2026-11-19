@@ -18,7 +18,6 @@ import {
   number,
   pipe,
   strictObject,
-  string,
   tuple,
 } from 'valibot'
 
@@ -87,22 +86,9 @@ function swingsDeclared(light: SwingRefs): boolean {
   return true
 }
 
-/** Meta MOSSGATE-ZONE MZ34: a lamp may follow a `props.panels` id (a brazier's fire lights with its flames). */
-interface LampPanel {
-  /** The panel it lights with: lit while that panel shows, dark while it is hidden */
-  panel?: string
-}
-
-const LAMP_PANEL_MAX = 128
-const lampPanel: GenericSchema<string, string> = pipe(
-  string(),
-  minLength(ONE),
-  maxLength(LAMP_PANEL_MAX),
-)
-
 /** Every lamp's `panel` names a declared `props.panels` row. */
 function lampPanelErrors(
-  lamps: readonly Readonly<LampPanel>[],
+  lamps: readonly Readonly<{ panel?: string }>[],
   panels: readonly Readonly<{ id: string }>[],
 ): string[] {
   const declared = new Set(panels.map((row): string => row.id))
@@ -119,11 +105,10 @@ function lampPanelErrors(
 
 export {
   LOOK_SWINGS_MAX,
-  lampPanel,
   lampPanelErrors,
   LookSwingSchema,
   LookSwingsSchema,
   swingNumber,
   swingsDeclared,
 }
-export type { LampPanel, LookSwing, SwingRefs }
+export type { LookSwing, SwingRefs }
