@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.44.0 (2026-11-18)
+
+- A strike row can say whether its reach is in metres or grows with the creature's size, so a converted creature hits exactly as before.
+
 ## v0.43.1 (2026-11-18)
 
 - A plain shard's grapple mode with its own profile and hooks needs no quest page or runtime: the game runs it from the row.
