@@ -53,7 +53,7 @@ function notName(field: WireClassField): boolean {
   return !PLAYER_ADDED.has(field.name)
 }
 
-/** `animal` fields added after the WS2 baseline: `species` (24), then CC28's channels and lock (25 to 29), then MP5.2b's road place (30, 31). */
+/** `animal` fields added after the WS2 baseline: `species` (24), then CC28's channels and lock (25 to 29), then MP5.2b's road place (30, 31), then CC11a2c's running ability (32, 33). */
 const ANIMAL_BASELINE_LAST = 23
 
 function notSpecies(field: WireClassField): boolean {
@@ -80,9 +80,9 @@ test('the descriptors write engine main and cfd6681 v0 hashes exactly', (): void
   // Engine main's NET_SCHEMA_HASH, which binds these descriptors (WR2), with
   // `animal.species` (TE-ENG7), `player.swing`, `heavy`, `air` (RP6), the
   // animal's four channels and lock answer (ONE-FORMAT CC28),
-  // `player.roadX`, `roadZ` (MMO-PLAN MP1.5) and `animal.roadX`, `roadZ`
-  // (MMO-PLAN MP5.2b).
-  assert.equal(v0SchemaHash(WIRE_CLASSES), 1_375_460_222)
+  // `player.roadX`, `roadZ` (MMO-PLAN MP1.5), `animal.roadX`, `roadZ`
+  // (MMO-PLAN MP5.2b) and `animal.ability`, `abilityT` (ONE-FORMAT CC11a2c).
+  assert.equal(v0SchemaHash(WIRE_CLASSES), 35_583_310)
   // Without the player and animal fields added after the WS2 baseline:
   // exact cfd6681.
   assert.equal(
@@ -95,7 +95,7 @@ test('the descriptors write engine main and cfd6681 v0 hashes exactly', (): void
   )
 })
 
-test('against the WS2 baseline everything is kept and fourteen fields added', (): void => {
+test('against the WS2 baseline everything is kept and sixteen fields added', (): void => {
   const result = checkWire(LOCK, baseline())
   assert.deepEqual(result.problems, [])
   assert.deepEqual(result.added, [
@@ -113,6 +113,8 @@ test('against the WS2 baseline everything is kept and fourteen fields added', ()
     'animal.lockable #29',
     'animal.roadX #30',
     'animal.roadZ #31',
+    'animal.ability #32',
+    'animal.abilityT #33',
   ])
   // 99 class fields; 6 message, 15 event and 11 act tags; 69 event and 15
   // act body fields; 16 command forms.

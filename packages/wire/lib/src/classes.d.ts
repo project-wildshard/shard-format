@@ -262,6 +262,24 @@ declare const ANIMAL: {
             readonly bits: 16;
         };
         readonly since: 3;
+    }, {
+        readonly id: 32;
+        readonly name: 'ability';
+        readonly node: {
+            readonly kind: 'uint';
+            readonly bits: 8;
+        };
+        readonly since: 4;
+    }, {
+        readonly id: 33;
+        readonly name: 'abilityT';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+        readonly since: 4;
     }];
 };
 /** The `encounter` class: a boss or elite bar, anywhere in the cell. */
@@ -1194,6 +1212,24 @@ declare const WIRE_CLASSES: readonly [{
             readonly bits: 16;
         };
         readonly since: 3;
+    }, {
+        readonly id: 32;
+        readonly name: 'ability';
+        readonly node: {
+            readonly kind: 'uint';
+            readonly bits: 8;
+        };
+        readonly since: 4;
+    }, {
+        readonly id: 33;
+        readonly name: 'abilityT';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: 0;
+            readonly max: 1;
+            readonly bits: 8;
+        };
+        readonly since: 4;
     }];
 }, {
     readonly id: 3;

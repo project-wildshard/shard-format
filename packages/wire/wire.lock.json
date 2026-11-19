@@ -1,7 +1,7 @@
 {
   "version": 1,
   "wireMajor": 1,
-  "wireMinor": 3,
+  "wireMinor": 4,
   "maxRowFields": 32,
   "tableLimits": {
     "maxDepth": 8,
@@ -9,7 +9,7 @@
     "maxNodes": 4096,
     "maxMessageBytes": 65536
   },
-  "v0SchemaHash": 1375460222,
+  "v0SchemaHash": 35583310,
   "messages": [
     {
       "id": 1,
@@ -3169,7 +3169,7 @@
       "id": 2,
       "name": "animal",
       "relevance": 160,
-      "rowFields": 25,
+      "rowFields": 27,
       "fields": [
         {
           "id": 1,
@@ -3613,6 +3613,34 @@
           },
           "default": -2048,
           "since": 3,
+          "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 32,
+          "name": "ability",
+          "node": {
+            "kind": "uint",
+            "bits": 8
+          },
+          "default": 0,
+          "since": 4,
+          "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 33,
+          "name": "abilityT",
+          "node": {
+            "kind": "quant",
+            "min": 0,
+            "max": 1,
+            "bits": 8
+          },
+          "default": 0,
+          "since": 4,
           "send": "all",
           "predicted": false,
           "required": false

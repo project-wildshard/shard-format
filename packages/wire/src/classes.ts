@@ -116,6 +116,13 @@ const ANIMAL = {
     // outside the grid: no road place.
     { id: 30, name: 'roadX', node: ROAD_METRES, since: 3 },
     { id: 31, name: 'roadZ', node: ROAD_METRES, since: 3 },
+    // ONE-FORMAT CC11a2c: the declared ability a creature is running, as its
+    // 1-based place in its species' `abilities` list (0: none), and how far
+    // through it is (0..1), so a late-joining page and a continuing one pick
+    // the same ability clip until the strike ends. A room older than wire 1.4
+    // sends neither; a newer page reads 0 and keeps the attack fallback.
+    { id: 32, name: 'ability', node: U8, since: 4 },
+    { id: 33, name: 'abilityT', node: UNIT_8, since: 4 },
   ],
 } as const satisfies WireClass
 
