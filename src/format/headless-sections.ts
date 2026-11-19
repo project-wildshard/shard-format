@@ -14,6 +14,8 @@ export const HEADLESS_CONTEXT_SECTIONS = [
   'world/targets',
   'sim/runtime-plan',
   'sim/bodies',
+  // The offline simulation reads the ordinary portal ride from this plan.
+  'client/plan',
 ] as const
 
 /** Explicit admitted decision/move context crossing the worker boundary; no ABI is inferred from bytes. */

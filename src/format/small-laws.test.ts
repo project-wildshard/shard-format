@@ -32,7 +32,10 @@ const golden = JSON.parse(
 
 describe('small laws match the engine', () => {
   it('lists the same headless sections and admits the same products', () => {
-    expect(HEADLESS_CONTEXT_SECTIONS).toEqual(golden.sectionNames)
+    expect(HEADLESS_CONTEXT_SECTIONS).toEqual([
+      ...golden.sectionNames,
+      'client/plan',
+    ])
     const product = (
       pairs: readonly (readonly [string, unknown])[],
     ): {
@@ -48,6 +51,12 @@ describe('small laws match the engine', () => {
         answer(() => productHeadlessSections(product(pairs))),
       ]),
     ).toEqual(golden.sections)
+  })
+  it('adopts the client plan that declares the portal ride for headless proof', () => {
+    const plan = { version: 1, features: [{ kind: 'strings.register' }] }
+    expect(
+      headlessSections(new Map([['client/plan', plan]])).get('client/plan'),
+    ).toEqual(plan)
   })
   it('lights the road and the far cliffs the same', () => {
     expect(ROAD_SKY).toEqual(golden.roadSky)
