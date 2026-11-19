@@ -28,7 +28,7 @@ type Json = Record<string, unknown>
 type Files = ReadonlyMap<string, Uint8Array>
 
 const ROOT = new URL('../../', import.meta.url).pathname
-const CORPUS = path.join(ROOT, 'corpus/handwritten')
+const CORPUS = path.join(ROOT, 'corpus/exports/brasscap-mesa')
 const ENGINE_OUT = path.join(ROOT, '../engine/out')
 const STAGE_KINDS = 18
 
@@ -73,15 +73,20 @@ function memoryFiles(files: Files): ShardfileFiles {
   }
 }
 
-/** `files` with `file` replaced by `bytes` and relisted as client/plan in `shard.json`. */
+/** `files` with `file` replaced by `bytes` and relisted as client/plan in `shard.json` (listed first if it was not). */
 function relisted(files: Files, file: string, bytes: Uint8Array): Files {
   const shard = parsed(files.get('shard.json'))
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
-  const row = (shard['sections'] as Json[]).find(
+  const sections = shard['sections'] as Json[]
+  let row = sections.find(
     (candidate: Json): boolean => candidate['name'] === 'client/plan',
   )
   if (row === undefined) {
-    throw new Error('corpus has no client/plan')
+    row = { name: 'client/plan', path: file, schema: 'wildshard:client/plan@1' }
+    sections.push(row)
+    sections.sort((left: Json, right: Json): number =>
+      String(left['name']).localeCompare(String(right['name'])),
+    )
   }
   Object.assign(row, { bytes: bytes.length, hash: sha256(bytes) })
   delete shard['packs']
@@ -95,7 +100,10 @@ function relisted(files: Files, file: string, bytes: Uint8Array): Files {
 /** The corpus with its client/plan edited and `shard.json` relisting it (packs dropped, as shardfile-stream.test does). */
 function planEdited(files: Files, change: (plan: Json) => void): Files {
   const file = 'sections/client/plan.json'
-  const plan = parsed(files.get(file))
+  // Brasscap's export has no client/plan (the retired Template 2 had one): start from an empty plan of its own.
+  const plan = files.has(file)
+    ? parsed(files.get(file))
+    : { features: [], version: 1 }
   change(plan)
   return relisted(files, file, validationSourceBytes(plan))
 }
@@ -226,7 +234,7 @@ describe('assertSectionSides', (): void => {
 describe('both validators', (): void => {
   const corpus = folderFiles(CORPUS)
 
-  test('admit the handwritten corpus', async (): Promise<void> => {
+  test('admit the corpus export', async (): Promise<void> => {
     expect(
       verdict((): unknown =>
         validateShardfileFolder(memoryFiles(corpus), { hash: sha256 }),

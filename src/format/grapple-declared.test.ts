@@ -143,14 +143,15 @@ function plainShard(
   grapple: readonly GrappleMode[],
   looked: boolean,
 ): Shardfile {
-  const base = outputFixture('handwritten')
-  const { door } = base.look.materials
-  if (door === undefined) {
+  // Brasscap's `metal` seeds the claw's looks (the retired Template 2 used its `door`).
+  const base = outputFixture('corpus')
+  const { metal } = base.look.materials
+  if (metal === undefined) {
     throw new Error('Missing seed material')
   }
   const ids = looked ? Object.values(tool.looks) : []
   const looks = Object.fromEntries(
-    ids.map((id): [string, typeof door] => [id, door]),
+    ids.map((id): [string, typeof metal] => [id, metal]),
   )
   return {
     ...base,

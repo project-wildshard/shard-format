@@ -52,7 +52,7 @@ function install(): string {
 
 const PACKAGE = install()
 const APP = path.join(dir, 'app')
-const SHIPPED = path.join(PACKAGE, 'corpus/handwritten')
+const SHIPPED = path.join(PACKAGE, 'corpus/exports/brasscap-mesa')
 const raw = readFileSync(path.join(PACKAGE, 'package.json'), 'utf8')
 const manifest = parse(ManifestSchema, JSON.parse(raw))
 const BIN = path.join(PACKAGE, manifest.bin['shard-format'] ?? 'no bin')

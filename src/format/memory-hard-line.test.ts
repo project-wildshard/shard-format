@@ -25,7 +25,8 @@ beforeAll(async (): Promise<void> => {
   await prepareAssetDecoders()
 })
 
-const CORPUS = new URL('../../corpus/handwritten/', import.meta.url).pathname
+const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
+  .pathname
 const unmeasured = {
   scripts: { p95Micros: 0, maxMicros: 0, samples: 0 },
   fuel: { p95: 0, max: 0, samples: 0 },

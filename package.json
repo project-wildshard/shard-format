@@ -35,7 +35,6 @@
     "src/cli/*.ts",
     "src/cli/*.mjs",
     "!src/cli/*.test.ts",
-    "corpus/handwritten/**",
     "corpus/exports/**",
     "src/format/meshopt-static.mjs",
     "src/format/meshopt-decoder.wasm",

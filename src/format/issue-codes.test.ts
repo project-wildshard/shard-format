@@ -28,7 +28,8 @@ interface Refusal {
   readonly message: string
 }
 
-const CORPUS = new URL('../../corpus/handwritten/', import.meta.url).pathname
+const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
+  .pathname
 const MB = 1_000_000
 const TODAY = '2026-11-13'
 const LATER = '2099-01-01'

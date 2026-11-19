@@ -15,7 +15,7 @@ import {
   unknown,
 } from 'valibot'
 
-import { ROOT, TEMPLATE_2, cli, scratch } from '../test/helpers/corpus.ts'
+import { ROOT, cli, scratch } from '../test/helpers/corpus.ts'
 import { listFiles, treeHash } from '../tools/brasscap-export.ts'
 
 // BM-2 (meta TEMPLATE-E2E-PLAN): Brasscap Mesa is Template 2's own product, a
@@ -34,7 +34,6 @@ const MARKS: ReadonlyMap<string, readonly number[]> = new Map([
   ['target.2', [-3.5, 1.55, -13.88]],
 ])
 const CODE = /\.(?:ts|tsx|js|mjs|cjs|py)$/u
-const BLOB = /^blobs\/[a-z\d]+\/(?<hash>[\da-f]{64})\.[a-z\d]+$/u
 /** A low afternoon sun: LF2-3 raised it to 16 degrees, so the canyon's faces catch it; TEMPLATES-CLEANROOM B2 set the
  *  cleanroom's 39 (31.7 at the look's hour), ahead-left down the canyon, so the mesas' tops light and their faces shade. */
 const MAX_SUN_DEGREES = 45
@@ -93,15 +92,6 @@ function section(file: string): unknown {
   return JSON.parse(readFileSync(path.join(BRASSCAP, file), 'utf8'))
 }
 
-function blobHashes(dir: string): ReadonlySet<string> {
-  return new Set(
-    files(dir).flatMap((file: string): readonly string[] => {
-      const hash = BLOB.exec(file.replaceAll(path.sep, '/'))?.groups?.['hash']
-      return hash === undefined ? [] : [hash]
-    }),
-  )
-}
-
 test('the folder is data, and validates and packs on its own', (): void => {
   assert.deepEqual(
     files(BRASSCAP).filter((file: string): boolean => CODE.test(file)),
@@ -114,15 +104,6 @@ test('the folder is data, and validates and packs on its own', (): void => {
   const packed = cli(['pack', BRASSCAP, '--out', out])
   assert.equal(packed.status, 0, packed.stderr)
   assert.equal(cli(['validate', out]).status, 0)
-})
-
-test('it shares no baked bytes with Template 1', (): void => {
-  const mine = blobHashes(BRASSCAP)
-  const shared = [...blobHashes(TEMPLATE_2)].filter((hash: string): boolean =>
-    mine.has(hash),
-  )
-  assert.ok(mine.size > 0)
-  assert.deepEqual(shared, [])
 })
 
 test('the canyon is baked: tiles, collision and one far mesh', (): void => {

@@ -11,11 +11,12 @@ import { memoryFiles } from '../../cli/validate.ts'
 import { prepareAssetDecoders } from '../../format/shardfile-assets.ts'
 import { validateShardfileFolder } from '../../format/shardfileValidation.ts'
 
-// Template 2, as these tests hold it: the real folder, the real bin, a temp
-// folder that goes when the file's tests end.
+// The corpus product these tests hold: Brasscap Mesa's export, since meta
+// TEMPLATE-E2E TR-10 (J434) retired the handwritten Template 2. The real
+// folder, the real bin, a temp folder that goes when the file's tests end.
 
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url))
-const TEMPLATE_2 = path.join(ROOT, 'corpus/handwritten')
+const CORPUS = path.join(ROOT, 'corpus/exports/brasscap-mesa')
 const BIN = path.join(ROOT, 'src/cli/bin.mjs')
 
 function sha256(bytes: Readonly<Uint8Array>): string {
@@ -42,4 +43,4 @@ async function validateHere(
   validateShardfileFolder(memoryFiles(files), { hash: sha256 })
 }
 
-export { ROOT, TEMPLATE_2, cli, scratch, sha256, validateHere }
+export { CORPUS, ROOT, cli, scratch, sha256, validateHere }

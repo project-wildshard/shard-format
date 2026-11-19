@@ -104,10 +104,9 @@ Scratch goes in `tmp/<task>/` and is deleted when done.
 - `src/hook/`: `@wildshard/shard-format/formatHook`, the strip-types hook
   every Node consumer installs before it imports format. Plain JS on
   purpose: as .ts, nothing could load it from `node_modules`.
-- `corpus/handwritten/`: Template 2 (J168), JSON held by hand and baked
-  blobs, with no build. Its sections are edited here and packed with
-  `shard-format pack`; its blobs are frozen Blender output (J88). It ships
-  in `files`, so consumers can run it. Pinned as `blender-template`.
+- `corpus/exports/`: built shard products the tests hold (Brasscap Mesa
+  since meta TEMPLATE-E2E TR-10 retired the handwritten Template 2). They
+  ship in `files`, so consumers can run them.
 - `src/cli/`: the `shard-format` CLI (`validate <dir|tar>`, `pack <dir>`,
   `--version`, `--help`); `shardfile` stays as a second bin name. `bin.mjs` is the installed entry: Node won't
   strip types under `node_modules`, so it installs the format hook

@@ -64,7 +64,7 @@ test('image alpha may inherit sticker tint while arbitrary paints and legacy tin
 })
 
 test('raster icons use the charged image library', (): void => {
-  const shard = outputFixture('handwritten')
+  const shard = outputFixture('corpus')
   const picture = shard.files.find(
     (file: Readonly<{ hash: string; kind: string }>): boolean =>
       file.kind === 'image' && shard.library.includes(file.hash),
@@ -79,7 +79,7 @@ test('raster icons use the charged image library', (): void => {
 })
 
 test('missing and non-image icon roots refuse at actual asset preflight', (): void => {
-  const shard = outputFixture('handwritten')
+  const shard = outputFixture('corpus')
   shard.rows.compendiums = [journal([{ image: 'a'.repeat(64) }])]
   expect((): void => {
     preflightAssetGraph(shard)

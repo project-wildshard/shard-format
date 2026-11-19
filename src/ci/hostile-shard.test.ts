@@ -7,7 +7,7 @@ import { parseOutputIndex } from '../format/outputIndex.ts'
 import { readTar, writeTar } from '../format/tar.ts'
 import { validationSourceBytes } from '../format/validationReceipt.ts'
 import {
-  TEMPLATE_2,
+  CORPUS,
   cli,
   scratch,
   sha256,
@@ -45,8 +45,8 @@ const ANYWHERE = 0.3
 const EVERY_FOURTH = 4
 
 function template2(): Files {
-  const tar = path.join(dir, 'template-2.tar')
-  assert.equal(cli(['pack', TEMPLATE_2, '--out', tar]).status, 0)
+  const tar = path.join(dir, 'corpus.tar')
+  assert.equal(cli(['pack', CORPUS, '--out', tar]).status, 0)
   return readTar(readFileSync(tar))
 }
 

@@ -9,7 +9,7 @@ import { readCookData } from '../format/cook-data.ts'
 import { cookPreparationBytes } from '../format/cook-preparation.ts'
 import { parseOutputIndex } from '../format/outputIndex.ts'
 import { validationSourceBytes } from '../format/validationReceipt.ts'
-import { cli, scratch, sha256, TEMPLATE_2 } from '../test/helpers/corpus.ts'
+import { cli, scratch, sha256, CORPUS } from '../test/helpers/corpus.ts'
 
 import type { CookMount } from '../format/cook-data.ts'
 
@@ -43,7 +43,7 @@ function programFixture(folder: string, slug: string): CookMount {
 
 function candidate(name: string): string {
   const folder = path.join(dir, name)
-  cpSync(TEMPLATE_2, folder, { recursive: true })
+  cpSync(CORPUS, folder, { recursive: true })
   const index = readObject(folder, 'shard.json')
   index['sdk'] = '0.3'
   writeFileSync(path.join(folder, 'shard.json'), validationSourceBytes(index))

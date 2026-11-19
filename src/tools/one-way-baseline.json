@@ -47,10 +47,6 @@
     {
       "root": "corpus/exports/brasscap-mesa/",
       "sha256": "3de5adcbbadb42d6e5b394965e480c8f1e0202020e81d422bd1490ec4e5ec474"
-    },
-    {
-      "root": "corpus/handwritten/",
-      "sha256": "44e1fc5d196f388cf914405774ac53ffa92e6d41a10ac53b8e94dd53613b78c5"
     }
   ],
   "counts": {

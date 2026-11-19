@@ -17,7 +17,7 @@ import {
   sectionSchemaIssue,
 } from './section-versions.ts'
 
-const corpus = new URL('../../corpus/handwritten/', import.meta.url)
+const corpus = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
 const indexText = readFileSync(new URL('shard.json', corpus), 'utf8')
 
 function corpusSections(): Map<string, unknown> {

@@ -17,12 +17,13 @@ import { validationSourceBytes } from './validationReceipt.ts'
 import type { ShardfileFiles } from './shardfileValidation.ts'
 
 // API-CLOUDFLARE AC6a: the streaming validator gives validateShardfileFolder's verdict, refusal for refusal, on the
-// handwritten corpus and its mutations. shardfile-stream-pins.test.ts runs the real pins.
+// corpus export (Brasscap Mesa) and its mutations. shardfile-stream-pins.test.ts runs the real pins.
 
 type Files = ReadonlyMap<string, Readonly<Uint8Array>>
 type Mutation = readonly [name: string, mutate: () => Files]
 
-const CORPUS = new URL('../../corpus/handwritten/', import.meta.url).pathname
+const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
+  .pathname
 const ODD_CHUNK = 7919
 
 function sha256(bytes: Readonly<Uint8Array>): string {
@@ -183,9 +184,42 @@ function sectionEdited(
   ])
 }
 
+/** `shard.json` with one pack of its first three sections, in order: Brasscap's export lists none (the retired Template 2
+ *  listed 3), and the pack checks need one to rebuild. Like Template 2's, the pack is listed and not carried. */
+function packedShard(files: Files): Json {
+  const shard = parsed(files.get('shard.json'))
+  interface Row {
+    hash: string
+    bytes: number
+    path: string
+  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
+  const rows = shard['sections'] as Row[]
+  const sections = rows.slice(0, 3)
+  let offset = 0
+  const entries: { hash: string; offset: number; bytes: number }[] = []
+  const parts: Uint8Array[] = []
+  for (const section of sections) {
+    entries.push({ hash: section.hash, offset, bytes: section.bytes })
+    offset += section.bytes
+    parts.push(files.get(section.path) ?? new Uint8Array())
+  }
+  const joined = new Uint8Array(offset)
+  let at = 0
+  for (const part of parts) {
+    joined.set(part, at)
+    at += part.length
+  }
+  const hash = sha256(joined)
+  shard['packs'] = [
+    { bytes: offset, entries, hash, path: `blobs/pack/${hash}.pack` },
+  ]
+  return shard
+}
+
 /** The corpus with its first pack's first two members swapped (offsets kept contiguous): the rebuilt hash differs. */
 function packSwapped(files: Files): Files {
-  const shard = parsed(files.get('shard.json'))
+  const shard = packedShard(files)
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
   const [pack] = shard['packs'] as {
     entries: { hash: string; offset: number; bytes: number }[]
@@ -216,7 +250,7 @@ function assetMutations(files: Files): readonly Mutation[] {
         sectionEdited(files, 'world/props', (value: Json): void => {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
           const props = value['props'] as { materials: Json }
-          delete props.materials['Clay']
+          delete props.materials['Mesa']
         }),
     ],
     [
@@ -316,7 +350,7 @@ describe('validateShardfileStream on the corpus', (): void => {
     ])
     expect([result.index, result.shard]).toEqual([old.index, old.shard])
     expect([...result.sections.keys()]).toEqual([...old.sections.keys()])
-    // The corpus lists 3 packs and carries none: the second read rebuilds their hashes beside the asset checks.
+    // The second read runs the asset checks.
     expect([result.complete, result.pending, result.reads]).toEqual([
       true,
       [],

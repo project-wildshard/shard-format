@@ -6,9 +6,9 @@ import { corpusCounts, corpusIdentities } from './one-way-inventory.ts'
 import type { SourceFile } from './one-way-source.ts'
 
 const files: readonly SourceFile[] = [
-  { path: 'corpus/handwritten/shard.json', text: '{}' },
+  { path: 'corpus/exports/second/shard.json', text: '{}' },
   {
-    path: 'corpus/handwritten/sections/actors/species.json',
+    path: 'corpus/exports/second/sections/actors/species.json',
     text: '{"rows":{"species":[{"id":"one"}],"looks":[]}}',
   },
   { path: 'corpus/exports/fixture/shard.json', text: '{}' },

@@ -15,9 +15,11 @@ function readJson(file: string): unknown {
 }
 
 /** Load the checked-in CLI product through its normal section assembly and admission. */
-export function outputFixture(kind: 'cli' | 'handwritten' = 'cli'): Shardfile {
+export function outputFixture(kind: 'cli' | 'corpus' = 'cli'): Shardfile {
   const relative =
-    kind === 'cli' ? '../fixtures/cli-fixture/' : '../../../corpus/handwritten/'
+    kind === 'cli'
+      ? '../fixtures/cli-fixture/'
+      : '../../../corpus/exports/brasscap-mesa/'
   const root = fileURLToPath(new URL(relative, import.meta.url))
   const indexFile = path.join(root, 'shard.json')
   const index = parseOutputIndex(readJson(indexFile))
