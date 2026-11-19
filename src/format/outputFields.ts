@@ -79,6 +79,7 @@ const DATA_SECTION_NAMES: Readonly<Record<keyof PlatformDataSections, true>> = {
   "world/targets": true,
   "world/scenes": true,
   "world/trees": true,
+  "world/vehicles": true,
 };
 /** Exact public platform names; schema implementations stay on the checked side. */
 export function isPlatformDataSection(name: string): name is keyof PlatformDataSections {

@@ -30,6 +30,8 @@ import { WorldMoversSchema } from './movers.ts';
 import { ReturnModulesSchema, type ReturnModuleRow, ViewModulesSchema, type ViewModuleRow } from './scriptContract.ts';
 import { NativeRuntimePlanSchema, type NativeRuntimePlanData } from './nativeRuntimePlan.ts';
 import { TreeSetSchema, type TreeSetRows } from './treeSetRows.ts';
+import { VehiclesSchema } from './vehicles.ts';
+import type { Vehicles } from './vehicles.ts';
 
 /** New plain-value sections supplement the unchanged v1 model assembled from the older section envelopes. */
 export interface PlatformDataSections {
@@ -64,6 +66,7 @@ export interface PlatformDataSections {
   'world/targets': WorldTargets;
   'world/scenes': WorldScenesSection;
   'world/trees': TreeSetRows;
+  'world/vehicles': Vehicles;
 }
 
 /** Defining parsers for the first independently authored platform sections. */
@@ -99,6 +102,7 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'world/targets': { schema: WorldTargetsSchema },
   'world/scenes': { schema: WorldScenesSchema },
   'world/trees': { schema: TreeSetSchema },
+  'world/vehicles': { schema: VehiclesSchema },
 } as const;
 
 /** Client feature inputs that remain legacy root envelopes. These defining

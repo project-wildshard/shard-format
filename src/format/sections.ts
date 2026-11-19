@@ -13,6 +13,7 @@ import type { ClientPlan } from './clientPlan.ts';
 import type { ReturnModuleRow, ViewModuleRow } from './scriptContract.ts';
 import type { WorldScenesSection } from './worldScenes.ts';
 import type { TreeSetRows } from './treeSetRows.ts';
+import type { Vehicles } from './vehicles.ts';
 import type { HeldArmsRows } from './heldArms.ts';
 import type { HeldGearRows } from './heldGear.ts';
 import type { HeldFinishesRows } from './heldFinishes.ts';
@@ -85,6 +86,8 @@ export interface PlatformSections {
   'world/scenes': WorldScenesSection;
   /** Client-only baked forest tree set (game models/treeSet): a manifest's `trees.treeSet` and a forest page draw it. */
   'world/trees': TreeSetRows;
+  /** MIRROR-SALT-ZONE MSZ1: vehicle kinds (seats, hull, handling, sounds) and the docks they stand at. */
+  'world/vehicles': Vehicles;
   'world/days': { readonly rows: Pick<Rows, 'days'> };
   'world/weather': { readonly rows: Pick<Rows, 'weather'> };
   'look/look': Pick<Shardfile, 'look' | 'presentation'>;

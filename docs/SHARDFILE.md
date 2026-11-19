@@ -1550,6 +1550,28 @@ length) and `push` the m/s (0–20) it adds straight downwind, scaled by the
 cosine to the heading, so the same stick goes further downwind than up. It
 lowers after the rest pose as three more input numbers.
 
+### Vehicles (`world/vehicles`, MIRROR-SALT-ZONE MSZ1)
+
+A steer carry is the old way to declare a vehicle; `world/vehicles` is the
+one way from format 0.53.0 (meta J459 call 1 A). The section holds `kinds`
+and `docks` (`vehicles.ts`, `parseVehicles`).
+
+- A **kind**: `id`, `panel` (a `props.panels` id: the GLB every page poses),
+  optional `labels` (`drive`, `ride`, `leave`), 1 to 4 `seats` (`role`
+  `driver` or `passenger`, `at` and `leave` in the kind's frame, `pose` `sit`
+  or `stand`; exactly one driver), up to 16 `hull` boxes (`at`, `half` at
+  most 8 m each way, optional `yaw`), `handling` (`speed` up to 60 m/s,
+  `reverse` no faster than `speed`, `accel` up to 100 m/s², `brake` up to
+  200 m/s², `turn` up to 2π rad/s, `grip` and `drift` 0 to 1, `boost` 1 to 4,
+  `mass` 1 to 50,000 kg, `ground`, optional `wind` as the steer driver's),
+  optional `health`, and optional `sounds` (`loop`, `skid`, `impact`, `horn`:
+  `audio.cues` ids).
+- A **dock**: `id`, `kind`, `at` inside the 500 m cell, `yaw`, `per`
+  (`player`: one each, `shared`: one for all) and `respawn` seconds.
+- At most 8 kinds and 32 docks; ids unique; a dock names a declared kind.
+  Admission also refuses a panel `props.panels` lacks, a sound `audio.cues`
+  lacks, and a dock with a mover's id (`vehicleRules`).
+
 The executable helper `proveSocketLift(entry, {physics, runtime, fixedStep,
 waterAt?, approachSource?})` uses the admitted `MoverRuntime` and the engine's real capsule motor.
 The platform-owned `fixedStep` advances its single script host, mover and physics

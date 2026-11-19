@@ -422,6 +422,7 @@
     "./worldSceneWeld": "./src/format/worldSceneWeld.ts",
     "./worldScenes": "./src/format/worldScenes.ts",
     "./worldTargets": "./src/format/worldTargets.ts",
+    "./vehicles": "./src/format/vehicles.ts",
     "./worldUpdates": "./src/format/worldUpdates.ts",
     "./incomingCapPolicy": "./src/format/incoming-cap-policy.ts",
     "./strikeDebris": "./src/format/strike-debris.ts",

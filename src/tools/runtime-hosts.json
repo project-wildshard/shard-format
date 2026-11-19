@@ -225,6 +225,10 @@
     "world/trees": {
       "hosts": ["page productTreeSet", "page placeForestPageModels"]
     },
+    "world/vehicles": {
+      "hosts": [],
+      "note": "Read by the vehicle runtime (meta MIRROR-SALT-ZONE MSZ6 to MSZ9); until then the engine runs each dock as its steer carry (`vehicleCarryMovers`)."
+    },
     "world/water": {
       "hosts": ["page installClientWater", "page shardfileWater"]
     },

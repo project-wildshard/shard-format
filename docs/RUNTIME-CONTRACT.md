@@ -129,6 +129,7 @@ and nothing else. A **plain value** section holds its own schema's value, define
 | `world/tiles` | `wildshard:world/tiles@1` | root `tiles`, `far`, `near`, `ring` | `clientTileViews` (page) |
 | `world/traversal` | `wildshard:world/traversal@1` | root `traversal` | `createPortalTraversal` (both) |
 | `world/trees` | `wildshard:world/trees@1` | plain value | `productTreeSet` (page), `placeForestPageModels` (page) |
+| `world/vehicles` | `wildshard:world/vehicles@1` | plain value | none: Read by the vehicle runtime (meta MIRROR-SALT-ZONE MSZ6 to MSZ9); until then the engine runs each dock as its steer carry (`vehicleCarryMovers`). |
 | `world/water` | `wildshard:world/water@1` | root `water` | `installClientWater` (page), `shardfileWater` (page) |
 | `world/weather` | `wildshard:world/weather@1` | root `rows.weather` | `declaredWeather` (both) |
 <!-- /generated:sections -->

@@ -70,6 +70,7 @@ import { LookVignetteSchema } from './look-render.ts';
 import type { LookBloom, LookBloomInput, LookLight, LookLightInput, LookTone } from './look-light.ts';
 import { LookDetailsSchema, detailLayerRules } from './look-details.ts';
 import { LookLevelSchema, lookLevelRules } from './look-level.ts';
+import { VehiclesSchema, vehicleRules } from './vehicles.ts';
 import type { LookLevel, LookLevelInput } from './look-level.ts';
 import type { LookDetail } from './look-details.ts';
 import type { LookVignette } from './look-render.ts';
@@ -316,6 +317,12 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
       debrisStrikes.push(...moves.combo, moves.heavy);
       if (moves.passes !== undefined) { debrisStrikes.push(moves.passes.left, moves.passes.right); }
     }
+  }
+  // MIRROR-SALT-ZONE MSZ1: a vehicle kind's panel and sounds resolve, and no dock takes a mover's id.
+  const vehicles = sections?.get('world/vehicles');
+  if (vehicles !== undefined) {
+    const parsed = v.safeParse(VehiclesSchema, vehicles);
+    errors.push(...parsed.success ? vehicleRules(parsed.output, s) : ['world/vehicles parses']);
   }
   const metadata = sections?.get('actors/species-programs');
   const roster = metadata === undefined ? undefined : readSpeciesPrograms(metadata);
