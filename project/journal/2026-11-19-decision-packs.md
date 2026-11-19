@@ -8,3 +8,8 @@ controller rule refused them. Now a `none` spawn that names a `group` is owned b
 `sim/scripts` is passed (the upload path) the row must list the body. Without a group the rule still refuses.
 
 The tests live in `decision-pack-controller.test.ts`: `creature-controller.test.ts` was at the ratchet's line limit.
+
+## Spawn holds
+
+A declared spawn may carry `hold: { field, until }`: the body's memory field reads 1 until the quest flag is set, as a
+runtime plan's population `holds` row does (Dunes' first ray waits for the scout). The flag must be a declared quest flag.
