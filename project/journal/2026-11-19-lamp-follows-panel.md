@@ -8,3 +8,4 @@ lamp may now name the `props.panels` id it follows: the engine lights it while t
 undeclared panel is refused.
 The rule lives in `look-swing.ts` beside the swing check (`lampPanelErrors`), so `look-light.ts` stays under its line cap.
 Then the schema moved to `look-render.ts` beside the other lamp fields, the rule stayed in `look-swing.ts`, to pass the line cap and lint ratchet.
+And a named least length for the id, for the magic-number rule.

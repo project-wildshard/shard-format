@@ -148,10 +148,11 @@ interface LampPanel {
   /** The panel it lights with: lit while that panel shows, dark while it is hidden */
   panel?: string
 }
+const LAMP_PANEL_LEAST = 1
 const LAMP_PANEL_MAX = 128
 const lampPanel: GenericSchema<string, string> = pipe(
   string(),
-  minLength(1),
+  minLength(LAMP_PANEL_LEAST),
   maxLength(LAMP_PANEL_MAX),
 )
 
