@@ -10,6 +10,7 @@ import type { ToonLookRow } from './toonLook.ts';
 import type { KeyedSkyStyle } from './keyedSky.ts';
 import type { SpawnScriptRows } from './spawnScripts.ts';
 import type { ClientPlan } from './clientPlan.ts';
+import type { NativeSweptPolicyRows } from './items.ts';
 import type { ReturnModuleRow, ViewModuleRow } from './scriptContract.ts';
 import type { WorldScenesSection } from './worldScenes.ts';
 import type { TreeSetRows } from './treeSetRows.ts';
@@ -66,6 +67,8 @@ export interface PlatformSections {
   'held/finishes': HeldFinishesRows;
   'held/loadout': LoadoutRows;
   'held/equipment': HeldEquipmentRows;
+  /** ONE-FORMAT OF22d1: the swept sword kit, read by a native world with no `item.swept` host. */
+  'held/melee': NativeSweptPolicyRows;
   'ui/completion': CompletionRows;
   /** Existing native owners selected by admitted data, never client runtime code. */
   'sim/runtime-plan': NativeRuntimePlanData;

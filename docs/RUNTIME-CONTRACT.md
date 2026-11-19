@@ -83,6 +83,7 @@ and nothing else. A **plain value** section holds its own schema's value, define
 | `held/finishes` | `wildshard:held/finishes@1` | plain value | `HeldFinishes` (page) |
 | `held/gear` | `wildshard:held/gear@1` | plain value | `heldGear` (page) |
 | `held/loadout` | `wildshard:held/loadout@1` | plain value | `installHeldLoadout` (page) |
+| `held/melee` | `wildshard:held/melee@1` | plain value | none: Read by a native world whose plan names no item.swept host (engine, meta ONE-FORMAT OF22d2); until then each shard's item.swept host reads its server policy file. |
 | `look/colour-functions` | `wildshard:look/colour-functions@1` | plain value | `materialColourGraph` (page) |
 | `look/hull-book` | `wildshard:look/hull-book@1` | plain value | `productHullBook` (page) |
 | `look/keyed-sky` | `wildshard:look/keyed-sky@1` | plain value | `keyedSkyBackdrop` (page) |
