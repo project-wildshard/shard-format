@@ -6,3 +6,4 @@
   player (14 m/s, lift 2) and its stoop dives at the chest (1.2 m); only the borrowed decision
   row's `strikeEffects` could say so, so the declared host dropped both. One push field
   (`effect`) keeps knockback and impulse in one place.
+- Follow-up: the push fields and their rule live in `creature-ability-push.ts` (creature-layers.ts was at its 300-line cap); tests beside them.

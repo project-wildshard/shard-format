@@ -158,26 +158,11 @@ test('admits an optional knockback and an independent warning tell', (): void =>
     { effect: 'knockback', strength: 61 },
     { strength: 6 },
     { tell: 'flash' },
-    { lift: 2 },
-    { effect: 'knockback', strength: 6, lift: 2 },
-    { effect: 'impulse', strength: 41 },
-    { effect: 'impulse', strength: 14, lift: 41 },
-    { aimHeight: -1 },
-    { aimHeight: 11 },
   ]) {
     expect((): ShardRows =>
       rows({ ...layered, abilities: [{ ...ability, ...addition }] }),
     ).toThrow()
   }
-})
-
-test('admits an impulse with lift and an aim height (the gale wall and the stoop)', (): void => {
-  const ability = layered.abilities?.[0]
-  expect(ability).toBeDefined()
-  const gale = { ...ability, effect: 'impulse', strength: 14, lift: 2 }
-  expect(rows({ ...layered, abilities: [gale] }).species[0]?.abilities?.[0]).toEqual(gale)
-  const stoop = { ...ability, aimHeight: 1.2 }
-  expect(rows({ ...layered, abilities: [stoop] }).species[0]?.abilities?.[0]).toEqual(stoop)
 })
 
 test('all layers parse while old species keep their exact JSON bytes', (): void => {

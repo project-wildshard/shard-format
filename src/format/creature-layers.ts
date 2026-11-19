@@ -20,12 +20,14 @@ import {
   union,
 } from 'valibot'
 
+import { abilityPushCheck, abilityPushFields } from './creature-ability-push.ts'
 import { CreatureProjectileSchema } from './creature-projectile.ts'
 import { CreatureSocketNameSchema } from './creature-volumes.ts'
 import { CreatureSkinClipNameSchema } from './skinData.ts'
 import { StrikeTellKindSchema } from './spawnCombat.ts'
 import { HuntTuningSchema } from './speciesPrograms.ts'
 
+import type { CreatureAbilityPush } from './creature-ability-push.ts'
 import type { CreatureAttackable } from './creature-attackable.ts'
 import type { CreatureBody } from './creature-body.ts'
 import type { CreatureMount } from './creature-mount.ts'
@@ -78,7 +80,7 @@ interface CreatureSenses {
   reveal?: number
 }
 /** Ordered strike-row references. A scalar range means zero through that radius. */
-interface CreatureAbility {
+interface CreatureAbility extends CreatureAbilityPush {
   use: string
   range: number | [number, number]
   cooldown: number
@@ -90,14 +92,6 @@ interface CreatureAbility {
   duration?: number
   from?: string
   clip?: CreatureSkinClipName
-  /** `knockback` slides the struck player; `impulse` throws it along the strike's facing. */
-  effect?: 'knockback' | 'impulse'
-  /** Knockback: horizontal travel in metres on clear ground. Impulse: horizontal speed in m/s (at most 40). */
-  strength?: number
-  /** Impulse only: upward speed in m/s. */
-  lift?: number
-  /** Metres above the target's feet the strike aims at (a stoop at the chest); absent, the feet. */
-  aimHeight?: number
   tell?: StrikeTellKind
   projectile?: CreatureProjectile
 }
@@ -132,9 +126,6 @@ const MAX_SOUND = 4096
 const MAX_RADIUS = 500
 const MAX_SPEED = 15
 const MAX_TIME = 86_400
-const MAX_KNOCKBACK_DISTANCE = 60
-const MAX_IMPULSE_SPEED = 40
-const MAX_AIM_HEIGHT = 10
 const MAX_AMOUNT = 10_000_000
 const MAX_CALLS = 32
 const MAX_TUNING_FIELDS = 64
@@ -147,13 +138,6 @@ const speed = pipe(scalar, minValue(ZERO), maxValue(MAX_SPEED))
 const unit = pipe(scalar, minValue(ZERO), maxValue(ONE))
 const time = pipe(scalar, minValue(ZERO), maxValue(MAX_TIME))
 const amount = pipe(scalar, minValue(ZERO), maxValue(MAX_AMOUNT))
-const knockbackDistance = pipe(
-  scalar,
-  minValue(ZERO),
-  maxValue(MAX_KNOCKBACK_DISTANCE),
-)
-const impulseSpeed = pipe(scalar, minValue(ZERO), maxValue(MAX_IMPULSE_SPEED))
-const aimHeight = pipe(scalar, minValue(ZERO), maxValue(MAX_AIM_HEIGHT))
 const orderedRadius = pipe(
   tuple([radius, radius]),
   check<[number, number], 'Ordered creature ability range'>(
@@ -244,41 +228,14 @@ const abilityRow = strictObject({
   duration: exactOptional(time),
   from: exactOptional(CreatureSocketNameSchema),
   clip: exactOptional(CreatureSkinClipNameSchema),
-  effect: exactOptional(picklist(['knockback', 'impulse'])),
-  strength: exactOptional(knockbackDistance),
-  lift: exactOptional(impulseSpeed),
-  aimHeight: exactOptional(aimHeight),
+  ...abilityPushFields,
   tell: exactOptional(StrikeTellKindSchema),
   projectile: exactOptional(CreatureProjectileSchema),
 })
-const abilityEffectCheck = check<
-  CreatureAbility,
-  'Creature knockback effect and strength must be specified together'
->(
-  ({
-    effect,
-    strength,
-  }: Readonly<Pick<CreatureAbility, 'effect' | 'strength'>>): boolean =>
-    (effect === undefined) === (strength === undefined),
-  'Creature knockback effect and strength must be specified together',
-)
-const abilityImpulseCheck = check<
-  CreatureAbility,
-  'Creature impulse lift needs the impulse effect, at most 40 m/s'
->(
-  ({
-    effect,
-    strength,
-    lift,
-  }: Readonly<Pick<CreatureAbility, 'effect' | 'strength' | 'lift'>>): boolean =>
-    (lift === undefined || effect === 'impulse') &&
-    (effect !== 'impulse' || (strength ?? ZERO) <= MAX_IMPULSE_SPEED),
-  'Creature impulse lift needs the impulse effect, at most 40 m/s',
-)
 const CreatureAbilitySchema: GenericSchema<
   CreatureAbilityInput,
   CreatureAbility
-> = pipe(abilityRow, abilityEffectCheck, abilityImpulseCheck)
+> = pipe(abilityRow, abilityPushCheck<CreatureAbility>())
 const callVariants = pipe(array(sound), maxLength(MAX_CALLS))
 const CreaturePresentationSchema: GenericSchema<CreaturePresentation> =
   strictObject({
