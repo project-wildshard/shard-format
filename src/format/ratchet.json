@@ -1002,7 +1002,7 @@
    "eslint(curly)": 11,
    "eslint(id-length)": 1,
    "eslint(max-statements)": 1,
-   "eslint(no-magic-numbers)": 23,
+   "eslint(no-magic-numbers)": 22,
    "eslint(prefer-named-capture-group)": 2,
    "eslint(sort-vars)": 1,
    "import(exports-last)": 9,

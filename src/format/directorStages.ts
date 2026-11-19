@@ -1,13 +1,16 @@
 import * as v from 'valibot';
 import { compileDirectorWhen } from './directorWhen.ts';
 
-const key = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u), v.maxLength(128));
+const KEY_LENGTH = 128;
+const key = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u), v.maxLength(KEY_LENGTH));
+// A quest flag can include the source's colon-delimited namespace.
+const questFlag = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*(?::[a-z0-9][a-z0-9.-]*)*$/u), v.maxLength(KEY_LENGTH));
 const name = v.pipe(v.string(), v.regex(/^[A-Za-z_][A-Za-z0-9_]*$/u), v.maxLength(64));
-const bindingSchema = v.pipe(v.string(), v.maxLength(256), v.regex(/^(?:(?:flag|zone|event):[a-z][a-z0-9.-]*|actor:[a-z][a-z0-9.-]*\.(?:dead|present)|day:(?:0(?:\.[0-9]+)?|1)\.\.(?:0(?:\.[0-9]+)?|1))$/u));
+const bindingSchema = v.pipe(v.string(), v.maxLength(256), v.regex(/^(?:flag:[a-z][a-z0-9.-]*(?::[a-z0-9][a-z0-9.-]*)*|(?:zone|event):[a-z][a-z0-9.-]*|actor:[a-z][a-z0-9.-]*\.(?:dead|present)|day:(?:0(?:\.[0-9]+)?|1)\.\.(?:0(?:\.[0-9]+)?|1))$/u));
 const value = v.pipe(v.number(), v.finite(), v.minValue(-10000), v.maxValue(10000));
 const action = v.union([
   v.strictObject({ spawn: key }), v.strictObject({ despawn: key }),
-  v.strictObject({ flag: v.strictObject({ key, value: v.boolean() }) }),
+  v.strictObject({ flag: v.strictObject({ key: questFlag, value: v.boolean() }) }),
   v.strictObject({ score: key }), v.strictObject({ weather: key }),
   v.strictObject({ toast: key }), v.strictObject({ reward: key }),
   v.strictObject({ emit: key, value: v.optional(v.union([v.boolean(), value]), 0) }),
