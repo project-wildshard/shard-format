@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.53.0 (2026-11-19)
+
+- Shards can declare vehicles: kinds with seats, a hull and handling, and docks where they stand (`world/vehicles`).
+- A land-sail built as a steer carry lifts into a vehicle kind and a shared dock, and lowers back for engines without the vehicle runtime.
+
 ## v0.52.0 (2026-11-19)
 
 - Prop colliders can be capsules, so a palm trunk or a post stands as one solid.
