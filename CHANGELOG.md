@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.54.0 (2026-11-19)
+
+- A creature's timed return can wait like an island's: a random extra delay, no player nearby, night only, and a fade first.
+
 ## v0.53.0 (2026-11-19)
 
 - Shards can declare vehicles: kinds with seats, a hull and handling, and docks where they stand (`world/vehicles`).
