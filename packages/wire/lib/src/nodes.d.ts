@@ -5,6 +5,17 @@ declare const METRES: {
     readonly max: 260;
     readonly bits: 16;
 };
+/**
+ * Road metres (MMO-PLAN MP1.5): the road's frame 0 is the world's, about
+ * ±1,390 m across the 5 by 5 grid, so a row there needs ±2,048 m in 16 bits,
+ * a 6.25 cm step.
+ */
+declare const ROAD_METRES: {
+    readonly kind: 'quant';
+    readonly min: -2048;
+    readonly max: 2048;
+    readonly bits: 16;
+};
 /** A unit fraction in 6 bits. */
 declare const UNIT_6: {
     readonly kind: 'quant';
@@ -110,4 +121,4 @@ declare const CHANNEL: {
     readonly values: readonly ["room", "proximity"];
     readonly default: 'room';
 };
-export { CHANNEL, CHAT_CHANNELS, OPTIONAL_TEXT, TICK, ANGLE_10, ANGLE_16, AXIS, BOOL, F32, F64, METRES, PITCH, REF, SIGNED_UNIT_8, TEXT, U16, U32, U5, U8, UNIT_10, UNIT_6, UNIT_8, };
+export { CHANNEL, CHAT_CHANNELS, OPTIONAL_TEXT, TICK, ANGLE_10, ANGLE_16, AXIS, BOOL, F32, F64, METRES, PITCH, ROAD_METRES, REF, SIGNED_UNIT_8, TEXT, U16, U32, U5, U8, UNIT_10, UNIT_6, UNIT_8, };

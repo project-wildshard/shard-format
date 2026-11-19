@@ -1,6 +1,12 @@
 // Shared grammar nodes. Each is plain data; descriptors spread or name them.
 /** Cell-local metres over ±260 m in 16 bits, an 8 mm step. */
 const METRES = { kind: 'quant', min: -260, max: 260, bits: 16 };
+/**
+ * Road metres (MMO-PLAN MP1.5): the road's frame 0 is the world's, about
+ * ±1,390 m across the 5 by 5 grid, so a row there needs ±2,048 m in 16 bits,
+ * a 6.25 cm step.
+ */
+const ROAD_METRES = { kind: 'quant', min: -2048, max: 2048, bits: 16 };
 /** A unit fraction in 6 bits. */
 const UNIT_6 = { kind: 'quant', min: 0, max: 1, bits: 6 };
 /** A unit fraction in 8 bits. */
@@ -42,4 +48,4 @@ const CHANNEL = {
     values: CHAT_CHANNELS,
     default: 'room',
 };
-export { CHANNEL, CHAT_CHANNELS, OPTIONAL_TEXT, TICK, ANGLE_10, ANGLE_16, AXIS, BOOL, F32, F64, METRES, PITCH, REF, SIGNED_UNIT_8, TEXT, U16, U32, U5, U8, UNIT_10, UNIT_6, UNIT_8, };
+export { CHANNEL, CHAT_CHANNELS, OPTIONAL_TEXT, TICK, ANGLE_10, ANGLE_16, AXIS, BOOL, F32, F64, METRES, PITCH, ROAD_METRES, REF, SIGNED_UNIT_8, TEXT, U16, U32, U5, U8, UNIT_10, UNIT_6, UNIT_8, };

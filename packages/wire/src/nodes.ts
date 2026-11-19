@@ -2,6 +2,12 @@
 
 /** Cell-local metres over ±260 m in 16 bits, an 8 mm step. */
 const METRES = { kind: 'quant', min: -260, max: 260, bits: 16 } as const
+/**
+ * Road metres (MMO-PLAN MP1.5): the road's frame 0 is the world's, about
+ * ±1,390 m across the 5 by 5 grid, so a row there needs ±2,048 m in 16 bits,
+ * a 6.25 cm step.
+ */
+const ROAD_METRES = { kind: 'quant', min: -2048, max: 2048, bits: 16 } as const
 /** A unit fraction in 6 bits. */
 const UNIT_6 = { kind: 'quant', min: 0, max: 1, bits: 6 } as const
 /** A unit fraction in 8 bits. */
@@ -58,6 +64,7 @@ export {
   F64,
   METRES,
   PITCH,
+  ROAD_METRES,
   REF,
   SIGNED_UNIT_8,
   TEXT,

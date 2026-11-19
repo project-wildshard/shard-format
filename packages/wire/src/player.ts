@@ -1,11 +1,22 @@
-import { ANGLE_10, BOOL, F32, F64, METRES, TEXT, U16, U8 } from './nodes.ts'
+import {
+  ANGLE_10,
+  BOOL,
+  F32,
+  F64,
+  METRES,
+  ROAD_METRES,
+  TEXT,
+  U16,
+  U8,
+} from './nodes.ts'
 
 import type { WireClass } from './grammar.ts'
 
 // The `player` class: a row for everyone else, an exact owner block for its
 // owner (J140). Ids 1 to 53 are the WS2 baseline's order at engine cfd6681;
 // `name` (54) was added after it, and `swing`, `heavy` and `air` (55 to 57)
-// after that (REMOTE-PLAYERS RP6). Declared order is the sender's layout.
+// after that (REMOTE-PLAYERS RP6), then `roadX` and `roadZ` (58, 59, MMO-PLAN
+// MP1.5). Declared order is the sender's layout.
 const PREDICTED = { send: 'all', predicted: true } as const
 const OWNER = { send: 'owner' } as const
 const OTHERS = { send: 'others', required: true } as const
@@ -32,6 +43,13 @@ const PLAYER = {
     { id: 55, name: 'swing', node: U8, send: 'others' },
     { id: 56, name: 'heavy', node: BOOL, send: 'others' },
     { id: 57, name: 'air', node: BOOL, send: 'others' },
+    // On the road (frame 0, the world's frame) a body stands up to ~1,390 m
+    // out, past `x`/`z`'s ±260 m: its place for others at a 6 cm step.
+    // Zero in a cell, so a cell's rows never carry them after the first. A
+    // room older than wire 1.2 sends neither, and a newer page reads the
+    // node's default, -2,048 m, outside the grid: no road place.
+    { id: 58, name: 'roadX', node: ROAD_METRES, send: 'others', since: 2 },
+    { id: 59, name: 'roadZ', node: ROAD_METRES, send: 'others', since: 2 },
     { id: 11, name: 'px', node: F64, ...PREDICTED },
     { id: 12, name: 'py', node: F64, ...PREDICTED },
     { id: 13, name: 'pz', node: F64, ...PREDICTED },

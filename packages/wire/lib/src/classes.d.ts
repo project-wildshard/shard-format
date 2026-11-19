@@ -554,6 +554,28 @@ declare const WIRE_CLASSES: readonly [{
         };
         readonly send: 'others';
     }, {
+        readonly id: 58;
+        readonly name: 'roadX';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: -2048;
+            readonly max: 2048;
+            readonly bits: 16;
+        };
+        readonly send: 'others';
+        readonly since: 2;
+    }, {
+        readonly id: 59;
+        readonly name: 'roadZ';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: -2048;
+            readonly max: 2048;
+            readonly bits: 16;
+        };
+        readonly send: 'others';
+        readonly since: 2;
+    }, {
         readonly send: 'all';
         readonly predicted: true;
         readonly id: 11;
