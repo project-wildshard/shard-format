@@ -1572,6 +1572,17 @@ and `docks` (`vehicles.ts`, `parseVehicles`).
   Admission also refuses a panel `props.panels` lacks, a sound `audio.cues`
   lacks, and a dock with a mover's id (`vehicleRules`).
 
+A steer carry migrates (MSZ2, `vehicle-lift.ts`): `liftSteerVehicles`
+turns each native carry `channel` mover with a `steer` driver into one kind
+(one standing driver seat at the carry's seat, its prompts as labels, its
+panel's `props.colliders` boxes moved into its frame as the hull, no
+reverse, a brake as quick as its acceleration, full grip, no drift, 250 kg)
+and one shared dock at its rest, and drops it from `movers`; a collider it
+cannot take is a note, not a refusal. The `steer` driver row stays readable
+for old revisions only. Until the engine's vehicle runtime, an engine runs
+each dock as the steer carry `vehicleCarryMovers` lowers it to, with
+`vehicleCarryHulls` as its hull (a passenger seat waits for that runtime).
+
 The executable helper `proveSocketLift(entry, {physics, runtime, fixedStep,
 waterAt?, approachSource?})` uses the admitted `MoverRuntime` and the engine's real capsule motor.
 The platform-owned `fixedStep` advances its single script host, mover and physics

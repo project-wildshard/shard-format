@@ -22,3 +22,20 @@ The section's own checks live in the schema (ids unique, one driver
 seat, docks of declared kinds, the bounds); the references to the rest of
 the shard file (the panel, the audio cues, no dock with a mover's id)
 run in `shardfileRules` when admission has the section in hand.
+
+## The sail migrates (MSZ2)
+
+`liftSteerVehicles` is the migration the plan asks for: Mirror Salt's
+teal sail, a steer carry since SS-MS2a4, becomes one kind and one shared
+dock. SHARD-COMPAT's chain (`./migrate`) is still unbuilt, so the lift is
+a plain function beside the section, as `liftLevelLook` is beside
+`look.level`, ready for the chain to call.
+
+The other direction matters today: no engine has the vehicle runtime yet
+(MSZ8), so `vehicleCarryMovers` lowers each dock back to the steer carry
+the engine already boards and steers, and `vehicleCarryHulls` gives its
+hull. The test lifts the rows of the source staging revision 4 was built
+from and lowers them back to the same module, input, rest, driver, seat,
+landings and labels. The board prompt's reach is the one thing that
+changes: the carry's came from the SDK's footprint, the lowered one from
+the hull.

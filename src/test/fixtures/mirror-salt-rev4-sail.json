@@ -1,0 +1,185 @@
+{
+ "source": "project-wildshard/shard-mirror-salt a9e2a92 (staging revision 4), built with SDK 0.4.12: world/movers and the sail rows of world/props",
+ "movers": [
+  {
+   "at": {
+    "x": 0.955,
+    "y": -0.09,
+    "z": 146.5218
+   },
+   "boxes": [],
+   "carry": {
+    "landings": [
+     [
+      2.816,
+      0,
+      0
+     ],
+     [
+      -2.816,
+      0,
+      0
+     ]
+    ],
+    "prompts": [
+     {
+      "at": [
+       0,
+       1,
+       0
+      ],
+      "label": "Board the land-sail",
+      "radius": 4.3881
+     },
+     {
+      "at": [
+       0,
+       2,
+       0
+      ],
+      "label": "Leave the land-sail",
+      "radius": 2
+     }
+    ],
+    "seat": 0.8,
+    "surface": {
+     "bankRamp": 0,
+     "bob": [
+      0,
+      0
+     ],
+     "level": 0,
+     "pitch": [
+      0,
+      0
+     ],
+     "roll": [
+      0,
+      0,
+      0
+     ]
+    },
+    "yaw": 0
+   },
+   "driver": {
+    "accel": 4,
+    "boost": 1.6,
+    "ground": true,
+    "kind": "steer",
+    "speed": 9,
+    "turn": 1,
+    "wind": {
+     "push": 4,
+     "toward": [
+      0.8,
+      0.6
+     ]
+    }
+   },
+   "enabled": true,
+   "entity": 9101,
+   "euler": {
+    "x": 0,
+    "y": -0.05,
+    "z": 0
+   },
+   "execution": "native",
+   "id": "salt.land-sail",
+   "input": [
+    9,
+    1,
+    1.6,
+    4,
+    1,
+    0.955,
+    -0.09,
+    146.5218,
+    -0.05,
+    0.8,
+    0.6,
+    4
+   ],
+   "kind": "channel",
+   "module": "d7ee08f609c5a350692fba79d47d5aa6bebd14d324f955a5ba20b52c603e9270",
+   "trigger": {
+    "kind": "interact",
+    "permission": 0
+   }
+  }
+ ],
+ "props": {
+  "panels": [
+   {
+    "file": "e41e2ad858c81984d2abece4c2e5b5a15701c61540a0eb657fd5a11540124b2e",
+    "id": "salt.land-sail",
+    "visible": true
+   }
+  ],
+  "colliders": [
+   {
+    "id": "scene.sails",
+    "initialActive": true,
+    "panel": null,
+    "shapes": [
+     {
+      "hx": 0.6,
+      "hy": 0.125,
+      "hz": 1.8,
+      "kind": "box",
+      "x": -6,
+      "y": 0.7,
+      "yaw": -0.3,
+      "z": 145
+     },
+     {
+      "hx": 0.6,
+      "hy": 0.125,
+      "hz": 1.8,
+      "kind": "box",
+      "x": 8,
+      "y": 0.7,
+      "yaw": 0.2,
+      "z": 145
+     },
+     {
+      "hx": 0.6,
+      "hy": 0.125,
+      "hz": 1.8,
+      "kind": "box",
+      "x": 1.983,
+      "y": 0.7,
+      "yaw": 0.35,
+      "z": 64
+     },
+     {
+      "hx": 0.6,
+      "hy": 0.125,
+      "hz": 1.8,
+      "kind": "box",
+      "x": -10.685,
+      "y": 0.7,
+      "yaw": -0.25,
+      "z": 10
+     }
+    ]
+   },
+   {
+    "id": "salt.land-sail",
+    "initialActive": false,
+    "panel": "salt.land-sail",
+    "shapes": [
+     {
+      "hx": 0.6,
+      "hy": 0.125,
+      "hz": 1.8,
+      "kind": "box",
+      "x": 1,
+      "y": 0.7,
+      "yaw": -0.05,
+      "z": 147
+     }
+    ]
+   }
+  ]
+ }
+}
