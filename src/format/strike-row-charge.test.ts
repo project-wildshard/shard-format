@@ -44,3 +44,12 @@ test('overshoot is bounded', (): void => {
     parseRows({ ...fixture, strikes: [{ ...charge(), overshoot: 31 }] }),
   ).toThrow()
 })
+
+// OF11b: Dunes' ray swoop is sized in metres whatever the ray's scale; a row says so with `units`.
+test('a plain strike row names how its shape follows the body scale', (): void => {
+  const fixture = outputFixture().rows
+  expect(parseRows({ ...fixture, strikes: [{ ...charge(), units: 'world' }] }).strikes[0]?.units).toBe('world')
+  expect(parseRows({ ...fixture, strikes: [{ ...charge(), units: 'actor' }] }).strikes[0]?.units).toBe('actor')
+  expect(Object.keys(parseRows({ ...fixture, strikes: [charge()] }).strikes[0] ?? {})).not.toContain('units')
+  expect((): unknown => parseRows({ ...fixture, strikes: [{ ...charge(), units: 'body' }] })).toThrow()
+})
