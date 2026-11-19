@@ -21,8 +21,9 @@ export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<st
     || !source.questNpcs?.some(row => !('kind' in row) && row.npc.id === quest.rows.npc)) errors.push('Data page requires its original declared quest and NPC');
   if (held?.kind !== 'held.melee' || source.items.loadout.primary !== held.item || source.items.loadout.secondary !== null
     || source.items.loadout.tools.length > 0 || !source.items.rows.some(row => row.kind === 'weapon' && row.id === held.item)) errors.push('Data page requires its one admitted held primary');
-  if (source.creatures.spawns.length + source.rows.species.length + source.encounters.length + source.crowds.length > 0)
-    errors.push('Data page native roster cannot also install a flat simulation roster');
+  // ONE-FORMAT OF19b0/OF19c0: declared spawns, their species and encounters run beside the plan's keeper (the engine
+  // refuses a body both own); declared crowds do not
+  if (source.crowds.length > 0) errors.push('Data page native roster cannot also install declared crowds');
   for (const name of ['world/scenes', 'world/targets', 'actors/species-programs', 'sim/runtime-plan', 'sim/scripts', 'look/painted'])
     if (!sections.has(name)) errors.push(`Data page requires ${name}`);
   const channels = new Set(source.clientChannels?.map(row => row.id));
@@ -38,7 +39,9 @@ export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<st
     const expected = owner === undefined ? [] : [owner];
     if (bosses.length !== expected.length || bosses.some(row => row.actor !== owner?.actor || (row.kind === 'boss.held') !== (owner.profile.pattern === 'held')))
       errors.push('Data page requires its actual native encounter pattern');
+    // A declared spawn is a body the quest may name too
     const actors = new Set(nativeRuntimeActorIds(plan));
+    for (const spawn of source.creatures.spawns) { actors.add(spawn.id); }
     if (source.questHost?.actors.ids.some(id => !actors.has(id))) errors.push('Data page quest requires actual native actors');
   }
   return errors;
