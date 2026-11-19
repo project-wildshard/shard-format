@@ -121,6 +121,13 @@ const sweptPolicy: v.GenericSchema<NativeSweptPolicyRowsInput, NativeSweptPolicy
   lunge: v.strictObject({ maxHeight: v.pipe(finite, v.minValue(0), v.maxValue(20)), minDistance: v.pipe(finite, v.minValue(0.000001), v.maxValue(10)),
     minRadius: v.pipe(finite, v.minValue(0), v.maxValue(20)), lengthScale: v.pipe(finite, v.minValue(0), v.maxValue(10)) }),
 });
+/**
+ * ONE-FORMAT OF22d1: the `held/melee` section, a shard's swept sword kit as a declared row (Q-S8, J367 (4): melee is one of
+ * the two held primitives). It is the swept policy a native plan's `item.swept` host read from a server file: the kit's
+ * fixed step, its slots (item, weapon, tags, combo and heavy moves), selection, eye height, contact push and lunge. A
+ * native world whose plan names no `item.swept` host stands its melee from this section.
+ */
+export const HeldMeleeSchema: v.GenericSchema<NativeSweptPolicyRowsInput, NativeSweptPolicyRows> = sweptPolicy;
 /** Admit a bounded swept kit against real item profiles before installing clocks or contacts. */
 interface NativeSweptMove extends Omit<Extract<v.InferOutput<typeof WeaponProfileSchema>, {family: 'melee'}>['moves']['heavy'], 'stagger' | 'sweep'> {
   id: string; stagger: number; sweep: number;

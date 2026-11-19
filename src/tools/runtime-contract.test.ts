@@ -53,7 +53,7 @@ describe('docs/RUNTIME-CONTRACT.md', (): void => {
 
 describe('runtime contract lists', (): void => {
   it('reads every list it publishes', (): void => {
-    assert.equal(sectionNames().length, 73)
+    assert.equal(sectionNames().length, 74)
     assert.equal(clientPlanKinds().length, 63)
     assert.equal(nativeAssemblyHosts().length, 46)
     assert.deepEqual(runtimePlanKinds(), ['held-melee'])

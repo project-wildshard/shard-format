@@ -65,6 +65,7 @@ const DATA_SECTION_NAMES: Readonly<Record<keyof PlatformDataSections, true>> = {
   "held/finishes": true,
   "held/loadout": true,
   "held/equipment": true,
+  "held/melee": true,
   "ui/completion": true,
   "sim/runtime-plan": true,
   "actors/species-programs": true,

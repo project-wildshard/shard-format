@@ -67,6 +67,10 @@
     "held/equipment": {
       "hosts": ["page HeldEquipment"]
     },
+    "held/melee": {
+      "hosts": [],
+      "note": "Read by a native world whose plan names no item.swept host (engine, meta ONE-FORMAT OF22d2); until then each shard's item.swept host reads its server policy file."
+    },
     "held/finishes": {
       "hosts": ["page HeldFinishes"]
     },

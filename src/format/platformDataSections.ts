@@ -18,6 +18,7 @@ import { HeldFinishesSchema, type HeldFinishesRows } from './heldFinishes.ts';
 import { HeldGearSchema, type HeldGearRows } from './heldGear.ts';
 import * as v from 'valibot';
 import { HeldEquipmentSchema, type HeldEquipmentRows } from './heldEquipment.ts';
+import { HeldMeleeSchema, type NativeSweptPolicyRows } from './items.ts';
 import { CompletionSchema, type CompletionRows } from './completion.ts';
 import { SpeciesProgramsSchema, type SpeciesPrograms } from './speciesPrograms.ts';
 import { CreatureStrikesSchema, type CreatureStrikes } from './creatures.ts';
@@ -52,6 +53,7 @@ export interface PlatformDataSections {
   'held/finishes': HeldFinishesRows;
   'held/loadout': LoadoutRows;
   'held/equipment': HeldEquipmentRows;
+  'held/melee': NativeSweptPolicyRows;
   'ui/completion': CompletionRows;
   'sim/runtime-plan': NativeRuntimePlanData;
   'actors/species-programs': SpeciesPrograms;
@@ -88,6 +90,7 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'held/finishes': { schema: HeldFinishesSchema },
   'held/loadout': { schema: LoadoutSchema },
   'held/equipment': { schema: HeldEquipmentSchema },
+  'held/melee': { schema: HeldMeleeSchema },
   'ui/completion': { schema: CompletionSchema },
   'sim/runtime-plan': { schema: NativeRuntimePlanSchema },
   'actors/species-programs': { schema: SpeciesProgramsSchema },
