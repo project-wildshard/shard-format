@@ -8,6 +8,11 @@ docs/dev.md says.
 
 - A strike row can say whether its reach is in metres or grows with the creature's size, so a converted creature hits exactly as before.
 
+## v0.43.2 (2026-11-18)
+
+- A plain shard's grapple mode with its own profile and hooks needs no quest page or runtime: the game runs it from the row.
+- A grapple profile's looks must be declared in look.materials, so a missing one is caught at check, not in play.
+
 ## v0.43.1 (2026-11-18)
 
 - A plain shard's grapple mode with its own profile and hooks needs no quest page or runtime: the game runs it from the row.
