@@ -4004,7 +4004,7 @@
    "eslint(max-lines)": 1,
    "eslint(max-statements)": 1,
    "eslint(no-continue)": 5,
-   "eslint(no-magic-numbers)": 65,
+   "eslint(no-magic-numbers)": 63,
    "eslint(no-nested-ternary)": 1,
    "eslint(prefer-destructuring)": 1,
    "eslint(sort-vars)": 3,

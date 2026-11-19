@@ -322,7 +322,17 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   if (s.migrations.some(step => step.equipmentSlots?.some(rename => !s.items.rows.some(row => row.kind === 'weapon' && row.slot === rename.to)))) errors.push('migration equipment slots resolve declared weapons');
   if ((s.items.runtimeContexts?.length ?? 0) > 0 && !pageOwner && s.runtime?.binds?.includes('items') !== true) errors.push('native input contexts require their declared page or runtime owner');
   if (s.items.rows.some((row) => row.kind === 'tool' && row.action === null) && s.runtime?.binds?.includes('items') !== true) errors.push('native tools require runtime.binds items');
-  if (s.modes !== undefined && (s.modes.traverse.some(row => row.kind !== 'ladder') || (s.modes.ride?.length ?? 0) > 0 || (s.modes.grapple?.length ?? 0) > 0) && !pageOwner && s.runtime?.binds?.includes('modes') !== true) errors.push('traverse modes require their declared page or runtime player phase');
+  if (s.modes !== undefined && (s.modes.traverse.some(row => row.kind !== 'ladder') || (s.modes.ride?.length ?? 0) > 0 || (s.modes.grapple ?? []).some((row): boolean => row.profile === undefined)) && !pageOwner && s.runtime?.binds?.includes('modes') !== true) errors.push('traverse modes require their declared page or runtime player phase');
+  // OF41c: a grapple row that carries its tool installs from the row alone (the engine's server grapple and page claw), so
+  // only a timing-only row needs a page or runtime above; the looks it draws with are graph looks the page compiles from
+  // look.materials
+  for (const row of s.modes?.grapple ?? []) {
+    for (const id of Object.values(row.profile?.looks ?? {})) {
+      if (s.look.materials[id] === undefined) {
+        errors.push(`grapple ${row.id} names look ${id}, which look.materials does not declare`);
+      }
+    }
+  }
   if (s.runtime !== null && s.modes?.traverse.some(row => row.kind === 'ladder')) errors.push('ladder traversal requires the data-only player owner');
   errors.push(...skinLookRules(s), ...attachmentFileRules({ species: s.rows.species, files: s.files, library: s.library, materials: s.look.materials }));
   errors.push(...clientScriptRules(s));

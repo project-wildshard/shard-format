@@ -1,10 +1,13 @@
 import { safeParse } from 'valibot'
 import { expect, test } from 'vitest'
 
+import { outputFixture } from '../test/helpers/output-fixture.ts'
 import { parseGrappleProfile } from './grapple.ts'
 import { ModesSchema } from './modes.ts'
+import { shardfileRules } from './shardSchema.ts'
 
 import type { GrappleMode } from './modes.ts'
+import type { Shardfile } from './shardSchema.ts'
 
 // ONE-FORMAT OF41c: a plain `state/modes` grapple row carries what the native host read from its own files (a profile
 // file, a hooks file and a guard owner), so the declared path can install the grapple with no native assembly. The
@@ -129,4 +132,52 @@ test('OF41c: a profile needs its hooks, hooks need a profile, and guard and rise
     issue({ profile: { ...tool, cues: { fire: 'grapple.fire' } }, hooks }),
   ).toBeDefined()
   expect(issue({ profile: tool, hooks, spare: 1 })).toBeDefined()
+})
+
+// OF41c page half: a plain upload (no declared quest page, no runtime) owns its grapple, since the engine installs both the
+// server's grapple and the page's claw from the row; a timing-only row still needs the page or runtime that installs it.
+// The row's looks are graph looks the page compiles from `look.materials`.
+const PAGE_RULE =
+  'traverse modes require their declared page or runtime player phase'
+function plainShard(
+  grapple: readonly GrappleMode[],
+  looked: boolean,
+): Shardfile {
+  const base = outputFixture('handwritten')
+  const { door } = base.look.materials
+  if (door === undefined) {
+    throw new Error('Missing seed material')
+  }
+  const ids = looked ? Object.values(tool.looks) : []
+  const looks = Object.fromEntries(
+    ids.map((id): [string, typeof door] => [id, door]),
+  )
+  return {
+    ...base,
+    modes: { traverse: [], grapple: [...grapple] },
+    look: { ...base.look, materials: { ...base.look.materials, ...looks } },
+  }
+}
+const claw =
+  rows([{ ...timings, id: 'quarry.claw', profile: tool, hooks }]) ?? []
+
+test('OF41c: a plain upload carries a grapple row with its tool', (): void => {
+  const refusals = shardfileRules(plainShard(claw, true))
+  const grappleRefusals = refusals.filter((line): boolean =>
+    line.includes('grapple'),
+  )
+  expect(refusals).not.toContain(PAGE_RULE)
+  expect(grappleRefusals).toEqual([])
+})
+
+test('OF41c: a grapple tool names looks look.materials declares', (): void => {
+  const refusals = shardfileRules(plainShard(claw, false))
+  expect(refusals).toContain(
+    'grapple quarry.claw names look q-muzzle, which look.materials does not declare',
+  )
+})
+
+test('OF41c: a timing-only grapple row still needs its page or runtime', (): void => {
+  const timed = plainShard(rows([timings]) ?? [], true)
+  expect(shardfileRules(timed)).toContain(PAGE_RULE)
 })
