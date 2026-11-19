@@ -1,4 +1,4 @@
-import { GrappleClearanceSchema, GrappleModeSchema, GrappleCuesSchema, GrappleFactSchema, GrappleHeadlessSchema, GrappleLooksSchema, type DeclaredGrappleMode, type GrappleMode } from './modes.ts';
+import { GrappleModeSchema, type GrappleMode } from './modes.ts';
 import * as v from 'valibot';
 /** One baseline HUD hint; tone is admitted before the native tool installs it. */
 interface GrappleHint { readonly label: string; readonly icon?: string; readonly tone: string; readonly accent?: string }
@@ -68,20 +68,18 @@ export function parseGrappleFilament(value: unknown): GrappleFilamentUniforms { 
 export type GrappleProfileInput = Omit<GrappleProfile, 'course'> & { readonly course: Omit<GrappleProfile['course'], 'mode'> & { readonly mode?: v.InferInput<typeof GrappleModeSchema> } };
 /** The complete original native policy, independent of validator metadata. */
 export const GrappleProfileSchema: v.GenericSchema<GrappleProfileInput, GrappleProfile> = v.strictObject({
-    id, course: v.strictObject({ name: id, mode: v.exactOptional(GrappleModeSchema), clearance: v.exactOptional(GrappleClearanceSchema) }),
-    cues: GrappleCuesSchema, looks: GrappleLooksSchema, fact: v.exactOptional(GrappleFactSchema), headless: GrappleHeadlessSchema,
+    id, course: v.strictObject({ name: id, mode: v.exactOptional(GrappleModeSchema), clearance: v.exactOptional(v.strictObject({
+      axis: v.picklist(['x', 'z']), plane: finite, min: finite, max: finite, base: finite, top: finite, ceiling: finite,
+      owners: v.pipe(v.array(id), v.minLength(1), v.maxLength(32)),
+    })) }),
+    cues: v.strictObject({ fire: id, bite: id, zip: id, reel: id, dock: id }),
+    looks: v.strictObject({ muzzle: id, bite: id, dock: id, sparks: id, ribbon: id }),
+    fact: v.exactOptional(v.strictObject({ name: id, entity: id, source: id })),
+    headless: v.strictObject({ step: id, lock: id, aim: id, eye: v.pipe(finite, v.minValue(.1), v.maxValue(10)),
+      aspect: v.pipe(finite, v.minValue(.1), v.maxValue(10)), portraitFov: v.pipe(finite, v.minValue(10), v.maxValue(140)) }),
   });
 /** Validate identity and physics data before installing the approved native mode. */
 export function parseGrappleProfile(value: unknown): GrappleProfile { return v.parse(GrappleProfileSchema, value); }
-
-/** ONE-FORMAT OF41c: the native profile of a plain grapple mode that carries one (`state/modes`), its course mode being
- *  the row's own timings; undefined for a timing-only row. Its hooks, guard and rise stay on the row. */
-export function declaredGrappleProfile(row: DeclaredGrappleMode): GrappleProfile | undefined {
-  const { profile, hooks: _hooks, guard: _guard, rise: _rise, ...mode } = row;
-  if (profile === undefined) return undefined;
-  return { id: row.id, course: { ...profile.course, mode }, cues: profile.cues, looks: profile.looks,
-    ...(profile.fact === undefined ? {} : { fact: profile.fact }), headless: profile.headless };
-}
 
 /** Original complete hook coordinates; the native tool retains their order. */
 export const GrappleHooksSchema: v.GenericSchema<readonly { readonly x: number; readonly y: number; readonly z: number }[]> = v.array(v.strictObject({ x: finite, y: finite, z: finite }));

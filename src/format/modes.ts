@@ -4,6 +4,33 @@ const finite = v.pipe(v.number(), v.finite());
 const range = (low: number, high: number) => v.pipe(finite, v.minValue(low), v.maxValue(high));
 const id = v.pipe(v.string(), v.regex(/^[a-zA-Z0-9_.-]{1,128}$/));
 const point = v.strictObject({ x: range(-250, 250), y: range(-250, 250), z: range(-250, 250) });
+const EYE_MAX = 10;
+const EYE_MIN = 0.1;
+const FOV_MAX = 140;
+const FOV_MIN = 10;
+const HOOKS_MAX = 64;
+const ONE = 1;
+const TOOL_NAME_MAX = 256;
+const TOOL_OWNERS_MAX = 32;
+const toolName = v.pipe(v.string(), v.minLength(ONE), v.maxLength(TOOL_NAME_MAX));
+/** ONE-FORMAT OF41c: a grapple tool's profile as a plain mode row carries it, the native `GrappleProfile` (`grapple.ts`) without
+ *  its id and course mode, which are the row's own: the course name and clearance, cues, looks, completion fact and
+ *  headless ids. */
+const grappleOwners = v.pipe(v.array(toolName), v.minLength(ONE), v.maxLength(TOOL_OWNERS_MAX), v.readonly());
+const grappleClearance = v.strictObject({
+  axis: v.picklist(['x', 'z']), plane: finite, min: finite, max: finite, base: finite, top: finite, ceiling: finite, owners: grappleOwners,
+});
+const grappleCues = v.strictObject({ fire: toolName, bite: toolName, zip: toolName, reel: toolName, dock: toolName });
+const grappleLooks = v.strictObject({ muzzle: toolName, bite: toolName, dock: toolName, sparks: toolName, ribbon: toolName });
+const grappleFact = v.strictObject({ name: toolName, entity: toolName, source: toolName });
+const eyeRange = range(EYE_MIN, EYE_MAX);
+const grappleHeadless = v.strictObject({ step: toolName, lock: toolName, aim: toolName, eye: eyeRange, aspect: eyeRange,
+  portraitFov: range(FOV_MIN, FOV_MAX) });
+const grappleCourse = v.strictObject({ name: toolName, clearance: v.exactOptional(grappleClearance) });
+const grappleTool = v.strictObject({ course: grappleCourse, cues: grappleCues, looks: grappleLooks,
+  fact: v.exactOptional(grappleFact), headless: grappleHeadless });
+const grappleHooks = v.pipe(v.array(point), v.minLength(ONE), v.maxLength(HOOKS_MAX), v.readonly());
+const riseFlag = v.literal(true);
 /** Optional direct cable anchors and their explicit deck release law. */
 export const CableProfileSchema: v.GenericSchema<CableProfileRowsInput, CableProfileRows> = v.strictObject({ anchors: v.literal('direct'), start: range(0, 10), release: range(0, 10),
   landing: v.strictObject({ back: range(0, 10), deck: range(0, 2), velocity: range(0, 16) }) });
@@ -42,42 +69,17 @@ export const RideModeSchema: v.GenericSchema<RideModeInput, RideMode> = v.strict
 /** One admitted mounted law profile. */
 
 /** Bounded native grapple selection and traversal timings; anchors and safe floors remain real world queries. */
-const grappleTimings = {
+export const GrappleModeSchema: v.GenericSchema<GrappleModeInput, GrappleMode> = v.pipe(v.strictObject({ id,
   minRange: v.optional(range(0.1, 64), 2.5), maxRange: v.optional(range(0.1, 64), 38),
   zipSpeed: v.optional(range(0.1, 40), 22), fireTime: v.optional(range(0.01, 2), 0.27),
   biteTime: v.optional(range(0.01, 2), 0.10), reelTime: v.optional(range(0.01, 2), 0.48),
   windowX: v.optional(range(0.01, 1), 0.52), windowY: v.optional(range(0.01, 1), 0.68),
-};
-export const GrappleModeSchema: v.GenericSchema<GrappleModeInput, GrappleMode> = v.pipe(v.strictObject({ id, ...grappleTimings }),
-  v.check(row => row.minRange < row.maxRange, 'increasing grapple range'));
-const toolName = v.pipe(v.string(), v.minLength(1), v.maxLength(256));
-/** A traversable obstacle segment the grapple's capsule lifts over (`grapple.ts` GrappleClearance). */
-export const GrappleClearanceSchema: v.GenericSchema<GrappleClearanceRows, GrappleClearanceRows> = v.strictObject({
-  axis: v.picklist(['x', 'z']), plane: finite, min: finite, max: finite, base: finite, top: finite, ceiling: finite,
-  owners: v.pipe(v.array(toolName), v.minLength(1), v.maxLength(32)),
-});
-/** ONE-FORMAT OF41c: the grapple tool's profile as a plain row carries it (`grapple.ts` GrappleProfile without its id and
- *  course mode, which are the mode row's own): course name and clearance, cues, looks, completion fact, headless ids. */
-/** The tool's cue, look, fact and headless rows, shared with the native profile (`grapple.ts` GrappleProfileSchema). */
-export const GrappleCuesSchema: v.GenericSchema<GrappleToolRows['cues'], GrappleToolRows['cues']> = v.strictObject({ fire: toolName, bite: toolName, zip: toolName, reel: toolName, dock: toolName });
-export const GrappleLooksSchema: v.GenericSchema<GrappleToolRows['looks'], GrappleToolRows['looks']> = v.strictObject({ muzzle: toolName, bite: toolName, dock: toolName, sparks: toolName, ribbon: toolName });
-export const GrappleFactSchema: v.GenericSchema<GrappleFactRows, GrappleFactRows> = v.strictObject({ name: toolName, entity: toolName, source: toolName });
-export const GrappleHeadlessSchema: v.GenericSchema<GrappleToolRows['headless'], GrappleToolRows['headless']> = v.strictObject({ step: toolName, lock: toolName, aim: toolName,
-  eye: v.pipe(finite, v.minValue(.1), v.maxValue(10)), aspect: v.pipe(finite, v.minValue(.1), v.maxValue(10)), portraitFov: v.pipe(finite, v.minValue(10), v.maxValue(140)) });
-export const GrappleToolSchema: v.GenericSchema<GrappleToolRows, GrappleToolRows> = v.strictObject({
-  course: v.strictObject({ name: toolName, clearance: v.exactOptional(GrappleClearanceSchema) }),
-  cues: GrappleCuesSchema, looks: GrappleLooksSchema, fact: v.exactOptional(GrappleFactSchema), headless: GrappleHeadlessSchema,
-});
-/** A `state/modes` grapple row. ONE-FORMAT OF41c: besides its timings it may carry its tool `profile` and the `hooks` it
- *  bites (always together), the collider owner its crossing opens (`guard`) and whether it rises over a ledge (`rise`), so
- *  the declared path installs it from the row alone; a row without them is the timing profile it always was. */
-export const DeclaredGrappleModeSchema: v.GenericSchema<DeclaredGrappleModeInput, DeclaredGrappleMode> = v.pipe(v.strictObject({ id,
-  ...grappleTimings, profile: v.exactOptional(GrappleToolSchema),
-  hooks: v.exactOptional(v.pipe(v.array(v.strictObject({ x: finite, y: finite, z: finite })), v.minLength(1), v.maxLength(64))),
-  guard: v.exactOptional(toolName), rise: v.exactOptional(v.literal(true)),
+  // OF41c: what the native host read from its own files, so the declared path installs the grapple from this row alone
+  profile: v.exactOptional(grappleTool), hooks: v.exactOptional(grappleHooks),
+  guard: v.exactOptional(toolName), rise: v.exactOptional(riseFlag),
 }), v.check(row => row.minRange < row.maxRange, 'increasing grapple range'),
-  v.check(row => (row.profile === undefined) === (row.hooks === undefined), 'a grapple mode carries its profile and hooks together'),
-  v.check(row => row.profile !== undefined || (row.guard === undefined && row.rise === undefined), 'a grapple guard or rise needs its profile'));
+  v.check((row): boolean => (row.profile === undefined) === (row.hooks === undefined), 'a grapple mode carries its profile and hooks together'),
+  v.check((row): boolean => row.profile !== undefined || (row.guard === undefined && row.rise === undefined), 'a grapple guard or rise needs its profile'));
 /** One admitted native grapple control profile. */
 
 /** Only implemented platform traverse laws cross admission; executable callbacks never do. */
@@ -85,7 +87,7 @@ export const TraverseModeSchema: v.GenericSchema<TraverseModeInput, TraverseMode
 /** Actual mode parameters admitted from authoring objects; absence retains the ordinary player law. */
 export const ModesSchema: v.GenericSchema<ModeRowsInput, ModeRows> = v.pipe(v.strictObject({
   ride: v.exactOptional(v.pipe(v.array(RideModeSchema), v.maxLength(64))),
-  grapple: v.exactOptional(v.pipe(v.array(DeclaredGrappleModeSchema), v.maxLength(64))),
+  grapple: v.exactOptional(v.pipe(v.array(GrappleModeSchema), v.maxLength(64))),
   traverse: v.optional(v.pipe(v.array(TraverseModeSchema), v.maxLength(64)), []),
 }), v.check(rows => new Set(rows.traverse.map(row => row.id)).size === rows.traverse.length, 'unique traverse identities'), v.check(rows => new Set(rows.grapple?.map(row => row.id)).size === (rows.grapple?.length ?? 0), 'unique grapple identities'), v.check(rows => new Set(rows.ride?.map(row => row.id)).size === (rows.ride?.length ?? 0), 'unique mounted identities'));
 /** Admitted platform traversal rows. */
@@ -304,8 +306,21 @@ interface GrappleModeInputFields {
     reelTime?: number | undefined;
     windowX?: number | undefined;
     windowY?: number | undefined;
+    profile?: GrappleToolRows;
+    hooks?: readonly Readonly<ZiplineMode['top']>[];
+    guard?: string;
+    rise?: true;
 }
 export type GrappleModeInput = { [Key in keyof GrappleModeInputFields]: GrappleModeInputFields[Key] };
+/** OF41c: a grapple row's tool profile, read-only as the row's checks see it. */
+interface GrappleToolRows { readonly course: { readonly name: string; readonly clearance?: GrappleClearanceRows };
+    readonly cues: { readonly fire: string; readonly bite: string; readonly zip: string; readonly reel: string; readonly dock: string };
+    readonly looks: { readonly muzzle: string; readonly bite: string; readonly dock: string; readonly sparks: string; readonly ribbon: string };
+    readonly fact?: { readonly name: string; readonly entity: string; readonly source: string };
+    readonly headless: { readonly step: string; readonly lock: string; readonly aim: string; readonly eye: number; readonly aspect: number; readonly portraitFov: number } }
+/** OF41c: a traversable obstacle the grapple's capsule lifts over. */
+interface GrappleClearanceRows { readonly axis: "x" | "z"; readonly plane: number; readonly min: number; readonly max: number; readonly base: number;
+    readonly top: number; readonly ceiling: number; readonly owners: readonly string[] }
 interface GrappleModeFields {
     id: string;
     minRange: number;
@@ -316,42 +331,23 @@ interface GrappleModeFields {
     reelTime: number;
     windowX: number;
     windowY: number;
-}
-export type GrappleMode = { [Key in keyof GrappleModeFields]: GrappleModeFields[Key] };
-interface GrappleClearanceRowsFields {
-    axis: "x" | "z";
-    plane: number; min: number; max: number; base: number; top: number; ceiling: number;
-    owners: string[];
-}
-export type GrappleClearanceRows = { [Key in keyof GrappleClearanceRowsFields]: GrappleClearanceRowsFields[Key] };
-export type GrappleFactRows = { name: string; entity: string; source: string };
-interface GrappleToolRowsFields {
-    course: { name: string; clearance?: GrappleClearanceRows };
-    cues: { fire: string; bite: string; zip: string; reel: string; dock: string };
-    looks: { muzzle: string; bite: string; dock: string; sparks: string; ribbon: string };
-    fact?: GrappleFactRows;
-    headless: { step: string; lock: string; aim: string; eye: number; aspect: number; portraitFov: number };
-}
-export type GrappleToolRows = { [Key in keyof GrappleToolRowsFields]: GrappleToolRowsFields[Key] };
-interface GrappleDeclaredFields {
     profile?: GrappleToolRows;
-    hooks?: { x: number; y: number; z: number }[];
+    hooks?: readonly Readonly<ZiplineMode['top']>[];
     guard?: string;
     rise?: true;
 }
-export type DeclaredGrappleModeInput = GrappleModeInput & { [Key in keyof GrappleDeclaredFields]: GrappleDeclaredFields[Key] };
-export type DeclaredGrappleMode = GrappleMode & { [Key in keyof GrappleDeclaredFields]: GrappleDeclaredFields[Key] };
+export type GrappleMode = { [Key in keyof GrappleModeFields]: GrappleModeFields[Key] };
 export type TraverseModeInput = (ZiplineModeInput) | (UpdraftModeInput) | (LadderModeInput);
 export type TraverseMode = (ZiplineMode) | (UpdraftMode) | (LadderMode);
 interface ModeRowsInputFields {
     ride?: (RideModeInput)[];
-    grapple?: (DeclaredGrappleModeInput)[];
+    grapple?: (GrappleModeInput)[];
     traverse?: (TraverseModeInput)[] | undefined;
 }
 export type ModeRowsInput = { [Key in keyof ModeRowsInputFields]: ModeRowsInputFields[Key] };
 interface ModeRowsFields {
     ride?: (RideMode)[];
-    grapple?: (DeclaredGrappleMode)[];
+    grapple?: (GrappleMode)[];
     traverse: (TraverseMode)[];
 }
 export type ModeRows = { [Key in keyof ModeRowsFields]: ModeRowsFields[Key] };

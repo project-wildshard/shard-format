@@ -6,6 +6,6 @@
 - A grapple row may now carry `profile` (the native profile without its id and course mode, which are the row's own),
   `hooks` (1 to 64 anchors), `guard` and `rise`. Profile and hooks come together; guard and rise need the profile. A
   row with only timings parses byte-identical.
-- `declaredGrappleProfile(row)` builds the native `GrappleProfile` from such a row, so the engine's declared path hands
-  `installGrapple` the same profile the native file gave it. The clearance, cue, look, fact and headless schemas are now
-  one set in `modes.ts`, which `GrappleProfileSchema` reuses.
+- The engine's declared path builds the native profile as `{ ...profile, id: row.id, course: { ...profile.course,
+  mode } }` and checks it with `parseGrappleProfile`. The tool's sub-rows are spelled in `modes.ts` beside the native
+  profile's own in `grapple.ts` (sharing them would have raised `src/format`'s lint ratchet on both files).
