@@ -73,6 +73,12 @@ spelling: they are strings other repos match on, not import paths.
    writes version, changelog and stamps on the release branch. After
    exact-head branch CI, run `--finish`, then `--published`; finish with
    `--merge-back` from main. Main stays open to other lanes throughout.
+   A patch on an older line (0.43.2 after 0.44.0) must never publish as
+   npm's `latest`: `npm-publish.yml` gives a version below the current
+   latest the dist-tag `line-X.Y`. Trusted publishing can't run
+   `npm dist-tag`, so a wrong latest stays until the next highest
+   release. Its merge-back conflicts on `CHANGELOG.md` and
+   `package.json`: keep main's version and both changelog entries.
 3. In singleplayer, set the tag in all four manifests (root, `src/game`,
    `src/sdk`, `src/commons`) and update `pnpm-lock.yaml` with pnpm
    10.34.9 or newer. An older pnpm can record the annotated tag's object

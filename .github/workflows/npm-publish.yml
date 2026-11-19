@@ -85,7 +85,20 @@ jobs:
             echo "::notice::$name@$version is already on npm."
             exit 0
           fi
-          npm publish --provenance --access public --ignore-scripts
+          # A patch on an older line (0.43.2 cut after 0.44.0) must never become latest: npm moves latest to whatever
+          # publishes last, and 0.43.2 did exactly that on 2026-11-18. An older line publishes under line-X.Y instead.
+          # Trusted publishing cannot run `npm dist-tag`, so a wrong latest stays until the next highest release.
+          latest=$(npm view "$name" dist-tags.latest)
+          tag=latest
+          if [ -n "$latest" ] && node -e '
+            const [a, b] = process.argv.slice(1).map((v) => v.split(".").map(Number));
+            const cmp = a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+            process.exit(cmp < 0 ? 0 : 1);
+          ' "$version" "$latest"; then
+            tag="line-$(echo "$version" | cut -d. -f1,2)"
+            echo "::notice::$name@$version is older than latest $latest: publishing under dist-tag $tag."
+          fi
+          npm publish --provenance --access public --ignore-scripts --tag "$tag"
 
   placeholder:
     # Only main's copy of this file: the trusted publisher is bound to the file name, not the branch.
