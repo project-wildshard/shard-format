@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.46.1 (2026-11-18)
+
+- The horizontal T-Rex stance listed under 0.46.0 ships here: 0.46.0 was cut without it.
+
 ## v0.46.0 (2026-11-18)
 
 - A two-legged creature can stand horizontal like a T-Rex, its tail trailing behind.
