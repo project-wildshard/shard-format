@@ -2205,6 +2205,14 @@ Admission is still not a rendered-view proof. Run the complete built product's
 actual entered client. The run-2 missing-body product is a negative case, never a
 passing fixture just because its native gameplay works.
 
+### Timed returns (TC-E2, OF22b3)
+
+`creatures.spawns[].respawn` (1 to 3600 seconds) brings a dead body back at its `at`.
+`respawnWhen` (needs `respawn`) adds an island's return conditions: `spread` up to
+3600 more seconds (one seeded draw a death), no player within `away` metres (0 to
+250) of its `at`, `night: true` for a night-only return, and `fade` seconds (0 to
+60) for the fallen body to fade first. Omission preserves existing rows exactly.
+
 ### Per-body creature homes (SF82 BR-1)
 
 `creatures.spawns[].home` is optional `{x, y, z, r}`: finite local coordinates within

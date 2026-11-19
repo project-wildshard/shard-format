@@ -12,7 +12,7 @@ import { CreaturePatrolsSchema, patrolsAdmitted, GroupBrainSchema, groupBrainRul
 import { RamGrazerSchema, ChallengeGrazerSchema, GrazerSchema } from './grazers.ts';
 import { DiverSchema, OrbitDiverSchema, PatrolDiverSchema, BurstFlyerSchema } from './flyers.ts';
 /** One creature spawn row; input and output differ only in the home they carry. */
-interface CreatureSpawnRow<Home> { hold?: { field: string; until: string }; perchBody?: string; group?: string; rank?: 'veteran' | 'elite' | 'champion' | 'legendary'; count?: { per: number; max: number }; when?: { quest?: { id: string; stage: number }; time?: 'day' | 'night'; wave?: { set: string; index: number } }; phaseOffset?: number | undefined; respawn?: number | undefined; home?: Home | undefined; id: string; species: string; variant: string; brain: (string) | null; strike: (string) | null; seed: number; scale: number; at: [number, number, number]; yaw: number; }
+interface CreatureSpawnRow<Home> { hold?: { field: string; until: string }; perchBody?: string; group?: string; rank?: 'veteran' | 'elite' | 'champion' | 'legendary'; count?: { per: number; max: number }; when?: { quest?: { id: string; stage: number }; time?: 'day' | 'night'; wave?: { set: string; index: number } }; phaseOffset?: number | undefined; respawn?: number | undefined; respawnWhen?: CreatureRespawnWhen; home?: Home | undefined; id: string; species: string; variant: string; brain: (string) | null; strike: (string) | null; seed: number; scale: number; at: [number, number, number]; yaw: number; }
 
 const ID_LENGTH = 128;
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.:-]*$/u), v.maxLength(ID_LENGTH));
@@ -67,6 +67,17 @@ const phase = v.pipe(finite, v.minValue(-2 * Math.PI), v.maxValue(2 * Math.PI));
 /** Seconds after its death that a spawn's body comes back at its `at` (TEMPLATE-E2E TC-E2); absent, it stays dead. */
 const RESPAWN_MAX = 3600, RESPAWN_MIN = 1;
 const respawn = v.pipe(finite, v.minValue(RESPAWN_MIN), v.maxValue(RESPAWN_MAX));
+const RESPAWN_AWAY_MAX = 250, RESPAWN_FADE_MAX = 60, RESPAWN_LEAST = 0;
+/** OF22b3: what else a return waits for once its `respawn` seconds are spent, as an island's returns do: up to `spread` more
+ *  seconds (one seeded draw a death), no player within `away` metres of its `at`, night when `night`, then `fade` seconds
+ *  for the fallen body to fade before the new one stands. */
+const respawnSpread = v.pipe(finite, v.minValue(RESPAWN_LEAST), v.maxValue(RESPAWN_MAX));
+const respawnAway = v.pipe(finite, v.minValue(RESPAWN_LEAST), v.maxValue(RESPAWN_AWAY_MAX));
+const respawnFade = v.pipe(finite, v.minValue(RESPAWN_LEAST), v.maxValue(RESPAWN_FADE_MAX));
+const respawnWhen = v.strictObject({ spread: v.exactOptional(respawnSpread), away: v.exactOptional(respawnAway),
+  night: v.exactOptional(v.literal(true)), fade: v.exactOptional(respawnFade) }, 'unknown respawn condition');
+/** OF22b3: a timed return's further conditions (`respawnWhen`). */
+interface CreatureRespawnWhen { spread?: number; away?: number; night?: true; fade?: number }
 /** Social membership names no controller; the species temperament owns assistance. */
 /** OF28: the rank names of ./creature-ranks.ts (kept in step by its test); the engine applies the multipliers. */
 const rank = v.picklist(['veteran', 'elite', 'champion', 'legendary'], 'unknown creature rank');
@@ -87,20 +98,21 @@ const timeWhen = v.picklist(['day', 'night'], 'unknown spawn time');
 const when = v.strictObject({ quest: v.exactOptional(questWhen), time: v.exactOptional(timeWhen), wave: v.exactOptional(waveWhen) }, 'unknown spawn condition');
 // OF19b: the body's memory `field` reads 1 until the quest flag `until` is set (a runtime plan's population `holds` row)
 const hold = v.strictObject({ field: memoryKey, until: id });
-const spawn = v.strictObject({ hold: v.exactOptional(hold), perchBody: v.exactOptional(id), group: v.exactOptional(id), rank: v.exactOptional(rank), count: v.exactOptional(count), when: v.exactOptional(when), phaseOffset: v.optional(phase), home: v.optional(CreatureHomeSchema), respawn: v.optional(respawn), id, species: speciesId, variant: id, brain: v.nullable(id), strike: v.nullable(id), seed: v.pipe(finite, v.integer(), v.minValue(0), v.maxValue(0xffffffff)), scale: v.pipe(finite, v.minValue(0.1), v.maxValue(10)), at: v.tuple([coord, coord, coord]), yaw: finite });
+const spawn = v.strictObject({ hold: v.exactOptional(hold), perchBody: v.exactOptional(id), group: v.exactOptional(id), rank: v.exactOptional(rank), count: v.exactOptional(count), when: v.exactOptional(when), phaseOffset: v.optional(phase), home: v.optional(CreatureHomeSchema), respawn: v.optional(respawn), respawnWhen: v.exactOptional(respawnWhen), id, species: speciesId, variant: id, brain: v.nullable(id), strike: v.nullable(id), seed: v.pipe(finite, v.integer(), v.minValue(0), v.maxValue(0xffffffff)), scale: v.pipe(finite, v.minValue(0.1), v.maxValue(10)), at: v.tuple([coord, coord, coord]), yaw: finite });
 /** Pure-data creature archetypes and stable spawn layouts, expanded before the local sim boots. */
 export const CreaturesSchema: v.GenericSchema<ShardCreaturesInput, ShardCreatures> = v.pipe(v.strictObject({ perchBodies: v.exactOptional(CreaturePerchBodiesSchema), brains: v.pipe(v.array(v.variant('kind', [brain, SkirmisherSchema, GuardianSchema, PerchHunterSchema, ScriptBrainSchema, RamGrazerSchema, ChallengeGrazerSchema, OrbitDiverSchema, PatrolDiverSchema, BurstFlyerSchema, GrazerSchema, DiverSchema, GuardianPatternsSchema, StalkerSchema])), v.maxLength(64)), groups: v.optional(v.pipe(v.array(GroupBrainSchema), v.maxLength(64)), []), patrols: v.exactOptional(CreaturePatrolsSchema), spawns: v.pipe(v.array(spawn), v.maxLength(10000)) }),
 v.check((c) => creatureRules(c).length === 0 && patrolsAdmitted(c.patrols ?? [], c.spawns, c.groups), 'creature reference rules'));
 /** Validated brain parameters and spawn layout, with no rig or runtime closure. */
 
 /** Unique ids and brain references; species and strikes are resolved against the loader's declared catalogues. */
-export function creatureRules(content: { brains: readonly { id: string; kind?: string; pattern?: string }[]; groups?: readonly { id: string; members: readonly string[] }[]; perchBodies?: readonly { id: string; policy: { kind: string; strike: string }; projectile: { pool: { count: number } } }[]; spawns: readonly { id: string; species?: string; strike?: string | null; brain: string | null; home?: unknown; phaseOffset?: unknown; perchBody?: string }[] }): string[] {
+export function creatureRules(content: { brains: readonly { id: string; kind?: string; pattern?: string }[]; groups?: readonly { id: string; members: readonly string[] }[]; perchBodies?: readonly { id: string; policy: { kind: string; strike: string }; projectile: { pool: { count: number } } }[]; spawns: readonly { id: string; species?: string; strike?: string | null; brain: string | null; home?: unknown; phaseOffset?: unknown; perchBody?: string; respawn?: number | undefined; respawnWhen?: unknown }[] }): string[] {
   const errors: string[] = [], brains = new Set(content.brains.map((b) => b.id));
   if (brains.size !== content.brains.length) errors.push('unique brain ids');
   for (const group of content.groups ?? []) { if (brains.has(group.id)) errors.push('unique controller ids'); brains.add(group.id); }
   if (new Set(content.spawns.map((s) => s.id)).size !== content.spawns.length) errors.push('unique spawn ids');
   if (content.spawns.some((s) => s.brain !== null && !brains.has(s.brain))) errors.push('declared spawn brain');
   for (const body of content.spawns) {
+    if (body.respawnWhen !== undefined && body.respawn === undefined) { errors.push('a respawn condition needs its respawn'); }
     const policy = content.brains.find(row => row.id === body.brain);
     if (body.phaseOffset !== undefined && !(policy?.kind === 'challenge-grazer'
       || (policy?.kind === 'grazer' && policy.pattern === 'circle-challenge'))) errors.push('declared per-body circle phase policy');
