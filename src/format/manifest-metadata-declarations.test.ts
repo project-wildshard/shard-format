@@ -26,7 +26,7 @@ declare const metadata:ManifestMetadata;
 export const authored:ManifestMetadataInput=metadata;
 export const raw:Record<string,unknown>=metadata;
 export const controls=v.parse(sky,{sky:metadata.sky,grade:metadata.grade,atmosphere:metadata.atmosphere});
-export const brightness:number=controls.grade.brightness;
+export const brightness:number|undefined=controls.grade?.brightness;
 export const sample:v.InferOutput<typeof probe>={name:'site',x:0,z:0,yaw:0,pitch:0};
 export const queries:FixedForestQueriesRows={platform:'fixed',density:1};
 export const poses:CapturePoseRows={site:{eye:[0,0,0],yaw:0,pitch:0,mockup:'site',frame:'site'}};

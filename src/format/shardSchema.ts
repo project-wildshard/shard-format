@@ -69,6 +69,8 @@ import { LookBloomSchema, LookLightSchema, LookToneSchema } from './look-light.t
 import { LookVignetteSchema } from './look-render.ts';
 import type { LookBloom, LookBloomInput, LookLight, LookLightInput, LookTone } from './look-light.ts';
 import { LookDetailsSchema, detailLayerRules } from './look-details.ts';
+import { LookLevelSchema, lookLevelRules } from './look-level.ts';
+import type { LookLevel, LookLevelInput } from './look-level.ts';
 import type { LookDetail } from './look-details.ts';
 import type { LookVignette } from './look-render.ts';
 
@@ -90,7 +92,7 @@ const rawSchema: v.GenericSchema<ShardfileRowsInput, ShardfileRows> & { readonly
   map: v.exactOptional(MapSchema),
   requires: RequiresSchema,
   budgets: BudgetsSchema,
-  look: v.strictObject({ families: names, materials: v.optional(MaterialsSchema, {}), familyLooks: v.optional(FamilyLooksSchema, {}), curves: v.exactOptional(MaterialCurvesSchema), samplers: v.exactOptional(TextureSamplersSchema), post: v.exactOptional(PostStackSchema), sky: v.exactOptional(LookSkySchema), light: v.exactOptional(LookLightSchema), details: v.exactOptional(LookDetailsSchema), grade: lookGrade, clock: v.literal('engine'), day: v.optional(day), dayOverride: v.nullable(channel), keys: v.pipe(v.array(key), v.maxLength(64)) }),
+  look: v.strictObject({ families: names, materials: v.optional(MaterialsSchema, {}), familyLooks: v.optional(FamilyLooksSchema, {}), curves: v.exactOptional(MaterialCurvesSchema), samplers: v.exactOptional(TextureSamplersSchema), post: v.exactOptional(PostStackSchema), sky: v.exactOptional(LookSkySchema), light: v.exactOptional(LookLightSchema), level: v.exactOptional(LookLevelSchema), details: v.exactOptional(LookDetailsSchema), grade: lookGrade, clock: v.literal('engine'), day: v.optional(day), dayOverride: v.nullable(channel), keys: v.pipe(v.array(key), v.maxLength(64)) }),
   sim: SimSchema,
   state: StateSchema,
   migrations: v.optional(MigrationsSchema, []),
@@ -201,6 +203,7 @@ export interface Shardfile {
     post?: v.InferOutput<typeof PostStackSchema>;
     sky?: LookSky;
     light?: LookLight;
+    level?: LookLevel;
     details?: LookDetail[];
     grade: { exposure: number; saturation: number; contrast: number; lut: string | null; bloom?: LookBloom; tone?: LookTone; vignette?: LookVignette };
     clock: 'engine';
@@ -336,7 +339,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   }
   if (s.runtime !== null && s.modes?.traverse.some(row => row.kind === 'ladder')) errors.push('ladder traversal requires the data-only player owner');
   errors.push(...skinLookRules(s), ...attachmentFileRules({ species: s.rows.species, files: s.files, library: s.library, materials: s.look.materials }));
-  errors.push(...clientScriptRules(s), ...lampPanelErrors(s.look.light?.lamps ?? [], s.props?.panels ?? []));
+  errors.push(...lookLevelRules(s), ...clientScriptRules(s), ...lampPanelErrors(s.look.light?.lamps ?? [], s.props?.panels ?? []));
   if (s.props !== null) {
     try { validatePropsReferences(s.props, s); } catch { errors.push('declared prop references'); }
     if (!materialExists(s.look.materials, s.props.family)) errors.push('declared prop material');
@@ -478,6 +481,7 @@ interface ShardfileRowsInputFields {
         post?: v.InferInput<typeof PostStackSchema>;
         sky?: LookSkyInput;
         light?: LookLightInput;
+        level?: LookLevelInput;
         details?: LookDetail[];
         grade: {
             exposure: v.InferInput<typeof finite>;
@@ -556,6 +560,7 @@ interface ShardfileRowsFields {
         post?: v.InferOutput<typeof PostStackSchema>;
         sky?: LookSky;
         light?: LookLight;
+        level?: LookLevel;
         details?: LookDetail[];
         grade: {
             exposure: v.InferOutput<typeof finite>;

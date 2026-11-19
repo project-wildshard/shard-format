@@ -127,6 +127,7 @@
     "./pbr-fur": "./src/format/pbr-fur.ts",
     "./fur-strands": "./src/format/fur-strands.ts",
     "./scene-render": "./src/format/scene-render.ts",
+    "./look-level": "./src/format/look-level.ts",
     "./look-sky": "./src/format/look-sky.ts",
     "./directorDocument": "./src/format/directorDocument.ts",
     "./directorStages": "./src/format/directorStages.ts",
