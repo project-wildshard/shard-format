@@ -242,6 +242,26 @@ declare const ANIMAL: {
             readonly values: readonly ["row", "on", "off"];
             readonly default: 'row';
         };
+    }, {
+        readonly id: 30;
+        readonly name: 'roadX';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: -2048;
+            readonly max: 2048;
+            readonly bits: 16;
+        };
+        readonly since: 3;
+    }, {
+        readonly id: 31;
+        readonly name: 'roadZ';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: -2048;
+            readonly max: 2048;
+            readonly bits: 16;
+        };
+        readonly since: 3;
     }];
 };
 /** The `encounter` class: a boss or elite bar, anywhere in the cell. */
@@ -1154,6 +1174,26 @@ declare const WIRE_CLASSES: readonly [{
             readonly values: readonly ["row", "on", "off"];
             readonly default: 'row';
         };
+    }, {
+        readonly id: 30;
+        readonly name: 'roadX';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: -2048;
+            readonly max: 2048;
+            readonly bits: 16;
+        };
+        readonly since: 3;
+    }, {
+        readonly id: 31;
+        readonly name: 'roadZ';
+        readonly node: {
+            readonly kind: 'quant';
+            readonly min: -2048;
+            readonly max: 2048;
+            readonly bits: 16;
+        };
+        readonly since: 3;
     }];
 }, {
     readonly id: 3;

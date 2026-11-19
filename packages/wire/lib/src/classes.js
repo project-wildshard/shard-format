@@ -1,4 +1,4 @@
-import { ANGLE_10, ANGLE_16, BOOL, F32, METRES, REF, TEXT, U16, U32, U8, UNIT_10, UNIT_6, UNIT_8, } from './nodes.js';
+import { ANGLE_10, ANGLE_16, BOOL, F32, METRES, REF, ROAD_METRES, TEXT, U16, U32, U8, UNIT_10, UNIT_6, UNIT_8, } from './nodes.js';
 import { PLAYER } from './player.js';
 // WIRE-STABILITY 5.2: class ids are stable, never an index. Field ids are the
 // WS2 baseline's order + 1. Engine binds an accessor to every field (WR2).
@@ -89,6 +89,13 @@ const ANIMAL = {
             name: 'lockable',
             node: { kind: 'enum', values: LOCKABLE, default: 'row' },
         },
+        // MMO-PLAN MP5.2b: a home cell's creature shown on its road (frame 0, the
+        // world's) stands past `x`/`z`'s ±260 m, as a road body does (player 58,
+        // 59): its place at a 6 cm step. Zero in a cell. A room older than wire
+        // 1.3 sends neither, and a newer page reads the node's default, -2,048 m,
+        // outside the grid: no road place.
+        { id: 30, name: 'roadX', node: ROAD_METRES, since: 3 },
+        { id: 31, name: 'roadZ', node: ROAD_METRES, since: 3 },
     ],
 };
 /** The `encounter` class: a boss or elite bar, anywhere in the cell. */

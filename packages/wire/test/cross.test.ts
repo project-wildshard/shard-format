@@ -55,13 +55,14 @@ const ids = (codec: Codec): readonly number[] =>
 
 // ONE-FORMAT CC28: the animal's four actor channels and its lock answer are
 // row fields a released client lacks: it skips them and plays on, and a HEAD
-// client in a released room reads each at its default.
+// client in a released room reads each at its default. MMO-PLAN MP5.2b's road
+// place (30, 31) goes the same way.
 test('an old client skips the animal channel fields both ways', async (): Promise<void> => {
   const released = await releasedCodec(BEFORE_CHANNELS)
   const added = ids(HEAD).filter(
     (id: number): boolean => !ids(released).includes(id),
   )
-  assert.deepEqual(added, [25, 26, 27, 28, 29])
+  assert.deepEqual(added, [25, 26, 27, 28, 29, 30, 31])
   assert.deepEqual(session(HEAD, released), [])
   assert.deepEqual(session(released, HEAD), [])
 })

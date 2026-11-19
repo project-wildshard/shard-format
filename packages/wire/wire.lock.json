@@ -1,7 +1,7 @@
 {
   "version": 1,
   "wireMajor": 1,
-  "wireMinor": 2,
+  "wireMinor": 3,
   "maxRowFields": 32,
   "tableLimits": {
     "maxDepth": 8,
@@ -9,7 +9,7 @@
     "maxNodes": 4096,
     "maxMessageBytes": 65536
   },
-  "v0SchemaHash": 2811545480,
+  "v0SchemaHash": 1375460222,
   "messages": [
     {
       "id": 1,
@@ -3169,7 +3169,7 @@
       "id": 2,
       "name": "animal",
       "relevance": 160,
-      "rowFields": 23,
+      "rowFields": 25,
       "fields": [
         {
           "id": 1,
@@ -3583,6 +3583,36 @@
           },
           "default": "row",
           "since": 0,
+          "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 30,
+          "name": "roadX",
+          "node": {
+            "kind": "quant",
+            "min": -2048,
+            "max": 2048,
+            "bits": 16
+          },
+          "default": -2048,
+          "since": 3,
+          "send": "all",
+          "predicted": false,
+          "required": false
+        },
+        {
+          "id": 31,
+          "name": "roadZ",
+          "node": {
+            "kind": "quant",
+            "min": -2048,
+            "max": 2048,
+            "bits": 16
+          },
+          "default": -2048,
+          "since": 3,
           "send": "all",
           "predicted": false,
           "required": false

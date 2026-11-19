@@ -5,6 +5,7 @@ import {
   F32,
   METRES,
   REF,
+  ROAD_METRES,
   TEXT,
   U16,
   U32,
@@ -108,6 +109,13 @@ const ANIMAL = {
       name: 'lockable',
       node: { kind: 'enum', values: LOCKABLE, default: 'row' },
     },
+    // MMO-PLAN MP5.2b: a home cell's creature shown on its road (frame 0, the
+    // world's) stands past `x`/`z`'s ±260 m, as a road body does (player 58,
+    // 59): its place at a 6 cm step. Zero in a cell. A room older than wire
+    // 1.3 sends neither, and a newer page reads the node's default, -2,048 m,
+    // outside the grid: no road place.
+    { id: 30, name: 'roadX', node: ROAD_METRES, since: 3 },
+    { id: 31, name: 'roadZ', node: ROAD_METRES, since: 3 },
   ],
 } as const satisfies WireClass
 
