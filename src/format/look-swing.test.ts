@@ -1,7 +1,10 @@
 import { parse } from 'valibot'
 import { expect, test } from 'vitest'
 
-import { ShardfileFieldSchemas } from './shardSchema.ts'
+import { outputFixture } from '../test/helpers/output-fixture.ts'
+import { ShardfileFieldSchemas, shardfileRules } from './shardSchema.ts'
+
+import type { Shardfile } from './shardSchema.ts'
 
 const nothing: unknown = JSON.parse('null')
 const look = (light: object): object => ({
@@ -54,4 +57,21 @@ test('a lamp on an undeclared swing and bad swings are refused', (): void => {
   ]) {
     expect((): object => read(look(bad))).toThrow()
   }
+})
+
+// Meta MOSSGATE-ZONE MZ34: a lamp that shows and hides with a props panel (a brazier's fire lights with its flames).
+test('a lamp names the panel it shows and hides with', (): void => {
+  const { light } = read(look({ lamps: [{ ...lamp, panel: 'mossgate.flame-a' }, lamp] }))
+  expect(light?.lamps?.[0]?.panel).toBe('mossgate.flame-a')
+  expect('panel' in (light?.lamps?.[1] ?? {})).toBe(false)
+  expect(() => read(look({ lamps: [{ ...lamp, panel: '' }] }))).toThrow()
+})
+
+test('a lamp\'s panel must be a declared props panel', (): void => {
+  const shard = outputFixture()
+  const at: [number, number, number] = [1, 2, 3]
+  const lit = (panel: string): Shardfile => ({ ...shard, look: { ...shard.look, light: { ...shard.look.light, lamps: [{ at, colour: [1, 0.6, 0.3], intensity: 3, distance: 6, panel }] } } })
+  const declared = shard.props?.panels[0]?.id
+  if (declared !== undefined) expect(shardfileRules(lit(declared)).filter(e => e.includes('look lamp'))).toEqual([])
+  expect(shardfileRules(lit('no.such.panel'))).toContain('look lamp names panel no.such.panel, which props.panels does not declare')
 })

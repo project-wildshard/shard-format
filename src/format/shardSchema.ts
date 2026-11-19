@@ -336,6 +336,8 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   if (s.runtime !== null && s.modes?.traverse.some(row => row.kind === 'ladder')) errors.push('ladder traversal requires the data-only player owner');
   errors.push(...skinLookRules(s), ...attachmentFileRules({ species: s.rows.species, files: s.files, library: s.library, materials: s.look.materials }));
   errors.push(...clientScriptRules(s));
+  // meta MOSSGATE-ZONE MZ34: a lamp that shows and hides with a panel names a declared props panel
+  for (const lamp of s.look.light?.lamps ?? []) if (lamp.panel !== undefined && !s.props?.panels.some(panel => panel.id === lamp.panel)) errors.push(`look lamp names panel ${lamp.panel}, which props.panels does not declare`);
   if (s.props !== null) {
     try { validatePropsReferences(s.props, s); } catch { errors.push('declared prop references'); }
     if (!materialExists(s.look.materials, s.props.family)) errors.push('declared prop material');
