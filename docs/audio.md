@@ -10,7 +10,7 @@ check holds you to it. Where no check exists yet, it says so and gives you the c
 
 ## Why audio has targets
 
-J299 (Jake's decision, 2026-11-12, meta `docs/plans/multi-repo/MULTI-REPO-PLAN.md` section 2): audio is downloaded and
+J299 (Jake's decision, 2026-11-12, meta `docs/plans/MULTI-REPO-SAGA/decisions/`): audio is downloaded and
 cached at DOWNLOAD, never streamed and never read during LOAD. So every recording your shard plays is in the phone's
 first download, and every megabyte of it is boot time on bad LTE. Before J299, prod v0.1.13 Driftwood sat 34 s in LOAD
 reading 91 audio files one by one (meta QA-FEEDBACK-2026-11-12 row 36). The targets below keep a shard's audio small
