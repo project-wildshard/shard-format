@@ -45,6 +45,7 @@ import { ItemsSchema, itemRules } from './items.ts';
 import { TraversalSchema } from './traversal.ts';
 import { RuntimeSchema } from './runtime.ts';
 import { ClientScriptsSchema, clientScriptRules } from './clientScripts.ts';
+import { lampPanelErrors } from './look-swing.ts';
 import { ClientChannelsSchema } from './clientChannels.ts';
 import { EdgeProfilesSchema } from './edgeProfiles.ts';
 import { EntrywaysSchema, entrywayRules } from './entryways.ts';
@@ -336,8 +337,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   if (s.runtime !== null && s.modes?.traverse.some(row => row.kind === 'ladder')) errors.push('ladder traversal requires the data-only player owner');
   errors.push(...skinLookRules(s), ...attachmentFileRules({ species: s.rows.species, files: s.files, library: s.library, materials: s.look.materials }));
   errors.push(...clientScriptRules(s));
-  // meta MOSSGATE-ZONE MZ34: a lamp that shows and hides with a panel names a declared props panel
-  for (const lamp of s.look.light?.lamps ?? []) if (lamp.panel !== undefined && !s.props?.panels.some(panel => panel.id === lamp.panel)) errors.push(`look lamp names panel ${lamp.panel}, which props.panels does not declare`);
+  errors.push(...lampPanelErrors(s.look.light?.lamps ?? [], s.props?.panels ?? []));
   if (s.props !== null) {
     try { validatePropsReferences(s.props, s); } catch { errors.push('declared prop references'); }
     if (!materialExists(s.look.materials, s.props.family)) errors.push('declared prop material');

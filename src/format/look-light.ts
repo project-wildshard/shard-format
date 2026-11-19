@@ -51,7 +51,12 @@ import {
   lampFlicker,
   lampHalo,
 } from './look-render.ts'
-import { LookSwingsSchema, swingNumber, swingsDeclared } from './look-swing.ts'
+import {
+  LookSwingsSchema,
+  lampPanel,
+  swingNumber,
+  swingsDeclared,
+} from './look-swing.ts'
 
 import type {
   LookLampFlicker,
@@ -59,7 +64,7 @@ import type {
   LookMotes,
   LookShadow,
 } from './look-render.ts'
-import type { LookSwing } from './look-swing.ts'
+import type { LampPanel, LookSwing } from './look-swing.ts'
 import type { GenericSchema } from 'valibot'
 
 type Rgb = [number, number, number]
@@ -125,7 +130,7 @@ interface LookLampFollow {
   bone?: string
 }
 /** One lamp: a point light at `at`, `colour` × `intensity` (candela), out to `distance` metres, decay 2, no shadow. */
-interface LookLamp {
+interface LookLamp extends LampPanel {
   at: Point
   follow?: LookLampFollow
   colour: Rgb
@@ -136,9 +141,6 @@ interface LookLamp {
   flicker?: LookLampFlicker
   /** SS8b: the number of the `swings` row it hangs from */
   swing?: number
-  /** meta MOSSGATE-ZONE MZ34: the `props.panels` id it shows and hides with: lit while that panel is shown (a brazier's
-   *  fire lights once its letter burns), dark while it is hidden */
-  panel?: string
 }
 /** A warm fill from the ground: a shadowless directional light from the anti-sun heading, lifted by `lift`. */
 interface LookBounce {
@@ -214,8 +216,6 @@ const actorId = pipe(
   maxLength(ACTOR_ID_MAX),
 )
 const boneName = pipe(string(), minLength(FULL), maxLength(BONE_NAME_MAX))
-const LAMP_PANEL_MAX = 128
-const lampPanel = pipe(string(), minLength(FULL), maxLength(LAMP_PANEL_MAX))
 const LookLampFollowSchema: GenericSchema<LookLampFollow, LookLampFollow> =
   strictObject({ actor: actorId, bone: exactOptional(boneName) })
 const LookLampSchema: GenericSchema<LookLamp, LookLamp> = strictObject({
