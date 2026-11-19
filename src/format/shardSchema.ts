@@ -371,7 +371,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   if (s.crowds.some(row => Math.abs(row.x) > CHUNK_HALF || Math.abs(row.z) > CHUNK_HALF)) errors.push('declared crowd home in cell');
   if (spawnCapacity(s.creatures.spawns) + crowdMembers > s.serverBudget.entities) errors.push('declared entity capacity');
   errors.push(...creatureSizeRules(s.rows.species, s.creatures.spawns));
-  for (const spawn of s.creatures.spawns) if (!species.get(spawn.species)?.variants.some((row) => row.id === spawn.variant) || (spawn.strike !== null && !strikes.has(spawn.strike))) errors.push('declared spawn species/variant/strike');
+  for (const spawn of s.creatures.spawns) if (!species.get(spawn.species)?.variants.some((row) => row.id === spawn.variant) || (spawn.strike !== null && !strikes.has(spawn.strike))) errors.push(`declared spawn species/variant/strike: ${spawn.id}`);
   errors.push(...encounterRules(s.encounters, s.creatures.spawns.map((spawn) => spawn.id), s.ui.filter((row) => row.kind === 'bossPanel')));
   const controlled = new Set(s.encounters.map((row) => row.entity));
   errors.push(...groupBrainRules(s.creatures.groups, s.creatures.spawns, s.creatures.brains.map((row) => row.id), [...controlled]));
@@ -408,7 +408,12 @@ function shardfileSchema(sections?: ReadonlyMap<string, unknown>): v.GenericSche
   }
 }), rawSchema,
   v.rawCheck(({ dataset, addIssue }) => { if (dataset.typed) { try { preflightAssetGraph(dataset.value); } catch (error) { addIssue({ message: error instanceof Error ? error.message : 'shardfile asset graph admission' }); } } }),
-  v.check((s) => entrywayRules(s).length === 0, 'illegal shard: entryway openings must meet road height y=0'), v.check((s) => shardfileRules(s, sections).length === 0, 'shardfile semantic rules')); }
+  v.check((s) => entrywayRules(s).length === 0, 'illegal shard: entryway openings must meet road height y=0'), v.rawCheck(({ dataset, addIssue }) => {
+    // OF-NE21: the refusal names its rules (the first eight), so an author sees which row is at fault
+    if (!dataset.typed) return;
+    const rules = shardfileRules(dataset.value, sections);
+    if (rules.length > 0) addIssue({ message: `shardfile semantic rules: ${rules.slice(0, 8).join('; ')}${rules.length > 8 ? `; and ${String(rules.length - 8)} more` : ''}` });
+  })); }
 export const ShardfileSchema: v.GenericSchema<unknown, Shardfile> = shardfileSchema();
 /** Parse JSON through every shard rule. Optional section payloads extend item target
  * references only through the defining species-program contract, never an id allowlist.
