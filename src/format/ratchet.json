@@ -3952,7 +3952,7 @@
   "src/format/shardfile-assets.ts": {
    "eslint(capitalized-comments)": 1,
    "eslint(complexity)": 3,
-   "eslint(curly)": 73,
+   "eslint(curly)": 71,
    "eslint(id-length)": 30,
    "eslint(max-depth)": 1,
    "eslint(max-lines)": 1,
@@ -3971,7 +3971,7 @@
    "import(exports-last)": 13,
    "import(group-exports)": 18,
    "import(max-dependencies)": 1,
-   "typescript(explicit-function-return-type)": 29,
+   "typescript(explicit-function-return-type)": 28,
    "typescript(explicit-member-accessibility)": 11,
    "typescript(no-unnecessary-condition)": 2,
    "typescript(prefer-readonly-parameter-types)": 46,

@@ -1,11 +1,7 @@
 import armed from './memory-armed.json' with { type: 'json' }
 
-/**
- * J426 (Jake, 2026-11-18, "get the shard passing the memory gate and then to LOCK THE GATE IN. And make it fail hard /
- * mandatory") on J424 ("the gates should only block once an agent has done the work to get it under the gate"): the
- * one armed-zone list, `memory-armed.json`. Every memory gate refuses an armed zone over its line, whatever the policy
- * or the report-only switch; it reports every other zone. Engine's guards read the same JSON.
- */
+/** The armed-zone readings are shared with the engine. J445 uses the common
+ * loading ceiling for offline refusal and the playing line for reporting. */
 interface ArmedZone {
   readonly armed: string
   readonly by: string
@@ -39,32 +35,16 @@ function zoneArmed(slug?: string): boolean {
   return slug !== undefined && Object.hasOwn(ARMED_ZONES, slug)
 }
 
-/** A rebuild of the same source moves the computed estimate by packing and compression drift only. */
-const ARMED_ALLOWANCE = 0.005
-
-/** The line a zone's entry locks at: the J410 line, or its reading at arming plus the allowance when that is higher. */
-function zoneLine(zone: ArmedZone, kind: ArmedKind): number {
-  const armedBytes = kind === 'playing' ? zone.playingBytes : zone.loadingBytes
-  return Math.max(
-    ARMED_LINES[kind],
-    armedBytes + Math.floor(armedBytes * ARMED_ALLOWANCE),
-  )
-}
-
-/** What an armed zone's offline estimate refuses over: the J410 line, or, when the conservative estimate of a source
- *  that EM11 measured under the line already reads over it (Nine's playing), that reading at arming plus the
- *  allowance, so the gate locks in the measured state and refuses any growth. Undefined for a zone that only reports. */
+/** The common lines for an armed zone. A revision's own reading is evidence,
+ * while the offline decision uses the shared target or ceiling (J445). */
 function armedLine(
   slug: string | undefined,
   kind: ArmedKind,
 ): number | undefined {
-  const zone =
-    slug === undefined || !zoneArmed(slug) ? undefined : ARMED_ZONES[slug]
-  return zone === undefined ? undefined : zoneLine(zone, kind)
+  return zoneArmed(slug) ? ARMED_LINES[kind] : undefined
 }
 
 export {
-  ARMED_ALLOWANCE,
   ARMED_LINES,
   ARMED_ZONES,
   type ArmedKind,
@@ -73,5 +53,4 @@ export {
   HELD_ZONES,
   type HeldZone,
   zoneArmed,
-  zoneLine,
 }

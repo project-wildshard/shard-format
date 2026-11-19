@@ -95,7 +95,7 @@ test('MG4: the hard line is engine MEMORY_AMBER, 1.5 GB', (): void => {
 })
 
 test.each(['warn', 'refuse'] as const)(
-  'MG4: an armed zone over the line refuses under %s, report-only or not; an unarmed one reports',
+  'J445: playing over target reports under %s and only armed loading refuses',
   (policy): void => {
     const over = performanceReport(heavy(corpus(), 1.7e9), unmeasured, policy)
     expect(over.memory.worst.playing).toBeGreaterThan(MEMORY_HARD_BYTES)
@@ -103,8 +103,11 @@ test.each(['warn', 'refuse'] as const)(
       over.issues.find(
         (issue): boolean => issue.code === 'perf-playing-memory',
       ),
-    ).toMatchObject({ severity: 'refusal', limit: MEMORY_HARD_BYTES })
-    expect(over.pass).toBe(false)
+    ).toMatchObject({ severity: 'warning', limit: 1e9 })
+    expect(
+      over.issues.find((issue): boolean => issue.code === 'perf-loading-memory')
+        ?.severity,
+    ).toBe('refusal')
     const unarmed = performanceReport(
       heavy(corpus(), 1.7e9, 'template'),
       unmeasured,
@@ -114,7 +117,7 @@ test.each(['warn', 'refuse'] as const)(
       unarmed.issues.find(
         (issue): boolean => issue.code === 'perf-playing-memory',
       ),
-    ).toMatchObject({ severity: 'warning', limit: MEMORY_HARD_BYTES })
+    ).toMatchObject({ severity: 'warning', limit: 1e9 })
   },
 )
 

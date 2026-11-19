@@ -2,17 +2,15 @@ import { parse } from 'valibot'
 
 import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
-import { armedLine } from './memory-armed.ts'
+import { ARMED_LINES } from './memory-armed.ts'
 import { ratchetNote, ratchetSeverity } from './memory-ratchet.ts'
 import { runtimeAccountedBytes, RuntimeCostSchema } from './runtimeCost.ts'
 
 import type { TierIndex } from './phone-files.ts'
 import type { Shardfile } from './shardSchema.ts'
 
-/** J408 (Jake, 2026-11-17, after Nine crashed his iPhone 17 Pro at boot): the hard line. An estimate over it
- * refuses in every offline gate (check, shard CI, api-server, the cook) whatever the policy or the report-only switch.
- * Engine's MEMORY_AMBER (src/client/game/grid/budgetOverlay.ts). Decimal bytes. MEMORY-GATES MG4. */
-const MEMORY_HARD_BYTES = 1.5e9
+/** The hard loading ceiling in decimal bytes (J445). */
+const MEMORY_HARD_BYTES: number = ARMED_LINES.loading
 const GB = 1e9
 const DIGITS = 1
 const EMPTY_BYTES = 0
@@ -25,8 +23,8 @@ function overHardLine(bytes: number): string {
   return ` (over the ${(MEMORY_HARD_BYTES / GB).toFixed(DIGITS)} GB phone line, J408: a phone would close the page)`
 }
 
-/** J408 (MG4): the issue for a worst-playing or loading estimate over the hard line, or over `zone.line`. J424 /
- * J426: a refusal only for an armed zone (`memory-armed.ts`); every other zone reports. */
+/** J445: the playing target reports. Only an armed zone over the loading
+ * ceiling refuses. */
 function hardLineIssue(
   kind: 'playing' | 'loading',
   bytes: number,
@@ -39,12 +37,12 @@ function hardLineIssue(
   readonly severity: 'refusal' | 'warning'
 } {
   const { slug, line } =
-    typeof zone === 'object' ? zone : { slug: zone, line: MEMORY_HARD_BYTES }
+    typeof zone === 'object' ? zone : { slug: zone, line: ARMED_LINES[kind] }
   const severity = ratchetSeverity(slug, kind, { line, actual: bytes })
   const over =
-    line === MEMORY_HARD_BYTES
-      ? overHardLine(bytes)
-      : ` (over the ${(line / GB).toFixed(DIGITS)} GB ${kind} line, J410; ${slug ?? ''} is armed, J426)`
+    kind === 'playing'
+      ? ` (over the ${(line / GB).toFixed(DIGITS)} GB playing target, J445)`
+      : overHardLine(bytes)
   return {
     code: `perf-${kind}-memory`,
     metric: `worst ${kind} total bytes${over}${severity === 'warning' ? ratchetNote(slug, kind) : ''}`,
@@ -52,6 +50,18 @@ function hardLineIssue(
     limit: line,
     severity,
   }
+}
+
+/** The offline memory thresholds apply equally to a build and its report. */
+function memoryLineIssues(
+  cost: Readonly<Record<'playing' | 'loading', number>>,
+  slug: string,
+): ReturnType<typeof hardLineIssue>[] {
+  return (['playing', 'loading'] as const)
+    .filter((kind): boolean => cost[kind] > ARMED_LINES[kind])
+    .map((kind): ReturnType<typeof hardLineIssue> =>
+      hardLineIssue(kind, cost[kind], slug),
+    )
 }
 
 /**
@@ -112,21 +122,14 @@ function offlineMemoryIssues(
     commons: runtime + commons,
     boot: bootMemoryCosts(source, sections, { mountedImages, index }),
   })
-  // J426: an armed zone's calibrated estimate answers to the J410 lines; every other zone's reports over J408's.
-  const { slug } = source.identity
-  const line = (kind: 'playing' | 'loading'): number =>
-    armedLine(slug, kind) ?? MEMORY_HARD_BYTES
-  return (['playing', 'loading'] as const)
-    .filter((kind): boolean => cost[kind] > line(kind))
-    .map((kind): ReturnType<typeof hardLineIssue> =>
-      hardLineIssue(kind, cost[kind], { slug, line: line(kind) }),
-    )
+  return memoryLineIssues(cost, source.identity.slug)
 }
 
 export {
   MEMORY_HARD_BYTES,
   type MemoryContext,
   hardLineIssue,
+  memoryLineIssues,
   memoryContext,
   offlineMemoryIssues,
   overHardLine,

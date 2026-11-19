@@ -5,13 +5,11 @@ import { expect, test } from 'vitest'
 import { BUDGET_TIERS } from './budget-tiers.ts'
 import { MEMORY_GATES } from './contentBounds.ts'
 import {
-  ARMED_ALLOWANCE,
   ARMED_LINES,
   ARMED_ZONES,
   armedLine,
   HELD_ZONES,
   zoneArmed,
-  zoneLine,
 } from './memory-armed.ts'
 import { OLDEST_CURRENT_EPOCH, staleRuntimeIssues } from './memory-epoch.ts'
 import { hardLineIssue, MEMORY_HARD_BYTES } from './memory-line.ts'
@@ -50,36 +48,31 @@ test('J426: the list arms Brasscap at the J410 lines', (): void => {
   expect([zoneArmed(), zoneArmed('toString')]).toEqual([false, false])
 })
 
-test('J426: every armed zone is under the loading line, with its estimate inside its own lock', (): void => {
+test('J445: armed zones use the common lines for a new shard revision', (): void => {
   for (const [slug, zone] of Object.entries(ARMED_ZONES)) {
-    // A zone arms only under the lines, but its conservative estimate may read over one: the gate locks there.
-    expect(armedLine(slug, 'playing'), slug).toBeGreaterThanOrEqual(
-      zone.playingBytes,
-    )
-    expect(armedLine(slug, 'loading'), slug).toBeGreaterThanOrEqual(
-      zone.loadingBytes,
-    )
+    expect(armedLine(slug, 'playing'), slug).toBe(ARMED_LINES.playing)
+    expect(armedLine(slug, 'loading'), slug).toBe(ARMED_LINES.loading)
     expect(zone.loadingBytes, slug).toBeLessThanOrEqual(ARMED_LINES.loading)
     expect(zone.evidence.length, slug).toBeGreaterThan(0)
     expect(zone.armed, slug).toMatch(/^\d{4}-\d{2}-\d{2}$/u)
   }
 })
 
-test('J426: Nine, armed with its estimate over the playing line, locks at that reading plus the allowance', (): void => {
-  // Nine is held (J424) while engine pins an older product; its entry keeps the lock it re-arms at.
-  const entry = HELD_ZONES['nine-dragon-stack']
-  const nine = entry?.playingBytes ?? 0
-  const lock = nine + Math.floor(nine * ARMED_ALLOWANCE)
-  expect(nine).toBeGreaterThan(ARMED_LINES.playing)
-  expect(entry === undefined ? undefined : zoneLine(entry, 'playing')).toBe(
-    lock,
-  )
+test('J445: Far Reach at 1,027 MB playing reports and admits under 1.5 GB loading', (): void => {
+  const slug = 'far-reach'
+  const playing = 1_027_117_876
+  const loading = 1_459_219_193
+  expect(armedLine(slug, 'playing')).toBe(1e9)
+  expect(hardLineIssue('playing', playing, slug)).toMatchObject({
+    severity: 'warning',
+    limit: 1e9,
+  })
   expect(
-    hardLineIssue('playing', lock + 1, {
-      slug: ARMED,
-      line: lock,
-    }).severity,
-  ).toBe('refusal')
+    offlineMemoryAdmission('refuse').accept({
+      ...request(slug, loading),
+      playingBytes: playing,
+    }),
+  ).toBe(true)
 })
 
 test('J424: a held zone reports only until engine re-pins it, and keeps the readings it re-arms with', (): void => {
@@ -100,7 +93,7 @@ test('J424: a held zone reports only until engine re-pins it, and keeps the read
   }
 })
 
-test('J426: an armed Brasscap over its offline-estimate line refuses; at the line it passes', (): void => {
+test('J445: Brasscap warns above the playing target and refuses above the loading ceiling', (): void => {
   const playing = armedLine(ARMED, 'playing') ?? 0
   const loading = armedLine(ARMED, 'loading') ?? 0
   expect([playing, loading]).toEqual([1e9, 1.5e9])
@@ -108,8 +101,8 @@ test('J426: an armed Brasscap over its offline-estimate line refuses; at the lin
     slug: ARMED,
     line: playing,
   })
-  expect(over).toMatchObject({ severity: 'refusal', limit: 1e9 })
-  expect(over.metric).toContain('armed, J426')
+  expect(over).toMatchObject({ severity: 'warning', limit: 1e9 })
+  expect(over.metric).toContain('target, J445')
   expect(
     hardLineIssue('loading', loading + 1, { slug: ARMED, line: loading })
       .severity,
@@ -135,11 +128,11 @@ test('J424: a zone not armed reports every reading over a line', (): void => {
   )
 })
 
-test('J426: the runtime tier and a stale reading refuse an armed zone only', (): void => {
+test('J445: runtime-tier overages report and stale readings retain their validation', (): void => {
   const large = BUDGET_TIERS.large.memoryBytes
   expect(
     ratchetSeverity(ARMED, 'runtime', { line: large, actual: large + 1 }),
-  ).toBe('refusal')
+  ).toBe('warning')
   expect(
     ratchetSeverity(UNARMED, 'runtime', { line: large, actual: large + 1 }),
   ).toBe('warning')

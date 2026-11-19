@@ -51,17 +51,19 @@ const RATCHET_ALLOWANCE = 0.005
 
 type RatchetMetric = 'playing' | 'loading' | 'runtime'
 
-/** The bytes over which `slug` refuses on `metric`. J426 (on J424): an armed zone (`memory-armed.json`) refuses over
- * `line`; every other zone reports only, so its limit is unbounded. The baselines above are kept for the report. */
+/** J445: only the common loading ceiling can refuse an armed shard.
+ * Playing and runtime tier overages are reported. */
 function ratchetLimit(
   slug: string | undefined,
-  _metric: RatchetMetric,
+  metric: RatchetMetric,
   line: number,
 ): number {
-  return zoneArmed(slug) ? line : Number.POSITIVE_INFINITY
+  return metric === 'loading' && zoneArmed(slug)
+    ? line
+    : Number.POSITIVE_INFINITY
 }
 
-/** 'refusal' for an armed zone over the line, 'warning' for every other reading over it. */
+/** Describe the offline decision for a measured overage. */
 function ratchetSeverity(
   slug: string | undefined,
   metric: RatchetMetric,

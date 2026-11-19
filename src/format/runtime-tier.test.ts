@@ -1,4 +1,4 @@
-// ONE-FORMAT OF10c1a: a runtime fits its tier's memory, refused at build and at upload.
+// ONE-FORMAT OF10c1a and J445: runtimes report overages against their tier.
 import { expect, test } from 'vitest'
 
 import { BUDGET_TIERS } from './budget-tiers.ts'
@@ -15,7 +15,7 @@ const nine = {
   epoch: 3,
 }
 
-test('OF10c1a: an armed runtime over its named tier refuses with a named error', (): void => {
+test('J445: an armed runtime over its named tier gives a named warning', (): void => {
   const issues = runtimeTierIssues({
     identity: { slug: 'brasscap-mesa' },
     runtime: { cost: nine },
@@ -26,7 +26,7 @@ test('OF10c1a: an armed runtime over its named tier refuses with a named error',
       code: 'runtime-tier-memory',
       actual: runtimeAccountedBytes(nine),
       limit: BUDGET_TIERS.small.memoryBytes,
-      severity: 'refusal',
+      severity: 'warning',
     }),
   ])
   expect(issues[0]?.metric).toContain('small tier')

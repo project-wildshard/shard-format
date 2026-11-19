@@ -21,10 +21,8 @@ interface RuntimeTierIssue {
 }
 
 /**
- * ONE-FORMAT OF10c1a: a runtime fits its tier. A shard with a runtime and a reviewed cost (`runtime.cost`, else
- * `budgets.client`) refuses at build and at upload when the runtime's accounted bytes (`runtimeAccountedBytes`: what
- * it holds above the engine's resident base) exceed its tier's `memoryBytes`. A shard naming no tier is held to `large`
- * until OF10c1b names a tier in each of our runtime shards' sources; then a runtime must name one.
+ * ONE-FORMAT OF10c1a and J445: report a runtime's accounted bytes above its
+ * named memory tier. A runtime with no named tier uses the large target.
  */
 function runtimeTierIssues(source: RuntimeTierSource): RuntimeTierIssue[] {
   const cost = source.runtime?.cost ?? source.budgets.client

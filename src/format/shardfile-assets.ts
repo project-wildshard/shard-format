@@ -12,10 +12,11 @@ import { journalImageRefs } from './compendiumRows.ts';
 import type { Shardfile } from "./shardSchema.ts";
 import type { ShardTerrain } from "./terrain.ts";
 import { worstContentCost, memoryTargetWarnings, nearbyContentCost } from "./budget.ts";
-import { CONTENT_CAPS as C, MEMORY_GATES } from './contentBounds.ts';
+import { CONTENT_CAPS as C } from './contentBounds.ts';
+import { ARMED_LINES } from './memory-armed.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
 import { ratchetLimit } from './memory-ratchet.ts';
-import { MEMORY_HARD_BYTES, hardLineIssue, runtimeOfflineBytes } from './memory-line.ts';
+import { MEMORY_HARD_BYTES, memoryLineIssues, runtimeOfflineBytes } from './memory-line.ts';
 import { bootMemoryCosts } from './boot-memory-cost.ts';
 import type { TierIndex } from './phone-files.ts';
 import { VIEW_DRAWS, viewDraws } from './view-draws.ts';
@@ -33,7 +34,7 @@ interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sect
 function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number; index?: TierIndex }>): PerformanceReport['memory'] {
   const commons = nativeBytes + Object.values(source.requires.commonsCosts).reduce((sum, row) => sum + row.decoded + row.gpu, 0);
   const budget = { commons, boot: bootMemoryCosts(source, options.sections, options) };
-  return { near: nearbyContentCost(source, source.spawn.x, source.spawn.z, budget), worst: worstContentCost(source, budget), playingLimit: C.playing, loadingLimit: C.loading };
+  return { near: nearbyContentCost(source, source.spawn.x, source.spawn.z, budget), worst: worstContentCost(source, budget), playingLimit: ARMED_LINES.playing, loadingLimit: ARMED_LINES.loading };
 }
 /** A performance issue's code and its metric words. */
 type Named = readonly [code: IssueCodeOf<'performance'>, metric: string];
@@ -319,15 +320,7 @@ export function performanceReport(source: Shardfile, observations: PerformanceOb
   };
   if (native.unmeasuredViewAndDownload) check(['perf-native-view-unmeasured', 'native view/download measurement required'], 1, 0);
   if (source.runtime !== null && source.runtime.cost === undefined) check(['perf-native-resident-unmeasured', 'native resident measurement required'], 1, 0);
-  issues.push(...staleRuntimeIssues(source.runtime, undefined, source.identity));
-  // G433 keeps the soft caps report-only. J408 applies to both estimates ahead of the soft caps.
-  const total = (kind: 'playing' | 'loading', actual: number, limit: number): void => {
-    if (actual > MEMORY_HARD_BYTES) { issues.push(hardLineIssue(kind, actual, source.identity.slug)); return; }
-    const code = `perf-${kind}-memory` as const, metric = `worst ${kind} total bytes`;
-    if (MEMORY_GATES.reportOnly && actual > limit) issues.push({ code, metric: `${metric} (report-only, G433)`, actual, limit, severity: 'warning' }); else check([code, metric], actual, limit);
-  };
-  total('playing', worst.playing, C.playing);
-  total('loading', worst.loading, C.loading);
+  issues.push(...staleRuntimeIssues(source.runtime, undefined, source.identity), ...memoryLineIssues(worst, source.identity.slug));
   const library = reportCardClosure(source, source.library), critical = reportCardClosure(source, source.critical);
   const tileRoots = source.tiles.flatMap(tile => tile.files), farRoots = source.far?.files ?? [], nearRoots = nearPlaceholderRoots(source.near);
   const playable = reportCardClosure(source, [...source.critical, ...source.library, ...farRoots, ...source.tiles.filter(tile => tile.lod === 1 || near(tile, spawn.x, spawn.z)).flatMap(tile => tile.files)]);
@@ -374,8 +367,8 @@ export function performanceReportLines(report: PerformanceReport): string[] {
     ...report.issues.map(issue => `${issue.severity.toUpperCase()}: ${issue.metric}: ${issue.actual} > ${issue.limit}`)];
 }
 
-/** Offline soft-cap policy and the fixed J408 line for playing and loading. */
-export function offlineMemoryAdmission(policy: 'warn' | 'refuse'): MemoryAdmission {
-  // J424 / J426: the J408 line refuses only an armed zone (`memory-armed.ts`); every other zone reports.
-  return new MemoryAdmission(() => policy === 'warn' || MEMORY_GATES.reportOnly, (owner, kind): number => ratchetLimit(owner, kind, MEMORY_HARD_BYTES));
+/** Offline soft-cap policy and the hard loading ceiling (J445). */
+export function offlineMemoryAdmission(_policy: 'warn' | 'refuse'): MemoryAdmission {
+  // The hard loading ceiling applies to the armed list.
+  return new MemoryAdmission((): boolean => true, (owner, kind): number => ratchetLimit(owner, kind, MEMORY_HARD_BYTES));
 }
