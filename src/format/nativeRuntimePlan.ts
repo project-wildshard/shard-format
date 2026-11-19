@@ -43,8 +43,7 @@ const motion = v.objectWithRest({ systemId: key, skipPrefix: v.exactOptional(key
 }, v.unknown());
 const recipe = v.strictObject({
   // ONE-FORMAT OF19c0b: a plan whose boss is a declared encounter keeps no owner row (its keeper then stands no boss)
-  population: v.pipe(v.strictObject({ rows: population, sources: v.picklist(['actors', 'actors+bosses']), seed: v.picklist(['identity', 'declared']),
-    owner: v.exactOptional(BossOwnerRowSchema) }), v.check(row => row.owner !== undefined || row.rows.boss === undefined, 'A native keeper boss needs its owner row')),
+  population: v.strictObject({ rows: population, sources: v.picklist(['actors', 'actors+bosses']), seed: v.picklist(['identity', 'declared']), owner: v.exactOptional(BossOwnerRowSchema) }),
   terrain: v.picklist(['none', 'collider']), floor: v.exactOptional(v.literal('solids')),
   ground: v.strictObject({ size: number, height: number }),
   player: v.strictObject({ speed: number, lift: v.exactOptional(number), at: v.exactOptional(triple), yaw: v.exactOptional(number) }),
@@ -59,19 +58,19 @@ const recipe = v.strictObject({
 export const NativeRuntimePlanSchema: v.GenericSchema<unknown, NativeRuntimePlanData> = v.pipe(v.unknown(), v.check(isJsonData, 'Native runtime plan must be plain bounded JSON'),
   v.strictObject({ kind: v.literal('held-melee'), recipe, baked: v.unknown(),
     ownerInputs: v.exactOptional(v.pipe(v.array(key), v.maxLength(16))) }),
-  v.check(row => {
-    const owner = row.recipe.population.owner;
-    if (owner === undefined) return row.ownerInputs === undefined || row.ownerInputs.length === 0;
-    return row.ownerInputs === undefined || (new Set(row.ownerInputs).size === row.ownerInputs.length
-      && row.ownerInputs.length === Object.keys(owner.stages.inputs).length
-      && row.ownerInputs.every(name => Object.hasOwn(owner.stages.inputs, name)));
-  }, 'Exact native owner input order'),
+  // A plan with no owner row has no owner inputs to order
+  v.check(row => row.ownerInputs === undefined || (new Set(row.ownerInputs).size === row.ownerInputs.length
+    && row.ownerInputs.length === Object.keys(row.recipe.population.owner?.stages.inputs ?? {}).length
+    && row.ownerInputs.every(name => Object.hasOwn(row.recipe.population.owner?.stages.inputs ?? {}, name))), 'Exact native owner input order'),
   v.transform(row => {
     // Canonical section JSON sorts object keys. Retain the authored director
     // input order explicitly because existing save contracts include that order.
-    const owner = row.recipe.population.owner;
-    if (owner === undefined) return { ...row, ownerInputs: [] };
-    const ownerInputs = row.ownerInputs ?? Object.keys(owner.stages.inputs);
+    const owner = row.recipe.population.owner, ownerInputs = row.ownerInputs ?? Object.keys(owner?.stages.inputs ?? {});
+    // OF19c0b: a keeper that stands a boss needs the owner row that fights it; one with none stands only its homes
+    if (owner === undefined) {
+      if (row.recipe.population.rows.boss !== undefined) { throw new Error('A native keeper boss needs its owner row'); }
+      return { ...row, ownerInputs };
+    }
     const inputs = Object.fromEntries(ownerInputs.map(name => {
       const binding = owner.stages.inputs[name];
       if (binding === undefined) throw new Error('Missing native owner input');

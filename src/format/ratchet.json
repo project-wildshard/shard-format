@@ -603,7 +603,7 @@
    "eslint(complexity)": 1,
    "eslint(curly)": 13,
    "eslint(max-statements)": 1,
-   "eslint(no-magic-numbers)": 3,
+   "eslint(no-magic-numbers)": 2,
    "eslint(prefer-destructuring)": 1,
    "eslint(sort-vars)": 3,
    "typescript(explicit-function-return-type)": 14,
