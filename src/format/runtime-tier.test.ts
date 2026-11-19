@@ -17,7 +17,7 @@ const nine = {
 
 test('OF10c1a: an armed runtime over its named tier refuses with a named error', (): void => {
   const issues = runtimeTierIssues({
-    identity: { slug: 'driftwood-isle' },
+    identity: { slug: 'brasscap-mesa' },
     runtime: { cost: nine },
     budgets: { tier: 'small' },
   })

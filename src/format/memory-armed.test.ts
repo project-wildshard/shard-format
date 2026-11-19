@@ -9,7 +9,9 @@ import {
   ARMED_LINES,
   ARMED_ZONES,
   armedLine,
+  HELD_ZONES,
   zoneArmed,
+  zoneLine,
 } from './memory-armed.ts'
 import { OLDEST_CURRENT_EPOCH, staleRuntimeIssues } from './memory-epoch.ts'
 import { hardLineIssue, MEMORY_HARD_BYTES } from './memory-line.ts'
@@ -19,7 +21,7 @@ import { offlineMemoryAdmission } from './shardfile-assets.ts'
 
 import type { MemoryAdmissionRequest } from './memoryAdmission.ts'
 
-const ARMED = 'driftwood-isle'
+const ARMED = 'brasscap-mesa'
 const UNARMED = 'template'
 
 function request(owner: string, loadingBytes: number): MemoryAdmissionRequest {
@@ -41,7 +43,7 @@ function stale(slug: string): string | undefined {
   })[0]?.severity
 }
 
-test('J426: the list arms Driftwood at the J410 lines', (): void => {
+test('J426: the list arms Brasscap at the J410 lines', (): void => {
   expect(ARMED_LINES).toEqual({ playing: 1e9, loading: 1.5e9 })
   expect(zoneArmed(ARMED)).toBe(true)
   expect(zoneArmed(UNARMED)).toBe(false)
@@ -64,19 +66,34 @@ test('J426: every armed zone is under the loading line, with its estimate inside
 })
 
 test('J426: Nine, armed with its estimate over the playing line, locks at that reading plus the allowance', (): void => {
-  const nine = ARMED_ZONES['nine-dragon-stack']?.playingBytes ?? 0
+  // Nine is held (J424) while engine pins an older product; its entry keeps the lock it re-arms at.
+  const entry = HELD_ZONES['nine-dragon-stack']
+  const nine = entry?.playingBytes ?? 0
   const lock = nine + Math.floor(nine * ARMED_ALLOWANCE)
   expect(nine).toBeGreaterThan(ARMED_LINES.playing)
-  expect(armedLine('nine-dragon-stack', 'playing')).toBe(lock)
+  expect(entry === undefined ? undefined : zoneLine(entry, 'playing')).toBe(lock)
   expect(
     hardLineIssue('playing', lock + 1, {
-      slug: 'nine-dragon-stack',
+      slug: ARMED,
       line: lock,
     }).severity,
   ).toBe('refusal')
 })
 
-test('J426: an armed Driftwood over its offline-estimate line refuses; at the line it passes', (): void => {
+test('J424: a held zone reports only until engine re-pins it, and keeps the readings it re-arms with', (): void => {
+  expect(Object.keys(HELD_ZONES).sort()).toEqual(['driftwood-isle', 'nalati-grasslands', 'nine-dragon-stack', 'pine-hollow'])
+  for (const [slug, zone] of Object.entries(HELD_ZONES)) {
+    expect(zoneArmed(slug), slug).toBe(false)
+    expect(Object.hasOwn(ARMED_ZONES, slug), slug).toBe(false)
+    expect(armedLine(slug, 'loading'), slug).toBeUndefined()
+    expect(hardLineIssue('loading', 2e9, slug).severity, slug).toBe('warning')
+    expect(stale(slug), slug).toBe('warning')
+    expect(zone.held.length, slug).toBeGreaterThan(0)
+    expect(zone.loadingBytes, slug).toBeLessThanOrEqual(ARMED_LINES.loading)
+  }
+})
+
+test('J426: an armed Brasscap over its offline-estimate line refuses; at the line it passes', (): void => {
   const playing = armedLine(ARMED, 'playing') ?? 0
   const loading = armedLine(ARMED, 'loading') ?? 0
   expect([playing, loading]).toEqual([1e9, 1.5e9])

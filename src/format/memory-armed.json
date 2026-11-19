@@ -1,5 +1,5 @@
 {
-  "$doc": "J426 (Jake, 2026-11-18): the one armed-zone list. A zone named here has done the work to get under the J410 lines, and from then on every memory gate refuses it back over them, with no override flag and no report-only fallback: the format's offline estimate over lines.playingBytes / lines.loadingBytes (check, validate, cook, upload), the declared worst-location total over the J408 1.5 GB line, the runtime tier and a stale runtime reading; engine's ledger, footprint and boot-line guards read the same list. A zone not named here reports only (J424). Each zone's playingBytes / loadingBytes are its offline estimate when it was armed (memory epoch in `epoch`); the offline estimate refuses over the larger of the line and that reading plus 0.5% (memory-armed.ts ARMED_ALLOWANCE), so a zone EM11 measured under the line whose conservative estimate reads over it (Nine's playing) is locked at its armed state. Decimal bytes. Format memory-armed.ts reads this; engine reads @wildshard/format/src/format/memory-armed.json.",
+  "$doc": "J426 (Jake, 2026-11-18): the one armed-zone list. A zone named here has done the work to get under the J410 lines, and from then on every memory gate refuses it back over them, with no override flag and no report-only fallback: the format's offline estimate over lines.playingBytes / lines.loadingBytes (check, validate, cook, upload), the declared worst-location total over the J408 1.5 GB line, the runtime tier and a stale runtime reading; engine's ledger, footprint and boot-line guards read the same list. A zone not named here reports only (J424). Each zone's playingBytes / loadingBytes are its offline estimate when it was armed (memory epoch in `epoch`); the offline estimate refuses over the larger of the line and that reading plus 0.5% (memory-armed.ts ARMED_ALLOWANCE), so a zone EM11 measured under the line whose conservative estimate reads over it (Nine's playing) is locked at its armed state. Decimal bytes. Format memory-armed.ts reads this; engine reads @wildshard/format/src/format/memory-armed.json. `held` (J424): zones armed once but moved out of `zones` because engine pins an older product of theirs that reads over the line; a held zone reports only, and moves back to `zones` (re-armed) when its engine re-pin lands. Its readings stay so re-arming changes nothing else.",
   "lines": {
     "playingBytes": 1000000000,
     "loadingBytes": 1500000000
@@ -12,14 +12,6 @@
       "playingBytes": 679221837,
       "loadingBytes": 984731013,
       "evidence": "engine-pinned product revision 6 (tar f42fe0449a93), a data shard with no runtime reading; epoch-8 golden estimate; mini-resweep reads every light zone under both J410 lines standalone"
-    },
-    "driftwood-isle": {
-      "armed": "2026-11-18",
-      "by": "mini-pinemem5",
-      "epoch": 8,
-      "playingBytes": 820905616,
-      "loadingBytes": 1157545785,
-      "evidence": "shard-driftwood e736730 built with format 0.37 (epoch 8); codex-nalati locked pairs on the EM11 upper read 990.5 / 1,344.7 MB (meta MEMORY-GATES)"
     },
     "far-reach": {
       "armed": "2026-11-18",
@@ -36,22 +28,6 @@
       "playingBytes": 636979847,
       "loadingBytes": 925290035,
       "evidence": "engine-pinned product revision 1 (tar 5764c86a258a), a data shard with no runtime reading; epoch-8 golden estimate; mini-resweep reads every light zone under both J410 lines standalone"
-    },
-    "nalati-grasslands": {
-      "armed": "2026-11-18",
-      "by": "mini-pinemem5",
-      "epoch": 8,
-      "playingBytes": 945736154,
-      "loadingBytes": 1328901899,
-      "evidence": "shard-nalati 1d5014e8 built with format 0.37 (epoch 8); mini-resweep EM11 upper on the J420 stand-in: playing 0.940 GB less the worker, loading 1.470 GB (meta MEMORY-GATES)"
-    },
-    "nine-dragon-stack": {
-      "armed": "2026-11-18",
-      "by": "mini-pinemem5",
-      "epoch": 8,
-      "playingBytes": 1023504847,
-      "loadingBytes": 1434692360,
-      "evidence": "shard-nine-dragon 8779b872 built with format 0.37 (epoch 8); mini-pinemem6 prepared online boot on engine d0fd6e62, 9 pairs: playing upper 0.938 GB, loading upper 1.435 GB (meta 1677f091). The estimate's playing (1,023.5 MB) is over the 1.0 GB line, so it locks at that reading"
     },
     "open-plot-alien-plain": {
       "armed": "2026-11-18",
@@ -197,14 +173,6 @@
       "loadingBytes": 925256481,
       "evidence": "engine-pinned product revision 1 (tar e42e2f5f5793), a data shard with no runtime reading; epoch-8 golden estimate; mini-resweep reads every light zone under both J410 lines standalone"
     },
-    "pine-hollow": {
-      "armed": "2026-11-18",
-      "by": "mini-pinemem5",
-      "epoch": 8,
-      "playingBytes": 920666659,
-      "loadingBytes": 1298769921,
-      "evidence": "shard-pine-hollow 400ed4b7 built with format 0.37 (epoch 8); mini-pinemem6 prepared online boot on engine f0a96518, 9 pairs: playing upper 0.969 GB, loading upper 1.407 GB (meta 118a2b13)"
-    },
     "sunscar-dunes": {
       "armed": "2026-11-18",
       "by": "mini-pinemem5",
@@ -212,6 +180,44 @@
       "playingBytes": 772000529,
       "loadingBytes": 1108011593,
       "evidence": "engine-pinned product revision 2 (tar f4a1d611cccc), a data shard with no runtime reading; epoch-8 golden estimate; mini-resweep reads every light zone under both J410 lines standalone"
+    }
+  },
+  "held": {
+    "driftwood-isle": {
+      "armed": "2026-11-18",
+      "by": "mini-pinemem5",
+      "epoch": 8,
+      "playingBytes": 820905616,
+      "loadingBytes": 1157545785,
+      "evidence": "shard-driftwood e736730 built with format 0.37 (epoch 8); codex-nalati locked pairs on the EM11 upper read 990.5 / 1,344.7 MB (meta MEMORY-GATES)",
+      "held": "2026-11-18 opus-pin (J424, QA 11-18 row 29): engine pins an older product of this zone that reads over its line; re-arm (move back to zones) when engine's pin reaches the armed build"
+    },
+    "nalati-grasslands": {
+      "armed": "2026-11-18",
+      "by": "mini-pinemem5",
+      "epoch": 8,
+      "playingBytes": 945736154,
+      "loadingBytes": 1328901899,
+      "evidence": "shard-nalati 1d5014e8 built with format 0.37 (epoch 8); mini-resweep EM11 upper on the J420 stand-in: playing 0.940 GB less the worker, loading 1.470 GB (meta MEMORY-GATES)",
+      "held": "2026-11-18 opus-pin (J424, QA 11-18 row 29): engine pins an older product of this zone that reads over its line; re-arm (move back to zones) when engine's pin reaches the armed build"
+    },
+    "nine-dragon-stack": {
+      "armed": "2026-11-18",
+      "by": "mini-pinemem5",
+      "epoch": 8,
+      "playingBytes": 1023504847,
+      "loadingBytes": 1434692360,
+      "evidence": "shard-nine-dragon 8779b872 built with format 0.37 (epoch 8); mini-pinemem6 prepared online boot on engine d0fd6e62, 9 pairs: playing upper 0.938 GB, loading upper 1.435 GB (meta 1677f091). The estimate's playing (1,023.5 MB) is over the 1.0 GB line, so it locks at that reading",
+      "held": "2026-11-18 opus-pin (J424, QA 11-18 row 29): engine pins an older product of this zone that reads over its line; re-arm (move back to zones) when engine's pin reaches the armed build"
+    },
+    "pine-hollow": {
+      "armed": "2026-11-18",
+      "by": "mini-pinemem5",
+      "epoch": 8,
+      "playingBytes": 920666659,
+      "loadingBytes": 1298769921,
+      "evidence": "shard-pine-hollow 400ed4b7 built with format 0.37 (epoch 8); mini-pinemem6 prepared online boot on engine f0a96518, 9 pairs: playing upper 0.969 GB, loading upper 1.407 GB (meta 118a2b13)",
+      "held": "2026-11-18 opus-pin (J424, QA 11-18 row 29): engine pins an older product of this zone that reads over its line; re-arm (move back to zones) when engine's pin reaches the armed build"
     }
   }
 }

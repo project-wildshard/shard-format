@@ -64,7 +64,7 @@ function corpus(): Shardfile {
 function heavy(
   shard: Shardfile,
   playing: number,
-  slug = 'driftwood-isle',
+  slug = 'brasscap-mesa',
 ): Shardfile {
   const base = performanceReport(shard, unmeasured, 'warn').memory.worst.playing
   const sim = shard.budgets.sim.resident + Math.ceil((playing - base) / 1.11)
@@ -77,7 +77,7 @@ function heavy(
 
 const request = (
   playingBytes: number,
-  owner = 'driftwood-isle',
+  owner = 'brasscap-mesa',
 ): MemoryAdmissionRequest => ({
   stage: 'actual',
   owner,

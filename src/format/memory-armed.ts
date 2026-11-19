@@ -26,6 +26,16 @@ const ARMED_ZONES: Readonly<Record<string, ArmedZone>> = Object.freeze(
   armed.zones,
 )
 
+/** J424 (QA 11-18 row 29): a zone armed once but held out of `ARMED_ZONES` while engine pins an older product of it
+ *  that reads over its line. It reports only; it moves back to `zones` (re-armed) when its engine re-pin lands. */
+interface HeldZone extends ArmedZone {
+  readonly held: string
+}
+
+const HELD_ZONES: Readonly<Record<string, HeldZone>> = Object.freeze(
+  armed.held,
+)
+
 /** True when `slug` is in the armed list (J426). */
 function zoneArmed(slug?: string): boolean {
   return slug !== undefined && Object.hasOwn(ARMED_ZONES, slug)
@@ -43,9 +53,11 @@ function armedLine(
 ): number | undefined {
   const zone =
     slug === undefined || !zoneArmed(slug) ? undefined : ARMED_ZONES[slug]
-  if (zone === undefined) {
-    return undefined
-  }
+  return zone === undefined ? undefined : zoneLine(zone, kind)
+}
+
+/** The line a zone's entry locks at: the J410 line, or its reading at arming plus the allowance when that is higher. */
+function zoneLine(zone: ArmedZone, kind: ArmedKind): number {
   const armedBytes = kind === 'playing' ? zone.playingBytes : zone.loadingBytes
   return Math.max(
     ARMED_LINES[kind],
@@ -60,5 +72,8 @@ export {
   type ArmedKind,
   type ArmedZone,
   armedLine,
+  HELD_ZONES,
+  type HeldZone,
   zoneArmed,
+  zoneLine,
 }
