@@ -17,6 +17,7 @@ import type { WireEvent } from '../src/game.ts'
 /* oxlint-disable id-length -- world axes are x, y and z on the wire */
 const AT = { x: 260, y: 260, z: -260 }
 const DIR = { x: -1, y: 1, z: 1 }
+const AIM = { x: 0.6000000238418579, y: 0, z: -0.800000011920929 }
 /* oxlint-enable id-length */
 const HIT = {
   event: 'hit',
@@ -86,7 +87,7 @@ const EVENTS: readonly WireEvent[] = [
       tick: 6,
       source: 3,
       at: AT,
-      dir: { x: 0.6000000238418579, y: 0, z: -0.800000011920929 },
+      dir: AIM,
       speed: 20,
       gravity: 9.5,
     },
