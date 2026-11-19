@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.49.0 (2026-11-19)
+
+- A creature ability can throw the player it hits: `effect: 'impulse'`, `strength` in m/s and `lift` up.
+- An ability can aim above the target's feet with `aimHeight`, so a diving strike aims at the chest.
+
 ## v0.48.1 (2026-11-19)
 
 - Shard authors can use convex prop colliders with a declared pose and surface.
