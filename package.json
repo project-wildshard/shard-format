@@ -126,6 +126,7 @@
     "./detail-layer": "./src/format/detail-layer.ts",
     "./pbr-emissive": "./src/format/pbr-emissive.ts",
     "./pbr-fur": "./src/format/pbr-fur.ts",
+    "./fur-strands": "./src/format/fur-strands.ts",
     "./scene-render": "./src/format/scene-render.ts",
     "./look-sky": "./src/format/look-sky.ts",
     "./directorDocument": "./src/format/directorDocument.ts",
