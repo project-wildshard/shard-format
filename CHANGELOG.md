@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.52.0 (2026-11-19)
+
+- Prop colliders can be capsules, so a palm trunk or a post stands as one solid.
+- Every prop collider shape can name a contact material (now also planks, ground, flesh and shell), its own friction and its collision groups.
+- A convex hull may hold up to 256 points, and a props section up to 16,384 collider units, enough for a whole baked island.
+
 ## v0.51.0 (2026-11-19)
 
 - A shard's sky, fog, colour grade and horizon can now live in its look section (look.level).
