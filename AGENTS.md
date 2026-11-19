@@ -42,6 +42,11 @@ Docs / Repo shape
 Code rules
 
  - In the test suite, No LLM, no claude, no herdr.
+ - **Wire freeze (WIRE-STABILITY WR14, declared 2026-11-19 under J432):** a wire change is a lock diff: edit
+   `packages/wire`, regenerate `wire.lock.json`, pass `wire check` (release rules against the newest `wire-vM.m.0` tag)
+   and tag a new `wire-vM.m.0`; never edit a released id or `frozen/`. A save change is engine's: a `v`, a migration and
+   a pin. `pnpm check:wire` runs in pre-push (`pnpm check`) and the CI `wire` job; the cross-version harness compares
+   HEAD with the newest released minor.
  - Every Chromium launch passes `--use-mock-keychain` and `--password-store=basic` (else a macOS keychain dialog opens).
 
 Agent tooling
