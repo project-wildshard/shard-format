@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.42.0 (2026-11-18)
+
+- A grapple mode can carry its own profile, hook list, guard and rise, so a plain shard declares a grapple without extra files.
+- A strike row can overshoot its target, so a charge carries on past where the player stood.
+- Fur materials can grow strands on both the toon and PBR looks.
+
 ## v0.41.1 (2026-11-18)
 
 - Driftwood, Nalati, Nine and Pine are held off the armed list until the engine pins their new builds: their gates report (J424).
