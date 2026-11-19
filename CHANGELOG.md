@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.47.0 (2026-11-19)
+
+- A creature spawn can wait: `hold: { field, until }` keeps a memory field at 1 until a quest flag is set.
+
 ## v0.46.2 (2026-11-19)
 
 - A pack driven by one decision script loads: a `none` temperament plus a spawn `group` its script owns.
