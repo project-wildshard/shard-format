@@ -8,10 +8,21 @@ import { parseShardfile, shardfileRules } from './shardSchema.ts'
 test('a spawn of an undeclared species is refused by its rule and its spawn id', (): void => {
   const shard = outputFixture()
   shard.creatures.spawns.push({
-    id: 'author.actor.ghost', species: 'author.nobody', variant: 'plain', at: [4, 0, 4], yaw: 0, seed: 1, scale: 1,
-    brain: null, strike: null,
+    id: 'author.actor.ghost',
+    species: 'author.nobody',
+    variant: 'plain',
+    at: [4, 0, 4],
+    yaw: 0,
+    seed: 1,
+    scale: 1,
+    // oxlint-disable-next-line unicorn/no-null -- a spawn row's own empty brain
+    brain: null,
+    // oxlint-disable-next-line unicorn/no-null -- and its own empty strike
+    strike: null,
   })
-  expect(shardfileRules(shard)).toContain('declared spawn species/variant/strike: author.actor.ghost')
+  expect(shardfileRules(shard)).toContain(
+    'declared spawn species/variant/strike: author.actor.ghost',
+  )
   expect((): unknown => parseShardfile(shard)).toThrow(
     'shardfile semantic rules: declared spawn species/variant/strike: author.actor.ghost',
   )

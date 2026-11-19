@@ -391,6 +391,8 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
   })) errors.push('exactly one declared creature controller');
   return [...new Set(errors)];
 }
+/** How many failing semantic rules a refusal names before it counts the rest. */
+const NAMED_RULES = 8;
 /** Strict schema for the public SDK format; rejects unknown fields and invalid references.
  * Keep the unknown-input/named-output boundary independent of the nested validator implementation. */
 function shardfileSchema(sections?: ReadonlyMap<string, unknown>): v.GenericSchema<unknown, Shardfile> { return v.pipe(v.unknown(), v.rawCheck(({ dataset, addIssue }) => {
@@ -410,9 +412,12 @@ function shardfileSchema(sections?: ReadonlyMap<string, unknown>): v.GenericSche
   v.rawCheck(({ dataset, addIssue }) => { if (dataset.typed) { try { preflightAssetGraph(dataset.value); } catch (error) { addIssue({ message: error instanceof Error ? error.message : 'shardfile asset graph admission' }); } } }),
   v.check((s) => entrywayRules(s).length === 0, 'illegal shard: entryway openings must meet road height y=0'), v.rawCheck(({ dataset, addIssue }) => {
     // OF-NE21: the refusal names its rules (the first eight), so an author sees which row is at fault
-    if (!dataset.typed) return;
+    if (!dataset.typed) { return; }
     const rules = shardfileRules(dataset.value, sections);
-    if (rules.length > 0) addIssue({ message: `shardfile semantic rules: ${rules.slice(0, 8).join('; ')}${rules.length > 8 ? `; and ${String(rules.length - 8)} more` : ''}` });
+    if (rules.length === 0) { return; }
+    const named = rules.filter((_rule, index): boolean => index < NAMED_RULES);
+    const rest = rules.length > named.length ? `; and ${String(rules.length - named.length)} more` : '';
+    addIssue({ message: `shardfile semantic rules: ${named.join('; ')}${rest}` });
   })); }
 export const ShardfileSchema: v.GenericSchema<unknown, Shardfile> = shardfileSchema();
 /** Parse JSON through every shard rule. Optional section payloads extend item target

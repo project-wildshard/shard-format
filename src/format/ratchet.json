@@ -3999,7 +3999,7 @@
    "eslint(capitalized-comments)": 1,
    "eslint(complexity)": 1,
    "eslint(curly)": 66,
-   "eslint(id-length)": 21,
+   "eslint(id-length)": 20,
    "eslint(max-lines-per-function)": 1,
    "eslint(max-lines)": 1,
    "eslint(max-statements)": 1,
