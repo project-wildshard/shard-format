@@ -39,7 +39,7 @@ export function validateSocketLandings(source: { entryways: ShardEntryways; terr
     if (!row.initialActive || row.panel !== null) continue;
     for (const shape of row.shapes) {
       if (shape.kind === 'box') decks.push(...boxTop(shape));
-      else {
+      else if (shape.kind === 'treads') {
         const dx = shape.to.x - shape.from.x, dz = shape.to.z - shape.from.z, run = Math.hypot(dx, dz) / shape.count, rise = (shape.to.y - shape.from.y) / shape.count;
         for (let i = 0; i < shape.count; i++) {
           const f = (i + 0.5) / shape.count, hy = Math.max(0.01, rise * (i + 1) / 2);

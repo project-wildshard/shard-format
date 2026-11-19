@@ -4,6 +4,8 @@ import { isJsonData } from './json.ts';
 import { PropMaterialsSchema, propMaterialTextureRefs, validatePropMaterials } from './propMaterials.ts';
 import { SplatTerrainSchema, validateSplatTerrain } from './splatTerrain.ts';
 import { glbPoint, glbTransform } from './glbTriangles.ts';
+import { solidHullWithinCell } from './prop-hull.ts';
+import type { GlbVertex } from './glbTriangles.ts';
 
 const ref = v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u));
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u), v.maxLength(128));
@@ -25,8 +27,25 @@ function boxWithinCell(b: v.InferOutput<typeof boxData>): boolean {
   })).every(vertex => Math.abs(vertex.x) <= 250 && Math.abs(vertex.z) <= 250 && vertex.y >= -CELL_BELOW && vertex.y <= CELL_ABOVE);
 }
 const box = v.pipe(boxData, v.check(boxWithinCell, 'collider within cell'));
+interface PropHull extends GlbVertex {
+  kind: 'hull';
+  points: number[];
+  yaw?: number | undefined;
+  // oxlint-disable-next-line eslint/id-length -- Quaternion components are part of the wire.
+  rot?: (GlbVertex & { w: number }) | undefined;
+  surface?: 'wood' | 'stone' | 'grass' | 'sand' | 'rock' | 'metal' | 'earth' | 'felt' | undefined;
+}
+const MIN_HULL_COORDS = 12;
+const MAX_HULL_COORDS = 192;
+const AXES_PER_VERTEX = 3;
+const COLLIDER_UNIT = 1;
+const hullPoints = v.pipe(v.array(finite), v.minLength(MIN_HULL_COORDS), v.maxLength(MAX_HULL_COORDS));
+// oxlint-disable-next-line eslint/id-length -- A hull has the same cell-local pose as a prop box.
+const hullData = v.strictObject({ kind: v.literal('hull'), x: coord, y: height, z: coord, points: hullPoints,
+  yaw: v.optional(finite), rot: v.optional(rotation), surface });
+const hull = v.pipe(hullData, v.check<v.InferOutput<typeof hullData>, string>(solidHullWithinCell, 'solid hull within cell'));
 const treads = v.pipe(v.strictObject({ kind: v.literal('treads'), from: point, to: point, width: extent, count: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(256)), surface }), v.check((t) => Math.hypot(t.to.x - t.from.x, t.to.z - t.from.z) > 0 && t.to.y >= t.from.y && [t.from, t.to].every((p) => Math.abs(p.x) + t.width / 2 <= 250 && Math.abs(p.z) + t.width / 2 <= 250), 'bounded nondegenerate stair'));
-const collider = v.strictObject({ id, panel: v.nullable(id), initialActive: v.boolean(), shapes: v.pipe(v.array(v.variant('kind', [box, treads])), v.minLength(1), v.maxLength(256)) });
+const collider = v.strictObject({ id, panel: v.nullable(id), initialActive: v.boolean(), shapes: v.pipe(v.array(v.variant('kind', [box, treads, hull])), v.minLength(1), v.maxLength(256)) });
 const BODY_EXTENT_MIN = 0.005;
 const BODY_EXTENT_MAX = 8;
 const BODY_DENSITY_MIN = 1;
@@ -62,6 +81,19 @@ function bodiesAdmitted(section: { readonly bodies?: readonly { readonly id: str
   const owned = new Set(rows.map((row): string => row.panel));
   return ids.size === rows.length && owned.size === rows.length && rows.every((row): boolean => declared.has(row.panel) && !claimed.has(row.panel));
 }
+type CostedShape = Readonly<{ kind: 'treads'; count: number }> | Readonly<{ kind: 'hull'; points: readonly number[] }> | Readonly<{ kind: 'box' }>;
+const COLLIDER_BUDGET = 2048;
+function withinColliderBudget(rows: readonly Readonly<{ shapes: readonly CostedShape[] }>[]): boolean {
+  let total = 0;
+  for (const row of rows) {
+    for (const shape of row.shapes) {
+      if (shape.kind === 'treads') { total += shape.count; }
+      else if (shape.kind === 'hull') { total += shape.points.length / AXES_PER_VERTEX; }
+      else { total += COLLIDER_UNIT; }
+    }
+  }
+  return total <= COLLIDER_BUDGET;
+}
 /** Declared self-contained GLBs: merged tile meshes, EXT_mesh_gpu_instancing lists, far proxy and script-addressable panels. */
 export const PropsSchema: v.GenericSchema<PropsDataInput, PropsData> = v.pipe(v.unknown(), v.check(isJsonData, 'JSON-only props'), v.strictObject({ version: v.literal(1), family: id,
   materials: v.exactOptional(PropMaterialsSchema),
@@ -76,7 +108,7 @@ export const PropsSchema: v.GenericSchema<PropsDataInput, PropsData> = v.pipe(v.
   colliders: v.optional(v.pipe(v.array(collider), v.maxLength(1024)), []),
   textures: v.pipe(v.array(v.strictObject({ model: ref, colour: ref })), v.maxLength(256)),
   bodies: v.exactOptional(bodies),
-}), v.check((s) => new Set(s.tiles.map((tile) => `${tile.lod}/${tile.x}/${tile.z}`)).size === s.tiles.length && s.tiles.every((tile) => tile.x < (tile.lod === 0 ? 8 : 4) && tile.z < (tile.lod === 0 ? 8 : 4)) && new Set([...s.panels, ...s.models].map((entry) => entry.id)).size === s.panels.length + s.models.length && new Set(s.textures.map((texture) => texture.model)).size === s.textures.length && new Set(s.colliders.map((solid) => solid.id)).size === s.colliders.length && s.colliders.reduce((sum, solid) => sum + solid.shapes.reduce((count, shape) => count + (shape.kind === 'treads' ? shape.count : 1), 0), 0) <= 2048 && s.colliders.every((solid) => solid.panel === null || s.panels.some((panel) => panel.id === solid.panel)), 'unique props addresses and ids'), v.check<PropsData, string>(bodiesAdmitted, 'touchable bodies have unique ids and each names its own panel, which no static collider claims'));
+}), v.check((s) => new Set(s.tiles.map((tile) => `${tile.lod}/${tile.x}/${tile.z}`)).size === s.tiles.length && s.tiles.every((tile) => tile.x < (tile.lod === 0 ? 8 : 4) && tile.z < (tile.lod === 0 ? 8 : 4)) && new Set([...s.panels, ...s.models].map((entry) => entry.id)).size === s.panels.length + s.models.length && new Set(s.textures.map((texture) => texture.model)).size === s.textures.length && new Set(s.colliders.map((solid) => solid.id)).size === s.colliders.length && withinColliderBudget(s.colliders) && s.colliders.every((solid) => solid.panel === null || s.panels.some((panel) => panel.id === solid.panel)), 'unique props addresses and ids'), v.check<PropsData, string>(bodiesAdmitted, 'touchable bodies have unique ids and each names its own panel, which no static collider claims'));
 /** Validated data for the props renderer; no callbacks, URLs or generator code enter this section. */
 export type ShardProps = v.InferOutput<typeof PropsSchema>;
 /** Check every render binding against ordinary admitted file, tile and library rows before allocating content. */
@@ -148,7 +180,7 @@ interface PropsDataFields {
                 w: number;
             } | undefined;
             surface?: 'wood' | 'stone' | 'grass' | 'sand' | 'rock' | 'metal' | 'earth' | 'felt' | undefined;
-        }) | ({
+        }) | PropHull | ({
             kind: 'treads';
             from: {
                 x: number;
