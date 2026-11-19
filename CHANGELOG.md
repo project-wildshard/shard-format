@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.41.1 (2026-11-18)
+
+- Driftwood, Nalati, Nine and Pine are held off the armed list until the engine pins their new builds: their gates report (J424).
+
 ## v0.41.0 (2026-11-18)
 
 - A creature skin can now wear its own texture maps and a coat per variant, so a deer or wolf can carry a painted hide instead of flat colour.
