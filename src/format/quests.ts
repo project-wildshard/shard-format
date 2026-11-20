@@ -6,11 +6,32 @@ const text = v.pipe(v.string(), v.minLength(1), v.maxLength(512));
 const finite = v.pipe(v.number(), v.finite());
 const names = v.pipe(v.array(id), v.maxLength(128));
 const condition = v.strictObject({ all: v.exactOptional(names), any: v.exactOptional(names), none: v.exactOptional(names) });
-const marker = v.strictObject({ id, label: text, short: v.exactOptional(v.pipe(text, v.maxLength(18))), at: v.strictObject({ poi: v.literal('world'), x: finite, z: finite, y: v.exactOptional(finite) }), hideWhen: v.exactOptional(condition) });
+const worldAt = v.strictObject({ poi: v.literal('world'), x: finite, z: finite, y: v.exactOptional(finite) });
+const marker = v.strictObject({ id, label: text, short: v.exactOptional(v.pipe(text, v.maxLength(18))), at: worldAt, hideWhen: v.exactOptional(condition) });
 const markers = v.pipe(v.array(marker), v.maxLength(32));
 const done = v.pipe(condition, v.check((c) => [...(c.all ?? []), ...(c.any ?? []), ...(c.none ?? [])].length > 0, 'nonempty done condition'));
-const step = v.strictObject({ id, objective: text, chip: v.exactOptional(v.pipe(text, v.maxLength(18))), hint: v.exactOptional(text), done, count: v.exactOptional(names), markers: v.exactOptional(markers) });
-const quest = v.strictObject({ id, title: text, track: v.exactOptional(v.boolean()), completeFlag: id, startWhen: v.exactOptional(condition), intro: v.exactOptional(v.strictObject({ objective: text, chip: v.exactOptional(v.pipe(text, v.maxLength(18))), hint: v.exactOptional(text), markers: v.exactOptional(markers) })), steps: v.pipe(v.array(step), v.minLength(1), v.maxLength(64)), onComplete: v.exactOptional(v.strictObject({ fact: v.exactOptional(id), scene: v.exactOptional(id), coins: v.exactOptional(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(100))) })) });
+/** Meta MOSSGATE-ZONE MZ31 (QA 11-19 row 35, "nothing happens"): where a quest beat lands, and how. The engine flares the
+ *  spot in `colour`, spreads its light over the ground for `radius` metres, pops a small reward there and sounds one of its own
+ *  synth voices (`InteractSfx`, no recorded audio). */
+const SPREAD_MIN = 1;
+const SPREAD_MAX = 40;
+const colour = v.pipe(v.string(), v.regex(/^#[0-9a-fA-F]{6}$/u));
+const spread = v.pipe(finite, v.minValue(SPREAD_MIN), v.maxValue(SPREAD_MAX));
+const voice = v.picklist(['chime', 'glyph', 'ignite', 'chest', 'lever', 'plate', 'door', 'grate']);
+const landing = { at: v.omit(worldAt, ['poi']), colour: v.exactOptional(colour), radius: v.exactOptional(spread), sound: v.exactOptional(voice) };
+/** A step's landing: shown where the step was done, the moment its `done` first holds. */
+const feedback = v.strictObject(landing);
+/** A quest's payoff: a bigger landing as it completes, the score's reward take (`music`, default `dawn`), then the next goal
+ *  (`next`) on the tracker. The world change is `onComplete.scene`, the shard's own declared scene hook. */
+const music = v.picklist(['dawn', 'none']);
+const payoff = v.strictObject({ ...landing, music: v.exactOptional(music), next: v.exactOptional(text) });
+const optionalPayoff = v.exactOptional(payoff);
+/** MZ31: a quest beat's landing (a step's `feedback`, the base of a quest's `onComplete.payoff`). */
+interface QuestFeedbackRows { at: Record<'x' | 'z', number> & Partial<Record<'y', number>>; colour?: string; radius?: number; sound?: 'chime' | 'glyph' | 'ignite' | 'chest' | 'lever' | 'plate' | 'door' | 'grate' }
+/** MZ31: a quest's payoff as it completes. */
+interface QuestPayoffRows extends QuestFeedbackRows { music?: 'dawn' | 'none'; next?: string }
+const step = v.strictObject({ id, objective: text, chip: v.exactOptional(v.pipe(text, v.maxLength(18))), hint: v.exactOptional(text), done, count: v.exactOptional(names), markers: v.exactOptional(markers), feedback: v.exactOptional(feedback) });
+const quest = v.strictObject({ id, title: text, track: v.exactOptional(v.boolean()), completeFlag: id, startWhen: v.exactOptional(condition), intro: v.exactOptional(v.strictObject({ objective: text, chip: v.exactOptional(v.pipe(text, v.maxLength(18))), hint: v.exactOptional(text), markers: v.exactOptional(markers) })), steps: v.pipe(v.array(step), v.minLength(1), v.maxLength(64)), onComplete: v.exactOptional(v.strictObject({ fact: v.exactOptional(id), scene: v.exactOptional(id), coins: v.exactOptional(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(100))), payoff: optionalPayoff })) });
 /** Complete presentation chapter after its native completion owner is omitted. */
 export const QuestPresentationChapterSchema:v.GenericSchema<Omit<QuestDataInput['quests'][number],'onComplete'>,Omit<QuestData['quests'][number],'onComplete'>>=v.omit(quest,['onComplete']);
 const trigger = v.variant('kind', [
@@ -133,6 +154,7 @@ interface QuestDataInputFields {
                 none?: (string)[];
             };
             count?: (string)[];
+            feedback?: QuestFeedbackRows;
             markers?: ({
                 id: string;
                 label: string;
@@ -154,6 +176,7 @@ interface QuestDataInputFields {
             fact?: string;
             scene?: string;
             coins?: number;
+            payoff?: QuestPayoffRows;
         };
     })[];
     triggers: (({
@@ -276,6 +299,7 @@ interface QuestDataFields {
                 none?: (string)[];
             };
             count?: (string)[];
+            feedback?: QuestFeedbackRows;
             markers?: ({
                 id: string;
                 label: string;
@@ -297,6 +321,7 @@ interface QuestDataFields {
             fact?: string;
             scene?: string;
             coins?: number;
+            payoff?: QuestPayoffRows;
         };
     })[];
     triggers: (({
