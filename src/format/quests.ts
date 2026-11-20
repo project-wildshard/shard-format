@@ -58,7 +58,20 @@ const RACE_CHECKPOINTS_MAX = 32;
 const raceLaps = v.pipe(finite, v.safeInteger(), v.minValue(RACE_LAPS_MIN), v.maxValue(RACE_LAPS_MAX));
 const raceCheckpoints = v.pipe(v.array(id), v.minLength(RACE_CHECKPOINTS_MIN), v.maxLength(RACE_CHECKPOINTS_MAX));
 const raceRide = v.picklist(['vehicle', 'foot', 'any']);
-const race = v.strictObject({ id, start: id, stop: id, fact: id, cap: raceCap, resets: v.exactOptional(raceResets), laps: v.exactOptional(raceLaps), checkpoints: v.exactOptional(raceCheckpoints), ride: v.exactOptional(raceRide) });
+/** Meta MIRROR-SALT-ZONE MSZ33: a rival who races each run, an AI driver in the vehicle `dock` hands out (its kind and hull), along
+ *  `line` (start to stop, x y z; a lap race's line is one lap, closing on its first point), at up to `speed` m/s on a straight
+ *  and slower into a bend, eased within `band` m of the player (default 40) so he stays close; a player who finishes ahead
+ *  of him raises `beat`. */
+const RIVAL_LINE_MIN = 2;
+const RIVAL_LINE_MAX = 512;
+const RIVAL_SPEED_MIN = 1;
+const RIVAL_SPEED_MAX = 80;
+const RIVAL_BAND_MIN = 5;
+const RIVAL_BAND_MAX = 500;
+const rivalPoint = v.tuple([finite, finite, finite]);
+const rival = v.strictObject({ name: text, dock: id, line: v.pipe(v.array(rivalPoint), v.minLength(RIVAL_LINE_MIN), v.maxLength(RIVAL_LINE_MAX)),
+  speed: v.pipe(finite, v.minValue(RIVAL_SPEED_MIN), v.maxValue(RIVAL_SPEED_MAX)), band: v.exactOptional(v.pipe(finite, v.minValue(RIVAL_BAND_MIN), v.maxValue(RIVAL_BAND_MAX))), beat: id });
+const race = v.strictObject({ id, start: id, stop: id, fact: id, cap: raceCap, resets: v.exactOptional(raceResets), laps: v.exactOptional(raceLaps), checkpoints: v.exactOptional(raceCheckpoints), ride: v.exactOptional(raceRide), rival: v.exactOptional(rival) });
 const raceRows = v.pipe(v.array(race), v.maxLength(RACES_MAX));
 const raceList = v.exactOptional(raceRows);
 const choice = v.strictObject({ id, label: text, next: v.nullable(id), when: v.exactOptional(condition), sets: v.exactOptional(names), scene: v.exactOptional(id) });
@@ -98,6 +111,7 @@ export function questDataRules(data: QuestData): string[] {
     if (run.start === run.stop) { errors.push(`race ${run.id} starts and stops on one flag`); }
     if (run.resets?.some((flag): boolean => flag === run.start || flag === run.stop) === true) { errors.push(`race ${run.id} resets its own start or stop`); }
     checkFlags(run.checkpoints ?? []); errors.push(...checkpointRules(run));
+    if (run.rival !== undefined) { checkFlags([run.rival.beat]); if ([run.start, run.stop].includes(run.rival.beat)) { errors.push(`race ${run.id} beats its rival on its own start or stop`); } }
   }
   unique(raceIds);
   for (const d of data.dialogue) {
@@ -242,6 +256,14 @@ interface QuestDataInputFields {
         laps?: number;
         checkpoints?: (string)[];
         ride?: 'vehicle' | 'foot' | 'any';
+        rival?: {
+            name: string;
+            dock: string;
+            line: ([number, number, number])[];
+            speed: number;
+            band?: number;
+            beat: string;
+        };
     })[];
     dialogue: ({
         id: string;
@@ -390,6 +412,14 @@ interface QuestDataFields {
         laps?: number;
         checkpoints?: (string)[];
         ride?: 'vehicle' | 'foot' | 'any';
+        rival?: {
+            name: string;
+            dock: string;
+            line: ([number, number, number])[];
+            speed: number;
+            band?: number;
+            beat: string;
+        };
     })[];
     dialogue: ({
         id: string;

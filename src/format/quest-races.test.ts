@@ -139,3 +139,49 @@ test('a race checkpoint is declared, not its own start or stop, and named once (
     'race arch-run runs laps without checkpoints',
   )
 })
+
+const duel = { ...base, flags: ['gate.start', 'gate.end', 'rival.beat'] }
+const rival = {
+  name: 'Sorrel Vane',
+  dock: 'line.red',
+  line: [
+    [0, 0, 0],
+    [0, 0, -40],
+    [10, 0, -80],
+  ] as [number, number, number][],
+  speed: 18,
+  beat: 'rival.beat',
+}
+const rivalAdmits = (row: Readonly<Record<string, unknown>>): boolean =>
+  safeParse(QuestDataSchema, {
+    ...duel,
+    races: [{ ...race, rival: { ...rival, ...row } }],
+  }).success
+
+test('a race may name a rival who drives a line, and the flag a win over him raises (MSZ33)', (): void => {
+  const row = { ...race, rival: { ...rival, band: 30 } }
+  expect(parse(QuestDataSchema, { ...duel, races: [row] }).races).toEqual([
+    row,
+  ])
+  expect(questDataRules({ ...duel, races: [row] })).toEqual([])
+  expect(
+    [
+      { line: [[0, 0, 0]] },
+      { line: [[0, 0]] },
+      { speed: 0 },
+      { speed: 81 },
+      { band: 4 },
+      { name: '' },
+      { extra: 1 },
+    ].map((bad): boolean => rivalAdmits(bad)),
+  ).toEqual([false, false, false, false, false, false, false])
+})
+
+test('a rival\'s beat flag is declared and is not the race\'s own start or stop (MSZ33)', (): void => {
+  const rules = (beat: string): string[] =>
+    questDataRules({ ...duel, races: [{ ...race, rival: { ...rival, beat } }] })
+  expect(rules('rival.nope')).toContain('undeclared quest flag rival.nope')
+  expect(rules('gate.end')).toContain(
+    'race arch-run beats its rival on its own start or stop',
+  )
+})
