@@ -104,10 +104,22 @@ interface VehicleDock {
   per: 'player' | 'shared'
   respawn: number
 }
+type GroundPoint = [number, number]
+/** Metres in cell-local x/z. A road uses its full width, with rounded ends. */
+type VehicleGripPatch =
+  | { shape: 'circle'; at: GroundPoint; radius: number; grip: number }
+  | { shape: 'road'; line: GroundPoint[]; width: number; grip: number }
+
+/** Multiplies a kind's tyre grip. The last covering patch wins; outside every patch use `base`. */
+interface VehicleSurfaceGrip {
+  base: number
+  patches: VehicleGripPatch[]
+}
 /** The `world/vehicles` section. */
 interface Vehicles {
   kinds: VehicleKind[]
   docks: VehicleDock[]
+  surfaceGrip?: VehicleSurfaceGrip
 }
 type VehiclesInput = Vehicles
 /** What a kind's references must find in the rest of the shard file. */
@@ -120,6 +132,9 @@ interface VehicleReferences {
 // MSZ1's bounds: kinds and docks a shard; seats and hull boxes a kind; metres, m/s, m/s², kg, seconds and characters.
 const MAX_KINDS = 8
 const MAX_DOCKS = 32
+const MAX_GRIP_PATCHES = 32
+const MIN_ROAD_POINTS = 2
+const MAX_ROAD_POINTS = 128
 const MAX_SEATS = 4
 const MAX_HULL_BOXES = 16
 const MAX_HULL_HALF = 8
@@ -291,10 +306,35 @@ const docks = pipe(
   ),
   check(dockIdsUnique, 'vehicle dock ids are unique'),
 )
+const groundPoint = tuple([cellAxis, cellAxis])
+const patchExtent = bounded(LEAST, WIRE_CELL.half + WIRE_CELL.half)
+const grip = bounded(NONE, ONE)
+const circlePatch = strictObject({
+  shape: literal('circle'),
+  at: groundPoint,
+  radius: patchExtent,
+  grip,
+})
+const roadLine = pipe(
+  array(groundPoint),
+  minLength(MIN_ROAD_POINTS),
+  maxLength(MAX_ROAD_POINTS),
+)
+const roadPatch = strictObject({
+  shape: literal('road'),
+  line: roadLine,
+  width: patchExtent,
+  grip,
+})
+const gripPatch = union([circlePatch, roadPatch])
+const surfaceGrip = strictObject({
+  base: grip,
+  patches: pipe(array(gripPatch), maxLength(MAX_GRIP_PATCHES)),
+})
 
 /** The `world/vehicles` section (MSZ1): unique ids, docks of declared kinds, at most 8 kinds and 32 docks. */
 const VehiclesSchema: GenericSchema<VehiclesInput, Vehicles> = pipe(
-  strictObject({ kinds, docks }),
+  strictObject({ kinds, docks, surfaceGrip: exactOptional(surfaceGrip) }),
   check(docksOfKinds, 'a vehicle dock names a declared kind'),
 )
 
@@ -358,6 +398,7 @@ export type {
   VehicleReferences,
   VehicleSeat,
   VehicleSounds,
+  VehicleSurfaceGrip,
   VehicleWind,
   Vehicles,
   VehiclesInput,

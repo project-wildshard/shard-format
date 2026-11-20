@@ -137,6 +137,39 @@ test('a two-kind section round-trips byte for byte and is a platform section at 
   expect(vehicleRules(parsed, references)).toEqual([])
 })
 
+test('vehicle surface grip admits a flood and a road in cell coordinates', (): void => {
+  const surfaceGrip: NonNullable<Vehicles['surfaceGrip']> = {
+    base: 0.8,
+    patches: [
+      { shape: 'circle', at: [0, 0], radius: 178, grip: 0.35 },
+      {
+        shape: 'road',
+        line: [
+          [0, 0],
+          [0, 200],
+        ],
+        width: 8,
+        grip: 1,
+      },
+    ],
+  }
+  expect(parseVehicles({ ...fixture, surfaceGrip }).surfaceGrip).toEqual(
+    surfaceGrip,
+  )
+  expect((): Vehicles =>
+    parseVehicles({ ...fixture, surfaceGrip: { ...surfaceGrip, base: 1.1 } }),
+  ).toThrow()
+  expect((): Vehicles =>
+    parseVehicles({
+      ...fixture,
+      surfaceGrip: {
+        ...surfaceGrip,
+        patches: [{ shape: 'road', line: [[0, 0]], width: 0, grip: 1 }],
+      },
+    }),
+  ).toThrow()
+})
+
 const refusals: readonly (readonly [string, unknown, string])[] = [
   [
     'a duplicate kind id',
