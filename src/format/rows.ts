@@ -49,7 +49,9 @@ const weather = v.strictObject({ id, states: v.pipe(v.array(v.strictObject({ id,
   modes: v.pipe(v.array(v.strictObject({ id, hold: v.nullable(id), at: unit, dry: v.boolean() })), v.maxLength(64)) });
 /** OF23e3: a weather row may name its program instead of a plain chain: a product file the server parses as a
  *  `WeatherProgram` and runs (the rows a native assembly's `weather.program` host read; Pine's `world/weather.json`). */
-const programWeather = v.strictObject({ id, program: v.pipe(v.string(), v.minLength(1), v.maxLength(256)) });
+const programFile = v.pipe(text, v.nonEmpty());
+const programWeather = v.strictObject({ id, program: programFile });
+const weatherRow = v.union([weather, programWeather]);
 const hour = v.pipe(finite, v.minValue(0), v.maxValue(24));
 const day = v.strictObject({ id, units: v.literal('hour'), start: hour,
   schedule: v.pipe(v.array(v.strictObject({ phase: v.picklist(['dawn', 'day', 'golden', 'dusk', 'night']), from: hour, to: hour, minutes: duration })), v.minLength(1), v.maxLength(64)),
@@ -84,7 +86,7 @@ const loot = v.union([
   v.strictObject({ id, gear: v.literal('purse.coins'), finds: v.null(), marks: v.null(), charted: v.boolean(), chime: id, economy: v.exactOptional(LootEconomySchema) }),
   v.strictObject({ id, economy: BarterEconomySchema }),
 ]);
-const raw: v.StrictObjectSchema<{ readonly strikes: v.SchemaWithPipe<readonly [v.ArraySchema<typeof strike, undefined>, v.MaxLengthAction<ShardRows['strikes'], 256, undefined>]>; readonly weather: v.GenericSchema<ShardRowsInput['weather'], ShardRows['weather']>; readonly days: v.GenericSchema<ShardRowsInput['days'], ShardRows['days']>; readonly species: v.GenericSchema<ShardRowsInput['species'], ShardRows['species']>; readonly looks: v.GenericSchema<ShardRowsInput['looks'], ShardRows['looks']>; readonly compendiums: v.GenericSchema<ShardRowsInput['compendiums'], ShardRows['compendiums']>; readonly loot: v.GenericSchema<ShardRowsInput['loot'], ShardRows['loot']>; }, undefined> = v.strictObject({ strikes: v.pipe(v.array(strike), v.maxLength(256)), weather: v.pipe(v.array(v.union([weather, programWeather])), v.maxLength(16)), days: v.pipe(v.array(day), v.maxLength(16)),
+const raw: v.StrictObjectSchema<{ readonly strikes: v.SchemaWithPipe<readonly [v.ArraySchema<typeof strike, undefined>, v.MaxLengthAction<ShardRows['strikes'], 256, undefined>]>; readonly weather: v.GenericSchema<ShardRowsInput['weather'], ShardRows['weather']>; readonly days: v.GenericSchema<ShardRowsInput['days'], ShardRows['days']>; readonly species: v.GenericSchema<ShardRowsInput['species'], ShardRows['species']>; readonly looks: v.GenericSchema<ShardRowsInput['looks'], ShardRows['looks']>; readonly compendiums: v.GenericSchema<ShardRowsInput['compendiums'], ShardRows['compendiums']>; readonly loot: v.GenericSchema<ShardRowsInput['loot'], ShardRows['loot']>; }, undefined> = v.strictObject({ strikes: v.pipe(v.array(strike), v.maxLength(256)), weather: v.pipe(v.array(weatherRow), v.maxLength(16)), days: v.pipe(v.array(day), v.maxLength(16)),
   species: v.pipe(v.array(species), v.maxLength(256)), looks: v.pipe(v.array(look), v.maxLength(256)), compendiums: v.pipe(v.array(v.union([basicCompendium, JournalRowSchema])), v.maxLength(16)), loot: v.pipe(v.array(loot), v.maxLength(16)) });
 /** Pure author rows: numeric weights, state output tables, clocks and registered view/presentation recipes. */
 
@@ -93,10 +95,12 @@ function rowRules(rows: ShardRows): string[] {
   const errors: string[] = harvestSpeciesRules(rows.species);
   for (const list of Object.values(rows)) if (new Set(list.map((r) => r.id)).size !== list.length) errors.push('unique row ids');
   for (const row of rows.loot) if (row.economy !== undefined && !('kind' in row.economy)) errors.push(...lootEconomyRules(row.economy));
+  // OF23e3: a row that names its program has no chain to check
   for (const w of rows.weather) {
-    if ('program' in w) continue;
-    const states = new Set(w.states.map((s) => s.id));
-    if (states.size !== w.states.length || w.states.some((s) => !states.has(s.next)) || w.modes.some((m) => m.hold !== null && !states.has(m.hold)) || new Set(w.modes.map((m) => m.id)).size !== w.modes.length) errors.push('weather states and transitions');
+    if (!('program' in w)) {
+      const states = new Set(w.states.map((s) => s.id));
+      if (states.size !== w.states.length || w.states.some((s) => !states.has(s.next)) || w.modes.some((m) => m.hold !== null && !states.has(m.hold)) || new Set(w.modes.map((m) => m.id)).size !== w.modes.length) errors.push('weather states and transitions');
+    }
   }
   for (const d of rows.days) if (d.schedule[0]?.from !== 0 || d.schedule.at(-1)?.to !== 24 || d.schedule.some((s, i) => s.from >= s.to || (i > 0 && d.schedule[i - 1]?.to !== s.from))) errors.push('complete ordered day schedule');
   const speciesIds = new Set(rows.species.map((s) => s.id));

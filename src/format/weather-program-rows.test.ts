@@ -22,7 +22,7 @@ const chain = {
   states: [{ id: 'clear', next: 'clear', length: [2, 2], numbers: calm }],
 }
 
-test('OF23e3: a weather row may name its program beside a plain chain', () => {
+test('OF23e3: a weather row may name its program beside a plain chain', (): void => {
   const rows = parseRows({
     ...empty,
     weather: [chain, { id: 'fixture.air', program: 'world/weather.json' }],
@@ -33,20 +33,22 @@ test('OF23e3: a weather row may name its program beside a plain chain', () => {
   })
 })
 
-test('OF23e3: a program row carries nothing else, and names a file', () => {
-  expect(() =>
+test('OF23e3: a program row carries nothing else, and names a file', (): void => {
+  expect((): unknown =>
     parseRows({
       ...empty,
-      weather: [{ id: 'fixture.air', program: 'world/weather.json', soak: 0.1 }],
+      weather: [
+        { id: 'fixture.air', program: 'world/weather.json', soak: 0.1 },
+      ],
     }),
   ).toThrow()
-  expect(() =>
+  expect((): unknown =>
     parseRows({ ...empty, weather: [{ id: 'fixture.air', program: '' }] }),
   ).toThrow()
 })
 
-test('OF23e3: program and chain rows still share unique ids', () => {
-  expect(() =>
+test('OF23e3: program and chain rows still share unique ids', (): void => {
+  expect((): unknown =>
     parseRows({
       ...empty,
       weather: [chain, { id: 'fixture.chain', program: 'world/weather.json' }],
