@@ -20,7 +20,7 @@ export type NativeAssemblyFeature =
   | { host: 'ammunition'; step: string; refill: string } | { host: 'boss.ground'; encounter: NativeAssemblyRead; binding: unknown }
   | { host: 'quest.composition'; rows: NativeAssemblyRead; spots: NativeAssemblyRead; counters: NativeAssemblyRead; document?: NativeAssemblyRead; table?: NativeAssemblyRead;
     contracts?: NativeAssemblyRead; props?: NativeAssemblyRead; readSpots?: boolean; nativeFeats?: boolean; barter?: boolean; director?: boolean; restoring?: boolean }
-  | { host: 'quest.chapter'; id: string; rows: NativeAssemblyRead; wake: NativeAssemblyRead; reward: unknown; population: string }
+  | { host: 'quest.chapter'; id: string; rows: NativeAssemblyRead; wake: NativeAssemblyRead; reward: unknown; population?: string }
   | { host: 'quest.kill-steps'; rows: NativeAssemblyRead; counters: NativeAssemblyRead }
   | { host: 'weather.program'; program: NativeAssemblyRead } | { host: 'weather.native'; program: NativeAssemblyRead; shelters: NativeAssemblyRead; rows: NativeAssemblyRead }
   | { host: 'population.environment' | 'population.shelter' | 'population.roster' | 'riding.groups'; rows: NativeAssemblyRead }
@@ -96,7 +96,9 @@ const feature = v.variant('host', [
   v.strictObject({ host: v.literal('ammunition'), step: key, refill: key }), v.strictObject({ host: v.literal('boss.ground'), encounter: read, binding: v.unknown() }),
   v.strictObject({ host: v.literal('quest.composition'), rows: read, spots: read, counters: read, document: v.exactOptional(read), table: v.exactOptional(read), contracts: v.exactOptional(read), props: v.exactOptional(read),
     readSpots: flag, nativeFeats: flag, barter: flag, director: flag, restoring: flag }),
-  v.strictObject({ host: v.literal('quest.chapter'), id: key, rows: read, wake: read, reward: v.unknown(), population: key }),
+  // ONE-FORMAT OF22c3: a chapter's wake names a declared boss fight; `population` named the retired mixed population and
+  // stays optional only for writers that still send it
+  v.strictObject({ host: v.literal('quest.chapter'), id: key, rows: read, wake: read, reward: v.unknown(), population: v.exactOptional(key) }),
   v.strictObject({ host: v.literal('quest.kill-steps'), rows: read, counters: read }),
   v.strictObject({ host: v.literal('weather.program'), program: read }), v.strictObject({ host: v.literal('weather.native'), program: read, shelters: read, rows: read }),
   v.strictObject({ host: v.picklist(['population.environment', 'population.shelter', 'population.roster', 'riding.groups']), rows: read }),
