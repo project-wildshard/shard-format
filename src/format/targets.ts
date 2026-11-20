@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { isJsonData } from './json.ts';
 import { hookRules, type ShardHooks } from './hooks.ts';
-import type { StateSchema } from './state.ts';
+import type { StateFieldRows, StateSchema } from './state.ts';
 import type { ShardScriptBindings } from './scripts.ts';
 import type { ShardItems } from './items.ts';
 
@@ -10,6 +10,7 @@ const finite = v.pipe(v.number(), v.finite());
 const coord = v.pipe(finite, v.minValue(-250), v.maxValue(250));
 /** How many talks a shard may declare. */
 const TALK_ROWS = 64;
+const NO_BINDINGS = 0;
 /** A prompt's place, reach and text: an interaction's, and a talk's (TE-ENG3). */
 const prompt = { id, at: v.tuple([coord, coord, coord]), radius: v.pipe(finite, v.minValue(0.1), v.maxValue(8)), label: v.pipe(v.string(), v.minLength(1), v.maxLength(128)) };
 /** A use target: its prompt runs `scene`. `unless` (TE-ENG6) names a `hooks.conditions` row: while it holds, the use is
@@ -94,13 +95,14 @@ function spentRules(
     panels: readonly Readonly<{ scope: string; fieldId: number; colliders: readonly string[] }>[];
     itemFields?: readonly Readonly<{ fieldId: number }>[];
   }>,
-  conditions: readonly Readonly<{ id: string; scope: string; fieldId: number }>[]): string[] {
+  conditions: readonly Readonly<{ id: string; scope: string; fieldId: number }>[],
+  scriptFields: readonly number[]): string[] {
   const projected = new Set<number>();
   for (const row of targets.itemFields ?? []) {
     projected.add(row.fieldId);
   }
   const errors: string[] = [];
-  if (unlessRefused(targets.interactions, conditions, projected)) {
+  if (unlessRefused(targets.interactions, conditions, new Set([...projected, ...scriptFields]))) {
     errors.push('declared target interaction conditions');
   }
   if (projectedColliders(targets.panels, projected)) {
@@ -127,6 +129,13 @@ function talksRefused(
   }
   return false;
 }
+/** The script lane publishes each visible numeric player field to its owner. */
+function ownedScriptFields(fields: readonly Readonly<StateFieldRows>[], hasBindings: boolean): number[] {
+  if (!hasBindings) {
+    return [];
+  }
+  return fields.filter((field): boolean => field.privacy !== 'host' && field.type !== 'string').map((field): number => field.id);
+}
 /** Refuse dangling identities, private fields and two writers for the same visual or collider. */
 export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput<typeof StateSchema>; hooks: ShardHooks; sim: { scripts: readonly string[]; bindings: ShardScriptBindings }; items: ShardItems; quests?: { dialogue: readonly { id: string }[]; flags?: readonly string[] } }, props: { panels: readonly { id: string }[]; colliders: readonly { id: string }[]; models?: readonly { id: string }[] } | null): string[] {
   const errors = hookRules({ conditions: targets.panels.map((row) => ({ id: row.panel, ...row })), scenes: [] }, shard.state);
@@ -134,7 +143,8 @@ export function targetRules(targets: ShardTargets, shard: { state: v.InferOutput
   const bound = targets.panels.flatMap((row) => row.colliders);
   if (new Set(bound).size !== bound.length || targets.panels.some((row) => !panels.has(row.panel) || row.colliders.some((collider) => !colliders.has(collider)))) errors.push('declared target panel/collider references');
   if (new Set(targets.interactions.map((row) => row.id)).size !== targets.interactions.length || targets.interactions.some((row) => !scenes.has(row.scene))) errors.push('declared target interaction scenes');
-  errors.push(...spentRules(targets, shard.hooks.conditions));
+  const scriptFields = ownedScriptFields(shard.state.player, shard.sim.bindings.length > NO_BINDINGS);
+  errors.push(...spentRules(targets, shard.hooks.conditions, scriptFields));
   if (targets.panels.length > 0 && shard.sim.bindings.length === 0) errors.push('target fields require script bindings');
   const actions = targets.itemActions ?? [], fields = targets.itemFields ?? [];
   if (new Set(actions.map((row) => row.scene)).size !== actions.length || actions.some((row) => !scenes.has(row.scene) || !shard.items.rows.some((item) => item.id === row.item && (item.kind === 'tool' || item.family === LEVER_FAMILY || item.family === MELEE_FAMILY && row.action === RACK_TAKE)))) errors.push('declared item action scenes');

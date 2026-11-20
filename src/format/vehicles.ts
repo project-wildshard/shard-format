@@ -102,6 +102,8 @@ interface VehicleDock {
   at: Vec3
   yaw: number
   per: 'player' | 'shared'
+  /** The owning player must have this quest flag before taking the vehicle. */
+  requiresFlag?: string
   respawn: number
 }
 type GroundPoint = [number, number]
@@ -282,14 +284,21 @@ const kind = strictObject({
   health: exactOptional(bounded(ONE, MAX_HEALTH)),
   sounds: exactOptional(sounds),
 })
-const dock = strictObject({
+const dockRow = strictObject({
   id,
   kind: id,
   at: tuple([cellAxis, cellHeight, cellAxis]),
   yaw: angle,
   per: union([literal('player'), literal('shared')]),
+  requiresFlag: exactOptional(id),
   respawn: bounded(NONE, MAX_RESPAWN),
 })
+const playerRequirement = check(
+  (row: VehicleDock): boolean =>
+    row.per === 'player' || row.requiresFlag === undefined,
+  'only a player dock can require a quest flag',
+)
+const dock = pipe(dockRow, playerRequirement)
 const kinds = pipe(
   array(kind),
   maxLength(

@@ -137,6 +137,17 @@ test('a two-kind section round-trips byte for byte and is a platform section at 
   expect(vehicleRules(parsed, references)).toEqual([])
 })
 
+test('a player dock can require a quest flag, but a shared dock cannot', (): void => {
+  const locked: VehicleDock = {
+    ...yardBuggy,
+    requiresFlag: 'mirror.pennants.earned',
+  }
+  expect(parseVehicles({ ...fixture, docks: [locked] }).docks).toEqual([locked])
+  expect((): Vehicles =>
+    parseVehicles({ ...fixture, docks: [{ ...locked, per: 'shared' }] }),
+  ).toThrow(/only a player dock/u)
+})
+
 test('vehicle surface grip admits a flood and a road in cell coordinates', (): void => {
   const surfaceGrip: NonNullable<Vehicles['surfaceGrip']> = {
     base: 0.8,

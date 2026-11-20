@@ -78,6 +78,29 @@ test('a player condition spends a use only through a projected field', (): void 
     refused,
   )
 })
+
+test('a script can spend a use through an owner field', (): void => {
+  const source = shard('kit.lever')
+  const authored = {
+    ...source,
+    sim: {
+      ...source.sim,
+      bindings: [
+        {
+          module: 'main',
+          entity: 1,
+          actorId: 'actor.player',
+          kind: 'server' as const,
+        },
+      ],
+    },
+  }
+  const rows = { ...targets('rack.taken'), itemFields: [] }
+  expect(targetRules(rows, authored, noProps)).toEqual([])
+  expect(
+    targetRules({ ...targets('secret'), itemFields: [] }, authored, noProps),
+  ).toContain('declared target interaction conditions')
+})
 test('a panel on a projected player field is drawn only, with no collider', (): void => {
   const refused = 'declared item projection colliders'
   const panel = {
