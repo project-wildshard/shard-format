@@ -53,8 +53,10 @@ const day = v.strictObject({ id, units: v.literal('hour'), start: hour,
   sun: v.strictObject({ maxElevation: v.pipe(finite, v.minValue(0), v.maxValue(90)), azimuthOffset: v.pipe(finite, v.minValue(-180), v.maxValue(180)) }),
   fixed: v.strictObject({ midday: hour, golden: hour, sunset: hour, night: hour }), presets: v.strictObject({ dawn: hour, noon: hour, dusk: hour, night: hour }) });
 const mods = v.strictObject({ speed: positive, chargeDist: positive, damageTaken: positive, chargeDamage: nonnegative, relentless: v.boolean() });
-const dims = v.strictObject({ bodyY: dimension, bodyHalfLen: dimension, bodyRadius: dimension, headRadius: dimension, legLen: legs,
-  feet: v.pipe(v.array(v.tuple([finite, finite])), v.maxLength(16)), halfWidth: dimension });
+// Body Y names the rig pivot. A flying hull can place it at zero.
+const bodyPivot = v.union([v.literal(0), dimension]);
+const dims = v.strictObject({ bodyY: bodyPivot, bodyHalfLen: dimension, bodyRadius: dimension, headRadius: dimension, legLen: legs,
+  feet: v.pipe(v.array(v.tuple([finite, finite])), v.maxLength(16)), halfWidth: dimension, capsuleAxis: v.exactOptional(v.picklist(['y', 'z'])) });
 const variant = v.strictObject({ id, label: text, rarity: v.picklist(['common', 'uncommon', 'rare', 'legendary']), weight: nonnegative, scale: ordered, hp: positive, mods });
 const flight = v.strictObject({ altitude: v.pipe(finite, v.minValue(-250), v.maxValue(250)),
   above: v.exactOptional(v.picklist(['ground', 'world'])), climbRate: v.pipe(positive, v.maxValue(30)), diveRate: v.pipe(positive, v.maxValue(30)),
@@ -142,7 +144,7 @@ type ShardRows = { strikes: (StrikeRows)[]; weather: ({ id: string; states: ({ i
 type SpeciesRowInput = Omit<SpeciesRow, "abilities"> & { abilities?: CreatureAbilityInput[] };
 
 /** A species keeps its old fields, with optional explicit creature layers. */
-interface SpeciesRow extends CreatureLayers { capExempt?: boolean; harvest?: HarvestDrop[]; id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; }
+interface SpeciesRow extends CreatureLayers { capExempt?: boolean; harvest?: HarvestDrop[]; id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; capsuleAxis?: 'y' | 'z'; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; }
 
 export { rowRules, RowsSchema, parseRows };
 export type { StrikeRowsInput, StrikeRows, ShardRowsInput, ShardRows, SpeciesRow };
