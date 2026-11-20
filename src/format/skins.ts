@@ -7,7 +7,7 @@ const SKIN_LOOK_RECIPE = 'platform.skin';
 /** The animation recipe that consumes the exported skin clip parameters. */
 const SKIN_CLIPS_RECIPE = 'platform.clips';
 const hash = v.pipe(v.string(), v.regex(/^[0-9a-f]{64}$/u));
-/** The look row's parameters. */
+/** The look row's parameters. A phone file is a single skin unless variants names the desktop table; then phone names the phone table. */
 const SkinLookParametersSchema: v.GenericSchema<SkinLookParametersRowsInput, SkinLookParametersRows> = v.strictObject({ skin: hash, variants: v.exactOptional(hash), phone: v.exactOptional(hash) });
 /** Complete variant-to-skin declarations in one ordinary content-addressed JSON file. */
 const VARIANTS_VERSION = 1;

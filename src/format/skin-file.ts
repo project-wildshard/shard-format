@@ -65,4 +65,19 @@ function parseSkinFile(bytes: Uint8Array): {
   return { row, binding }
 }
 
-export { parseSkinFile, skinLookParameters }
+/** The file roots the selected tier reads, before expanding their dependencies. */
+function skinTierRoots(
+  row: ShardRows['looks'][number],
+  tier: 'phone' | 'desktop',
+): readonly string[] {
+  if (row.recipe !== SKIN_LOOK_RECIPE) {
+    return []
+  }
+  const { skin, variants, phone } = skinLookParameters(row)
+  if (tier === 'phone' && phone !== undefined) {
+    return [phone]
+  }
+  return variants === undefined ? [skin] : [skin, variants]
+}
+
+export { parseSkinFile, skinLookParameters, skinTierRoots }

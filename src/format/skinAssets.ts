@@ -111,7 +111,7 @@ function validateSkinAssets(source: Pick<Shardfile, 'rows' | 'files'> & { readon
   }
 }
 
-export { parseSkinFile, skinLookParameters } from './skin-file.ts';
-export { resolveSkinLookFiles, skinFileDependencies } from './skin-variants.ts';
+export { parseSkinFile, skinLookParameters, skinTierRoots } from './skin-file.ts';
+export { resolveSkinLookFiles, resolveTierSkinLookFiles, skinFileDependencies } from './skin-variants.ts';
 export { skinLookRules, validateSkinAssets };
 export { skinLookTextureRefs } from './skin-textures.ts';

@@ -3,7 +3,12 @@ import { parseWorldScenes, worldScenesForTier } from './worldScenes.ts';
 import { parseRiggedHullBook } from './riggedHulls.ts';
 import { PosedLibrarySchema } from './namedJsonContracts.ts';
 import { parseClientPlan } from './clientPlan.ts';
+import { pairedSkinLooks, unusedSkinTier } from './skin-tier-selection.ts';
+import type { ShardRows } from './rows.ts';
+
 import * as v from 'valibot';
+
+const EMPTY = 0;
 
 /** Only immutable addressing and typed alternatives are needed for selection.
  * Other root fields are retained by the conservative string walk at runtime. */
@@ -11,6 +16,7 @@ export interface TierSelectionSource {
   readonly identity: { readonly slug: string };
   readonly files: readonly { readonly hash: string; readonly kind: string; readonly decoded: number; readonly dependencies: readonly string[] }[];
   readonly library: readonly string[]; readonly critical: readonly string[];
+  readonly rows?: Pick<ShardRows, 'looks'>;
   /** Scheduling metadata never creates a synchronous consumer or a tier pin. */
   readonly late?: readonly LateFile[];
   readonly manifest?: { readonly horizonStrips?: { readonly day: string; readonly night: string; readonly phone?: { readonly day: string; readonly night: string } } };
@@ -91,6 +97,11 @@ export function* tierLibrarySteps(source: TierSelectionSource, tier: 'phone' | '
     const on = names.get(selected); if (on !== undefined) used.add(on);
   };
   const sections = new Map(descriptor.sections);
+  const skinTier = pairedSkinLooks(source.rows?.looks, tier);
+  for (const hash of skinTier.used) { used.add(hash); }
+  if (skinTier.off.size > EMPTY && sections.has('look/materials')) {
+    sections.set('look/materials', { rows: { looks: skinTier.looks } });
+  }
   const metadata = source.manifest;
   let manifest = source.manifest;
   if (metadata?.horizonStrips?.phone !== undefined) {
@@ -186,10 +197,14 @@ export function* tierLibrarySteps(source: TierSelectionSource, tier: 'phone' | '
     const selected = row.output.tiers[tier], other = row.output.tiers[tier === 'phone' ? 'desktop' : 'phone'];
     alternative(selected.geometry, other.geometry); if (selected.atlas !== undefined && other.atlas !== undefined) alternative(selected.atlas, other.atlas);
   }
-  if (inactive.size === 0) return inactive;
-  const { files: _files, library: _library, critical: _critical, manifest: _manifest, late: _late, ...fields } = source;
-  yield* stringsSteps([{ ...fields, manifest }, ...sections.values()], text => { const hash = names.get(text); if (hash !== undefined) used.add(hash); });
+  if (inactive.size === 0 && skinTier.off.size === EMPTY) return inactive;
+  const { files: _files, library: _library, critical: _critical, manifest: _manifest, late: _late, rows, ...fields } = source;
+  const activeRows = skinTier.off.size === EMPTY ? rows : { ...rows, looks: skinTier.looks };
+  yield* stringsSteps([{ ...fields, rows: activeRows, manifest }, ...sections.values()], text => { const hash = names.get(text); if (hash !== undefined) used.add(hash); });
+  const skinOff = unusedSkinTier(source.files, skinTier.off, used);
   const pinned = new Set([...source.critical, ...source.files.flatMap(file => file.dependencies)]);
   for (const file of source.files) for (const ref of file.dependencies) used.add(ref);
-  return new Set([...inactive].filter(hash => otherTier.has(hash) ? !pinned.has(hash) : !used.has(hash)));
+  const excluded = new Set([...inactive].filter(hash => otherTier.has(hash) ? !pinned.has(hash) : !used.has(hash)));
+  for (const hash of skinOff) { excluded.add(hash); }
+  return excluded;
 }

@@ -25,7 +25,12 @@ function lookSkinFiles(look: Look, files: Files): readonly string[] {
     const { skin, variants, phone } = skinLookParameters(look)
     const table =
       variants === undefined ? [] : (files.get(variants)?.dependencies ?? [])
-    return [skin, ...table, ...(phone === undefined ? [] : [phone])]
+    if (phone === undefined) {
+      return [skin, ...table]
+    }
+    const smaller =
+      variants === undefined ? [phone] : (files.get(phone)?.dependencies ?? [])
+    return [skin, ...table, ...smaller]
   } catch {
     return []
   }

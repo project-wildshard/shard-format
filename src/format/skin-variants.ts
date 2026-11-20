@@ -6,7 +6,7 @@ import { parse } from 'valibot'
 
 import { MaterialsSchema, materialTextureRefs } from './materials.ts'
 import { parseSkinFile, skinLookParameters } from './skin-file.ts'
-import { SkinVariantsSchema } from './skins.ts'
+import { speciesDefault, variantTable } from './skin-variant-table.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { ShardRows } from './rows.ts'
@@ -23,6 +23,8 @@ interface SkinLookFiles {
   readonly variants?: ReadonlyMap<string, ResolvedSkinFile>
   /** The phone tier's lighter mesh (ONE-FORMAT CC51b): the same contract as `skin`, at most its triangles. */
   readonly phone?: ResolvedSkinFile
+  /** A phone mesh and coat per declared variant, in the same identities. */
+  readonly phoneVariants?: ReadonlyMap<string, ResolvedSkinFile>
 }
 type Source = Pick<Shardfile, 'rows' | 'files'>
 type Look = ShardRows['looks'][number]
@@ -115,72 +117,6 @@ function skinReader(
   }
 }
 
-function checkCoverage(
-  skins: Readonly<Record<string, string>>,
-  ids: readonly string[],
-): void {
-  const expected = new Set(ids)
-  const keys = Object.keys(skins)
-  if (
-    keys.length !== expected.size ||
-    keys.some((key): boolean => !expected.has(key))
-  ) {
-    throw new Error('variant table must name every species variant exactly')
-  }
-}
-
-function checkDependencies(
-  skins: Readonly<Record<string, string>>,
-  actual: readonly string[],
-  defaultHash: string,
-): void {
-  const dependencies = [...new Set(Object.values(skins))].sort()
-  if (
-    dependencies.length !== actual.length ||
-    [...actual]
-      .sort()
-      .some((hash, index): boolean => hash !== dependencies[index])
-  ) {
-    throw new Error('variant table dependencies differ')
-  }
-  if (!dependencies.includes(defaultHash)) {
-    throw new Error('variant table must include its default skin')
-  }
-}
-
-function variantTable(
-  source: Source,
-  look: Look,
-  {
-    assets,
-    parameters,
-  }: {
-    assets: ReadonlyMap<string, Uint8Array>
-    parameters: { variants: string; skin: string }
-  },
-): Readonly<Record<string, string>> {
-  const table = source.files.find(
-    (file): boolean => file.hash === parameters.variants,
-  )
-  const bytes = assets.get(parameters.variants)
-  if (table?.kind !== 'json' || bytes === undefined) {
-    throw new Error(`skin look ${look.id}: variant table missing`)
-  }
-  const variants = parse(
-    SkinVariantsSchema,
-    JSON.parse(new TextDecoder().decode(bytes)),
-  )
-  const species = source.rows.species.find(
-    (row): boolean => row.id === look.species,
-  )
-  checkCoverage(
-    variants.skins,
-    (species?.variants ?? []).map((row): string => row.id),
-  )
-  checkDependencies(variants.skins, table.dependencies, parameters.skin)
-  return variants.skins
-}
-
 function resolveVariants(
   table: Readonly<Record<string, string>>,
   skin: ResolvedSkinFile,
@@ -198,50 +134,44 @@ function resolveVariants(
   return variants
 }
 
-function phoneLook(
+function checkPhoneSkin(
+  look: Look,
   skin: ResolvedSkinFile,
-  {
-    phone: hash,
-    look,
-    read,
-    variants,
-  }: {
-    phone: string
-    look: Look
-    read: (hash: string) => ResolvedSkinFile
-    variants: string | undefined
-  },
-): SkinLookFiles {
-  if (variants !== undefined) {
-    throw new Error(`skin look ${look.id}: a variant look has no phone skin`)
-  }
-  const phone = read(hash)
+  phone: ResolvedSkinFile,
+): void {
   if (skinContract(phone) !== skinContract(skin)) {
     throw new Error(`skin look ${look.id}: phone skin rig or material differs`)
   }
   if (phone.row.cost.triangles > skin.row.cost.triangles) {
     throw new Error(`skin look ${look.id}: phone skin draws more triangles`)
   }
-  return { skin, phone }
 }
 
-/** Resolve exact variant coverage and compatible rig/material declarations once at admission/load. */
-function resolveSkinLookFiles(
+function requiredVariant(
+  table: Readonly<Record<string, string>>,
+  id: string,
+): string {
+  const hash = table[id]
+  if (hash === undefined) {
+    throw new Error(`missing phone variant: ${id}`)
+  }
+  return hash
+}
+
+type SkinTier = Pick<SkinLookFiles, 'skin' | 'variants'>
+type SkinReader = (hash: string) => ResolvedSkinFile
+
+function desktopTier(
   source: Source,
   look: Look,
-  assets: ReadonlyMap<string, Uint8Array>,
-): SkinLookFiles {
-  const parameters = skinLookParameters(look)
-  const read = skinReader(source, assets)
+  input: {
+    readonly assets: ReadonlyMap<string, Uint8Array>
+    readonly read: SkinReader
+    readonly parameters: ReturnType<typeof skinLookParameters>
+  },
+): SkinTier {
+  const { assets, read, parameters } = input
   const skin = read(parameters.skin)
-  if (parameters.phone !== undefined) {
-    return phoneLook(skin, {
-      phone: parameters.phone,
-      look,
-      read,
-      variants: parameters.variants,
-    })
-  }
   if (parameters.variants === undefined) {
     return { skin }
   }
@@ -249,8 +179,102 @@ function resolveSkinLookFiles(
     assets,
     parameters: { variants: parameters.variants, skin: parameters.skin },
   })
-  const variants = resolveVariants(table, skin, read)
-  return { skin, variants }
+  if (
+    parameters.phone !== undefined &&
+    table[speciesDefault(source, look)] !== skin.hash
+  ) {
+    throw new Error('desktop default must be the first species variant')
+  }
+  return { skin, variants: resolveVariants(table, skin, read) }
+}
+
+function phoneTier(
+  source: Source,
+  look: Look,
+  input: {
+    readonly assets: ReadonlyMap<string, Uint8Array>
+    readonly read: SkinReader
+    readonly phone: string
+    readonly layered: boolean
+  },
+): SkinTier {
+  const { assets, read, phone, layered } = input
+  if (!layered) {
+    return { skin: read(phone) }
+  }
+  const table = variantTable(source, look, {
+    assets,
+    parameters: { variants: phone },
+  })
+  const skin = read(requiredVariant(table, speciesDefault(source, look)))
+  return { skin, variants: resolveVariants(table, skin, read) }
+}
+
+function checkPhoneTier(look: Look, desktop: SkinTier, phone: SkinTier): void {
+  checkPhoneSkin(look, desktop.skin, phone.skin)
+  for (const [id, desktopVariant] of desktop.variants ?? []) {
+    const phoneVariant = phone.variants?.get(id)
+    if (phoneVariant === undefined) {
+      throw new Error(`missing phone variant: ${id}`)
+    }
+    checkPhoneSkin(look, desktopVariant, phoneVariant)
+  }
+}
+
+/** Resolve exact variant coverage and compatible rig/material declarations at full admission. */
+function resolveSkinLookFiles(
+  source: Source,
+  look: Look,
+  assets: ReadonlyMap<string, Uint8Array>,
+): SkinLookFiles {
+  const parameters = skinLookParameters(look)
+  const read = skinReader(source, assets)
+  const desktop = desktopTier(source, look, { assets, read, parameters })
+  if (parameters.phone === undefined) {
+    return desktop
+  }
+  const phone = phoneTier(source, look, {
+    assets,
+    read,
+    phone: parameters.phone,
+    layered: parameters.variants !== undefined,
+  })
+  checkPhoneTier(look, desktop, phone)
+  return {
+    ...desktop,
+    phone: phone.skin,
+    ...(phone.variants === undefined ? {} : { phoneVariants: phone.variants }),
+  }
+}
+
+/** Read only the selected tier for paired tables. Keep full runtime checks for older look shapes. */
+function resolveTierSkinLookFiles(
+  source: Source,
+  look: Look,
+  {
+    assets,
+    tier,
+  }: {
+    readonly assets: ReadonlyMap<string, Uint8Array>
+    readonly tier: 'phone' | 'desktop'
+  },
+): SkinTier {
+  const parameters = skinLookParameters(look)
+  if (parameters.variants === undefined || parameters.phone === undefined) {
+    const admitted = resolveSkinLookFiles(source, look, assets)
+    return tier === 'phone' && admitted.phone !== undefined
+      ? { skin: admitted.phone }
+      : admitted
+  }
+  const read = skinReader(source, assets)
+  return tier === 'desktop'
+    ? desktopTier(source, look, { assets, read, parameters })
+    : phoneTier(source, look, {
+        assets,
+        read,
+        phone: parameters.phone,
+        layered: true,
+      })
 }
 
 /** Every skin file a look draws: its skin, each variant's and the phone tier's. */
@@ -259,8 +283,14 @@ function lookSkins(resolved: SkinLookFiles): ResolvedSkinFile[] {
     resolved.skin,
     ...(resolved.variants?.values() ?? []),
     ...(resolved.phone === undefined ? [] : [resolved.phone]),
+    ...(resolved.phoneVariants?.values() ?? []),
   ]
 }
 
-export { lookSkins, resolveSkinLookFiles, skinFileDependencies }
+export {
+  lookSkins,
+  resolveSkinLookFiles,
+  resolveTierSkinLookFiles,
+  skinFileDependencies,
+}
 export type { ResolvedSkinFile, SkinLookFiles }
