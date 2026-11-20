@@ -1,4 +1,5 @@
 import { acceptsShardfileCost, textureLibrarySource } from './deviceMemoryCost.ts';
+import { retainedActorIds } from './retained-actors.ts';
 import { creaturePerchAdmissionRows } from './creature-perch.ts';
 import { admitScriptContract, decisionModuleContracts, type ScriptAdmissionRows } from './scriptContract.ts';
 import type { TextureTranscodeSupport } from './contentBounds.ts';
@@ -206,7 +207,12 @@ function admitAfterFiles(state: AssetAdmission, assets: ReadonlyMap<string, Uint
   if (criticalWire > s.budgets.sim.compressed || s.sim.scripts.some((r) => !critical.has(r)) || [...critical].some((r) => library.has(r))) throw new Error('critical bundle cap, declared wire budget, render-library dependency or script omitted');
   if(s.runtime?.binds?.includes('state')===true){
     const spawns = s.runtime.spawns;
-    const actors=new Set([...spawns?.bosses??[], ...spawns?.homes??[], ...spawns?.actors??[]].map(row=>row.id));
+    const runtimeIds=[...spawns?.bosses??[], ...spawns?.homes??[], ...spawns?.actors??[]].map(row=>row.id);
+    const bossIds: string[]=[];
+    const declaredIds: string[]=[];
+    for(const spawn of s.creatures.spawns){ declaredIds.push(spawn.id); }
+    for(const encounter of s.encounters){ if(encounter.kind==='boss'){ bossIds.push(encounter.entity); } }
+    const actors=retainedActorIds(runtimeIds, declaredIds, bossIds);
     for(const field of s.state.shared.filter(candidate=>candidate.privacy==='public')) {
       if(!scripts.some(row=>row.abi!==2&&Object.values(row.fields).includes(field.name)&&Object.values(row.actors).length>0
         &&Object.values(row.actors).every(actor=>actors.has(actor))))throw new Error('Runtime actor field requires its actual declared sim guest');

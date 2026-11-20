@@ -7,3 +7,6 @@ reads and writes with `Read.field` and `Do.field`; that actor was always a runti
 moves to a declared spawn under a `boss` encounter and keeps his decision row's fields (rise, phase, arena), so a boss
 encounter on a declared spawn now counts as that retained actor. The engine's decision host already writes public fields
 on any actor it binds.
+
+Asset admission makes the same call (`retained-actors.ts`): a public field there must be named by a sim guest whose
+actors are all retained, and a boss encounter on a declared spawn now counts (format 0.55.2).

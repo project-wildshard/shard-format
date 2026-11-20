@@ -8,6 +8,7 @@ import { expect, test } from 'vitest'
 import { outputFixture } from '../test/helpers/output-fixture.ts'
 import { CreaturesSchema } from './creatures.ts'
 import { EncountersSchema } from './encounters.ts'
+import { retainedActorIds } from './retained-actors.ts'
 import { parseRows } from './rows.ts'
 import { RuntimeSchema } from './runtime.ts'
 import { shardfileRules } from './shardSchema.ts'
@@ -157,4 +158,13 @@ test("a declared boss encounter's spawn holds public numeric fields as a retaine
     shardfileRules(fixture(false)),
     'a spawn with no boss encounter is no retained actor',
   ).toContain(RULE)
+})
+
+test("asset admission counts a declared boss encounter's spawn as a retained actor", (): void => {
+  expect([...retainedActorIds([], ['fixture.boss'], ['fixture.boss'])]).toEqual(
+    ['fixture.boss'],
+  )
+  expect([...retainedActorIds(['runtime.boss'], [], ['fixture.boss'])]).toEqual(
+    ['runtime.boss'],
+  )
 })
