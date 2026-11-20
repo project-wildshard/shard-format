@@ -51,10 +51,12 @@ const raceResets = v.pipe(v.array(id), v.minLength(RACE_RESETS_MIN), v.maxLength
 /** Meta MIRROR-SALT-ZONE MSZ31: a race of `laps` laps (1 to 20, default 1); each lap crosses `checkpoints` in order before
  *  `stop` counts it (a lap that misses one is void); `ride` says how it is run (`vehicle`, `foot`, `any`, default `any`): a run
  *  begun the wrong way is refused at `start`. */
+const RACE_LAPS_MIN = 1;
 const RACE_LAPS_MAX = 20;
+const RACE_CHECKPOINTS_MIN = 1;
 const RACE_CHECKPOINTS_MAX = 32;
-const raceLaps = v.pipe(finite, v.safeInteger(), v.minValue(1), v.maxValue(RACE_LAPS_MAX));
-const raceCheckpoints = v.pipe(v.array(id), v.minLength(1), v.maxLength(RACE_CHECKPOINTS_MAX));
+const raceLaps = v.pipe(finite, v.safeInteger(), v.minValue(RACE_LAPS_MIN), v.maxValue(RACE_LAPS_MAX));
+const raceCheckpoints = v.pipe(v.array(id), v.minLength(RACE_CHECKPOINTS_MIN), v.maxLength(RACE_CHECKPOINTS_MAX));
 const raceRide = v.picklist(['vehicle', 'foot', 'any']);
 const race = v.strictObject({ id, start: id, stop: id, fact: id, cap: raceCap, resets: v.exactOptional(raceResets), laps: v.exactOptional(raceLaps), checkpoints: v.exactOptional(raceCheckpoints), ride: v.exactOptional(raceRide) });
 const raceRows = v.pipe(v.array(race), v.maxLength(RACES_MAX));
@@ -69,6 +71,13 @@ const raw: v.GenericSchema<{ [K in keyof QuestDataInput]: QuestDataInput[K] }, Q
 /** Plain quest graphs, declared flags/triggers and finite dialogue trees; hooks name platform-resolved script ports. */
 
 const reads = (c: v.InferOutput<typeof condition> | undefined): string[] => [...(c?.all ?? []), ...(c?.any ?? []), ...(c?.none ?? [])];
+/** MSZ31: a race's checkpoints are neither its own start or stop nor named twice. */
+function checkpointRules(run: { readonly id: string; readonly start: string; readonly stop: string; readonly checkpoints?: readonly string[] }): string[] {
+  const checkpoints = run.checkpoints ?? [], errors: string[] = [];
+  if (checkpoints.some((flag): boolean => flag === run.start || flag === run.stop)) { errors.push(`race ${run.id} checkpoints its own start or stop`); }
+  if (new Set(checkpoints).size !== checkpoints.length) { errors.push(`race ${run.id} names a checkpoint twice`); }
+  return errors;
+}
 /** Reject dangling flags, repeated identities, unreachable dialogue nodes and cycles before installing authored data. */
 export function questDataRules(data: QuestData): string[] {
   const errors: string[] = [], flags = new Set(data.flags);
@@ -86,9 +95,7 @@ export function questDataRules(data: QuestData): string[] {
     raceIds.push(run.id); checkFlags([run.start, run.stop, ...(run.resets ?? [])]);
     if (run.start === run.stop) { errors.push(`race ${run.id} starts and stops on one flag`); }
     if (run.resets?.some((flag): boolean => flag === run.start || flag === run.stop) === true) { errors.push(`race ${run.id} resets its own start or stop`); }
-    const checkpoints = run.checkpoints ?? []; checkFlags(checkpoints);
-    if (checkpoints.some((flag): boolean => flag === run.start || flag === run.stop)) { errors.push(`race ${run.id} checkpoints its own start or stop`); }
-    if (new Set(checkpoints).size !== checkpoints.length) { errors.push(`race ${run.id} names a checkpoint twice`); }
+    checkFlags(run.checkpoints ?? []); errors.push(...checkpointRules(run));
   }
   unique(raceIds);
   for (const d of data.dialogue) {

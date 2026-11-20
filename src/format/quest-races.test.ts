@@ -98,30 +98,41 @@ test('a race may name flags its finish and a lapse lower, so the next run counts
   ).toBe(false)
 })
 
+const loop = { ...base, flags: ['gate.start', 'gate.end', 'cp.a', 'cp.b'] }
+const laps = {
+  ...race,
+  laps: 2,
+  checkpoints: ['cp.a', 'cp.b'],
+  ride: 'vehicle' as const,
+}
+const lapRowAdmits = (row: Readonly<Record<string, unknown>>): boolean =>
+  safeParse(QuestDataSchema, { ...loop, races: [{ ...race, ...row }] }).success
+const checkpointRules = (checkpoints: readonly string[]): string[] =>
+  questDataRules({
+    ...loop,
+    races: [{ ...laps, checkpoints: [...checkpoints] }],
+  })
+
 test('a race may run laps over ordered checkpoints and name how it is ridden (MSZ31)', (): void => {
-  const loop = {
-    ...base,
-    flags: ['gate.start', 'gate.end', 'cp.a', 'cp.b'],
-  }
-  const laps = { ...race, laps: 2, checkpoints: ['cp.a', 'cp.b'], ride: 'vehicle' as const }
-  expect(parse(QuestDataSchema, { ...loop, races: [laps] }).races).toEqual([laps])
-  expect(questDataRules({ ...loop, races: [laps] })).toEqual([])
-  const admits = (row: object): boolean =>
-    safeParse(QuestDataSchema, { ...loop, races: [{ ...race, ...row }] }).success
-  expect([0, 21, 1.5].map((n): boolean => admits({ laps: n }))).toEqual([
-    false,
-    false,
-    false,
+  expect(parse(QuestDataSchema, { ...loop, races: [laps] }).races).toEqual([
+    laps,
   ])
-  expect(admits({ checkpoints: [] })).toBe(false)
-  expect(admits({ ride: 'board' })).toBe(false)
+  expect(questDataRules({ ...loop, races: [laps] })).toEqual([])
   expect(
-    questDataRules({ ...loop, races: [{ ...laps, checkpoints: ['cp.nope'] }] }),
-  ).toContain('undeclared quest flag cp.nope')
-  expect(
-    questDataRules({ ...loop, races: [{ ...laps, checkpoints: ['cp.a', 'gate.end'] }] }),
-  ).toContain('race arch-run checkpoints its own start or stop')
-  expect(
-    questDataRules({ ...loop, races: [{ ...laps, checkpoints: ['cp.a', 'cp.a'] }] }),
-  ).toContain('race arch-run names a checkpoint twice')
+    [0, 21, 1.5].map((count): boolean => lapRowAdmits({ laps: count })),
+  ).toEqual([false, false, false])
+  expect(lapRowAdmits({ checkpoints: [] })).toBe(false)
+  expect(lapRowAdmits({ ride: 'board' })).toBe(false)
+})
+
+test('a race checkpoint is declared, not its own start or stop, and named once (MSZ31)', (): void => {
+  expect(checkpointRules(['cp.nope'])).toContain(
+    'undeclared quest flag cp.nope',
+  )
+  expect(checkpointRules(['cp.a', 'gate.end'])).toContain(
+    'race arch-run checkpoints its own start or stop',
+  )
+  expect(checkpointRules(['cp.a', 'cp.a'])).toContain(
+    'race arch-run names a checkpoint twice',
+  )
 })
