@@ -6,3 +6,8 @@ The immutable Pine r7 hash begins with `2f9c5dc6`.
 
 Journal admission now requires the selector's image. Existing inert
 SVG, charged library images and currentColor tint keep their checks.
+
+Both validators admit the exact live Pine r7 archive while its memory
+line is held. The two historical archives agree on the missing image
+and retired glyph fields. The independent SS7 check still covers the
+page-only script-side rule.

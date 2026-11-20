@@ -23,9 +23,8 @@ const PIN_RUNS: readonly (readonly [name: string, hash: string])[] = [
   ],
   ['68 MB', 'ab7b1d4e1d2ddd29771d6964e470244f3b0ffe6af108bb6196b5071ba18a4e9d'],
 ]
-// SERVER-PARITY SS7 and SS11: the two older Pine pins (revision 2, 346 MB, and an earlier 327 MB one) run pine.life on
-// page.life and are refused, the grandfather list (`script-side-grandfather.ts`) being empty since SS11; Pine revision 4,
-// live on every channel, runs the correct view row pine.ambient; its J408 report (J424) is shardfile-pine-live-pin.test.ts.
+// OF31e2: the historical Pine archives fail admission at the journal selector.
+// script-side-grandfather.test.ts covers the Pine SS7 side law independently.
 const PINE_OLD_PINS: readonly (readonly [name: string, hash: string])[] = [
   [
     '346 MB',
@@ -36,8 +35,39 @@ const PINE_OLD_PINS: readonly (readonly [name: string, hash: string])[] = [
     '0e246ab03210d777619bf1fb09bbaa9da1bbcaea5093a8adfce913508762f084',
   ],
 ]
-const PINE_REFUSAL =
-  'Script side refused: sim script pine.life runs in page-only feature page.life (actors/page-life.json), which no server host runs'
+
+function pathKey(item: unknown): unknown {
+  return typeof item === 'object' && item !== null && 'key' in item
+    ? item.key
+    : undefined
+}
+
+function selectorIssue(value: unknown, field: string): boolean {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+  if ('issues' in value && Array.isArray(value.issues)) {
+    return value.issues.some((issue: unknown): boolean =>
+      selectorIssue(issue, field),
+    )
+  }
+  if (!('path' in value) || !Array.isArray(value.path)) {
+    return false
+  }
+  return (
+    pathKey(value.path[0]) === 'icons' && pathKey(value.path.at(-1)) === field
+  )
+}
+
+function glyphRefusal(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.name === 'ValiError' &&
+    selectorIssue(error, 'icon') &&
+    selectorIssue(error, 'image')
+  )
+}
+const retiredGlyph = { asymmetricMatch: glyphRefusal }
 
 function sha256(bytes: Readonly<Uint8Array>): string {
   return createHash('sha256').update(bytes).digest('hex')
@@ -77,7 +107,7 @@ describe.each(PINE_OLD_PINS)(
   (_name: string, hash: string): void => {
     const file = path.join(PINS, `${hash}.tar`)
     test.skipIf(!existsSync(file))(
-      'is refused by both validators with the same SS7 line',
+      'is refused by both validators for legacy journal selectors',
       async (): Promise<void> => {
         await prepareAssetDecoders()
         const files = readTar(readFileSync(file))
@@ -90,14 +120,14 @@ describe.each(PINE_OLD_PINS)(
             },
             { hash: sha256, readThrough: true },
           ),
-        ).toThrow(PINE_REFUSAL)
+        ).toThrow(retiredGlyph)
         await expect(
           validateShardfileStream(
             (): AsyncIterable<Uint8Array> =>
               createReadStream(file, { highWaterMark: CHUNK }),
             nodeStreamPorts({ brotli: false }),
           ),
-        ).rejects.toThrow(PINE_REFUSAL)
+        ).rejects.toThrow(retiredGlyph)
       },
       300_000,
     )

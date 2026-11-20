@@ -1,6 +1,5 @@
-// The historical Pine revision 4 product, from the local pin cache (absent on hosted CI). Both validators
-// refuse its over-line estimate while Pine is armed (J426), and admit it with a report while Pine is held (J424,
-// QA 11-18 row 29: engine still pins an older Pine).
+// The Pine r7 product on both live channels, from the local pin cache (absent on hosted CI). Both validators
+// refuse its over-line estimate while Pine is armed (J426), and admit it with a report while held (J424).
 import { createHash } from 'node:crypto'
 import { createReadStream, existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -15,7 +14,7 @@ import { validateShardfileFolder } from './shardfileValidation.ts'
 import { readTar } from './tar.ts'
 
 const PINE_LIVE_PIN =
-  '1b6dcfb16c2cfe595fe4feee9420809a4830a74662efdcf088de5cb1b8f8ac9f'
+  '2f9c5dc6f240188e5e6c6c7c3bcbc5b25fcb2d5864a5710987fe3c78cfb8e5d5'
 const FILE = `${homedir()}/.cache/wildshard/pins/${PINE_LIVE_PIN}.tar`
 const CHUNK = 65_536
 const REFUSAL =
@@ -26,7 +25,7 @@ function sha256(bytes: Readonly<Uint8Array>): string {
 }
 
 test.skipIf(!existsSync(FILE))(
-  'both validators refuse historical Pine revision 4 while Pine is armed, and admit it while held',
+  'both validators refuse live Pine r7 while it is armed, and admit it while held',
   async (): Promise<void> => {
     await prepareAssetDecoders()
     const files = readTar(readFileSync(FILE))
@@ -49,7 +48,7 @@ test.skipIf(!existsSync(FILE))(
       await expect(stream).rejects.toThrow(REFUSAL)
     } else {
       expect(folder).not.toThrow()
-      await expect(stream).resolves.toBeDefined()
+      await expect(stream).resolves.toMatchObject({ hash: PINE_LIVE_PIN })
     }
   },
   300_000,
