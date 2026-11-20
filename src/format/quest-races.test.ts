@@ -135,4 +135,7 @@ test('a race checkpoint is declared, not its own start or stop, and named once (
   expect(checkpointRules(['cp.a', 'cp.a'])).toContain(
     'race arch-run names a checkpoint twice',
   )
+  expect(questDataRules({ ...loop, races: [{ ...race, laps: 2 }] })).toContain(
+    'race arch-run runs laps without checkpoints',
+  )
 })

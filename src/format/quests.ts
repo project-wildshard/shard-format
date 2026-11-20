@@ -71,11 +71,13 @@ const raw: v.GenericSchema<{ [K in keyof QuestDataInput]: QuestDataInput[K] }, Q
 /** Plain quest graphs, declared flags/triggers and finite dialogue trees; hooks name platform-resolved script ports. */
 
 const reads = (c: v.InferOutput<typeof condition> | undefined): string[] => [...(c?.all ?? []), ...(c?.any ?? []), ...(c?.none ?? [])];
-/** MSZ31: a race's checkpoints are neither its own start or stop nor named twice. */
-function checkpointRules(run: { readonly id: string; readonly start: string; readonly stop: string; readonly checkpoints?: readonly string[] }): string[] {
+/** MSZ31: a race's checkpoints are neither its own start or stop nor named twice, and a lap race has one. */
+function checkpointRules(run: { readonly id: string; readonly start: string; readonly stop: string; readonly laps?: number; readonly checkpoints?: readonly string[] }): string[] {
   const checkpoints = run.checkpoints ?? [], errors: string[] = [];
   if (checkpoints.some((flag): boolean => flag === run.start || flag === run.stop)) { errors.push(`race ${run.id} checkpoints its own start or stop`); }
   if (new Set(checkpoints).size !== checkpoints.length) { errors.push(`race ${run.id} names a checkpoint twice`); }
+  // A lap counts at the stop only once its checkpoints are crossed, so a lap race without one could be won by stepping over the line
+  if ((run.laps ?? RACE_LAPS_MIN) > RACE_LAPS_MIN && checkpoints.length < RACE_CHECKPOINTS_MIN) { errors.push(`race ${run.id} runs laps without checkpoints`); }
   return errors;
 }
 /** Reject dangling flags, repeated identities, unreachable dialogue nodes and cycles before installing authored data. */
