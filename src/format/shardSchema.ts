@@ -270,8 +270,13 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
     }
   }
   errors.push(...stateRules(s.state));
+  // ONE-FORMAT OF22c2: a `boss` encounter on a declared spawn is a retained actor, as a runtime boss spawn is
+  const declaredIds = new Set<string>();
+  for (const spawn of s.creatures.spawns) { declaredIds.add(spawn.id); }
+  let retainedBoss = false;
+  for (const encounter of s.encounters) { if (encounter.kind === 'boss' && declaredIds.has(encounter.entity)) { retainedBoss = true; } }
   if ((s.clientChannels?.length ?? 0) > 0 && !pageOwner && s.runtime?.binds?.includes('clientChannels') !== true) errors.push('native visual channels require their declared page or runtime owner');
-  if (s.runtime?.binds?.includes('state') === true && (s.state.player.length > 0 || s.state.shared.some((field) => field.privacy !== 'host' && !(field.privacy === 'public' && field.type !== 'string' && (s.runtime?.spawns?.bosses.length ?? 0) > 0)))) errors.push('runtime-bound state supports host fields and retained-actor numeric fields');
+  if (s.runtime?.binds?.includes('state') === true && (s.state.player.length > 0 || s.state.shared.some((field) => field.privacy !== 'host' && !(field.privacy === 'public' && field.type !== 'string' && ((s.runtime?.spawns?.bosses.length ?? 0) > 0 || retainedBoss))))) errors.push('runtime-bound state supports host fields and retained-actor numeric fields');
   errors.push(...materialGraphRules(s), ...materialCurveRules(s), ...textureSamplerRules(s.look, s.files, skinLookTextureRefs(s)), ...postStackRules(s), ...lookSkyRules(s.look.sky?.graph, graphBindingSources(s)));
   const materialRefs = materialTextureRefs(s.look.materials), libraryClosure = new Set<string>();
   const libraryPending = [...s.library];
