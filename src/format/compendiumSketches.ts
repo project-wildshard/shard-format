@@ -3,10 +3,10 @@ import { parseSketchSvg, sketchReference, type CompendiumSketch } from './sketch
 import type { ShardRows } from './rows.ts';
 
 const prefix = 'data:image/svg+xml,';
-type SketchRow = Readonly<{ kind: 'journal'; icons: readonly Readonly<{ image?: string; icon?: string }>[] }> | Readonly<{ kind?: never; entries: readonly Readonly<{ sketch: string }>[] }>;
+type SketchRow = Readonly<{ kind: 'journal'; icons: readonly Readonly<{ image: string }>[] }> | Readonly<{ kind?: never; entries: readonly Readonly<{ sketch: string }>[] }>;
 function sketchRefs(row: SketchRow): string[] {
   if (row.kind === 'journal') {
-    return row.icons.flatMap((value: Readonly<{ image?: string; icon?: string }>): string[] => value.image?.startsWith(prefix) === true ? [value.image] : []);
+    return row.icons.flatMap((value: Readonly<{ image: string }>): string[] => value.image.startsWith(prefix) ? [value.image] : []);
   }
   return row.entries.map((entry: Readonly<{ sketch: string }>): string => entry.sketch);
 }

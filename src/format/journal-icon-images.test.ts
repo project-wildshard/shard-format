@@ -29,13 +29,13 @@ function journal(icons: readonly unknown[]): JournalRow {
   })
 }
 
-test('a custom image crosses full row admission and legacy glyphs retain their shape', (): void => {
+test('a custom image crosses full row admission and legacy glyphs are refused', (): void => {
   const row = journal([{ entryKind: 'species', image }])
   const shard = outputFixture()
   shard.rows.compendiums.push(row)
   const admitted = parseShardfile(shard)
   expect(admitted.rows.compendiums.at(-1)).toEqual(row)
-  expect(journal([{ icon: 'boar' }]).icons).toEqual([{ icon: 'boar' }])
+  expect((): unknown => journal([{ icon: 'boar' }])).toThrow()
 })
 
 test('journal image declarations refuse active SVG, external URLs and mixed syntax', (): void => {
