@@ -8,7 +8,7 @@ const SKIN_LOOK_RECIPE = 'platform.skin';
 const SKIN_CLIPS_RECIPE = 'platform.clips';
 const hash = v.pipe(v.string(), v.regex(/^[0-9a-f]{64}$/u));
 /** The look row's parameters. */
-const SkinLookParametersSchema: v.GenericSchema<SkinLookParametersRowsInput, SkinLookParametersRows> = v.strictObject({ skin: hash, variants: v.exactOptional(hash), phone: v.exactOptional(hash) });
+const SkinLookParametersSchema: v.GenericSchema<SkinLookParametersRowsInput, SkinLookParametersRows> = v.strictObject({ skin: hash, variants: v.exactOptional(hash), phone: v.exactOptional(hash), phoneVariants: v.exactOptional(hash) });
 /** Complete variant-to-skin declarations in one ordinary content-addressed JSON file. */
 const VARIANTS_VERSION = 1;
 const MIN_VARIANTS = 1;
@@ -43,8 +43,9 @@ const SkinClipParametersSchema: v.GenericSchema<SkinClipParametersRowsInput, Ski
 const ShardSkinFileSchema: v.GenericSchema<ShardSkinFileRowsInput, ShardSkinFileRows> = v.strictObject({ row: v.unknown(), binding: v.unknown() });
 
 /** A parsed skin look: the file it names and the attack span its clip was sampled with. */
-/** `phone` (ONE-FORMAT CC51b) names a lighter skin file the phone tier draws instead: same rig, clips, sockets and material. */
-interface SkinLookParameters { skin: string; variants?: string; phone?: string; attackSpan: number; clipMap?: SkinClipMap }
+/** `phone` (ONE-FORMAT CC51b) names a lighter skin file the phone tier draws instead: same rig, clips, sockets and material.
+ *  `phoneVariants` (OF23f) is a variant look's phone variant table: every variant's lighter skin, `phone` its default. */
+interface SkinLookParameters { skin: string; variants?: string; phone?: string; phoneVariants?: string; attackSpan: number; clipMap?: SkinClipMap }
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 type SkinLookParametersRowsInput = SkinLookParametersRows;
@@ -52,6 +53,7 @@ interface SkinLookParametersRowsFields {
     skin: string;
     variants?: string;
     phone?: string;
+    phoneVariants?: string;
 }
 type SkinLookParametersRows = { [Key in keyof SkinLookParametersRowsFields]: SkinLookParametersRowsFields[Key] };
 interface SkinClipParametersRowsInputFields {
@@ -69,4 +71,13 @@ interface ShardSkinFileRowsFields {
 }
 type ShardSkinFileRows = { [Key in keyof ShardSkinFileRowsFields]: ShardSkinFileRowsFields[Key] };
 
-export { SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE, SkinLookParametersSchema, type SkinVariants, SkinVariantsSchema, SkinClipParametersSchema, SkinClipMapSchema, ShardSkinFileSchema, type SkinClipMap, type SkinClipState, type SkinLookParameters, type SkinLookParametersRowsInput, type SkinLookParametersRows, type SkinClipParametersRowsInput, type SkinClipParametersRows, type ShardSkinFileRowsInput, type ShardSkinFileRows };
+/** OF23f: the skin file and variant table a look's tier draws: on the phone its phone skin and phone variant table
+ *  where it has them, else its skin and variant table (tier selection keeps only these of the look's files). */
+function skinLookTierRoots(parameters: Pick<SkinLookParametersRows, 'skin' | 'variants' | 'phone' | 'phoneVariants'>, tier: 'phone' | 'desktop'): [string] | [string, string] {
+  const phone = tier === 'phone' ? parameters.phone : undefined;
+  const table = phone === undefined ? parameters.variants : parameters.phoneVariants;
+  const head = phone ?? parameters.skin;
+  return table === undefined ? [head] : [head, table];
+}
+
+export { skinLookTierRoots, SKIN_LOOK_RECIPE, SKIN_CLIPS_RECIPE, SkinLookParametersSchema, type SkinVariants, SkinVariantsSchema, SkinClipParametersSchema, SkinClipMapSchema, ShardSkinFileSchema, type SkinClipMap, type SkinClipState, type SkinLookParameters, type SkinLookParametersRowsInput, type SkinLookParametersRows, type SkinClipParametersRowsInput, type SkinClipParametersRows, type ShardSkinFileRowsInput, type ShardSkinFileRows };

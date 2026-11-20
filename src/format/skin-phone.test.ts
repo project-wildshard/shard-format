@@ -68,7 +68,7 @@ test('a phone skin with another rig, sockets or material refuses', (): void => {
   }
 })
 
-test('a phone skin drawing more triangles, or beside a variant table, refuses', (): void => {
+test('a phone skin drawing more triangles, or beside a variant table with no phone table, refuses', (): void => {
   const heavier = phoneFixture((value): void => {
     value.row.cost.triangles += 1
   })
@@ -79,5 +79,5 @@ test('a phone skin drawing more triangles, or beside a variant table, refuses', 
   both.look.parameters['phone'] = both.secondHash
   expect((): unknown =>
     resolveSkinLookFiles(both.source, both.look, both.assets),
-  ).toThrow('a variant look has no phone skin')
+  ).toThrow("a variant look's phone skin needs a phone variant table")
 })

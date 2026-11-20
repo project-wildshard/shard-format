@@ -3,6 +3,8 @@ import { parseWorldScenes, worldScenesForTier } from './worldScenes.ts';
 import { parseRiggedHullBook } from './riggedHulls.ts';
 import { PosedLibrarySchema } from './namedJsonContracts.ts';
 import { parseClientPlan } from './clientPlan.ts';
+import { skinTierOff } from './skin-tier.ts';
+import type { SkinTierLooks } from './skin-tier.ts';
 import * as v from 'valibot';
 
 /** Only immutable addressing and typed alternatives are needed for selection.
@@ -14,6 +16,8 @@ export interface TierSelectionSource {
   /** Scheduling metadata never creates a synchronous consumer or a tier pin. */
   readonly late?: readonly LateFile[];
   readonly manifest?: { readonly horizonStrips?: { readonly day: string; readonly night: string; readonly phone?: { readonly day: string; readonly night: string } } };
+  /** OF23f: skin looks name each tier's skin files (`phone`, `phoneVariants`); other rows are read by the string walk. */
+  readonly rows?: { readonly looks: SkinTierLooks };
 }
 
 /** Pure typed-alternative selection, shared by boot compilation and admission.
@@ -86,6 +90,8 @@ export function* tierLibrarySteps(source: TierSelectionSource, tier: 'phone' | '
     for (const row of group) if (row !== kept) otherTier.add(row.hash);
   }
   for (const hash of otherTier) inactive.add(hash);
+  const skins = skinTierOff(source, tier);
+  for (const hash of skins.off) { inactive.add(hash); }
   const alternative = (selected: string, other: string): void => {
     const off = names.get(other); if (off !== undefined) inactive.add(off);
     const on = names.get(selected); if (on !== undefined) used.add(on);
@@ -188,8 +194,11 @@ export function* tierLibrarySteps(source: TierSelectionSource, tier: 'phone' | '
   }
   if (inactive.size === 0) return inactive;
   const { files: _files, library: _library, critical: _critical, manifest: _manifest, late: _late, ...fields } = source;
-  yield* stringsSteps([{ ...fields, manifest }, ...sections.values()], text => { const hash = names.get(text); if (hash !== undefined) used.add(hash); });
-  const pinned = new Set([...source.critical, ...source.files.flatMap(file => file.dependencies)]);
-  for (const file of source.files) for (const ref of file.dependencies) used.add(ref);
+  const tiered = skins.looks === source.rows?.looks ? fields : { ...fields, rows: { ...fields.rows, looks: skins.looks } };
+  yield* stringsSteps([{ ...tiered, manifest }, ...sections.values()], text => { const hash = names.get(text); if (hash !== undefined) used.add(hash); });
+  // The other tier's skin files reach their GLBs and maps; only this tier's files pin a dependency.
+  const live = source.files.filter((file): boolean => !skins.off.has(file.hash));
+  const pinned = new Set([...source.critical, ...live.flatMap(file => file.dependencies)]);
+  for (const file of live) for (const ref of file.dependencies) used.add(ref);
   return new Set([...inactive].filter(hash => otherTier.has(hash) ? !pinned.has(hash) : !used.has(hash)));
 }
