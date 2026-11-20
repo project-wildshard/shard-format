@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.56.0 (2026-11-19)
+
+- A quest step can land where it was done: a flare, light over the ground, a reward pop and a sound (`feedback`).
+- A finished quest can pay off: a bigger landing, the score's reward take and the next goal (`onComplete.payoff`).
+- Journal selectors name an image, never a glyph.
+
 ## v0.55.2 (2026-11-19)
 
 - Asset admission also lets a boss fight on a declared creature keep its decision fields.
