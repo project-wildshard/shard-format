@@ -49,14 +49,14 @@ export function journalRowRules(row: JournalRow): readonly string[] {
 }
 /** All raster images must be charged immutable library roots; logical URLs are resolved by the admitted product. */
 export function journalImageRefs(row: JournalRow): readonly string[] {
-  const icons = row.icons.flatMap((value: Readonly<JournalIcon>): string[] => !value.image.startsWith('data:') ? [value.image] : []);
+  const icons = row.icons.flatMap((value: Readonly<JournalIcon>): string[] => value.image.startsWith('data:') ? [] : [value.image]);
   return [...new Set([...row.entries.flatMap(value => [value.plate.sketch, ...value.plate.silhouette === undefined ? [] : [value.plate.silhouette]]),
     ...row.chalk === undefined ? [] : [row.chalk.atlas], ...icons])];
 }
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 export type JournalRowInput = JournalRow;
-type JournalIcon = { entryKind?: 'species' | 'variant' | 'elite' | 'boss' | 'place'; matchKind?: string; image: string; tint?: 'currentColor' };
+interface JournalIcon { entryKind?: 'species' | 'variant' | 'elite' | 'boss' | 'place'; matchKind?: string; image: string; tint?: 'currentColor' }
 interface JournalRowFields {
     kind: 'journal';
     id: string;
