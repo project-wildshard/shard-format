@@ -97,3 +97,31 @@ test('a race may name flags its finish and a lapse lower, so the next run counts
     }).success,
   ).toBe(false)
 })
+
+test('a race may run laps over ordered checkpoints and name how it is ridden (MSZ31)', (): void => {
+  const loop = {
+    ...base,
+    flags: ['gate.start', 'gate.end', 'cp.a', 'cp.b'],
+  }
+  const laps = { ...race, laps: 2, checkpoints: ['cp.a', 'cp.b'], ride: 'vehicle' as const }
+  expect(parse(QuestDataSchema, { ...loop, races: [laps] }).races).toEqual([laps])
+  expect(questDataRules({ ...loop, races: [laps] })).toEqual([])
+  const admits = (row: object): boolean =>
+    safeParse(QuestDataSchema, { ...loop, races: [{ ...race, ...row }] }).success
+  expect([0, 21, 1.5].map((n): boolean => admits({ laps: n }))).toEqual([
+    false,
+    false,
+    false,
+  ])
+  expect(admits({ checkpoints: [] })).toBe(false)
+  expect(admits({ ride: 'board' })).toBe(false)
+  expect(
+    questDataRules({ ...loop, races: [{ ...laps, checkpoints: ['cp.nope'] }] }),
+  ).toContain('undeclared quest flag cp.nope')
+  expect(
+    questDataRules({ ...loop, races: [{ ...laps, checkpoints: ['cp.a', 'gate.end'] }] }),
+  ).toContain('race arch-run checkpoints its own start or stop')
+  expect(
+    questDataRules({ ...loop, races: [{ ...laps, checkpoints: ['cp.a', 'cp.a'] }] }),
+  ).toContain('race arch-run names a checkpoint twice')
+})
