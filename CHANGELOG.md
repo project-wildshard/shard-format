@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.59.0 (2026-11-20)
+
+- A race can name a rival (`rival`): an AI driver in a dock's vehicle who races each run along a racing line.
+- The rival eases off or pushes within a catch-up `band`, and a player who finishes ahead of him raises its `beat` flag.
+
 ## v0.57.0 (2026-11-20)
 
 - A race can run laps (`laps`, 1 to 20) over ordered `checkpoints` a lap must cross before its line counts it.
