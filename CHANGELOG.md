@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.57.0 (2026-11-20)
+
+- A race can run laps (`laps`, 1 to 20) over ordered `checkpoints` a lap must cross before its line counts it.
+- A race can say how it is run (`ride`: `vehicle`, `foot` or `any`), and a run begun the wrong way is refused.
+
 ## v0.56.0 (2026-11-19)
 
 - A quest step can land where it was done: a flare, light over the ground, a reward pop and a sound (`feedback`).
