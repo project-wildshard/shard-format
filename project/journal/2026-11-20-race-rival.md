@@ -9,3 +9,6 @@ start to stop; one lap of a lap race), his top `speed` on a straight (1 to 80 m/
 catch-up `band` (5 to 500 m, default 40) inside which he eases off or pushes so he stays close, and a `beat` flag the
 engine raises when a player finishes ahead of him. The `beat` flag must be declared and is not the race's start or stop.
 The race's own `fact` still files on any finish. The dock is checked against `vehicles` by the engine at install.
+
+Follow-up: the ratchet refused the first cut (complexity, nested calls); the rival's rules and flags now sit in their own
+functions and the schema's pipes in named consts.

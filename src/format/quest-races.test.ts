@@ -160,9 +160,7 @@ const rivalAdmits = (row: Readonly<Record<string, unknown>>): boolean =>
 
 test('a race may name a rival who drives a line, and the flag a win over him raises (MSZ33)', (): void => {
   const row = { ...race, rival: { ...rival, band: 30 } }
-  expect(parse(QuestDataSchema, { ...duel, races: [row] }).races).toEqual([
-    row,
-  ])
+  expect(parse(QuestDataSchema, { ...duel, races: [row] }).races).toEqual([row])
   expect(questDataRules({ ...duel, races: [row] })).toEqual([])
   expect(
     [
@@ -173,15 +171,18 @@ test('a race may name a rival who drives a line, and the flag a win over him rai
       { band: 4 },
       { name: '' },
       { extra: 1 },
-    ].map((bad): boolean => rivalAdmits(bad)),
+    ].map((bad: Readonly<Record<string, unknown>>): boolean =>
+      rivalAdmits(bad),
+    ),
   ).toEqual([false, false, false, false, false, false, false])
 })
 
-test('a rival\'s beat flag is declared and is not the race\'s own start or stop (MSZ33)', (): void => {
-  const rules = (beat: string): string[] =>
-    questDataRules({ ...duel, races: [{ ...race, rival: { ...rival, beat } }] })
-  expect(rules('rival.nope')).toContain('undeclared quest flag rival.nope')
-  expect(rules('gate.end')).toContain(
+const beatRules = (beat: string): string[] =>
+  questDataRules({ ...duel, races: [{ ...race, rival: { ...rival, beat } }] })
+
+test("a rival's beat flag is declared and is not the race's own start or stop (MSZ33)", (): void => {
+  expect(beatRules('rival.nope')).toContain('undeclared quest flag rival.nope')
+  expect(beatRules('gate.end')).toContain(
     'race arch-run beats its rival on its own start or stop',
   )
 })

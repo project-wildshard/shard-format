@@ -69,8 +69,10 @@ const RIVAL_SPEED_MAX = 80;
 const RIVAL_BAND_MIN = 5;
 const RIVAL_BAND_MAX = 500;
 const rivalPoint = v.tuple([finite, finite, finite]);
-const rival = v.strictObject({ name: text, dock: id, line: v.pipe(v.array(rivalPoint), v.minLength(RIVAL_LINE_MIN), v.maxLength(RIVAL_LINE_MAX)),
-  speed: v.pipe(finite, v.minValue(RIVAL_SPEED_MIN), v.maxValue(RIVAL_SPEED_MAX)), band: v.exactOptional(v.pipe(finite, v.minValue(RIVAL_BAND_MIN), v.maxValue(RIVAL_BAND_MAX))), beat: id });
+const rivalLine = v.pipe(v.array(rivalPoint), v.minLength(RIVAL_LINE_MIN), v.maxLength(RIVAL_LINE_MAX));
+const rivalSpeed = v.pipe(finite, v.minValue(RIVAL_SPEED_MIN), v.maxValue(RIVAL_SPEED_MAX));
+const rivalBand = v.pipe(finite, v.minValue(RIVAL_BAND_MIN), v.maxValue(RIVAL_BAND_MAX));
+const rival = v.strictObject({ name: text, dock: id, line: rivalLine, speed: rivalSpeed, band: v.exactOptional(rivalBand), beat: id });
 const race = v.strictObject({ id, start: id, stop: id, fact: id, cap: raceCap, resets: v.exactOptional(raceResets), laps: v.exactOptional(raceLaps), checkpoints: v.exactOptional(raceCheckpoints), ride: v.exactOptional(raceRide), rival: v.exactOptional(rival) });
 const raceRows = v.pipe(v.array(race), v.maxLength(RACES_MAX));
 const raceList = v.exactOptional(raceRows);
@@ -93,6 +95,14 @@ function checkpointRules(run: { readonly id: string; readonly start: string; rea
   if ((run.laps ?? RACE_LAPS_MIN) > RACE_LAPS_MIN && checkpoints.length < RACE_CHECKPOINTS_MIN) { errors.push(`race ${run.id} runs laps without checkpoints`); }
   return errors;
 }
+/** MSZ33: the flags a race reads besides its start, stop and resets: its checkpoints and its rival's beat. */
+function raceFlags(run: { readonly checkpoints?: readonly string[]; readonly rival?: { readonly beat: string } }): string[] {
+  return run.rival === undefined ? [...run.checkpoints ?? []] : [...run.checkpoints ?? [], run.rival.beat];
+}
+/** MSZ33: a win over the rival is its own flag, never the line the run starts or stops on. */
+function rivalRules(run: { readonly id: string; readonly start: string; readonly stop: string; readonly rival?: { readonly beat: string } }): string[] {
+  return run.rival !== undefined && [run.start, run.stop].includes(run.rival.beat) ? [`race ${run.id} beats its rival on its own start or stop`] : [];
+}
 /** Reject dangling flags, repeated identities, unreachable dialogue nodes and cycles before installing authored data. */
 export function questDataRules(data: QuestData): string[] {
   const errors: string[] = [], flags = new Set(data.flags);
@@ -110,8 +120,7 @@ export function questDataRules(data: QuestData): string[] {
     raceIds.push(run.id); checkFlags([run.start, run.stop, ...(run.resets ?? [])]);
     if (run.start === run.stop) { errors.push(`race ${run.id} starts and stops on one flag`); }
     if (run.resets?.some((flag): boolean => flag === run.start || flag === run.stop) === true) { errors.push(`race ${run.id} resets its own start or stop`); }
-    checkFlags(run.checkpoints ?? []); errors.push(...checkpointRules(run));
-    if (run.rival !== undefined) { checkFlags([run.rival.beat]); if ([run.start, run.stop].includes(run.rival.beat)) { errors.push(`race ${run.id} beats its rival on its own start or stop`); } }
+    checkFlags(raceFlags(run)); errors.push(...checkpointRules(run), ...rivalRules(run));
   }
   unique(raceIds);
   for (const d of data.dialogue) {
