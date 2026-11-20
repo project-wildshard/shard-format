@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.61.0 (2026-11-20)
+
+- A creature look with variants can now give phones their own lighter skins: name `phone` and a `phoneVariants` table beside `variants`.
+- Phones no longer download a creature's desktop skins and maps when its look has a phone skin.
+
 ## v0.60.0 (2026-11-20)
 
 - Declare different vehicle grip on roads, dry ground and flooded patches.
