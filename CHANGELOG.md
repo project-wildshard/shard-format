@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.67.0 (2026-11-21)
+
+- Items can list `kept` rows: what a player keeps for good in your shard, each with a kind, a label and an optional Bag gauge.
+- `economy/loot` can name its `currency`: the coin's name, pickup model and Bag icon.
+- A runtime plan's keeper may skip its species programme when every creature is a declared row.
+
 ## v0.66.0 (2026-11-21)
 
 - A shard's spawn, loadout and audio live in their own sections now; an older level manifest is lifted at the door.
