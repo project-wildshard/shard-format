@@ -30,6 +30,14 @@ interface DeprecationRule extends Deprecation {
 }
 
 const LEGACY_SPELLING = '0.1'
+/** Deprecated in the current format with no data change: a shard file of any version may still carry it. */
+const CURRENT = '0.1.0.1'
+/** FORMAT-PRUNE FP15: OF30 cut B leaves these as plain JSON nothing reads. */
+const SPECIES_PROGRAM_FAMILY: readonly string[] = [
+  'actors/species-programs',
+  'look/hull-book',
+  'look/rigged-hulls',
+]
 
 function field(value: unknown, key: string): unknown {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -67,6 +75,26 @@ const RULES: readonly DeprecationRule[] = [
     migration: 'fp3-drop-runtime-trust',
     uses: (shard: Readonly<DeprecationInput>): boolean =>
       field(field(shard.index, 'runtime'), 'trust') !== undefined,
+  },
+  ...SPECIES_PROGRAM_FAMILY.map((name: string): DeprecationRule => ({
+    id: `section.${name}`,
+    path: `sections/${name} (the species-program family, FORMAT-PRUNE FP15)`,
+    since: CURRENT,
+    replacement:
+      'species rows and authored looks (actors/species); nothing reads it once OF30 lands',
+    migration: undefined,
+    uses: (shard: Readonly<DeprecationInput>): boolean =>
+      shard.sections.has(name),
+  })),
+  {
+    id: 'admission.server',
+    path: 'shard.json admission.server (native assembly, FORMAT-PRUNE FP16)',
+    since: CURRENT,
+    replacement:
+      'the server primitives: the server derives every host (OF17b3)',
+    migration: undefined,
+    uses: (shard: Readonly<DeprecationInput>): boolean =>
+      field(field(shard.index, 'admission'), 'server') !== undefined,
   },
 ]
 
