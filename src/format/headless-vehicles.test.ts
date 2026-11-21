@@ -60,7 +60,7 @@ test('vehicle docks and personal locks survive both worker transports', (): void
   const sent = productHeadlessSections(product)
   const received = headlessSections(structuredClone(sent))
   expect(received.get('world/vehicles')).toEqual(parseVehicles(vehicles))
-  expect(() =>
+  expect((): Map<string, unknown> =>
     headlessSections(new Map([['world/vehicles', { docks: [] }]])),
   ).toThrow()
 })
