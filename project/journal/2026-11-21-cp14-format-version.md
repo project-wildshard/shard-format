@@ -30,3 +30,7 @@ envelope.
 Writers keep building the legacy rows and pass them through `outputIndexEnvelope` (./version), which returns the
 envelope their version spells. One call per writer (sharddev outputProduct, engine fixtures), instead of each writer
 learning which fields 0.1.0.2 drops.
+
+CP8 (deprecation half): `requires.sdk` and `requires.capabilities` are deprecated since 0.1.0.2 with no migration.
+The build source hash covers both, so the chain cannot drop them; the counter shows them on every file and its copy
+until writers stop sourcing them, then they go at zero users (FE13).

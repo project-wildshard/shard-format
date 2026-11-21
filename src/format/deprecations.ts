@@ -106,6 +106,26 @@ const RULES: readonly DeprecationRule[] = [
       ),
   },
   {
+    id: 'requires.sdk',
+    path: 'shard.json requires.sdk (SHARD-COMPAT CP8): a copy of the format version',
+    since: ENVELOPE,
+    replacement:
+      'nothing: formatVersion names the format; writers stop sourcing it, then it goes at zero users',
+    migration: undefined,
+    uses: (shard: Readonly<DeprecationInput>): boolean =>
+      field(field(shard.index, 'requires'), 'sdk') !== undefined,
+  },
+  {
+    id: 'requires.capabilities',
+    path: 'shard.json requires.capabilities (FORMAT-PRUNE FP4): always empty, never read',
+    since: ENVELOPE,
+    replacement:
+      'nothing: the build source hash covers it, so writers stop sourcing it, then it goes at zero users',
+    migration: undefined,
+    uses: (shard: Readonly<DeprecationInput>): boolean =>
+      field(field(shard.index, 'requires'), 'capabilities') !== undefined,
+  },
+  {
     id: 'manifest.gridShardfile',
     path: 'sections/ui/level manifest.gridShardfile (and the discovery mount)',
     since: '0.1.0.1',

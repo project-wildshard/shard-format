@@ -131,7 +131,7 @@ describe('the deprecation counter (FE7)', (): void => {
     }
   })
 
-  test('the folder validator warns on an original and not on its migrated copy', (): void => {
+  test('the folder validator warns on an original; its migrated copy keeps only what no migration mends', (): void => {
     const original = corpusFiles()
     const validated = validateShardfileFolder(
       {
@@ -144,6 +144,8 @@ describe('the deprecation counter (FE7)', (): void => {
       'version.two-part',
       'shard.version',
       'shard.empty-fields',
+      'requires.sdk',
+      'requires.capabilities',
     ])
     expect(
       validated.warnings.some((line: string): boolean =>
@@ -154,6 +156,6 @@ describe('the deprecation counter (FE7)', (): void => {
     expect(
       validateMigrated(copy.files, { hash: sha256, judged: 'stored' })
         .deprecations,
-    ).toEqual([])
+    ).toEqual(['requires.sdk', 'requires.capabilities'])
   })
 })
