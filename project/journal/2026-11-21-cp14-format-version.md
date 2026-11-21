@@ -7,7 +7,10 @@ SHARD-COMPAT CP14 (J486 Q36) wanted `version` renamed `formatVersion`, but the i
 `formatVersion` holds the four-part format version and both `version` and the marker go. A reader tells the two
 envelopes apart by the field's type (number 2 or a version string); `shardfileFormatOf` reads either.
 
-The same bump carries FP4: `schemas`, `runtime.files`, `runtime.lines` and `requires.capabilities` were always empty
+Correction, same day: `requires.capabilities` stays in 0.1.0.2. It is part of the assembled source the build's source
+hash covers, so a writer whose source still carries `capabilities: []` would fail its hash against an index without it.
+
+The same bump carries FP4: `schemas`, `runtime.files`, `runtime.lines` (and `requires.capabilities`, see above) were always empty
 and nothing read them, but 0.1.0.1 readers required them, so dropping them needed a newer format. `runtime.trust`
 (FP3) is refused in the new envelope too. `checkIndexEnvelope` holds each envelope to its own fields: the legacy one
 keeps every field its readers need, 0.1.0.2 carries none of them.

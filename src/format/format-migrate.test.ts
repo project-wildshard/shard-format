@@ -158,7 +158,7 @@ describe('the migration chain', (): void => {
     expect(index.formatVersion).toBe('0.1.0.2')
     expect(index.version).toBeUndefined()
     expect(index.schemas).toBeUndefined()
-    expect(index.requires.capabilities).toBeUndefined()
+    expect(index.requires.capabilities).toEqual([])
   })
 
   test('CP14: the 0.1.0.2 copy reads in the full, lineage and download readers', (): void => {
@@ -191,7 +191,7 @@ describe('the migration chain', (): void => {
     )
     expect((): unknown =>
       parseOutputIndex({ ...legacy, formatVersion: '0.1.0.2' }),
-    ).toThrow('Format 0.1.0.2 drops version, schemas, requires.capabilities')
+    ).toThrow('Format 0.1.0.2 drops version, schemas')
   })
 
   test('the spelling step sits just below its four-part twin', (): void => {

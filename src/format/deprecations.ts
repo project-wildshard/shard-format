@@ -41,7 +41,6 @@ const EMPTY_INDEX_FIELDS: readonly (readonly [string, string | undefined])[] = [
   ['schemas', undefined],
   ['runtime', 'files'],
   ['runtime', 'lines'],
-  ['requires', 'capabilities'],
 ]
 /** FORMAT-PRUNE FP15: OF30 cut B leaves these as plain JSON nothing reads. */
 const SPECIES_PROGRAM_FAMILY: readonly string[] = [
@@ -94,7 +93,7 @@ const RULES: readonly DeprecationRule[] = [
   },
   {
     id: 'shard.empty-fields',
-    path: 'shard.json schemas, runtime.files, runtime.lines and requires.capabilities (FORMAT-PRUNE FP4)',
+    path: 'shard.json schemas, runtime.files and runtime.lines (FORMAT-PRUNE FP4)',
     since: ENVELOPE,
     replacement: 'nothing: each is always empty and no reader reads it',
     migration: 'fp4-drop-empty-index-fields',

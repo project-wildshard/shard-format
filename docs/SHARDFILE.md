@@ -51,8 +51,10 @@ decode, compile, admission and first playable frame separately. See
 from this package's npm version (J486 Q5). From 0.1.0.2 `shard.json` names it in `formatVersion`
 (`"formatVersion": "0.1.0.2"`, SHARD-COMPAT CP14). Formats 0.1 to 0.1.0.1 wrote the frozen layout marker
 `"formatVersion": 2` and the version in `version`; a reader tells the two envelopes apart by the field's type, and
-`shardfileFormatOf(index)` reads either. 0.1.0.2 also drops the always-empty `schemas`, `runtime.files`,
-`runtime.lines` and `requires.capabilities` (FORMAT-PRUNE FP4) and `runtime.trust` (FP3). An older file still
+`shardfileFormatOf(index)` reads either. 0.1.0.2 also drops the always-empty `schemas`, `runtime.files` and
+`runtime.lines` (FORMAT-PRUNE FP4) and `runtime.trust` (FP3). `requires.capabilities` stays: the build's source hash
+covers it, so it goes only when writers stop sourcing it. Writers pass their legacy rows through
+`outputIndexEnvelope` (./version). An older file still
 admits as written; the chain's `cp14-format-version` and `fp4-drop-empty-index-fields` steps write its migrated
 copy, and the `shard.version` and `shard.empty-fields` deprecations count the originals still carrying the old shape.
 This is the provisional author contract, published by `@wildshard/sdk/shardfile` (`ShardfileSchema`,

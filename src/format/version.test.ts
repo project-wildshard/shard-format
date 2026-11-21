@@ -64,7 +64,7 @@ test('CP14: a writer passes legacy rows through outputIndexEnvelope and gets the
   expect(outputIndexEnvelope({ ...legacy, version: '0.1.0.2' })).toEqual({
     format: 'wildshard.shardfile',
     formatVersion: '0.1.0.2',
-    requires: { sdk: '0.1.0.2', commons: [] },
+    requires: { sdk: '0.1.0.2', capabilities: [], commons: [] },
     runtime: { kind: 'client-plan', binds: [] },
   })
 })

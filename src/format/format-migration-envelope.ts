@@ -26,7 +26,8 @@ const formatVersionField: FormatMigration = {
   },
 }
 
-/** FORMAT-PRUNE FP4: `schemas`, `runtime.files`, `runtime.lines` and `requires.capabilities`, always empty, never read. */
+/** FORMAT-PRUNE FP4: `schemas`, `runtime.files` and `runtime.lines`, always empty, never read. `requires.capabilities` stays:
+ * it is part of the assembled source the build's source hash covers, so it goes only with the writers that stop sourcing it. */
 const dropEmptyIndexFields: FormatMigration = {
   id: 'fp4-drop-empty-index-fields',
   to: ENVELOPE,
@@ -35,13 +36,10 @@ const dropEmptyIndexFields: FormatMigration = {
   apply: (shard: MigratingShard): void => {
     const { index } = shard
     Reflect.deleteProperty(index, 'schemas')
-    const { runtime, requires } = index
+    const { runtime } = index
     if (isRecord(runtime)) {
       Reflect.deleteProperty(runtime, 'files')
       Reflect.deleteProperty(runtime, 'lines')
-    }
-    if (isRecord(requires)) {
-      Reflect.deleteProperty(requires, 'capabilities')
     }
   },
 }

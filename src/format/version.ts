@@ -123,28 +123,39 @@ function withoutKeys(value: unknown, keys: readonly string[]): unknown {
   )
 }
 
+/** The rows `outputIndexEnvelope` returns: the writer's own rows, typed so it keeps reading them, with `version` and
+ * `schemas` possibly gone and `formatVersion` possibly the version string. */
+type IndexEnvelope<Rows> = Omit<Rows, 'formatVersion' | 'schemas' | 'version'> &
+  Readonly<{
+    formatVersion: unknown
+    version?: unknown
+    schemas?: unknown
+  }>
+
 /** SHARD-COMPAT CP14: writers build the legacy `shard.json` rows (`formatVersion: 2`, `version`, the always-empty lists)
  * and pass them here. At a `version` of 0.1.0.2 or later this returns the envelope that version writes: `formatVersion`
- * is the version, and `version`, `schemas`, `runtime.files`, `runtime.lines`, `runtime.trust` and
- * `requires.capabilities` go. An older `version` comes back unchanged. */
-function outputIndexEnvelope(
-  rows: Readonly<Record<string, unknown>>,
-): Record<string, unknown> {
+ * is the version, and `version`, `schemas`, `runtime.files`, `runtime.lines` and `runtime.trust` go. An older
+ * `version` comes back unchanged. */
+function outputIndexEnvelope<Rows extends Readonly<Record<string, unknown>>>(
+  rows: Rows,
+): IndexEnvelope<Rows> {
   const { version } = rows
-  if (typeof version !== 'string' || !writesIndexFormatVersion(version)) {
-    return { ...rows }
-  }
   const { version: _version, schemas: _schemas, ...rest } = rows
-  return {
-    ...rest,
-    formatVersion: version,
-    requires: withoutKeys(rest['requires'], ['capabilities']),
-    runtime: withoutKeys(rest['runtime'], ['files', 'lines', 'trust']),
-  }
+  const envelope: Record<string, unknown> =
+    typeof version !== 'string' || !writesIndexFormatVersion(version)
+      ? { ...rows }
+      : {
+          ...rest,
+          formatVersion: version,
+          runtime: withoutKeys(rest['runtime'], ['files', 'lines', 'trust']),
+        }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the writer's own rows; only envelope fields change
+  return envelope as IndexEnvelope<Rows>
 }
 
 export {
   outputIndexEnvelope,
+  type IndexEnvelope,
   SHARDFILE_VERSION,
   SHARDFILE_VERSIONS,
   LEGACY_INDEX_VERSIONS,

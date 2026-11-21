@@ -72,13 +72,12 @@ export function parseOutputDescriptorIndex(input: unknown): OutputIndex | null {
   return isOutputIndex(input) ? parseOutputIndexRows(input) : null;
 }
 /** The fields only the legacy envelope (`formatVersion: 2`, formats 0.1 to 0.1.0.1) carries; 0.1.0.2 drops each
- * (SHARD-COMPAT CP14; FORMAT-PRUNE FP3 `runtime.trust`, FP4 the always-empty four). */
+ * (SHARD-COMPAT CP14; FORMAT-PRUNE FP3 `runtime.trust`, FP4 the always-empty index lists). */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot output, only read
 function legacyIndexFields(index: OutputIndex): readonly string[] {
   return [
     index.version === undefined ? undefined : 'version',
     index.schemas === undefined ? undefined : 'schemas',
-    index.requires.capabilities === undefined ? undefined : 'requires.capabilities',
     index.runtime?.files === undefined ? undefined : 'runtime.files',
     index.runtime?.lines === undefined ? undefined : 'runtime.lines',
     index.runtime === null || !Object.hasOwn(index.runtime, 'trust') ? undefined : 'runtime.trust',
@@ -94,7 +93,7 @@ function checkIndexEnvelope(index: OutputIndex): void {
     }
     return;
   }
-  const needed = ['version', 'schemas', 'requires.capabilities', ...index.runtime === null ? [] : ['runtime.files', 'runtime.lines']];
+  const needed = ['version', 'schemas', ...index.runtime === null ? [] : ['runtime.files', 'runtime.lines']];
   const missing = needed.filter((field: string): boolean => !carried.includes(field));
   if (missing.length > 0) {
     throw new Error(`Legacy shard.json (formatVersion 2) needs ${missing.join(', ')}`);
