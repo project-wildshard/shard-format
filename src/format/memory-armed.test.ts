@@ -75,18 +75,19 @@ test('J445: Far Reach at 1,027 MB playing reports and admits under 1.5 GB loadin
   ).toBe(true)
 })
 
-test('FP12: the zones once held are simply not armed, so they report only', (): void => {
+test('CP10 (J486): the four zones once held are armed again, since pins are never re-judged', (): void => {
   for (const slug of [
     'driftwood-isle',
     'nalati-grasslands',
     'nine-dragon-stack',
     'pine-hollow',
   ]) {
-    expect(zoneArmed(slug), slug).toBe(false)
-    expect(Object.hasOwn(ARMED_ZONES, slug), slug).toBe(false)
-    expect(armedLine(slug, 'loading'), slug).toBeUndefined()
-    expect(hardLineIssue('loading', 2e9, slug).severity, slug).toBe('warning')
-    expect(stale(slug), slug).toBe('warning')
+    expect(zoneArmed(slug), slug).toBe(true)
+    expect(armedLine(slug, 'loading'), slug).toBe(ARMED_LINES.loading)
+    expect(hardLineIssue('loading', 2e9, slug).severity, slug).toBe('refusal')
+    expect(ARMED_ZONES[slug]?.loadingBytes, slug).toBeLessThanOrEqual(
+      ARMED_LINES.loading,
+    )
   }
 })
 

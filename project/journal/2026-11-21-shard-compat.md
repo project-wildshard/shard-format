@@ -33,3 +33,6 @@
 - Fix: 0.68.0 listed ./migrations twice, so the chain (306ffac) shadowed the
   state migrations engine imports. ./migrations is the state module again;
   the chain is ./formatMigrations. exports-unique.test.ts guards it.
+- CP10 re-arms Driftwood, Nalati, Nine Dragon and Pine at their epoch-8
+  readings now Pine r10 is live and Nalati r5 is pinned. Pins and cooks
+  validate judged stored, so only new uploads meet the armed lines.
