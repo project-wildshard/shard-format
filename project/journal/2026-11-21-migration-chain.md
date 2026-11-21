@@ -47,3 +47,11 @@ baselines are never read for them. `memory-ratchet.ts` (four slug-keyed baseline
 `memory-armed.json`'s `held` block are deleted; its four decisions (`ratchetLimit`, `ratchetSeverity`, `ratchetNote`,
 `staleReadingAdmitted`) live in `memory-armed.ts` and read only the armed list. The four zones stay unarmed, as they
 were; the armed list itself moves to the API catalogue at FP27.
+
+## FE7: the deprecation counter
+
+`src/format/deprecations.ts` lists each deprecated path with `since`, `replacement` and the chain step that mends it
+(or none). Both validators add one warning per used path and a `deprecations` id list (`DeprecationReport`), so
+`shard-format validate` prints them and the API can put them on the receipt. `shard-format corpus` counts the kept
+originals using each (`corpus-deprecations.ts`); a valid verdict cached before FE7 is judged again. Seeded with
+`version.two-part` (FP6), `manifest.gridShardfile` (FP8) and `runtime.trust` (FP3).

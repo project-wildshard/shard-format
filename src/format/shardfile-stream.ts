@@ -14,6 +14,7 @@
 // packs (shardfile-stream-packs.ts). Hence `open`: a host passes a function that opens the stored object afresh.
 
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
+import { deprecationReport } from './deprecations.ts'
 import { assertSectionSides } from './feature-sides.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
@@ -36,6 +37,7 @@ import {
 import { walkTar } from './shardfile-stream-tar.ts'
 import { readCanonicalJson } from './shardfileValidation.ts'
 
+import type { DeprecationReport } from './deprecations.ts'
 import type { OutputIndex } from './outputIndex.ts'
 import type { Judged, PolicyVerdict } from './policy-verdict.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
@@ -62,7 +64,7 @@ interface StreamValidationPorts {
 }
 
 /** What one streaming validation found. */
-interface StreamedShardfile {
+interface StreamedShardfile extends DeprecationReport {
   /** SHA-256 and byte length of the stored object, before decoding. */
   readonly hash: string
   readonly bytes: number
@@ -72,8 +74,6 @@ interface StreamedShardfile {
   readonly shard: Shardfile
   readonly sections: ReadonlyMap<string, unknown>
   readonly scripts: ScriptAdmissionRows
-  /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
-  readonly warnings: readonly string[]
   readonly policy: PolicyVerdict
   /** True only when every check `validateShardfileFolder` runs has run: always, since AC6a2. */
   readonly complete: boolean
@@ -286,7 +286,7 @@ async function validateShardfileStream(
     shard,
     sections,
     scripts,
-    warnings,
+    ...deprecationReport({ index, sections }, warnings),
     policy: admittedVerdict(shard),
     complete: true,
     pending: [],

@@ -48,7 +48,12 @@ describe('shardfile validate on a good product', (): void => {
     assert.equal(run.status, 0)
     assert.match(
       run.stdout,
-      /^ok cli-fixture r1: 34 sections, 1 assets, source [\da-f]{64}\n$/u,
+      /^ok cli-fixture r1: 34 sections, 1 assets, source [\da-f]{64}\n/u,
+    )
+    // The fixture spells its format "0.1": validate warns (SHARD-COMPAT FE7).
+    assert.match(
+      run.stdout,
+      /\nwarning: deprecated since 0\.1\.0\.0 \(version\.two-part\)/u,
     )
   })
 })

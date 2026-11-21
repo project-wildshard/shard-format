@@ -27,6 +27,8 @@ import type { MemoryContext } from './memory-line.ts';
 import { mountedImageBytes, NO_BYTES } from './boot-memory-cost.ts';
 import { admittedVerdict, policyVerdict, recordVerdict } from './policy-verdict.ts';
 import type { Judged, PolicyVerdict } from './policy-verdict.ts';
+import { deprecationReport } from './deprecations.ts';
+import type { DeprecationReport } from './deprecations.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -68,7 +70,7 @@ export interface ShardfileValidationPorts {
 }
 
 /** A product that passed format validation. */
-export interface ValidatedShardfile {
+export interface ValidatedShardfile extends DeprecationReport {
   readonly index: OutputIndex;
   readonly shard: Shardfile;
   /** Admitted bytes by hash (`commons:<hash>` for pinned commons). */
@@ -77,8 +79,6 @@ export interface ValidatedShardfile {
   readonly sections: ReadonlyMap<string, unknown>;
   /** The script admission rows the product was admitted with. */
   readonly scripts: ScriptAdmissionRows;
-  /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
-  readonly warnings: readonly string[];
   /** CP10: the policy verdict and its rule version, for the API to store beside an upload. */
   readonly policy: PolicyVerdict;
   /** AUDIO AU5: the shard's own recordings (audio mounts and non-commons `audio.recordings`), measured from their bytes. */
@@ -253,5 +253,5 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
   const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index, judged: ports.judged ?? 'upload' });
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
-  return { index, shard, assets, sections: payloads, scripts, warnings, policy: admittedVerdict(shard), audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
+  return { index, shard, assets, sections: payloads, scripts, ...deprecationReport({ index, sections: payloads }, warnings), policy: admittedVerdict(shard), audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
 }

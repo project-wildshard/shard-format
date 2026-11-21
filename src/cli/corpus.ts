@@ -1,4 +1,4 @@
-import { createReadStream, createWriteStream } from 'node:fs'
+import { createWriteStream } from 'node:fs'
 import { mkdir, open, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { Readable } from 'node:stream'
@@ -16,8 +16,7 @@ import {
   string,
 } from 'valibot'
 
-import { nodeStreamPorts } from '../format/shardfile-stream-node.ts'
-import { validateShardfileStream } from '../format/shardfile-stream.ts'
+import { deprecationLines, storedDeprecations } from './corpus-deprecations.ts'
 
 import type { InferOutput } from 'valibot'
 
@@ -39,10 +38,12 @@ const RecordSchema = object({
   revisions: array(NamedSchema),
 })
 const ListSchema = object({ shardfiles: array(RecordSchema) })
+const IDS = array(string())
 const CachedSchema = object({
   validator: string(),
   verdict: string(),
   reason: optional(string()),
+  deprecations: optional(IDS),
 })
 
 type StoredRecord = Readonly<{
@@ -59,11 +60,13 @@ interface CorpusRow {
   readonly verdict: 'valid' | 'fails'
   readonly reason: string | undefined
   readonly cached: boolean
+  readonly deprecations: readonly string[]
 }
 
 type Judgement = Readonly<{
   verdict: 'valid' | 'fails'
   reason?: string
+  deprecations?: readonly string[]
   transient: boolean
 }>
 
@@ -178,14 +181,8 @@ async function judge(
       }
     }
     const plain = isPlainTar(await firstBytes(file))
-    await validateShardfileStream(
-      (): AsyncIterable<Uint8Array> => createReadStream(file),
-      {
-        ...nodeStreamPorts({ brotli: !plain }),
-        judged: 'stored',
-      },
-    )
-    return { verdict: 'valid', transient: false }
+    const deprecations = await storedDeprecations(file, plain)
+    return { verdict: 'valid', deprecations, transient: false }
   } catch (error: unknown) {
     return { verdict: 'fails', reason: shortReason(error), transient: false }
   } finally {
@@ -202,7 +199,10 @@ async function cachedVerdict(
       await readFile(path.join(options.cache, `${hash}.json`), 'utf8'),
     )
     const cached = parse(CachedSchema, raw)
-    return cached.validator === options.validator ? cached : undefined
+    // A valid verdict cached before FE7 has no deprecation list: judge it again.
+    const stale =
+      cached.verdict === 'valid' && cached.deprecations === undefined
+    return cached.validator === options.validator && !stale ? cached : undefined
   } catch {
     return undefined
   }
@@ -226,6 +226,7 @@ async function row(
       verdict: cached.verdict === 'valid' ? 'valid' : 'fails',
       reason: cached.reason,
       cached: true,
+      deprecations: cached.deprecations ?? [],
     }
   }
   await mkdir(options.cache, { recursive: true })
@@ -236,7 +237,13 @@ async function row(
       `${JSON.stringify({ validator: options.validator, ...judged })}\n`,
     )
   }
-  return { ...base, ...judged, reason: judged.reason, cached: false }
+  return {
+    ...base,
+    ...judged,
+    reason: judged.reason,
+    cached: false,
+    deprecations: judged.deprecations ?? [],
+  }
 }
 
 /** Every kept original's verdict, in the API's upload order. */
@@ -279,6 +286,7 @@ function corpusReport(rows: readonly CorpusRow[]): string {
   )
   lines.push(
     `corpus: ${String(rows.length)} kept originals, ${String(rows.length - failed)} valid, ${String(failed)} fail; fetched ${String(fetched.length)} (${String(bytes)} stored bytes), ${String(rows.length - fetched.length)} from cache`,
+    ...deprecationLines(rows),
   )
   return lines.join('\n')
 }

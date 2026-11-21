@@ -43,13 +43,16 @@ function runtime(files: readonly SourceFile[]): readonly SourceFile[] {
       !/\.(?:test|spec)\./u.test(file.path),
   )
 }
-/** A migration chain step names the old shape it rewrites (J486); it moves the count toward zero, so it is not counted. */
+/** A migration chain step or a deprecation names the old shape it rewrites or counts (J486); it moves the count toward
+ * zero, so it is not counted. */
 function withoutChainSteps(
   files: readonly SourceFile[],
 ): readonly SourceFile[] {
   return files.filter(
     (file: Readonly<SourceFile>): boolean =>
-      !/^src\/format\/format-migration-[^/]+\.ts$/u.test(file.path),
+      !/^src\/format\/(?:format-migration-[^/]+|deprecations)\.ts$/u.test(
+        file.path,
+      ),
   )
 }
 function named(
