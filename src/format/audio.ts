@@ -1,4 +1,5 @@
 import * as v from 'valibot';
+import { LevelAudioSchema, type LevelAudio } from './level-start-rows.ts';
 import { VoicePatchesSchema, type VoicePatches } from './voicePatches.ts';
 import { AudioSceneSchema, SampledAudioSceneSchema, type SampledAudioScene, type AudioScene } from './audioScene.ts';
 import { isJsonData } from './json.ts';
@@ -62,7 +63,7 @@ const gameplay: v.GenericSchema<AudioGameplayInput, AudioGameplay> = v.pipe(v.st
 
 const rawAudioSchema: v.GenericSchema<RawAudioRowsInput, RawAudioRows> = v.pipe(v.strictObject({ cues: v.pipe(v.array(v.strictObject({ id, voice: id })), v.maxLength(64), v.check((rows) => new Set(rows.map((row) => row.id)).size === rows.length, 'unique cue ids')),
   sampledScene:v.exactOptional(SampledAudioSceneSchema),patches:v.exactOptional(VoicePatchesSchema),scene:v.exactOptional(AudioSceneSchema),sceneFile:v.exactOptional(id),entry:v.exactOptional(v.pipe(v.record(id,v.strictObject({wind:v.boolean(),score:v.boolean(),scene:v.exactOptional(v.boolean())})),v.check(rows=>Object.keys(rows).length<=4))), gameplay:v.exactOptional(gameplay), bank:v.exactOptional(AudioBankSchema), emitters:v.exactOptional(v.pipe(v.record(id,AudioLoopEmitterSchema),v.check(rows=>Object.keys(rows).length<=32))), playback:v.exactOptional(AudioPlaybackSchema), surfaces:v.exactOptional(AudioSurfaceSchema), loopGraphs:v.exactOptional(v.pipe(v.record(id,AudioLoopGraphSchema),v.check(rows=>Object.keys(rows).length<=32))), observations:v.exactOptional(v.pipe(v.array(AudioObservationSystemSchema),v.maxLength(16),v.check(rows=>new Set(rows.map(row=>row.id)).size===rows.length))), pcm:v.exactOptional(v.pipe(v.record(id,AudioPcmProgramSchema),v.check(rows=>Object.keys(rows).length<=64))), synth:v.exactOptional(v.pipe(v.record(id,AudioPhraseProgramSchema),v.check(rows=>Object.keys(rows).length<=32))), recordings: v.optional(recordings), music: v.optional(AudioMusicSchema), samples: v.optional(AudioSamplesSchema), zones: v.optional(AudioZonesSchema),
-  voiceBindings:v.exactOptional(AudioVoiceBindingsSchema), routing: v.optional(AudioRoutingSchema, []), ambience: v.nullable(v.strictObject({ phrases:v.exactOptional(v.pipe(v.array(AudioPhraseScheduleSchema),v.maxLength(8))), gust: v.exactOptional(gust), bed: id, winds: v.pipe(v.array(wind), v.minLength(1), v.maxLength(4)) })), score: v.picklist(['silent', 'default']) }),v.check(audio=>Object.values(audio.emitters??{}).every(row=>audio.loopGraphs?.[row.graph]!==undefined),'declared loop emitter graph'),v.check(audio=>Object.values(audio.bank?.families??{}).every(row=>row.source.kind!=='pcm'||audio.pcm?.[row.source.id]!==undefined)&&Object.values(audio.bank?.spatial??{}).every(row=>audio.synth?.[row.phrase]!==undefined),'declared voice bank programs'),v.check(audio=>audio.bank===undefined||(audio.playback!==undefined&&(audio.bank.barks===undefined||audio.bank.catalogue!==undefined)),'declared bank playback/catalogue'),v.check(audio=>audio.scene===undefined||audio.sceneFile===undefined,'Exclusive audio scene source'));
+  voiceBindings:v.exactOptional(AudioVoiceBindingsSchema), routing: v.optional(AudioRoutingSchema, []), ambience: v.nullable(v.strictObject({ phrases:v.exactOptional(v.pipe(v.array(AudioPhraseScheduleSchema),v.maxLength(8))), gust: v.exactOptional(gust), bed: id, winds: v.pipe(v.array(wind), v.minLength(1), v.maxLength(4)) })), score: v.picklist(['silent', 'default']), level: v.exactOptional(LevelAudioSchema) }),v.check(audio=>Object.values(audio.emitters??{}).every(row=>audio.loopGraphs?.[row.graph]!==undefined),'declared loop emitter graph'),v.check(audio=>Object.values(audio.bank?.families??{}).every(row=>row.source.kind!=='pcm'||audio.pcm?.[row.source.id]!==undefined)&&Object.values(audio.bank?.spatial??{}).every(row=>audio.synth?.[row.phrase]!==undefined),'declared voice bank programs'),v.check(audio=>audio.bank===undefined||(audio.playback!==undefined&&(audio.bank.barks===undefined||audio.bank.catalogue!==undefined)),'declared bank playback/catalogue'),v.check(audio=>audio.scene===undefined||audio.sceneFile===undefined,'Exclusive audio scene source'));
 /** Validated audio data; voice ids are resolved only through the platform's admitted catalogue. */
 export interface AudioData {
   sampledScene?:SampledAudioScene;
@@ -93,6 +94,8 @@ export interface AudioData {
     winds: v.InferOutput<typeof wind>[];
   } | null;
   score: 'silent' | 'default';
+  /** ONE-FORMAT OF9b3: the page's ambience, score and sample policy, as the level manifest carried them (`level-start.ts`). */
+  level?: LevelAudio;
 }
 /** The defining validator is unchanged; its public output is independently named. */
 export const AudioDataSchema: v.GenericSchema<unknown, AudioData> = rawAudioSchema;
@@ -421,6 +424,7 @@ interface RawAudioRowsInputFields {
         winds: (AudioWindRowsInput)[];
     }) | null;
     score: 'silent' | 'default';
+    level?: LevelAudio;
 }
 export type RawAudioRowsInput = { [Key in keyof RawAudioRowsInputFields]: RawAudioRowsInputFields[Key] };
 interface RawAudioRowsFields {
@@ -459,5 +463,6 @@ interface RawAudioRowsFields {
         winds: (AudioWindRows)[];
     }) | null;
     score: 'silent' | 'default';
+    level?: LevelAudio;
 }
 export type RawAudioRows = { [Key in keyof RawAudioRowsFields]: RawAudioRowsFields[Key] };

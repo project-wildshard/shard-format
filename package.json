@@ -128,6 +128,8 @@
     "./fur-strands": "./src/format/fur-strands.ts",
     "./scene-render": "./src/format/scene-render.ts",
     "./look-level": "./src/format/look-level.ts",
+    "./level-start": "./src/format/level-start.ts",
+    "./level-start-rows": "./src/format/level-start-rows.ts",
     "./look-sky": "./src/format/look-sky.ts",
     "./directorDocument": "./src/format/directorDocument.ts",
     "./directorStages": "./src/format/directorStages.ts",
