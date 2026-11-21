@@ -87,12 +87,14 @@ type MemoryContext =
       sections: ReadonlyMap<string, unknown>
       mountedImages: number
       index?: TierIndex
+      judged?: 'upload' | 'stored'
     }>
 
 function memoryContext(context: MemoryContext): Readonly<{
   sections: ReadonlyMap<string, unknown>
   mountedImages: number
   index?: TierIndex
+  judged?: 'upload' | 'stored'
 }> {
   return context instanceof Map
     ? { sections: context, mountedImages: EMPTY_BYTES }

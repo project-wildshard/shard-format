@@ -49,4 +49,30 @@ function policyVerdict(
   }
 }
 
-export { type Judged, type PolicyIssue, type PolicyVerdict, policyVerdict }
+/** The verdict each admitted shard object was judged with: read back by the validators, so no signature grows. */
+const VERDICTS = new WeakMap<object, PolicyVerdict>()
+
+function recordVerdict<Admitted extends object>(
+  shard: Admitted,
+  verdict: PolicyVerdict,
+): Admitted {
+  VERDICTS.set(shard, verdict)
+  return shard
+}
+
+function admittedVerdict(shard: Readonly<object>): PolicyVerdict {
+  const verdict = VERDICTS.get(shard)
+  if (verdict === undefined) {
+    throw new Error('admitted with no policy verdict')
+  }
+  return verdict
+}
+
+export {
+  type Judged,
+  type PolicyIssue,
+  type PolicyVerdict,
+  admittedVerdict,
+  policyVerdict,
+  recordVerdict,
+}

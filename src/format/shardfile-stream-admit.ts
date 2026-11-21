@@ -10,6 +10,7 @@ import {
 } from './assetAdmission.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { assembleOutputShardfile } from './outputIndex.ts'
+import { admittedVerdict, recordVerdict } from './policy-verdict.ts'
 import { offlineMemoryAdmission } from './shardfile-assets.ts'
 import {
   assertShardfileTargets,
@@ -19,8 +20,8 @@ import { parseShardfile } from './shardSchema.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { AssetAdmission } from './assetAdmission.ts'
-import type { Judged, PolicyVerdict } from './policy-verdict.ts'
 import type { OutputIndex } from './outputIndex.ts'
+import type { Judged, PolicyVerdict } from './policy-verdict.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
 import type { AssetPasses } from './shardfile-stream-assets.ts'
 import type { Shardfile } from './shardSchema.ts'
@@ -31,25 +32,23 @@ function admitHead(
   index: OutputIndex,
   payloads: ReadonlyMap<string, unknown>,
   judged: Judged = 'upload',
-): Readonly<{ shard: Shardfile; policy: PolicyVerdict }> {
+): Shardfile {
   const shard = withIssueCode('shard-schema', (): Shardfile =>
     parseShardfile(assembleOutputShardfile(index, payloads), payloads),
   )
   withIssueCode('declared-costs', (): void => {
     preflightDeclaredCosts(shard, offlineMemoryAdmission('warn', judged))
   })
-  const policy = withIssueCode(
-    'performance-targets',
-    (): PolicyVerdict =>
-      // MG6 epoch 5: the index lets the estimate count only the files a phone fetches (no mount bytes in the stream).
-      assertShardfileTargets(
-        shard,
-        'warn',
-        { sections: payloads, mountedImages: 0, index },
-        judged,
-      ),
+  const verdict = withIssueCode('performance-targets', (): PolicyVerdict =>
+    // MG6 epoch 5: the index lets the estimate count only the files a phone fetches (no mount bytes in the stream).
+    assertShardfileTargets(shard, 'warn', {
+      sections: payloads,
+      mountedImages: 0,
+      index,
+      judged,
+    }),
   )
-  return { shard, policy }
+  return recordVerdict(shard, verdict)
 }
 
 /** The shard's head and its asset admission's first steps, or the refusal they gave: thrown only after the packs, the
@@ -59,31 +58,31 @@ function admitBeforeAssets(
   index: OutputIndex,
   payloads: ReadonlyMap<string, unknown>,
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's row type, only read
-  scripts: ScriptAdmissionRows,
-  judged: Judged = 'upload',
+  rows: Readonly<{ scripts: ScriptAdmissionRows; judged?: Judged | undefined }>,
 ): Readonly<{
   admission: AssetAdmission | undefined
   refusal: unknown
-  policy: PolicyVerdict | undefined
-  judged: Judged
+  head?: Shardfile | undefined
+  judged?: Judged | undefined
 }> {
+  const { scripts, judged } = rows
   try {
     const head = admitHead(index, payloads, judged)
     return {
       admission: withIssueCode('asset-admission', (): AssetAdmission =>
         assetAdmission(
-          head.shard,
+          head,
           offlineMemoryAdmission('warn', judged),
           scripts,
           payloads,
         ),
       ),
       refusal: undefined,
-      policy: head.policy,
+      head,
       judged,
     }
   } catch (error) {
-    return { admission: undefined, refusal: error, policy: undefined, judged }
+    return { admission: undefined, refusal: error }
   }
 }
 
@@ -93,13 +92,14 @@ function admitAssets(
   before: Readonly<{
     admission: AssetAdmission | undefined
     refusal: unknown
-    judged?: Judged
+    head?: Shardfile | undefined
+    judged?: Judged | undefined
   }>,
   later: Readonly<AssetPasses>,
   hash: (bytes: Readonly<Uint8Array>) => string,
 ): Shardfile {
-  const { admission } = before
-  if (admission === undefined) {
+  const { admission, head } = before
+  if (admission === undefined || head === undefined) {
     throw before.refusal
   }
   return withIssueCode('asset-admission', (): Shardfile => {
@@ -110,10 +110,13 @@ function admitAssets(
     if (refused !== undefined) {
       throw new Error(refused)
     }
-    return admitAfterFiles(
-      admission,
-      later.assets,
-      offlineMemoryAdmission('warn', before.judged),
+    return recordVerdict(
+      admitAfterFiles(
+        admission,
+        later.assets,
+        offlineMemoryAdmission('warn', before.judged),
+      ),
+      admittedVerdict(head),
     )
   })
 }

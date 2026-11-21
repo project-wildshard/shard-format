@@ -1,3 +1,4 @@
+// oxlint-disable typescript/prefer-readonly-parameter-types, typescript/no-unsafe-type-assertion, import/max-dependencies -- a test over the corpus export, with one hand-staled reading
 // SHARD-COMPAT CP10 (J486 D1.1): memory and budget policy judges a shard file once, at upload. A stored original, an
 // engine pin and a cook validate `judged: 'stored'`: readability is checked, the policy only reports.
 import { createHash } from 'node:crypto'
@@ -9,7 +10,10 @@ import { beforeAll, expect, test } from 'vitest'
 import { zoneArmed } from './memory-armed.ts'
 import { MEMORY_EPOCH } from './memory-epoch.ts'
 import { MEMORY_HARD_BYTES } from './memory-line.ts'
-import { offlineMemoryAdmission, prepareAssetDecoders } from './shardfile-assets.ts'
+import {
+  offlineMemoryAdmission,
+  prepareAssetDecoders,
+} from './shardfile-assets.ts'
 import {
   assertShardfileTargets,
   validateShardfileFolder,
@@ -111,12 +115,11 @@ test('CP10: a stored shard file over an armed line is admitted with the issue re
   expect((): unknown => assertShardfileTargets(staleShard, 'warn')).toThrow(
     /REFUSAL/u,
   )
-  const verdict = assertShardfileTargets(
-    staleShard,
-    'warn',
-    new Map(),
-    'stored',
-  )
+  const verdict = assertShardfileTargets(staleShard, 'warn', {
+    sections: new Map(),
+    mountedImages: 0,
+    judged: 'stored',
+  })
   expect(verdict.judged).toBe('stored')
   expect(
     verdict.issues.some((issue): boolean => issue.severity === 'refusal'),
@@ -126,7 +129,7 @@ test('CP10: a stored shard file over an armed line is admitted with the issue re
 test('CP10: offline admission never refuses a stored shard file over the hard line', (): void => {
   const over = MEMORY_HARD_BYTES + 1
   expect(offlineMemoryAdmission('refuse').accept(request(over))).toBe(false)
-  expect(
-    offlineMemoryAdmission('refuse', 'stored').accept(request(over)),
-  ).toBe(true)
+  expect(offlineMemoryAdmission('refuse', 'stored').accept(request(over))).toBe(
+    true,
+  )
 })

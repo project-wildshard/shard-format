@@ -7,3 +7,6 @@
   Both return `policy` ({judged, epoch, armed, issues}) so the API can store
   the verdict and its rule version beside an upload. The held list stays
   until engine passes `judged: 'stored'`; then it empties.
+- The first CP10 push hit the src/format ratchet (max-params, max-lines).
+  Now `judged` rides the memory context and the verdict is recorded against
+  the admitted shard object (a WeakMap), so no signature grows.

@@ -8,17 +8,16 @@
 // outside `blobs/`, `mounts/` and `packs/` are kept whole. Then the old
 // validator's steps run in its order, so a refusal is the one it gives (its
 // message may differ only for a blob whose declared kind contradicts its path).
-//
 // AC6a2: `validateShardfileAssets`' byte checks and the pack checks read
 // assets by hash in any order (153 MB of blobs on the 327 MB pin), so they
-// take a second read of the stored object (shardfile-stream-assets.ts), and a
-// further read per group of left-out packs (shardfile-stream-packs.ts). Hence
-// `open`: a host passes a function that opens the stored object afresh.
+// take a second read of the stored object (shardfile-stream-assets.ts), and a further read per group of left-out
+// packs (shardfile-stream-packs.ts). Hence `open`: a host passes a function that opens the stored object afresh.
 
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
 import { assertSectionSides } from './feature-sides.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
+import { admittedVerdict } from './policy-verdict.ts'
 import { assertScriptSides } from './script-sides.ts'
 import { scriptAdmissionRows } from './scriptContract.ts'
 import { prepareAssetDecoders } from './shardfile-assets.ts'
@@ -38,6 +37,7 @@ import { walkTar } from './shardfile-stream-tar.ts'
 import { readCanonicalJson } from './shardfileValidation.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
+import type { Judged, PolicyVerdict } from './policy-verdict.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
 import type { StoredSource } from './shardfile-stream-assets.ts'
 import type { KeptMember, Replay } from './shardfile-stream-rows.ts'
@@ -46,7 +46,6 @@ import type {
   StreamMember,
   WalkPorts,
 } from './shardfile-stream-tar.ts'
-import type { Judged, PolicyVerdict } from './policy-verdict.ts'
 import type { Shardfile } from './shardSchema.ts'
 
 /** The host services a streaming validation needs. */
@@ -59,7 +58,6 @@ interface StreamValidationPorts {
   readonly decode?: (
     stored: AsyncIterable<Uint8Array>,
   ) => AsyncIterable<Uint8Array>
-  /** SHARD-COMPAT CP10: `'stored'` for an already-admitted original; memory and budget policy only reports. */
   readonly judged?: Judged
 }
 
@@ -76,7 +74,6 @@ interface StreamedShardfile {
   readonly scripts: ScriptAdmissionRows
   /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
   readonly warnings: readonly string[]
-  /** CP10: the policy verdict and its rule version, for the API to store beside an upload. */
   readonly policy: PolicyVerdict
   /** True only when every check `validateShardfileFolder` runs has run: always, since AC6a2. */
   readonly complete: boolean
@@ -268,7 +265,7 @@ async function validateShardfileStream(
   )
   const { sections, warnings, scripts } = readSections(replay, index)
   replayBeforePacks(replay, index, scripts)
-  const before = admitBeforeAssets(index, sections, scripts, ports.judged)
+  const before = admitBeforeAssets(index, sections, { ...ports, scripts })
   const later = await assetPasses({
     open,
     ports,
@@ -281,11 +278,7 @@ async function validateShardfileStream(
   const shard = admitAssets(before, later, ports.hash)
   admitTail(shard, { index, payloads: sections, hash: ports.hash })
   const { hash, bytes, tarBytes } = walked
-  if (before.policy === undefined) {
-    throw new Error('admitted with no policy verdict')
-  }
   return {
-    policy: before.policy,
     hash,
     bytes,
     tarBytes,
@@ -294,6 +287,7 @@ async function validateShardfileStream(
     sections,
     scripts,
     warnings,
+    policy: admittedVerdict(shard),
     complete: true,
     pending: [],
     heldBytes: Math.max(walked.heldBytes, later.heldBytes),
