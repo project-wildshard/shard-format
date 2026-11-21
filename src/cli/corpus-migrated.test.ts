@@ -31,7 +31,11 @@ describe('the corpus judges a refused original through the chain', (): void => {
       new Error('as stored'),
     )
     assert.equal(verdict.applied[0], 'fp6-four-part-version')
-    assert.deepEqual(verdict.deprecations, [])
+    // Only what no migration mends stays (CP8): both fields are in the build source hash.
+    assert.deepEqual(verdict.deprecations, [
+      'requires.sdk',
+      'requires.capabilities',
+    ])
   })
 
   it('keeps the stored refusal when the chain cannot run', async (): Promise<void> => {
