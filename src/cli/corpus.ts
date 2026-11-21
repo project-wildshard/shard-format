@@ -181,8 +181,8 @@ async function judge(
       }
     }
     const plain = isPlainTar(await firstBytes(file))
-    const deprecations = await storedDeprecations(file, plain)
-    return { verdict: 'valid', deprecations, transient: false }
+    const stored = await storedDeprecations(file, plain)
+    return { verdict: 'valid', ...stored, transient: false }
   } catch (error: unknown) {
     return { verdict: 'fails', reason: shortReason(error), transient: false }
   } finally {

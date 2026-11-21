@@ -3,20 +3,36 @@ import { createReadStream } from 'node:fs'
 
 import { nodeStreamPorts } from '../format/shardfile-stream-node.ts'
 import { validateShardfileStream } from '../format/shardfile-stream.ts'
+import { migratedVerdict } from './corpus-migrated.ts'
 
 import type { CorpusRow } from './corpus.ts'
 
-/** Validate one stored original (brotli unless `plain`) as the API stored it; the deprecated paths it uses. Throws on a
- * refusal. */
+/** A valid original's deprecated paths, and the chain steps that made it valid when it was refused as stored. */
+interface StoredVerdict {
+  readonly deprecations: readonly string[]
+  /** `migrated: <steps>` when the chain's copy is what validated. */
+  readonly reason?: string
+}
+
+/** Validate one stored original (brotli unless `plain`) as the API stored it; one the format refuses is judged again
+ * through the migration chain (J486). Throws the copy's refusal when that fails too. */
 async function storedDeprecations(
   file: string,
   plain: boolean,
-): Promise<readonly string[]> {
-  const validated = await validateShardfileStream(
-    (): AsyncIterable<Uint8Array> => createReadStream(file),
-    { ...nodeStreamPorts({ brotli: !plain }), judged: 'stored' },
-  )
-  return validated.deprecations
+): Promise<StoredVerdict> {
+  try {
+    const validated = await validateShardfileStream(
+      (): AsyncIterable<Uint8Array> => createReadStream(file),
+      { ...nodeStreamPorts({ brotli: !plain }), judged: 'stored' },
+    )
+    return { deprecations: validated.deprecations }
+  } catch (error: unknown) {
+    const copy = await migratedVerdict(file, plain, error)
+    return {
+      deprecations: copy.deprecations,
+      reason: `migrated: ${copy.applied.join(', ')}`,
+    }
+  }
 }
 
 /** FE7: one line per deprecated path a kept original uses, with how many and which. */
@@ -38,4 +54,4 @@ function deprecationLines(
   )
 }
 
-export { deprecationLines, storedDeprecations }
+export { type StoredVerdict, deprecationLines, storedDeprecations }

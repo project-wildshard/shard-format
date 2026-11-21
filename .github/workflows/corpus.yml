@@ -1,6 +1,7 @@
 # SHARD-COMPAT FE5 (meta, J486, Q51): every stored shard against this format. `wildshard-format corpus` (FE3,
 # src/cli/corpus.ts) reads the public catalogue (GET https://api.wildshard.io/api/shardfiles), downloads each kept
-# original once by hash, and validates it as stored (`judged: 'stored'`); it exits 3 naming every shard that fails.
+# original once by hash, and validates it as stored (`judged: 'stored'`); one the format refuses is judged again
+# through the migration chain (J486, src/cli/corpus-migrated.ts). It exits 3 naming every shard that still fails.
 # The release job (npm-publish.yml) runs it on the tagged commit before `npm publish`; it also runs nightly on main.
 # A failure blocks unless corpus/known-failures.json lists its hash with the row that owns its repair; a listed
 # shard that passes again is named stale. Never in the pre-push gate. The downloads are public: no R2 token is needed. Downloads and verdicts are cached by

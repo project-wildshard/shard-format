@@ -55,3 +55,14 @@ were; the armed list itself moves to the API catalogue at FP27.
 `shard-format validate` prints them and the API can put them on the receipt. `shard-format corpus` counts the kept
 originals using each (`corpus-deprecations.ts`); a valid verdict cached before FE7 is judged again. Seeded with
 `version.two-part` (FP6), `manifest.gridShardfile` (FP8) and `runtime.trust` (FP3).
+
+## The corpus judges through the chain
+
+FE5's corpus validated each kept original as stored, so Pine r1 to r6 failed `rows.compendiums.0`: the retired journal
+icons that `journal-glyph-images` mends. A file the format refuses as stored is now migrated and its copy validated
+(`src/cli/corpus-migrated.ts`), with the author preparation when the steps leave it sealed; the row reads
+`valid ... migrated: <steps>`. Pine r3 to r6 (prod's r5 2afc6270 included) pass and leave `corpus/known-failures.json`.
+Pine r1 and r2 then fail on a second break: their `page.life` program runs the `sim` row `pine.life` page-only, which
+SERVER-PARITY SS11 split into the view row `pine.ambient` at r3. Mending that needs a step that edits a named JSON blob
+(FORMAT-PRUNE FP10), so they stay listed under it. FP14 to FP16 also add the species-program family sections and
+`admission.server` to `deprecations.ts`.
