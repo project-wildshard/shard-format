@@ -12,6 +12,8 @@ export const HEADLESS_CONTEXT_SECTIONS = [
   'actors/moves',
   'actors/strikes',
   'world/targets',
+  // Races and personal vehicle locks need their docks in the worker too.
+  'world/vehicles',
   'sim/runtime-plan',
   'sim/bodies',
   // The offline simulation reads the ordinary portal ride from this plan.
