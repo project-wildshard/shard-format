@@ -14,3 +14,9 @@ old tables only for a shard that declares none, until Driftwood and Pine are rep
 
 The new schema pieces sit above the first export and the uniqueness law is a pipe check, to keep the src/format
 ratchet where it was.
+
+## OF31h2: the awake cost in the server budget
+
+`serverBudget` takes two optional fields: `awakeMicros`, the measured mean tick time with one player in, and
+`shareWorker`, the shard whose worker this one always shares. The engine worker table reads them from the shard
+header and keeps its own `COST` and `TOGETHER` tables only for shards that declare nothing.

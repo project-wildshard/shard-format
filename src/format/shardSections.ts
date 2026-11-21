@@ -18,6 +18,8 @@ const positive = v.pipe(ShardNaturalSchema, v.minValue(1));
 /** Finite wire number without an imposed gameplay range. */
 export const ShardFiniteSchema: v.GenericSchema<ShardFiniteInput, ShardFinite> = v.pipe(v.number(), v.finite());
 const name = v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u), v.maxLength(limits.idCharacters));
+/** A tick's time, in microseconds: at most one 60 Hz frame. */
+const tickMicros = v.pipe(positive, v.maxValue(16_666));
 /** Local SHA256 content identity. */
 export const ShardHashSchema: v.GenericSchema<ShardHashInput, ShardHash> = v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u));
 /** Local or commons-qualified SHA256 content reference. */
@@ -50,7 +52,7 @@ export const SimSchema: v.GenericSchema<ShardSimInput, ShardSim> = v.strictObjec
 /** Bounded player count and authored movement speed. */
 export const AuthorCapsSchema: v.GenericSchema<ShardAuthorCapsInput, ShardAuthorCaps> = v.strictObject({ players: v.pipe(positive, v.maxValue(32)), speed: v.pipe(ShardFiniteSchema, v.minValue(0), v.maxValue(15)) });
 /** Bounded authoritative simulation resource declarations. */
-export const ServerBudgetSchema: v.GenericSchema<ShardServerBudgetInput, ShardServerBudget> = v.strictObject({ tickMicros: v.pipe(positive, v.maxValue(16_666)), memory: positive, entities: v.pipe(ShardNaturalSchema, v.maxValue(10_000)), commandsPerTick: v.pipe(ShardNaturalSchema, v.maxValue(1024)) });
+export const ServerBudgetSchema: v.GenericSchema<ShardServerBudgetInput, ShardServerBudget> = v.strictObject({ tickMicros, memory: positive, entities: v.pipe(ShardNaturalSchema, v.maxValue(10_000)), commandsPerTick: v.pipe(ShardNaturalSchema, v.maxValue(1024)), awakeMicros: v.exactOptional(tickMicros), shareWorker: v.exactOptional(name) });
 /** Content-addressed file inventory and conservative costs. */
 export const FilesSchema: v.GenericSchema<ShardFilesInput, ShardFiles> & { readonly pipe: readonly [v.ArraySchema<typeof file, undefined>, unknown] } = v.pipe(v.array(file), v.maxLength(limits.files));
 /** Finite L0/L1 tile inventory. */
@@ -299,6 +301,10 @@ interface ShardServerBudgetInputFields {
     memory: ShardNaturalInput;
     entities: ShardNaturalInput;
     commandsPerTick: ShardNaturalInput;
+    /** ONE-FORMAT OF31h2: the measured awake cost, mean microseconds a tick with one player in; the server weighs its workers by it. */
+    awakeMicros?: ShardNaturalInput;
+    /** OF31h2: the shard whose worker this one always shares. */
+    shareWorker?: string;
 }
 export type ShardServerBudgetInput = { [Key in keyof ShardServerBudgetInputFields]: ShardServerBudgetInputFields[Key] };
 interface ShardServerBudgetFields {
@@ -306,6 +312,10 @@ interface ShardServerBudgetFields {
     memory: ShardNatural;
     entities: ShardNatural;
     commandsPerTick: ShardNatural;
+    /** ONE-FORMAT OF31h2: the measured awake cost, mean microseconds a tick with one player in; the server weighs its workers by it. */
+    awakeMicros?: ShardNatural;
+    /** OF31h2: the shard whose worker this one always shares. */
+    shareWorker?: string;
 }
 export type ShardServerBudget = { [Key in keyof ShardServerBudgetFields]: ShardServerBudgetFields[Key] };
 export type ShardFilesInput = (ShardFileRowsInput)[];
