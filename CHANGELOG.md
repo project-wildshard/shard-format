@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.68.0 (2026-11-21)
+
+- Older shard files are migrated, not refused: `@wildshard/shard-format/migrate` rewrites a file to the current format.
+- Pine Hollow revisions 1 to 6 load again: their retired journal icons become the images the game drew.
+- `shard-format validate` warns when a shard uses a deprecated field and names what to write instead.
+- Write `shardfile`, not `gridShardfile`, and drop `runtime.trust`; older files are mended automatically.
+
 ## v0.67.0 (2026-11-21)
 
 - Items can list `kept` rows: what a player keeps for good in your shard, each with a kind, a label and an optional Bag gauge.
