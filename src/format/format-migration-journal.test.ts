@@ -22,6 +22,7 @@ const DISTINCT = 2
 function shardWith(icons: readonly object[]): MigratingShard {
   return {
     index: { admission: { budgets: { library: { resident: BUDGET } } } },
+    mounts: new Map<string, unknown>(),
     sections: new Map<string, unknown>([
       [
         'ui/compendium',

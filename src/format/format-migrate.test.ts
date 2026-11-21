@@ -145,8 +145,7 @@ describe('the migration chain', (): void => {
       migrations: [...FORMAT_MIGRATIONS, edit],
     })
     expect(migrated.applied).toEqual([
-      'fp6-four-part-version',
-      'journal-glyph-images',
+      ...FORMAT_MIGRATIONS.map((step: FormatMigration): string => step.id),
       'test-edit',
     ])
     expect(migrated.to).toBe('0.1.0.1')

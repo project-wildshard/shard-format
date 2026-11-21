@@ -21,3 +21,12 @@ image-only without a migration, and r5 is production's pointer. `journal-glyph-i
 `src/format/journal-glyphs.json`, and raises `admission.budgets.library.resident` by the new rasters. Because the
 break landed inside 0.1.0.1, the step is a repair: `repairs` lets it run on a file already at its `to` version when
 the old shape is there. Pine r5 is now a 0.1.0.0 corpus fixture; `pnpm test:chain` migrates and validates it.
+
+## FP8 and FP3: same-version steps, and JSON cook mounts
+
+`fp8-shardfile-pointer` renames `gridShardfile` to `shardfile` and `fp3-drop-runtime-trust` drops `runtime.trust`.
+Both write a shape a 0.1.0.1 reader already admits, so they are repairs at 0.1.0.1 and need no format bump; refusing
+the old shape in new uploads waits until the API and engine read migrated copies. Nalati r4 and Pine r9 also carry
+the old pointer in their discovery mount, so a step can now edit JSON cook mounts under `mounts/`: the chain writes a
+changed mount, points its cook rows and fence entry at the new hash and re-seals the preparation over it. Nalati r4,
+Pine r9 and Driftwood r8 are 0.1.0.1 corpus fixtures; their copies validate with the author preparation re-sealed.

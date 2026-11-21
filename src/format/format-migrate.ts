@@ -115,6 +115,26 @@ function admitOriginal(files: Files, hash: Hash, to: string): Admitted {
   return { index, cook, from: checkWindow(index['version'], to) }
 }
 
+const MOUNT = /^mounts\/.*\.json$/u
+
+/** Each JSON cook mount under `mounts/`, parsed, with its text as read (to write back only what a step changed). */
+function readMounts(
+  files: Files,
+  cook: Readonly<CookData> | undefined,
+): { mounts: Map<string, unknown>; mountText: Map<string, string> } {
+  const mounts = new Map<string, unknown>()
+  const mountText = new Map<string, string>()
+  for (const { path } of cook?.mounts ?? []) {
+    const bytes = files.get(path)
+    if (MOUNT.test(path) && bytes !== undefined && !mounts.has(path)) {
+      const value: unknown = JSON.parse(new TextDecoder().decode(bytes))
+      mounts.set(path, value)
+      mountText.set(path, JSON.stringify(value))
+    }
+  }
+  return { mounts, mountText }
+}
+
 function rendersAgain(steps: readonly FormatMigration[]): boolean {
   return steps.some((step: Readonly<FormatMigration>): boolean =>
     step.affects.includes('render'),
@@ -156,12 +176,13 @@ function writeCopy(
   shard: MigratingShard,
   plan: Readonly<{
     cook: CookData | undefined
+    mountText: ReadonlyMap<string, string>
     steps: readonly FormatMigration[]
     hash: Hash
   }>,
 ): Map<string, Uint8Array> {
   const { index } = shard
-  const { cook } = plan
+  const { cook, mountText } = plan
   runSteps(shard, plan.steps)
   // The build's validation receipt names the old source hash; a copy drops it.
   const out = new Map(
@@ -170,11 +191,10 @@ function writeCopy(
     ),
   )
   const copy = { index, out, hash: plan.hash }
-  rebuildInventory(
-    copy,
-    shard,
-    cook?.version === PREPARED && !rendersAgain(plan.steps) ? cook : undefined,
-  )
+  rebuildInventory(copy, shard, {
+    mountText,
+    reseal: cook?.version === PREPARED && !rendersAgain(plan.steps),
+  })
   copy.out.set(INDEX, validationSourceBytes(index))
   return copy.out
 }
@@ -198,9 +218,11 @@ function migrateShardfile(
   const to = options.to ?? SHARDFILE_VERSION
   const migrations = options.migrations ?? FORMAT_MIGRATIONS
   const admitted = admitOriginal(files, options.hash, to)
+  const { mounts, mountText } = readMounts(files, admitted.cook)
   const shard = {
     index: admitted.index,
     sections: readSections(files, admitted.index),
+    mounts,
   }
   const window = { from: admitted.from, to }
   const steps = migrations.filter((step: Readonly<FormatMigration>): boolean =>
@@ -211,6 +233,7 @@ function migrateShardfile(
       ? files
       : writeCopy(files, shard, {
           cook: admitted.cook,
+          mountText,
           steps,
           hash: options.hash,
         })

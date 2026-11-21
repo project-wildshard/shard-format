@@ -1,11 +1,32 @@
 {
-  "about": "SHARD-COMPAT CP1: a prepared real shard file at format 0.1.0.1, the engine pin of Sunscar Dunes r5.",
+  "about": "SHARD-COMPAT CP1: a prepared real shard file at format 0.1.0.1, the engine pin of Sunscar Dunes r5. Nalati r4 and Pine r9 carry gridShardfile in the level manifest and the discovery mount (FP8); Driftwood r8, Nalati and Pine carry runtime.trust (FP3).",
   "fixtures": [
     {
       "pin": {
         "slug": "sunscar-dunes",
         "hash": "8d9f9754aea8230a3aa7809010a89a3c9538f1eb2f8c47383c8da6501b78801d",
         "bytes": 11474944
+      }
+    },
+    {
+      "pin": {
+        "slug": "nalati-grasslands",
+        "hash": "5c1f9b8d3a622c5e3d7b7e4252fbcc27aab2ae8bf52b7c35317c8cbdef7f8913",
+        "bytes": 197836800
+      }
+    },
+    {
+      "pin": {
+        "slug": "pine-hollow",
+        "hash": "e2110ad8a481a922b5423b8212632572677ccc23c37840c2a8a2607a2faee687",
+        "bytes": 321171968
+      }
+    },
+    {
+      "pin": {
+        "slug": "driftwood-isle",
+        "hash": "8475f343133a648bc902e08b6b59c677622a89c9fea00e61468255781c117e46",
+        "bytes": 97834496
       }
     }
   ]

@@ -3,17 +3,20 @@
  * older shard file's JSON to a newer format version. It is not a save migration (`migrations.ts`) and not a catalogue
  * schema change (api-server). The change's author adds its migration here in the same release (J486, Q49). */
 import { journalGlyphImages } from './format-migration-journal.ts'
+import { dropRuntimeTrust, shardfilePointer } from './format-migration-prune.ts'
 import { parseShardfileVersion } from './version.ts'
 
-/** What a migration may read and rewrite: the parsed `shard.json` and each section by name. */
+/** What a migration may read and rewrite: the parsed `shard.json`, each section by name and each JSON cook mount under
+ * `mounts/` by path. */
 interface MigratingShard {
   readonly index: Record<string, unknown>
   readonly sections: Map<string, unknown>
+  readonly mounts: Map<string, unknown>
 }
 
 /** One step of the chain. `to` is the format version the step writes; it runs on every file below it. A repair step
  * (`repairs`) mends a break that shipped inside its `to` version without a bump: it also runs on a file already at `to`
- * when `repairs` finds the old shape there. */
+ * when `repairs` finds the old shape there: a break that shipped inside `to`, or a second way `to` still admits. */
 interface FormatMigration {
   readonly id: string
   readonly to: string
@@ -53,6 +56,8 @@ const fourPartVersion: FormatMigration = {
 const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
   fourPartVersion,
   journalGlyphImages,
+  shardfilePointer,
+  dropRuntimeTrust,
 ]
 
 /** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its
