@@ -33,6 +33,16 @@ const LEGACY_SPELLING = '0.1'
 const NONE = 0
 /** Deprecated in the current format with no data change: a shard file of any version may still carry it. */
 const CURRENT = '0.1.0.1'
+/** Format 0.1.0.2's envelope (SHARD-COMPAT CP14, FORMAT-PRUNE FP4 and FP25). */
+const ENVELOPE = '0.1.0.2'
+const LEGACY_LAYOUT = 2
+/** FORMAT-PRUNE FP4: always empty, never read. */
+const EMPTY_INDEX_FIELDS: readonly (readonly [string, string | undefined])[] = [
+  ['schemas', undefined],
+  ['runtime', 'files'],
+  ['runtime', 'lines'],
+  ['requires', 'capabilities'],
+]
 /** FORMAT-PRUNE FP15: OF30 cut B leaves these as plain JSON nothing reads. */
 const SPECIES_PROGRAM_FAMILY: readonly string[] = [
   'actors/species-programs',
@@ -71,6 +81,30 @@ const RULES: readonly DeprecationRule[] = [
     migration: 'fp6-four-part-version',
     uses: (shard: Readonly<DeprecationInput>): boolean =>
       field(shard.index, 'version') === LEGACY_SPELLING,
+  },
+  {
+    id: 'shard.version',
+    path: 'shard.json version beside the layout marker formatVersion 2 (SHARD-COMPAT CP14)',
+    since: ENVELOPE,
+    replacement:
+      'formatVersion: the four-part format version, with no version field',
+    migration: 'cp14-format-version',
+    uses: (shard: Readonly<DeprecationInput>): boolean =>
+      field(shard.index, 'formatVersion') === LEGACY_LAYOUT,
+  },
+  {
+    id: 'shard.empty-fields',
+    path: 'shard.json schemas, runtime.files, runtime.lines and requires.capabilities (FORMAT-PRUNE FP4)',
+    since: ENVELOPE,
+    replacement: 'nothing: each is always empty and no reader reads it',
+    migration: 'fp4-drop-empty-index-fields',
+    uses: (shard: Readonly<DeprecationInput>): boolean =>
+      EMPTY_INDEX_FIELDS.some(
+        ([outer, inner]: readonly [string, string | undefined]): boolean =>
+          inner === undefined
+            ? field(shard.index, outer) !== undefined
+            : field(field(shard.index, outer), inner) !== undefined,
+      ),
   },
   {
     id: 'manifest.gridShardfile',

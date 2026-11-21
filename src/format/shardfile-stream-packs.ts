@@ -38,7 +38,7 @@ function memberPaths(
   index: OutputIndex,
 ): ReadonlyMap<string, string> {
   return new Map(
-    [...index.sections, ...index.schemas, ...index.files].map(
+    [...index.sections, ...(index.schemas ?? []), ...index.files].map(
       (row: Readonly<{ hash: string; path: string }>): [string, string] => [
         row.hash,
         row.path,

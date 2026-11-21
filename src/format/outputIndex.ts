@@ -15,8 +15,9 @@ import { ClientPlanRuntimeSchema } from './runtime.ts';
 import { RuntimeSpawnsSchema } from './runtimeSpawns.ts';
 import { RowsSchema } from './rows.ts';
 import { ShardHashSchema, ShardNaturalSchema, IdentitySchema, RequiresSchema, FilesSchema, type ShardIdentityInput, type ShardRequiresInput, type ShardReferencesInput, type ShardIdentity, type ShardRequires, type ShardReferences } from './shardSections.ts';
-import { SHARDFILE_VERSIONS } from './version.ts';
-import type { ShardfileVersion } from './version.ts';
+import { LEGACY_LAYOUT } from './version.ts';
+import { IndexFormatVersionSchema, LegacyIndexVersionSchema } from './index-format-version.ts';
+import type { IndexFormatVersion, LegacyIndexVersion } from './version.ts';
 import { isJsonData, isJsonDataWithFileSchemas } from './json.ts';
 import { clientOwnershipRules } from './clientOwnership.ts';
 import { PLATFORM_DATA_SECTIONS } from './platformDataSections.ts';
@@ -27,17 +28,24 @@ const path = v.pipe(v.string(), v.maxLength(240), v.regex(/^(?:[a-zA-Z0-9_-][a-z
 const sectionName = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9-]*\/[a-zA-Z][a-zA-Z0-9_-]*$/u));
 const measuredFile = { path, hash: ShardHashSchema, bytes: ShardNaturalSchema };
 const section = v.strictObject({ ...measuredFile, name: sectionName, schema: v.pipe(v.string(), v.maxLength(240)) });
+/** Always empty; format 0.1.0.2 drops it (FORMAT-PRUNE FP4). */
+const emptySchemas = v.exactOptional(v.pipe(v.array(v.strictObject(measuredFile)), v.maxLength(0)));
 const cookRow = v.exactOptional(v.strictObject({ ...measuredFile, path: v.literal('cook.json') }));
 const costs = v.omit(FilesSchema.pipe[0].item, ['kind']).entries;
 const fileSchema = v.strictObject({ ...costs, path, kind: v.picklist(['glb', 'ktx2', 'audio', 'json', 'wasm', 'tile', 'bin', 'image']), name: v.exactOptional(v.pipe(v.string(), v.maxLength(240))), tier: v.exactOptional(v.picklist(['phone', 'desktop'])), variantOf: v.exactOptional(v.pipe(v.string(), v.minLength(1), v.maxLength(240))), commons: v.exactOptional(v.literal(true)), jsonSchema: v.exactOptional(v.record(v.string(), v.unknown())) });
 /** `trust` is retired (OF1): new indexes omit it, old products still carry their value and nothing reads it. */
-const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['spawns']).entries, trust: v.exactOptional(v.unknown()), files: v.pipe(v.array(v.strictObject({ ...measuredFile, lines: ShardNaturalSchema })), v.maxLength(0)), lines: v.literal(0) });
+/** `files` and `lines` are always empty: the 0.1.0.2 envelope drops them (FORMAT-PRUNE FP4), the legacy one still carries them. */
+const runtimeFiles = v.exactOptional(v.pipe(v.array(v.strictObject({ ...measuredFile, lines: ShardNaturalSchema })), v.maxLength(0)));
+const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['spawns']).entries, trust: v.exactOptional(v.unknown()), files: runtimeFiles, lines: v.exactOptional(v.literal(0)) });
 /** Format 2 inventories every emitted byte except its index and validation receipt. */
 export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputIndexRows> & { readonly entries: { readonly [Key in keyof OutputIndexRows]-?: v.GenericSchema<OutputIndexRowsInput[Key], OutputIndexRows[Key]> } } = v.strictObject({
-  format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.picklist(['0.2', '0.3']), version: v.picklist(SHARDFILE_VERSIONS),
+  format: v.literal('wildshard.shardfile'),
+  /** SHARD-COMPAT CP14 (FP25): the format version itself from 0.1.0.2; the legacy envelope carries the frozen layout marker
+   * `2` here and its version in `version`. `checkIndexEnvelope` holds each envelope to its own fields. */
+  formatVersion: IndexFormatVersionSchema, sdk: v.picklist(['0.2', '0.3']), version: LegacyIndexVersionSchema,
   identity: IdentitySchema, build: v.strictObject({ sourceHash: ShardHashSchema, validator: v.pipe(v.string(), v.minLength(1), v.maxLength(160)) }), requires: RequiresSchema,
   admission: v.strictObject({ budgets: ShardfileFieldSchemas.budgets, serverBudget: ShardfileFieldSchemas.serverBudget, authorCaps: ShardfileFieldSchemas.authorCaps, critical: ShardfileFieldSchemas.critical, library: ShardfileFieldSchemas.library, late: v.exactOptional(AdmissionLateSchema), server: v.exactOptional(AdmissionServerSchema), audioWaiver: v.exactOptional(AudioWaiverSchema) }),
-  sections: v.pipe(v.array(section), v.maxLength(256)), schemas: v.pipe(v.array(v.strictObject(measuredFile)), v.maxLength(0)),
+  sections: v.pipe(v.array(section), v.maxLength(256)), schemas: emptySchemas,
   files: v.pipe(v.array(fileSchema), v.maxLength(8192)), runtime: v.nullable(runtime),
   ktx2Costs: v.exactOptional(v.pipe(v.record(ShardHashSchema,v.strictObject({rgba:ShardNaturalSchema,astc:ShardNaturalSchema,bc7:ShardNaturalSchema})),v.check(rows=>Object.keys(rows).length<=8192,'bounded texture cost table'))),
   /** iPhone downloads I5: content-hashed concatenations of the small sections, schemas and files, so a reader can fetch
@@ -63,8 +71,38 @@ export function parseOutputDescriptorIndex(input: unknown): OutputIndex | null {
   if (!isJsonDataWithFileSchemas(input)) throw new Error('Shardfile descriptor requires bounded plain JSON');
   return isOutputIndex(input) ? parseOutputIndexRows(input) : null;
 }
+/** The fields only the legacy envelope (`formatVersion: 2`, formats 0.1 to 0.1.0.1) carries; 0.1.0.2 drops each
+ * (SHARD-COMPAT CP14; FORMAT-PRUNE FP3 `runtime.trust`, FP4 the always-empty four). */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot output, only read
+function legacyIndexFields(index: OutputIndex): readonly string[] {
+  return [
+    index.version === undefined ? undefined : 'version',
+    index.schemas === undefined ? undefined : 'schemas',
+    index.requires.capabilities === undefined ? undefined : 'requires.capabilities',
+    index.runtime?.files === undefined ? undefined : 'runtime.files',
+    index.runtime?.lines === undefined ? undefined : 'runtime.lines',
+    index.runtime === null || !Object.hasOwn(index.runtime, 'trust') ? undefined : 'runtime.trust',
+  ].filter((field): field is string => field !== undefined);
+}
+/** Hold each envelope to its own fields: the legacy one keeps every field its readers require, 0.1.0.2 carries none. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot output, only read
+function checkIndexEnvelope(index: OutputIndex): void {
+  const carried = legacyIndexFields(index);
+  if (index.formatVersion !== LEGACY_LAYOUT) {
+    if (carried.length > 0) {
+      throw new Error(`Format ${index.formatVersion} drops ${carried.join(', ')} (shard.json)`);
+    }
+    return;
+  }
+  const needed = ['version', 'schemas', 'requires.capabilities', ...index.runtime === null ? [] : ['runtime.files', 'runtime.lines']];
+  const missing = needed.filter((field: string): boolean => !carried.includes(field));
+  if (missing.length > 0) {
+    throw new Error(`Legacy shard.json (formatVersion 2) needs ${missing.join(', ')}`);
+  }
+}
 function parseOutputIndexRows(input: unknown): OutputIndex {
   const index = v.parse(OutputIndexSchema, input);
+  checkIndexEnvelope(index);
   if (index.sdk === '0.3' && index.cook === undefined) { throw new Error(`Missing cook preparation: run wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`); }
   if (index.sdk === '0.3' && index.cook !== undefined && index.cook.bytes > MAX_COOK_BYTES) { throw new Error('Cook preparation exceeds byte cap'); }
   const paths = new Set(['shard.json', 'validation.json']), names = new Set<string>();
@@ -76,7 +114,7 @@ function parseOutputIndexRows(input: unknown): OutputIndex {
     }
   }
   if (index.sections.reduce((total, entry) => total + entry.bytes, 0) > limits.sourceBytes) throw new Error('Output sections exceed the source byte cap');
-  for (const entry of [...index.sections, ...index.schemas, ...index.files, ...index.runtime?.files ?? []]) {
+  for (const entry of [...index.sections, ...index.schemas ?? [], ...index.files, ...index.runtime?.files ?? []]) {
     if (entry.path.split('/').some(part => part === '.' || part === '..') || paths.has(entry.path)) throw new Error('Duplicate or escaping output path');
     paths.add(entry.path);
   }
@@ -108,7 +146,7 @@ function parseOutputIndexRows(input: unknown): OutputIndex {
   }
   if (!serverFilesExclusive(index.admission.server ?? [], index.files)) throw new Error('A server file is never also a client file');
   // I5: a pack lives beside the blobs, is listed once, and holds only listed members at their exact sizes, in order
-  const members = new Map([...index.sections, ...index.schemas].map(entry => [entry.hash, entry.bytes] as const));
+  const members = new Map([...index.sections, ...index.schemas ?? []].map(entry => [entry.hash, entry.bytes] as const));
   for (const entry of index.files) members.set(entry.hash, entry.compressed);
   for (const pack of index.packs ?? []) {
     if (pack.path !== `blobs/pack/${pack.hash}.pack` || paths.has(pack.path)) throw new Error('Duplicate or mismatched pack path');
@@ -160,9 +198,9 @@ export function assembleOutputShardfile(input: unknown, sections: ReadonlyMap<st
 /** Exact admitted data, independent of validator implementation metadata. */
 interface OutputIndexRowsInputFields {
     format: "wildshard.shardfile";
-    formatVersion: 2;
+    formatVersion: typeof LEGACY_LAYOUT | IndexFormatVersion;
     sdk: "0.2" | "0.3";
-    version: ShardfileVersion;
+    version?: LegacyIndexVersion;
     identity: ShardIdentityInput;
     build: {
         sourceHash: string;
@@ -187,7 +225,7 @@ interface OutputIndexRowsInputFields {
         hash: string;
         bytes: number;
     }[];
-    schemas: {
+    schemas?: {
         path: string;
         hash: string;
         bytes: number;
@@ -226,13 +264,13 @@ interface OutputIndexRowsInputFields {
     } | undefined;
     runtime: {
         trust?: unknown;
-        files: {
+        files?: {
             lines: number;
             path: string;
             hash: string;
             bytes: number;
         }[];
-        lines: 0;
+        lines?: 0;
         kind: "client-plan";
         cost: {
             imagesFirst?: {
@@ -258,9 +296,9 @@ interface OutputIndexRowsInputFields {
 export type OutputIndexRowsInput = { [Key in keyof OutputIndexRowsInputFields]: OutputIndexRowsInputFields[Key] };
 interface OutputIndexRowsFields {
     format: "wildshard.shardfile";
-    formatVersion: 2;
+    formatVersion: typeof LEGACY_LAYOUT | IndexFormatVersion;
     sdk: "0.2" | "0.3";
-    version: ShardfileVersion;
+    version?: LegacyIndexVersion;
     identity: ShardIdentity;
     build: {
         sourceHash: string;
@@ -285,7 +323,7 @@ interface OutputIndexRowsFields {
         hash: string;
         bytes: number;
     }[];
-    schemas: {
+    schemas?: {
         path: string;
         hash: string;
         bytes: number;
@@ -324,13 +362,13 @@ interface OutputIndexRowsFields {
     } | undefined;
     runtime: {
         trust?: unknown;
-        files: {
+        files?: {
             lines: number;
             path: string;
             hash: string;
             bytes: number;
         }[];
-        lines: 0;
+        lines?: 0;
         kind: "client-plan";
         cost: {
             imagesFirst?: {

@@ -7,6 +7,10 @@ import {
   SHARDFILE_FLOOR,
   SHARDFILE_VERSION,
   SHARDFILE_VERSIONS,
+  INDEX_FORMAT_VERSIONS,
+  LEGACY_INDEX_VERSIONS,
+  LEGACY_LAYOUT,
+  shardfileFormatOf,
   compareShardfileVersions,
   compatibleShardfileVersion,
   parseShardfileVersion,
@@ -19,21 +23,42 @@ test('legacy format spelling equals the zero-counter revision', (): void => {
 })
 
 test('the real source and transport schemas admit every listed version', (): void => {
-  for (const version of [SHARDFILE_VERSION, '0.1.0.0', '0.1']) {
+  for (const version of [SHARDFILE_VERSION, '0.1.0.1', '0.1.0.0', '0.1']) {
     expect(compatibleShardfileVersion(version)).toBe(true)
     expect(parseShardfileField('version', version)).toBe(version)
-    expect(parse(OutputIndexSchema.entries.version, version)).toBe(version)
   }
+})
+
+test('CP14 (FP25): the legacy envelope names its format in version, 0.1.0.2 in formatVersion', (): void => {
+  for (const version of LEGACY_INDEX_VERSIONS) {
+    expect(parse(OutputIndexSchema.entries.version, version)).toBe(version)
+    expect(shardfileFormatOf({ formatVersion: LEGACY_LAYOUT, version })).toBe(
+      version,
+    )
+  }
+  for (const version of INDEX_FORMAT_VERSIONS) {
+    expect(parse(OutputIndexSchema.entries.formatVersion, version)).toBe(
+      version,
+    )
+    expect((): unknown =>
+      parse(OutputIndexSchema.entries.version, version),
+    ).toThrow()
+    expect(shardfileFormatOf({ formatVersion: version })).toBe(version)
+  }
+  expect((): unknown => shardfileFormatOf({ formatVersion: 2 })).toThrow()
 })
 
 test('the additive window never reaches a newer or breaking format', (): void => {
   expect(compatibleShardfileVersion('0.1.0.1', '0.1')).toBe(false)
   expect(compatibleShardfileVersion('0.1.0.1', '0.1.0.2')).toBe(true)
-  for (const version of ['0.1.0.2', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
+  for (const version of ['0.1.0.3', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
     expect(compatibleShardfileVersion(version)).toBe(false)
     expect((): unknown => parseShardfileField('version', version)).toThrow()
     expect((): unknown =>
       parse(OutputIndexSchema.entries.version, version),
+    ).toThrow()
+    expect((): unknown =>
+      parse(OutputIndexSchema.entries.formatVersion, version),
     ).toThrow()
   }
 })

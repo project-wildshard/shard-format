@@ -8,12 +8,15 @@ const completeReturn:v.GenericSchema<v.InferInput<typeof ReturnProgramSchema>,v.
 const finite = v.pipe(v.number(), v.finite());
 const key = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
 const point = v.strictObject({ x: finite, z: finite });
+/** FORMAT-PRUNE FP3: no reader in any repo; optional now, and Driftwood stops writing it at its Track F row (SM1). */
+const legacyMemory = v.exactOptional(v.array(v.strictObject({ from: key, to: key, axis: v.picklist(['x', 'z', 'zero']) })));
 /** Mixed native roster policy, pose, reserve and physical volley composition. */
 export const MixedPopulationSchema: v.StrictObjectSchema<{ readonly step: v.GenericSchema<MixedPopulationRowsInput['step'], MixedPopulationRows['step']>; readonly limit: v.GenericSchema<MixedPopulationRowsInput['limit'], MixedPopulationRows['limit']>; readonly attackTurnCap: v.GenericSchema<MixedPopulationRowsInput['attackTurnCap'], MixedPopulationRows['attackTurnCap']>; readonly hunted: v.GenericSchema<MixedPopulationRowsInput['hunted'], MixedPopulationRows['hunted']>; readonly floorKinds: v.GenericSchema<MixedPopulationRowsInput['floorKinds'], MixedPopulationRows['floorKinds']>; readonly practice: v.GenericSchema<MixedPopulationRowsInput['practice'], MixedPopulationRows['practice']>; readonly reserve: v.GenericSchema<MixedPopulationRowsInput['reserve'], MixedPopulationRows['reserve']>; readonly volley: v.GenericSchema<MixedPopulationRowsInput['volley'], MixedPopulationRows['volley']>; readonly poses: v.GenericSchema<MixedPopulationRowsInput['poses'], MixedPopulationRows['poses']>; readonly perch: v.GenericSchema<MixedPopulationRowsInput['perch'], MixedPopulationRows['perch']>; }, undefined> = v.strictObject({
   step: key, limit: v.pipe(finite, v.integer(), v.minValue(1), v.maxValue(256)),
   attackTurnCap: finite, hunted: v.array(key), floorKinds: v.array(key),
   practice: v.strictObject({ at: point, fade: finite, delay: finite, away: finite }),
-  reserve: v.strictObject({ kind: key, variant: key, scale: v.tuple([finite, finite]), legacyMemory: v.array(v.strictObject({ from: key, to: key, axis: v.picklist(['x', 'z', 'zero']) })) }),
+  reserve: v.strictObject({ kind: key, variant: key, scale: v.tuple([finite, finite]),
+    legacyMemory }),
   volley: v.strictObject({ owner: key, strike: key, tags: v.array(v.custom<`${string}.${string}`>(value => typeof value === 'string' && /^[a-z][a-zA-Z0-9.-]*\.[a-zA-Z0-9.-]+$/u.test(value))) }),
   poses: v.array(v.strictObject({ kind: key, clips: v.array(NumericPoseSchema),
     lift: v.exactOptional(v.tuple([finite, finite, finite, finite])) })),
@@ -66,7 +69,7 @@ interface MixedPopulationRowsInputFields {
             number,
             number
         ];
-        legacyMemory: ({
+        legacyMemory?: ({
             from: string;
             to: string;
             axis: 'x' | 'z' | 'zero';
@@ -154,7 +157,7 @@ interface MixedPopulationRowsFields {
             number,
             number
         ];
-        legacyMemory: ({
+        legacyMemory?: ({
             from: string;
             to: string;
             axis: 'x' | 'z' | 'zero';

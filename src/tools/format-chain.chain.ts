@@ -14,6 +14,7 @@ import {
   SHARDFILE_VERSIONS,
   compareShardfileVersions,
   parseShardfileVersion,
+  shardfileFormatOf,
 } from '../format/version.ts'
 import { freshOutput } from './format-chain-digest.ts'
 import { pinnedFiles } from './one-way-pins.ts'
@@ -22,6 +23,8 @@ type Files = ReadonlyMap<string, Uint8Array>
 interface Fixture {
   readonly folder?: string
   readonly pin?: Readonly<{ slug: string; hash: string; bytes: number }>
+  /** A folder's migrated copy, for a format no real upload is written at yet: the chain's own output at that format. */
+  readonly chainOf?: string
 }
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
@@ -55,6 +58,11 @@ async function fixtureFiles(fixture: Readonly<Fixture>): Promise<Files> {
   if (fixture.folder !== undefined) {
     return await folderFiles(fixture.folder)
   }
+  if (fixture.chainOf !== undefined) {
+    return migrateShardfile(await folderFiles(fixture.chainOf), {
+      hash: sha256,
+    }).files
+  }
   if (fixture.pin === undefined) {
     throw new Error('A fixture names a folder or a pin')
   }
@@ -84,11 +92,7 @@ function declaredVersion(files: Files): string {
   const parsed: unknown = JSON.parse(
     new TextDecoder().decode(files.get('shard.json')),
   )
-  const version: unknown =
-    typeof parsed === 'object' && parsed !== null
-      ? Reflect.get(parsed, 'version')
-      : undefined
-  return String(version)
+  return shardfileFormatOf(parsed)
 }
 
 /** The digest a fresh process computes for the same fixture. */
@@ -110,7 +114,7 @@ async function checkFixture(
   assert.equal(
     compareShardfileVersions(declared, version),
     NONE,
-    `${fixture.folder ?? fixture.pin?.slug} is at ${declared}`,
+    `${fixture.folder ?? fixture.chainOf ?? fixture.pin?.slug} is at ${declared}`,
   )
   const once = migrateShardfile(files, { hash: sha256 })
   const twice = migrateShardfile(once.files, { hash: sha256 })

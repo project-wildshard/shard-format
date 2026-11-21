@@ -2325,7 +2325,7 @@
    "import(no-namespace)": 1,
    "typescript(explicit-function-return-type)": 1,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 15
+   "unicorn(max-nested-calls)": 14
   },
   "src/format/modes.ts": {
    "eslint(id-length)": 64,
@@ -2646,11 +2646,11 @@
    "eslint(capitalized-comments)": 1,
    "eslint(curly)": 1,
    "eslint(id-length)": 1,
-   "eslint(no-magic-numbers)": 7,
+   "eslint(no-magic-numbers)": 6,
    "import(no-namespace)": 1,
    "typescript(explicit-function-return-type)": 3,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 24
+   "unicorn(max-nested-calls)": 21
   },
   "src/format/outputFields.ts": {
    "eslint(curly)": 12,
@@ -2672,7 +2672,7 @@
    "eslint(max-lines-per-function)": 1,
    "eslint(max-lines)": 1,
    "eslint(max-statements)": 2,
-   "eslint(no-magic-numbers)": 28,
+   "eslint(no-magic-numbers)": 27,
    "eslint(no-negated-condition)": 1,
    "eslint(no-nested-ternary)": 1,
    "eslint(no-use-before-define)": 3,
@@ -4406,7 +4406,7 @@
    "eslint(curly)": 6,
    "eslint(id-length)": 1,
    "eslint(max-statements)": 1,
-   "eslint(no-magic-numbers)": 8,
+   "eslint(no-magic-numbers)": 7,
    "eslint(sort-vars)": 1,
    "import(exports-last)": 5,
    "import(group-exports)": 6,

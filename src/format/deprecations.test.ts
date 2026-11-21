@@ -96,6 +96,12 @@ describe('the deprecation counter (FE7)', (): void => {
       'manifest.gridShardfile',
       'runtime.trust',
     ])
+    expect(
+      deprecationsUsed({
+        index: { formatVersion: 2, version: '0.1.0.1', schemas: [] },
+        sections: new Map(),
+      }).map((row): string => row.id),
+    ).toEqual(['shard.version', 'shard.empty-fields'])
     const report = deprecationReport(shard, ['kept'])
     expect(report.warnings[0]).toBe('kept')
     expect(report.warnings[1]).toContain(
@@ -103,7 +109,10 @@ describe('the deprecation counter (FE7)', (): void => {
     )
     expect(report.warnings[1]).toContain('fp6-four-part-version')
     expect(
-      deprecationsUsed({ index: { version: '0.1.0.1' }, sections: new Map() }),
+      deprecationsUsed({
+        index: { formatVersion: '0.1.0.2' },
+        sections: new Map(),
+      }),
     ).toEqual([])
   })
 
@@ -131,7 +140,11 @@ describe('the deprecation counter (FE7)', (): void => {
       },
       { hash: sha256, judged: 'stored' },
     )
-    expect(validated.deprecations).toEqual(['version.two-part'])
+    expect(validated.deprecations).toEqual([
+      'version.two-part',
+      'shard.version',
+      'shard.empty-fields',
+    ])
     expect(
       validated.warnings.some((line: string): boolean =>
         line.includes('version.two-part'),

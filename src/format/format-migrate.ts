@@ -18,6 +18,10 @@ import {
 } from './format-migrate-inventory.ts'
 import { rebuildInventory } from './format-migrate-rebuild.ts'
 import {
+  declaredShardfileFormat,
+  writeShardfileFormat,
+} from './format-migration-envelope.ts'
+import {
   FORMAT_MIGRATIONS,
   checkMigrations,
   versionBelow,
@@ -117,7 +121,7 @@ function admitOriginal(files: Files, hash: Hash, to: string): Admitted {
   const cook = rawCook === undefined ? undefined : readCookData(rawCook)
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- read only for its slug, sdk, files and cook row
   requireCookPreparation(index as unknown as OutputIndex, cook, hash)
-  return { index, cook, from: checkWindow(index['version'], to) }
+  return { index, cook, from: checkWindow(declaredShardfileFormat(index), to) }
 }
 
 const MOUNT = /^mounts\/.*\.json$/u
@@ -154,7 +158,7 @@ function runSteps(
 ): void {
   for (const step of steps) {
     step.apply(shard)
-    shard.index['version'] = step.to
+    writeShardfileFormat(shard.index, step.to)
   }
 }
 
@@ -254,7 +258,7 @@ function migrateShardfile(
   return {
     files: copy,
     from: admitted.from,
-    to: String(admitted.index['version']),
+    to: String(declaredShardfileFormat(admitted.index)),
     applied: steps.map((step: Readonly<FormatMigration>): string => step.id),
     chainId: chainId(migrations, options.hash),
     digest: options.hash(copy.get(INDEX) ?? new Uint8Array()),

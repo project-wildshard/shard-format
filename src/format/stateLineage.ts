@@ -3,7 +3,7 @@ import { assertMigrationCompatibility } from './migrations.ts';
 import { StateSchema } from './state.ts';
 import type { Shardfile } from './shardSchema.ts';
 import { isJsonDataWithFileSchemas } from './json.ts';
-import { SHARDFILE_VERSIONS } from './version.ts';
+import { IndexFormatVersionSchema, LegacyIndexVersionSchema } from './index-format-version.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 
 const identity = v.object({ slug: v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u)),
@@ -16,11 +16,13 @@ export function parseStateLineage(input: unknown): StateLineage { return v.parse
 const path = v.pipe(v.string(), v.maxLength(240), v.regex(/^(?:[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\/)*[a-zA-Z0-9_-][a-zA-Z0-9_.-]*$/u));
 const measured = { path, hash: v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u)),
   bytes: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(Number.MAX_SAFE_INTEGER)) };
-const inventory = v.object({ format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.picklist(['0.2', '0.3']),
-  version: v.picklist(SHARDFILE_VERSIONS), identity,
+const lineageSchemas = v.exactOptional(v.pipe(v.array(v.strictObject(measured)), v.maxLength(128)));
+// SHARD-COMPAT CP14: either envelope; 0.1.0.2 names its format in formatVersion and drops version and schemas.
+const inventory = v.object({ format: v.literal('wildshard.shardfile'), formatVersion: IndexFormatVersionSchema, sdk: v.picklist(['0.2', '0.3']),
+  version: LegacyIndexVersionSchema, identity,
   sections: v.pipe(v.array(v.strictObject({ ...measured, name: v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9-]*\/[a-zA-Z][a-zA-Z0-9_-]*$/u)),
     schema: v.pipe(v.string(), v.maxLength(240)) })), v.maxLength(256)),
-  schemas: v.pipe(v.array(v.strictObject(measured)), v.maxLength(128)) });
+  schemas: lineageSchemas });
 export interface OutputLineageIndex {
   readonly identity: { readonly slug: string; readonly revision: number };
   readonly sections: readonly { readonly path: string; readonly hash: string; readonly bytes: number; readonly name: string; readonly schema: string }[];
@@ -30,7 +32,8 @@ export interface OutputLineageIndex {
  * Obsolete host/asset declarations are never parsed or admitted by this reader. */
 export function parseOutputLineageIndex(input: unknown): OutputLineageIndex {
   if (!isJsonDataWithFileSchemas(input)) throw new Error('Shardfile descriptor requires bounded plain JSON');
-  const index = v.parse(inventory, input), paths = new Set(['shard.json', 'validation.json']), names = new Set<string>();
+  const parsed = v.parse(inventory, input), paths = new Set(['shard.json', 'validation.json']), names = new Set<string>();
+  const index = { ...parsed, schemas: parsed.schemas ?? [] };
   if (index.sections.reduce((total, row) => total + row.bytes, 0) > limits.sourceBytes) throw new Error('Output sections exceed the source byte cap');
   for (const row of [...index.sections, ...index.schemas]) {
     if (row.path.split('/').some(part => part === '.' || part === '..') || paths.has(row.path)) throw new Error('Duplicate or escaping output path');

@@ -28,7 +28,7 @@ type Json = Record<string, unknown>
 
 const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
   .pathname
-const CURRENT = '0.1.0.1'
+const CURRENT = '0.1.0.2'
 
 function sha256(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')
@@ -96,7 +96,7 @@ describe('the chain ops (FE8)', (): void => {
     expect(round.digest).toBe(plain.digest)
     expect(
       validateMigrated(round.files, { hash: sha256, judged: 'stored' }).index
-        .version,
+        .formatVersion,
     ).toBe(CURRENT)
   })
 

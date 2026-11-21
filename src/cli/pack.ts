@@ -58,7 +58,7 @@ interface HeldIndex {
   readonly build: Readonly<{ sourceHash: string }>
   readonly files: readonly Listed[]
   readonly packs?: readonly PackRow[] | undefined
-  readonly schemas: readonly Listed[]
+  readonly schemas?: readonly Listed[] | undefined
   readonly sections: readonly Section[]
 }
 

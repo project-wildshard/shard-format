@@ -15,7 +15,8 @@ interface Listed {
 }
 interface Members {
   readonly sections: readonly Listed[]
-  readonly schemas: readonly Listed[]
+  /** Absent from format 0.1.0.2 on (FORMAT-PRUNE FP4). */
+  readonly schemas?: readonly Listed[] | undefined
   readonly files: readonly Listed[]
 }
 type Assets = ReadonlyMap<string, Uint8Array>
@@ -123,7 +124,7 @@ function packFromMembers(
   index: Members,
   read: ReadFile,
 ): Uint8Array {
-  const rows = [...index.sections, ...index.schemas, ...index.files]
+  const rows = [...index.sections, ...(index.schemas ?? []), ...index.files]
   const paths = new Map(
     rows.map((row: Listed): [string, string] => [row.hash, row.path]),
   )

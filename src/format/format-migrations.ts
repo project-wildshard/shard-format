@@ -2,6 +2,10 @@
 /** The migration chain's registry (SHARD-COMPAT CP1, J486). A migration is one pure, data-only step that rewrites an
  * older shard file's JSON to a newer format version. It is not a save migration (`migrations.ts`) and not a catalogue
  * schema change (api-server). The change's author adds its migration here in the same release (J486, Q49). */
+import {
+  dropEmptyIndexFields,
+  formatVersionField,
+} from './format-migration-envelope.ts'
 import { journalGlyphImages } from './format-migration-journal.ts'
 import { dropRuntimeTrust, shardfilePointer } from './format-migration-prune.ts'
 import {
@@ -65,6 +69,8 @@ const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
   journalGlyphImages,
   shardfilePointer,
   dropRuntimeTrust,
+  formatVersionField,
+  dropEmptyIndexFields,
 ]
 
 /** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its

@@ -7,7 +7,8 @@ import { beforeAll, describe, expect, test } from 'vitest'
 
 import { migrateShardfile, validateMigrated } from './format-migrate.ts'
 import { FORMAT_MIGRATIONS, versionBelow } from './format-migrations.ts'
-import { assembleOutputShardfile } from './outputIndex.ts'
+import { readOutputDownloadIndex } from './outputDownload.ts'
+import { assembleOutputShardfile, parseOutputIndex } from './outputIndex.ts'
 import { prepareAssetDecoders } from './shardfile-assets.ts'
 import { readCanonicalJson } from './shardfileValidation.ts'
 import { parseOutputLineageIndex } from './stateLineage.ts'
@@ -132,7 +133,7 @@ describe('the migration chain', (): void => {
   test('a section edit rebuilds the inventory and the source hash', (): void => {
     const edit: FormatMigration = {
       id: 'test-edit',
-      to: '0.1.0.1',
+      to: '0.1.0.2',
       touches: 'data',
       affects: [],
       apply: (shard): void => {
@@ -148,11 +149,49 @@ describe('the migration chain', (): void => {
       ...FORMAT_MIGRATIONS.map((step: FormatMigration): string => step.id),
       'test-edit',
     ])
-    expect(migrated.to).toBe('0.1.0.1')
-    expect(
-      validateMigrated(migrated.files, { hash: sha256, judged: 'stored' }).index
-        .version,
-    ).toBe('0.1.0.1')
+    expect(migrated.to).toBe('0.1.0.2')
+    const { index } = validateMigrated(migrated.files, {
+      hash: sha256,
+      judged: 'stored',
+    })
+    // CP14 (FP25): the copy names its format in formatVersion, with no version and no layout marker.
+    expect(index.formatVersion).toBe('0.1.0.2')
+    expect(index.version).toBeUndefined()
+    expect(index.schemas).toBeUndefined()
+    expect(index.requires.capabilities).toBeUndefined()
+  })
+
+  test('CP14: the 0.1.0.2 copy reads in the full, lineage and download readers', (): void => {
+    const copy = migrateShardfile(corpusFiles(), { hash: sha256 })
+    expect(copy.applied).toContain('cp14-format-version')
+    expect(copy.applied).toContain('fp4-drop-empty-index-fields')
+    const index = json(copy.files, 'shard.json')
+    expect(index['formatVersion']).toBe('0.1.0.2')
+    expect(Object.hasOwn(index, 'version')).toBe(false)
+    expect(parseOutputLineageIndex(index).schemas).toEqual([])
+    expect(readOutputDownloadIndex(index).schemas).toEqual([])
+    expect(parseOutputIndex(index).formatVersion).toBe('0.1.0.2')
+  })
+
+  test('CP14: a 0.1.0.2 index carrying a legacy field is refused naming it, and a legacy one missing one', (): void => {
+    const index = json(
+      migrateShardfile(corpusFiles(), { hash: sha256 }).files,
+      'shard.json',
+    )
+    expect((): unknown =>
+      parseOutputIndex({ ...index, version: '0.1.0.1' }),
+    ).toThrow(/version/u)
+    expect((): unknown => parseOutputIndex({ ...index, schemas: [] })).toThrow(
+      'Format 0.1.0.2 drops schemas',
+    )
+    const legacy = json(corpusFiles(), 'shard.json')
+    const { schemas: _schemas, ...noSchemas } = legacy
+    expect((): unknown => parseOutputIndex(noSchemas)).toThrow(
+      'Legacy shard.json (formatVersion 2) needs schemas',
+    )
+    expect((): unknown =>
+      parseOutputIndex({ ...legacy, formatVersion: '0.1.0.2' }),
+    ).toThrow('Format 0.1.0.2 drops version, schemas, requires.capabilities')
   })
 
   test('the spelling step sits just below its four-part twin', (): void => {
