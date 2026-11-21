@@ -7,3 +7,6 @@ that section alive on Pine. The roster rows file now carries both: `species` lis
 it runs, in its old registration order, with each row's spawn-only rows (Pine's thralls), and `hunt` is the old
 programme's hunt block moved verbatim. Both optional, so every shipped roster still reads; the engine reads them
 only on a product with no species programme.
+
+The ground boss's binding gets the same treatment: `decision` and `body` (the King's decision brain and body recipe,
+which only the species programme held) are optional binding fields; its exact strikes go to `actors/strikes`.

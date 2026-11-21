@@ -1,5 +1,9 @@
 import * as v from 'valibot';
 import { RoamingBossProfileSchema } from './bossProfiles.ts';
+import { BorrowedDecisionSchema } from './decisionScripts.ts';
+import type { BorrowedDecisionRows } from './decisionScripts.ts';
+import { CreatureBodyRecipeSchema } from './creatures.ts';
+import type { CreatureBodyRecipeRows } from './creatures.ts';
 
 const finite = v.pipe(v.number(), v.minValue(-Number.MAX_VALUE), v.maxValue(Number.MAX_VALUE));
 const positive = v.pipe(finite, v.minValue(Number.MIN_VALUE));
@@ -81,6 +85,8 @@ export function bossEncounterPresentation(input: unknown, encounter: { readonly 
 export const NativeBossBindingSchema: v.GenericSchema<NativeBossBindingInput, NativeBossBinding> = v.strictObject({ population: key,
   weakPoint: v.strictObject({ radius: positive }),
   reward: v.strictObject({ inventory: key, grants: v.pipe(v.array(v.strictObject({ item: key, count: v.pipe(finite, v.integer(), v.minValue(1)) })), v.maxLength(64)) }),
+  // ONE-FORMAT OF30: on a product with no species programme the boss's own decision brain and body recipe
+  decision: v.exactOptional(BorrowedDecisionSchema), body: v.exactOptional(CreatureBodyRecipeSchema),
 });
 
 
@@ -350,5 +356,7 @@ interface NativeBossBindingFields {
             count: number;
         })[];
     };
+    decision?: BorrowedDecisionRows;
+    body?: CreatureBodyRecipeRows;
 }
 export type NativeBossBinding = { [Key in keyof NativeBossBindingFields]: NativeBossBindingFields[Key] };
