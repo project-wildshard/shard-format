@@ -67,7 +67,7 @@ describe('the migration chain', (): void => {
 
   test('FP6 writes the four-part spelling and the copy validates', (): void => {
     const original = corpusFiles()
-    const migrated = migrateShardfile(original, { hash: sha256 })
+    const migrated = migrateShardfile(original, { hash: sha256, to: '0.1.0.0' })
     expect(migrated).toMatchObject({
       from: '0.1',
       to: '0.1.0.0',
@@ -144,7 +144,11 @@ describe('the migration chain', (): void => {
       hash: sha256,
       migrations: [...FORMAT_MIGRATIONS, edit],
     })
-    expect(migrated.applied).toEqual(['fp6-four-part-version', 'test-edit'])
+    expect(migrated.applied).toEqual([
+      'fp6-four-part-version',
+      'journal-glyph-images',
+      'test-edit',
+    ])
     expect(migrated.to).toBe('0.1.0.1')
     expect(
       validateMigrated(migrated.files, { hash: sha256, judged: 'stored' }).index

@@ -22,6 +22,7 @@
     "src/format/memoryGates.json",
     "src/format/memory-armed.json",
     "src/format/empty-shardfile.json",
+    "src/format/journal-glyphs.json",
     "src/format/seeded-rng.golden.json",
     "src/tools/runtime-hosts.json",
     "packages/wire/src/net-command.ts",

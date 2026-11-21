@@ -2,6 +2,7 @@
 /** The migration chain's registry (SHARD-COMPAT CP1, J486). A migration is one pure, data-only step that rewrites an
  * older shard file's JSON to a newer format version. It is not a save migration (`migrations.ts`) and not a catalogue
  * schema change (api-server). The change's author adds its migration here in the same release (J486, Q49). */
+import { journalGlyphImages } from './format-migration-journal.ts'
 import { parseShardfileVersion } from './version.ts'
 
 /** What a migration may read and rewrite: the parsed `shard.json` and each section by name. */
@@ -10,7 +11,9 @@ interface MigratingShard {
   readonly sections: Map<string, unknown>
 }
 
-/** One step of the chain. `to` is the format version the step writes; it runs on every file below it. */
+/** One step of the chain. `to` is the format version the step writes; it runs on every file below it. A repair step
+ * (`repairs`) mends a break that shipped inside its `to` version without a bump: it also runs on a file already at `to`
+ * when `repairs` finds the old shape there. */
 interface FormatMigration {
   readonly id: string
   readonly to: string
@@ -19,6 +22,7 @@ interface FormatMigration {
   /** `render` leaves the author preparation stale for the box's cook (SP1b); `save` needs a save migration (J197). */
   readonly affects: readonly ('render' | 'save')[]
   readonly apply: (shard: MigratingShard) => void
+  readonly repairs?: (shard: Readonly<MigratingShard>) => boolean
 }
 
 const TWO_PART = 2
@@ -46,7 +50,10 @@ const fourPartVersion: FormatMigration = {
 }
 
 /** Every migration, oldest first. */
-const FORMAT_MIGRATIONS: readonly FormatMigration[] = [fourPartVersion]
+const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
+  fourPartVersion,
+  journalGlyphImages,
+]
 
 /** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its
  * four-part twin, so the spelling step runs once and never again. */

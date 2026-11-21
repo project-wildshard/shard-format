@@ -132,14 +132,36 @@ function runSteps(
   }
 }
 
+/** Whether a step runs: the file is below it, or sits at it with the shape a repair step mends; never above the reader. */
+function runs(
+  step: Readonly<FormatMigration>,
+  shard: Readonly<MigratingShard>,
+  window: Readonly<{ from: string; to: string }>,
+): boolean {
+  if (compareShardfileVersions(step.to, window.to) > NONE) {
+    return false
+  }
+  if (versionBelow(window.from, step.to)) {
+    return true
+  }
+  return (
+    compareShardfileVersions(window.from, step.to) === NONE &&
+    step.repairs?.(shard) === true
+  )
+}
+
 /** Run the steps, then rebuild the inventory around what they changed. */
 function writeCopy(
   files: Files,
-  admitted: Readonly<Admitted>,
-  plan: Readonly<{ steps: readonly FormatMigration[]; hash: Hash }>,
+  shard: MigratingShard,
+  plan: Readonly<{
+    cook: CookData | undefined
+    steps: readonly FormatMigration[]
+    hash: Hash
+  }>,
 ): Map<string, Uint8Array> {
-  const { index, cook } = admitted
-  const shard = { index, sections: readSections(files, index) }
+  const { index } = shard
+  const { cook } = plan
   runSteps(shard, plan.steps)
   // The build's validation receipt names the old source hash; a copy drops it.
   const out = new Map(
@@ -176,15 +198,22 @@ function migrateShardfile(
   const to = options.to ?? SHARDFILE_VERSION
   const migrations = options.migrations ?? FORMAT_MIGRATIONS
   const admitted = admitOriginal(files, options.hash, to)
-  const steps = migrations.filter(
-    (step: Readonly<FormatMigration>): boolean =>
-      versionBelow(admitted.from, step.to) &&
-      compareShardfileVersions(step.to, to) <= NONE,
+  const shard = {
+    index: admitted.index,
+    sections: readSections(files, admitted.index),
+  }
+  const window = { from: admitted.from, to }
+  const steps = migrations.filter((step: Readonly<FormatMigration>): boolean =>
+    runs(step, shard, window),
   )
   const copy =
     steps.length === NONE
       ? files
-      : writeCopy(files, admitted, { steps, hash: options.hash })
+      : writeCopy(files, shard, {
+          cook: admitted.cook,
+          steps,
+          hash: options.hash,
+        })
   return {
     files: copy,
     from: admitted.from,
