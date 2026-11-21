@@ -14,7 +14,8 @@ type LevelAudio = NonNullable<ManifestMetadata['audio']>
 type LevelLoadout = NonNullable<ManifestMetadata['loadout']>
 
 const { entries } = ManifestMetadataSchema
-const LevelAudioSchema: GenericSchema<LevelAudio, LevelAudio> = entries.audio.wrapped
+const LevelAudioSchema: GenericSchema<LevelAudio, LevelAudio> =
+  entries.audio.wrapped
 const LevelLoadoutSchema: GenericSchema<LevelLoadout, LevelLoadout> =
   entries.loadout.wrapped
 

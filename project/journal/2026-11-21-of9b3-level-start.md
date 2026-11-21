@@ -6,3 +6,4 @@
 - `level-start.ts`: `levelStart` reads sections first and the manifest at the door; `liftLevelStart` moves the words in
   (the spawn only onto a default `world/spawn`; a declared section wins); `weapon` and the map image have no reader left
   and leave. Engine and the SDK switch over next.
+- Ratchet pass: type-only imports, the manifest's page-start schemas named beside it (max-nested-calls lowered), spawn coordinates keep one-letter names.

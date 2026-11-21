@@ -2311,7 +2311,7 @@
    "typescript(explicit-function-return-type)": 5,
    "typescript(no-confusing-void-expression)": 3,
    "typescript(prefer-readonly-parameter-types)": 10,
-   "unicorn(max-nested-calls)": 193,
+   "unicorn(max-nested-calls)": 190,
    "unicorn(no-array-for-each)": 1,
    "unicorn(no-null)": 4,
    "unicorn(numeric-separators-style)": 1

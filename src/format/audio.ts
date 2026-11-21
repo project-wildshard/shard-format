@@ -1,5 +1,6 @@
 import * as v from 'valibot';
-import { LevelAudioSchema, type LevelAudio } from './level-start-rows.ts';
+import { LevelAudioSchema } from './level-start-rows.ts';
+import type { LevelAudio } from './level-start-rows.ts';
 import { VoicePatchesSchema, type VoicePatches } from './voicePatches.ts';
 import { AudioSceneSchema, SampledAudioSceneSchema, type SampledAudioScene, type AudioScene } from './audioScene.ts';
 import { isJsonData } from './json.ts';

@@ -1,3 +1,4 @@
+/* oxlint-disable eslint/id-length, typescript/prefer-readonly-parameter-types -- a spawn's coordinates are x, y and z, as world/spawn and the manifest name them; plain JSON rows the caller owns */
 /**
  * The page-start words (ONE-FORMAT OF9b3, J365 (7)): where a page stands its player, what it arms and what it plays.
  * The level manifest carried them (`spawn`, `loadout`, `weapon`, `audio`, `minimap.image`); since OF9b3 each lives in
@@ -80,12 +81,13 @@ function spawnFrom(
   manifest: NonNullable<ManifestMetadata['spawn']>,
   section: StartSpawn,
 ): StartSpawn {
-  return {
-    x: manifest.x,
-    y: manifest.y ?? section.y,
-    z: manifest.z,
-    yaw: manifest.yaw,
-  }
+  return { ...manifest, y: manifest.y ?? section.y }
+}
+
+/** A world spawn with no height: a page on terrain stands the player on the ground. */
+function groundSpawn(spawn: StartSpawn): LevelStart['spawn'] {
+  const { y: _height, ...ground } = spawn
+  return ground
 }
 
 /**
@@ -95,8 +97,9 @@ function spawnFrom(
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- plain JSON rows the caller owns; nothing here writes them
 function levelStart(source: LevelStartSource, terrain: boolean): LevelStart {
   const manifest = source.manifest ?? {}
-  const { x, y, z, yaw } = source.spawn
-  const spawn = manifest.spawn ?? (terrain ? { x, z, yaw } : { x, y, z, yaw })
+  const spawn =
+    manifest.spawn ??
+    (terrain ? groundSpawn(source.spawn) : { ...source.spawn })
   const loadout = source.items.loadout.level ?? manifest.loadout
   const audio = source.audio.level ?? manifest.audio
   return {
@@ -129,7 +132,9 @@ function withoutStart<Manifest extends StartManifest>(
  * one), its loadout into `items.loadout.level` and its audio into `audio.level` (a section's own value wins), and its
  * weapon and map image leave. A source with none of them comes back as it is (the same object).
  */
-function liftLevelStart<Source extends LevelStartSource>(source: Source): Source {
+function liftLevelStart<Source extends LevelStartSource>(
+  source: Source,
+): Source {
   const { manifest } = source
   if (manifest === undefined || !manifestCarriesStart(manifest)) {
     return source
@@ -147,8 +152,12 @@ function liftLevelStart<Source extends LevelStartSource>(source: Source): Source
     items:
       loadout === undefined
         ? source.items
-        : { ...source.items, loadout: { ...source.items.loadout, level: loadout } },
-    audio: audio === undefined ? source.audio : { ...source.audio, level: audio },
+        : {
+            ...source.items,
+            loadout: { ...source.items.loadout, level: loadout },
+          },
+    audio:
+      audio === undefined ? source.audio : { ...source.audio, level: audio },
   }
 }
 
@@ -160,13 +169,18 @@ function levelStartRules(source: LevelStartSource): readonly string[] {
     return []
   }
   const rules: string[] = []
-  if (source.items.loadout.level !== undefined && manifest.loadout !== undefined) {
+  if (
+    source.items.loadout.level !== undefined &&
+    manifest.loadout !== undefined
+  ) {
     rules.push(
       'items.loadout.level: the loadout lives in combat/items or the manifest, not both',
     )
   }
   if (source.audio.level !== undefined && manifest.audio !== undefined) {
-    rules.push('audio.level: the audio lives in audio/audio or the manifest, not both')
+    rules.push(
+      'audio.level: the audio lives in audio/audio or the manifest, not both',
+    )
   }
   return rules
 }

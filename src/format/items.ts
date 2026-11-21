@@ -2,7 +2,8 @@ import { InputExtraSchema, inputExtraRules } from './inputDeclarations.ts';
 import { BodyLaunchSchema, NativeLoadoutRowSchema, NativeRangedRowSchema } from './nativeItems.ts';
 import { ClaimedPickupSchema, LootEconomySchema } from './lootEconomy.ts';
 import * as v from 'valibot';
-import { LevelLoadoutSchema, type LevelLoadout } from './level-start-rows.ts';
+import { LevelLoadoutSchema } from './level-start-rows.ts';
+import type { LevelLoadout } from './level-start-rows.ts';
 import { MeleeContactsSchema, NativeMeleeRowSchema, WeaponProfileSchema, type MeleeContactRow } from './weaponProfiles.ts';
 import { isJsonData } from './json.ts';
 
