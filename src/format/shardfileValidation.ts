@@ -62,6 +62,9 @@ export interface ShardfileValidationPorts {
   /** D31: hold no file's bytes between checks. `assets`, here and in the result, reads each file again from `files`, so a
    *  host's peak is its largest file rather than the shard, at the cost of those repeat reads. */
   readonly readThrough?: boolean;
+  /** SHARD-COMPAT CP1: `'migrated'` for a migrated copy (`validateMigrated`), whose author preparation a render step may
+   *  have left stale for the box's cook; the preparation check is skipped. Default `'author'`. */
+  readonly preparation?: 'author' | 'migrated';
 }
 
 /** A product that passed format validation. */
@@ -199,10 +202,10 @@ function checkServerAndKtx2(index: OutputIndex, read: ReadListed, assets: Readon
 
 /** C0 (J137): the cook file; a mount passes the same hash and size checks as any listed file (`cook-invalid`). */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
-function readCook(index: OutputIndex, read: ReadListed, hash: (bytes: Uint8Array) => string): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } {
+function readCook(index: OutputIndex, read: ReadListed, ports: Pick<ShardfileValidationPorts, 'hash' | 'preparation'>): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } {
   return coded('cook-invalid', (): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } => {
     const cook = index.cook === undefined ? undefined : readCookData(readCanonicalJson(read(index.cook)));
-    requireCookPreparation(index, cook, hash);
+    if (ports.preparation !== 'migrated') { requireCookPreparation(index, cook, ports.hash); }
     let mountedImages = NO_BYTES;
     for (const mount of cook?.mounts ?? []) {
       if (!mountSharesBlob(mount, index.files)) {
@@ -241,7 +244,7 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
   }
   checkServerAndKtx2(index, read, assets);
   coded('pack-invalid', (): void => { checkPacks(index, new Set(files.paths()), { readFile: files.read, readListed: read, verify, hash: ports.hash }); });
-  const { cook, mountedImages } = readCook(index, read, ports.hash);
+  const { cook, mountedImages } = readCook(index, read, ports);
   for (const entry of index.runtime?.files ?? []) {
     if (ports.runtimeImports === undefined) throw issueError('runtime-files', 'Copied runtime files need a runtime import checker');
     coded('runtime-files', (): void => { ports.runtimeImports?.(entry.path, decoder().decode(read(entry))); });

@@ -90,9 +90,20 @@ async function remoteArchive(pin: Readonly<ProductPin>): Promise<Uint8Array> {
   }
   return new Uint8Array(await response.arrayBuffer())
 }
-async function readProduct(pin: Readonly<ProductPin>): Promise<ProductFacts> {
+/** A pinned shard file's verified bytes, from the local pin cache or engine's public mirror. */
+async function pinnedArchive(pin: Readonly<ProductPin>): Promise<Uint8Array> {
   const bytes = (await cachedArchive(pin)) ?? (await remoteArchive(pin))
   verifyArchive(pin, bytes)
+  return bytes
+}
+/** A pinned shard file's members by path. */
+async function pinnedFiles(
+  pin: Readonly<ProductPin>,
+): Promise<ReadonlyMap<string, Uint8Array>> {
+  return readTar(await pinnedArchive(pin))
+}
+async function readProduct(pin: Readonly<ProductPin>): Promise<ProductFacts> {
+  const bytes = await pinnedArchive(pin)
   return productFacts(pin.slug, jsonFiles(readTar(bytes)))
 }
 
@@ -141,5 +152,5 @@ async function pinnedProducts(
   return products
 }
 
-export { enginePins, jsonFiles, pinnedProducts, verifyArchive }
+export { enginePins, jsonFiles, pinnedFiles, pinnedProducts, verifyArchive }
 export type { ProductPin }

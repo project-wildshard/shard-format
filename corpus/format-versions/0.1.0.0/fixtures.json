@@ -1,0 +1,13 @@
+{
+  "about": "SHARD-COMPAT CP1: real shard files at format 0.1.0.0 (spelled 0.1). Brasscap's export is unprepared (sdk 0.2); the open plot is a prepared engine pin (sdk 0.3, cook version 3), read from ~/.cache/wildshard/pins or engine's pins release.",
+  "fixtures": [
+    { "folder": "corpus/exports/brasscap-mesa" },
+    {
+      "pin": {
+        "slug": "open-plot-saltwind-lighthouse",
+        "hash": "2e37a04b0c9e7f6c0463f12b5cfce96d7e7c2f83868bc6341948d779dcbe5207",
+        "bytes": 5573632
+      }
+    }
+  ]
+}

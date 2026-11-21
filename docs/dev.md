@@ -32,6 +32,12 @@ Run from the repo root.
   (J186).
 - `pnpm lint:format`: the src/format ratchet (D29). `pnpm lint:format
   update` lowers the baseline after a fix; it refuses any rise.
+- `pnpm test:chain`: SHARD-COMPAT CP1's migration chain over every
+  fixture in `corpus/format-versions/<version>/fixtures.json` (a folder
+  in this repo or an engine pin, read from `~/.cache/wildshard/pins` or
+  engine's pins release): each migrates to the current format, twice
+  equals once, a fresh process gets the same digest, and the copy
+  validates. A format version with no fixture fails. CI runs it.
 - `pnpm test:hooks`: the `.githooks/` suite (CI, and pre-commit when
   hooks change).
 - `pnpm lint:fix` / `pnpm format`: the hooks only check; these fix.
@@ -66,6 +72,12 @@ meta J308 (2026-11-12). Schema ids such as
 spelling: they are strings other repos match on, not import paths.
 
 1. Change `src/format` here, with its tests. `pnpm check`, commit, push.
+   A change old shard files can't meet as they are ships its migration in
+   the same release (meta J486): one data-only step in
+   `src/format/format-migrations.ts` (`to` is the format version it
+   writes), run by `./migrate`'s `migrateShardfile` at upload and before a
+   switch, plus a fixture in `corpus/format-versions/` for any new format
+   version (`pnpm test:chain`).
 2. Release from `release/vX.Y.Z` (meta RELEASE-BRANCHES, J360/J362).
    Write 1 to 5 plain-language bullets for authors in a notes file, then
    run `../repo-kit/release.sh vX.Y.Z --prepare --notes <file>` from main.

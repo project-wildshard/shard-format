@@ -16,7 +16,7 @@ export function parseStateLineage(input: unknown): StateLineage { return v.parse
 const path = v.pipe(v.string(), v.maxLength(240), v.regex(/^(?:[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\/)*[a-zA-Z0-9_-][a-zA-Z0-9_.-]*$/u));
 const measured = { path, hash: v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u)),
   bytes: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(Number.MAX_SAFE_INTEGER)) };
-const inventory = v.object({ format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.literal('0.2'),
+const inventory = v.object({ format: v.literal('wildshard.shardfile'), formatVersion: v.literal(2), sdk: v.picklist(['0.2', '0.3']),
   version: v.picklist(SHARDFILE_VERSIONS), identity,
   sections: v.pipe(v.array(v.strictObject({ ...measured, name: v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9-]*\/[a-zA-Z][a-zA-Z0-9_-]*$/u)),
     schema: v.pipe(v.string(), v.maxLength(240)) })), v.maxLength(256)),

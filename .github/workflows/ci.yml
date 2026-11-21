@@ -92,6 +92,7 @@ jobs:
           WS_ONE_WAY_SDK_ROOT: ${{ github.workspace }}/tmp/codex-te2e/one-way/sharddev
       - run: pnpm test:hooks
       - run: pnpm test:ci
+      - run: pnpm test:chain
 
   wire:
     runs-on: ubuntu-latest

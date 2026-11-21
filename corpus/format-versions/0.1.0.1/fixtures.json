@@ -1,0 +1,12 @@
+{
+  "about": "SHARD-COMPAT CP1: a prepared real shard file at format 0.1.0.1, the engine pin of Sunscar Dunes r5.",
+  "fixtures": [
+    {
+      "pin": {
+        "slug": "sunscar-dunes",
+        "hash": "8d9f9754aea8230a3aa7809010a89a3c9538f1eb2f8c47383c8da6501b78801d",
+        "bytes": 11474944
+      }
+    }
+  ]
+}
