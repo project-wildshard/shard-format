@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.64.0 (2026-11-21)
+
+- A creature's body can put its pivot at ground level (`bodyY: 0`), as a flying rig's often does.
+- A creature's body can name its capsule axis (`capsuleAxis: 'y'` for an upright body, `'z'` for a lying one).
+
 ## v0.63.0 (2026-11-20)
 
 - A weather row can name its weather program, so a shard whose weather is a program turns weather on with a row.
