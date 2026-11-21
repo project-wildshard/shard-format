@@ -67,11 +67,6 @@ function compatibleShardfileVersion(
   }
 }
 
-/** Legacy callers use this only to validate the era's decimal minor; new code compares all four components. */
-function shardfileRevision(input: unknown): number {
-  return parseShardfileVersion(input)[ONE]
-}
-
 export {
   SHARDFILE_VERSION,
   SHARDFILE_VERSIONS,
@@ -81,5 +76,4 @@ export {
   parseShardfileVersion,
   compareShardfileVersions,
   compatibleShardfileVersion,
-  shardfileRevision,
 }
