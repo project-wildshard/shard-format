@@ -59,7 +59,8 @@ const day = v.strictObject({ id, units: v.literal('hour'), start: hour,
   fixed: v.strictObject({ midday: hour, golden: hour, sunset: hour, night: hour }), presets: v.strictObject({ dawn: hour, noon: hour, dusk: hour, night: hour }) });
 const mods = v.strictObject({ speed: positive, chargeDist: positive, damageTaken: positive, chargeDamage: nonnegative, relentless: v.boolean() });
 // Body Y names the rig pivot. A flying hull can place it at zero.
-const bodyPivot = v.union([v.literal(0), dimension]);
+const GROUND_PIVOT = 0;
+const bodyPivot = v.union([v.literal(GROUND_PIVOT), dimension]);
 const dims = v.strictObject({ bodyY: bodyPivot, bodyHalfLen: dimension, bodyRadius: dimension, headRadius: dimension, legLen: legs,
   feet: v.pipe(v.array(v.tuple([finite, finite])), v.maxLength(16)), halfWidth: dimension, capsuleAxis: v.exactOptional(v.picklist(['y', 'z'])) });
 const variant = v.strictObject({ id, label: text, rarity: v.picklist(['common', 'uncommon', 'rare', 'legendary']), weight: nonnegative, scale: ordered, hp: positive, mods });

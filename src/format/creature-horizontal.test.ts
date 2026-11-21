@@ -198,7 +198,13 @@ test('a tail past the volume cap refuses', (): void => {
 test('custom rigs keep a zero body pivot and an explicit capsule axis', (): void => {
   const dims = { ...legacy.dims, bodyY: 0, capsuleAxis: 'y' as const }
   expect(rows({ ...legacy, dims }).species[0]?.dims).toEqual(dims)
-  expect(() => rows({ ...legacy, dims: { ...dims, bodyY: -1 } })).toThrow()
-  expect(() => rows({ ...legacy, dims: { ...dims, bodyRadius: 0 } })).toThrow()
-  expect(() => rows({ ...legacy, dims: { ...dims, capsuleAxis: 'x' } })).toThrow()
+  expect((): unknown =>
+    rows({ ...legacy, dims: { ...dims, bodyY: -1 } }),
+  ).toThrow()
+  expect((): unknown =>
+    rows({ ...legacy, dims: { ...dims, bodyRadius: 0 } }),
+  ).toThrow()
+  expect((): unknown =>
+    rows({ ...legacy, dims: { ...dims, capsuleAxis: 'x' } }),
+  ).toThrow()
 })
