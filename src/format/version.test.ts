@@ -4,7 +4,9 @@ import { expect, test } from 'vitest'
 import { OutputIndexSchema } from './outputIndex.ts'
 import { parseShardfileField } from './shardSchema.ts'
 import {
+  SHARDFILE_FLOOR,
   SHARDFILE_VERSION,
+  SHARDFILE_VERSIONS,
   compareShardfileVersions,
   compatibleShardfileVersion,
   parseShardfileVersion,
@@ -16,7 +18,7 @@ test('legacy format spelling equals the zero-counter revision', (): void => {
   expect(compareShardfileVersions('0.1.0.10', '0.1.0.9')).toBe(1)
 })
 
-test('the real source and transport schemas admit N and N-1', (): void => {
+test('the real source and transport schemas admit every listed version', (): void => {
   for (const version of [SHARDFILE_VERSION, '0.1.0.0', '0.1']) {
     expect(compatibleShardfileVersion(version)).toBe(true)
     expect(parseShardfileField('version', version)).toBe(version)
@@ -26,7 +28,6 @@ test('the real source and transport schemas admit N and N-1', (): void => {
 
 test('the additive window never reaches a newer or breaking format', (): void => {
   expect(compatibleShardfileVersion('0.1.0.1', '0.1')).toBe(false)
-  expect(compatibleShardfileVersion('0.1.0.0', '0.1.0.2')).toBe(false)
   expect(compatibleShardfileVersion('0.1.0.1', '0.1.0.2')).toBe(true)
   for (const version of ['0.1.0.2', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
     expect(compatibleShardfileVersion(version)).toBe(false)
@@ -35,6 +36,18 @@ test('the additive window never reaches a newer or breaking format', (): void =>
       parse(OutputIndexSchema.entries.version, version),
     ).toThrow()
   }
+})
+
+test('a reader admits every older additive counter down to the floor (J486)', (): void => {
+  for (const version of SHARDFILE_VERSIONS) {
+    expect(compatibleShardfileVersion(version)).toBe(true)
+  }
+  expect(compatibleShardfileVersion('0.1', '0.1.0.2')).toBe(true)
+  expect(compatibleShardfileVersion('0.1.0.0', '0.1.0.9')).toBe(true)
+  expect(compatibleShardfileVersion(SHARDFILE_FLOOR, '0.1.0.30')).toBe(true)
+  expect(compatibleShardfileVersion('0.1.0.3', '0.1.0.2')).toBe(false)
+  expect(compatibleShardfileVersion('0.0', '0.1.0.2')).toBe(false)
+  expect(compatibleShardfileVersion('0.1.0.1', '0.1.1.0')).toBe(false)
 })
 
 test('malformed and unbounded components never enter the format window', (): void => {
