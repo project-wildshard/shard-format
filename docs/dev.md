@@ -77,7 +77,14 @@ spelling: they are strings other repos match on, not import paths.
    `src/format/format-migrations.ts` (`to` is the format version it
    writes), run by `./migrate`'s `migrateShardfile` at upload and before a
    switch, plus a fixture in `corpus/format-versions/` for any new format
-   version (`pnpm test:chain`).
+   version (`pnpm test:chain`). Build the step from the ops in
+   `format-migration-ops.ts` (`rename`, `drop`, `fill`, `map`,
+   `moveSection`, `renameKind`); declare `touches: 'files'` or
+   `affects: ['render']` when the box's cook must prepare again, and a
+   `saveMigration` when it `affects: ['save']`. `checkMigrations` refuses
+   a registry that breaks these rules. A shape the current version still
+   admits, or a break that shipped without a bump, gets a `repairs` test so
+   the step also mends files already at its `to`.
 2. Release from `release/vX.Y.Z` (meta RELEASE-BRANCHES, J360/J362).
    Write 1 to 5 plain-language bullets for authors in a notes file, then
    run `../repo-kit/release.sh vX.Y.Z --prepare --notes <file>` from main.

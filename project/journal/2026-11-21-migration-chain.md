@@ -30,3 +30,12 @@ the old shape in new uploads waits until the API and engine read migrated copies
 the old pointer in their discovery mount, so a step can now edit JSON cook mounts under `mounts/`: the chain writes a
 changed mount, points its cook rows and fence entry at the new hash and re-seals the preparation over it. Nalati r4,
 Pine r9 and Driftwood r8 are 0.1.0.1 corpus fixtures; their copies validate with the author preparation re-sealed.
+
+## FE8: ops, the registry check, and file routing
+
+Steps now build from `format-migration-ops.ts`: `rename` (key order kept; both keys set to different values refused),
+`drop`, `fill`, `map`, `moveSection` (payload, index row, path and schema id move together; the copy drops the old
+path) and `renameKind`. `checkMigrations` runs before every chain run and refuses a repeated id, a `to` that is not a
+format version, steps out of version order, and a save-affecting step with no `saveMigration`. `touches: 'files'`
+routes like `affects: render`: the copy's author preparation is stale and the box's cook prepares again. Editing named
+JSON blobs (FP10) stays out until a step needs it, since a blob's path carries its hash and other rows depend on it.

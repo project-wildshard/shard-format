@@ -10,13 +10,18 @@ import {
   INDEX,
   RECEIPT,
   listed,
+  listedRows,
   readJson,
   readSections,
   record,
   verifyInventory,
 } from './format-migrate-inventory.ts'
 import { rebuildInventory } from './format-migrate-rebuild.ts'
-import { FORMAT_MIGRATIONS, versionBelow } from './format-migrations.ts'
+import {
+  FORMAT_MIGRATIONS,
+  checkMigrations,
+  versionBelow,
+} from './format-migrations.ts'
 import { validateShardfileFolder } from './shardfileValidation.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 import {
@@ -136,8 +141,9 @@ function readMounts(
 }
 
 function rendersAgain(steps: readonly FormatMigration[]): boolean {
-  return steps.some((step: Readonly<FormatMigration>): boolean =>
-    step.affects.includes('render'),
+  return steps.some(
+    (step: Readonly<FormatMigration>): boolean =>
+      step.affects.includes('render') || step.touches === 'files',
   )
 }
 
@@ -183,11 +189,18 @@ function writeCopy(
 ): Map<string, Uint8Array> {
   const { index } = shard
   const { cook, mountText } = plan
+  // The build's validation receipt names the old source hash, and a moved or dropped section leaves its old path: the
+  // copy drops both, and the rebuild writes every section that stays.
+  const gone = new Set([
+    RECEIPT,
+    ...listedRows(index['sections']).map(
+      (row: Readonly<{ path: string }>): string => row.path,
+    ),
+  ])
   runSteps(shard, plan.steps)
-  // The build's validation receipt names the old source hash; a copy drops it.
   const out = new Map(
     [...files].filter(
-      ([path]: readonly [string, Uint8Array]): boolean => path !== RECEIPT,
+      ([path]: readonly [string, Uint8Array]): boolean => !gone.has(path),
     ),
   )
   const copy = { index, out, hash: plan.hash }
@@ -217,6 +230,7 @@ function migrateShardfile(
 ): MigratedShardfile {
   const to = options.to ?? SHARDFILE_VERSION
   const migrations = options.migrations ?? FORMAT_MIGRATIONS
+  checkMigrations(migrations)
   const admitted = admitOriginal(files, options.hash, to)
   const { mounts, mountText } = readMounts(files, admitted.cook)
   const shard = {
