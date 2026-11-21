@@ -18,3 +18,7 @@
   stored, from the public list and download (no token); verdicts cache by
   hash and validator version.
   (The cook half landed after the corpus commit, which carries its note.)
+- PR2 (J487): docs/preparation.md specifies every prepared section. The
+  fence, recorded programs and renderer fingerprint are the engine-coupled
+  part; the page takes the reversible position (fence by rule, programs as
+  cook output, renderer out of preparation).
