@@ -20,10 +20,11 @@ const variant = v.objectWithRest({ id: key, label: key, weight: number,
 const species = v.objectWithRest({ id: key, kind: key, label: key,
   variants: v.pipe(v.array(variant), v.minLength(1), v.maxLength(64)),
   brain: v.exactOptional(SpeciesBrainSchema), body: v.exactOptional(CreatureBodyRecipeSchema) }, v.unknown());
-// ONE-FORMAT OF30: a keeper whose creatures are all declared rows names no programme
-const population = v.objectWithRest({ program: v.exactOptional(v.strictObject({
+const keeperProgram = v.strictObject({
   species: v.pipe(v.array(species), v.maxLength(256)), strikes: v.pipe(v.array(CreatureStrikeSchema), v.maxLength(256)),
-  modules: v.exactOptional(v.record(key, v.pipe(v.string(), v.maxLength(400000)))) })),
+  modules: v.exactOptional(v.record(key, v.pipe(v.string(), v.maxLength(400000)))) });
+// ONE-FORMAT OF30: a keeper whose creatures are all declared rows names no programme
+const population = v.objectWithRest({ program: v.exactOptional(keeperProgram),
   step: key, seed: number, homes: v.pipe(v.array(v.strictObject({ id: key, kind: key, at: pair, yaw: number,
     respawn: number, look: v.exactOptional(key), late: v.exactOptional(v.union([v.boolean(), v.literal('ground')])) })), v.maxLength(4096)),
   boss: v.exactOptional(v.strictObject({ id: key, kind: key, at: pair, yaw: number, look: v.exactOptional(key) })),
