@@ -10,6 +10,11 @@ docs/dev.md says.
 - `economy/loot` can name its `currency`: the coin's name, pickup model and Bag icon.
 - A runtime plan's keeper may skip its species programme when every creature is a declared row.
 
+## v0.66.1 (2026-11-21)
+
+- A roster's hunt tags now project to JSON Schema, so a shard that declares its roster's hunt builds with the SDK.
+- A keeper may name no species programme: its plan stands without one.
+
 ## v0.66.0 (2026-11-21)
 
 - A shard's spawn, loadout and audio live in their own sections now; an older level manifest is lifted at the door.
