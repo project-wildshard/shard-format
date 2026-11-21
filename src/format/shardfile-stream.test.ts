@@ -266,12 +266,40 @@ function assetMutations(files: Files): readonly Mutation[] {
   ]
 }
 
+/** SHARD-COMPAT PR3 (J487): an sdk 0.3 product whose cook preparation is stale (its inputHash binds nothing). */
+function stalePreparation(files: Files): Files {
+  const cook = validationSourceBytes({
+    version: 3,
+    renderer: '1'.repeat(64),
+    mounts: [],
+    packs: 'whole',
+    fence: [],
+    inputHash: '0'.repeat(64),
+    programs: {
+      version: 2,
+      build: 'test-renderer',
+      lines: [],
+      shaders: [],
+      programs: [],
+    },
+  })
+  const shard = parsed(files.get('shard.json'))
+  shard['sdk'] = '0.3'
+  shard['cook'] = { path: 'cook.json', hash: sha256(cook), bytes: cook.length }
+  return new Map([
+    ...files,
+    ['cook.json', cook],
+    ['shard.json', validationSourceBytes(shard)],
+  ])
+}
+
 function mutations(files: Files): readonly Mutation[] {
   const glb = first(files, 'blobs/', '.glb')
   const section = first(files, 'sections/', '.json')
   const extra = new Uint8Array([1, 2, 3])
   return [
     ['a changed blob byte', (): Files => edited(files, glb, flipped(4000))],
+    ['a stale cook preparation', (): Files => stalePreparation(files)],
     [
       'a changed section byte',
       (): Files => edited(files, section, flipped(10)),
@@ -385,6 +413,15 @@ describe('validateShardfileStream on the corpus', (): void => {
       expect(await streamVerdict(tar, false)).toBe(old)
     },
   )
+
+  test('names a stale preparation preparation-invalid in both validators (PR3)', async (): Promise<void> => {
+    const tar = writeTar(stalePreparation(files))
+    const old = verdict((): unknown =>
+      validateShardfileFolder(memoryFiles(readTar(tar)), { hash: sha256 }),
+    )
+    expect(old).toMatch(/^\[preparation-invalid\] stale cook preparation/u)
+    expect(await streamVerdict(tar, false)).toBe(old)
+  })
 
   test.each(brokenTars(writeTar(files)))(
     'refuses a tarball readTar refuses, with its message (%#)',

@@ -31,6 +31,21 @@ consumer reads it and which schema checks it. A value whose computation changes 
 | Hero card | below | the discovery mount, `manifest.card`, `presentation.card` | yes |
 | Creature volumes, collider shapes, seal solids, server rows, entry read set, road edges | planned (PR6a to PR6f) | none yet | re-derived by engine at runtime |
 
+## Issue codes (PR3)
+
+Both validators (folder and stream) refuse a prepared part with its own code, and name every failing part in one
+refusal (PR5):
+
+| Part | Code |
+|---|---|
+| `cook.json` inputHash, fence, programs mount | `preparation-invalid` |
+| `cook.json` itself and its mounts | `cook-invalid` |
+| `sim/runtime-plan`, `server/native-assembly.json` and every other section | `section-invalid`, naming the section |
+| Terrain, mesh-collision and navigation blobs | `blob-invalid` or `server-file-invalid` |
+
+`validation.json` is a cache hint, not a gate: a receipt from another validator revision, or a malformed one, is
+ignored and the file is checked in full (`readValidationReceipt`), so it never refuses an upload.
+
 ## The engine-coupled three (decide before PR3)
 
 The fence, the programs and the renderer fingerprint are recorded by running an engine build, so a file prepared on

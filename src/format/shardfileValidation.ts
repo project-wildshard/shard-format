@@ -205,7 +205,7 @@ function checkServerAndKtx2(index: OutputIndex, read: ReadListed, assets: Readon
 function readCook(index: OutputIndex, read: ReadListed, ports: Pick<ShardfileValidationPorts, 'hash' | 'preparation'>): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } {
   return coded('cook-invalid', (): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } => {
     const cook = index.cook === undefined ? undefined : readCookData(readCanonicalJson(read(index.cook)));
-    if (ports.preparation !== 'migrated') { requireCookPreparation(index, cook, ports.hash); }
+    if (ports.preparation !== 'migrated') { coded('preparation-invalid', (): void => { requireCookPreparation(index, cook, ports.hash); }); }
     let mountedImages = NO_BYTES;
     for (const mount of cook?.mounts ?? []) {
       if (!mountSharesBlob(mount, index.files)) {

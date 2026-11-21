@@ -164,7 +164,9 @@ function cookSteps(replay: Readonly<Replay>, index: OutputIndex): void {
     index.cook === undefined
       ? undefined
       : readCookData(readCanonicalJson(listedBytes(replay, index.cook)))
-  requireCookPreparation(index, cook, replay.hash)
+  withIssueCode('preparation-invalid', (): void => {
+    requireCookPreparation(index, cook, replay.hash)
+  })
   for (const mount of cook?.mounts ?? []) {
     if (!mountSharesBlob(mount, index.files)) {
       if (mount.path !== cookMountPath(mount.url)) {

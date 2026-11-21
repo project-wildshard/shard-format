@@ -24,3 +24,6 @@
   cook output, renderer out of preparation).
 - PR5 first step: requireCookPreparation names every failing prepared part
   (stale inputHash, fence, programs mount) in one refusal, not the first.
+- PR3: a stale or invalid cook preparation refuses `preparation-invalid` in
+  both validators (was lumped into `cook-invalid`); validation.json stays
+  a hint. docs/preparation.md lists each prepared part's code.

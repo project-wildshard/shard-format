@@ -36,7 +36,9 @@ const VALIDATE_CODES = {
   'pack-invalid':
     "A pack is missing a member, or a member or the pack's hash differs.",
   'cook-invalid':
-    'The cook file, its preparation, or a mount (path or bytes) is invalid (C0, J137).',
+    'The cook file or a mount (path or bytes) is invalid (C0, J137).',
+  'preparation-invalid':
+    "The author's preparation is missing, stale or invalid: its inputHash, fence or programs mount (J487, SHARD-COMPAT PR3; docs/preparation.md).",
   'runtime-files':
     'Copied runtime files are present without a runtime import checker, or fail it.',
   'unlisted-file': 'A file in the product is not listed in `shard.json`.',
