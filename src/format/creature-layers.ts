@@ -279,3 +279,7 @@ export {
 } from './creature-attackable.ts'
 export type { CreatureAttackable } from './creature-attackable.ts'
 export type { CreatureBody } from './creature-body.ts'
+
+// ONE-FORMAT OF30: a declared species row's optional view projection (rows.ts), lent from its own module
+export { ActorProjectionV2Schema } from './actorProjectionV2.ts'
+export type { ActorProjectionV2Rows } from './actorProjectionV2.ts'

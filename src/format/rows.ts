@@ -7,11 +7,10 @@ import * as v from 'valibot';
 import { isJsonData } from './json.ts';
 import { sketchReference } from './sketch.ts';
 import { JournalRowSchema, journalRowRules } from './compendiumRows.ts';
-import { CreatureAttackableSchema, CreatureMountSchema, creatureMountRules, CreatureTypeSchema, CreatureBodySchema, CreatureTemperamentSchema, CreatureSensesSchema, CreatureAbilitySchema, CreaturePresentationSchema } from './creature-layers.ts';
-import type { CreatureAbilityInput, CreatureLayers } from './creature-layers.ts';
+import { ActorProjectionV2Schema, CreatureAttackableSchema, CreatureMountSchema, creatureMountRules, CreatureTypeSchema, CreatureBodySchema, CreatureTemperamentSchema, CreatureSensesSchema, CreatureAbilitySchema, CreaturePresentationSchema } from './creature-layers.ts';
+import type { ActorProjectionV2Rows, CreatureAbilityInput, CreatureLayers } from './creature-layers.ts';
 import { creatureSizeRules } from './creature-sizes.ts';
 import { SKIN_CLIPS_RECIPE, SkinClipMapSchema } from './skins.ts';
-import { ActorProjectionV2Schema, type ActorProjectionV2Rows } from './actorProjectionV2.ts';
 import type { SkinClipMap } from './skins.ts';
 
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9.:-]*$/u), v.maxLength(128));

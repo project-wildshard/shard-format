@@ -1,15 +1,15 @@
-import { expect, test } from "vitest";
+import { expect, test } from 'vitest'
 
-import { jsonFixture } from "../test/helpers/perch-assets.ts";
-import { parseRows } from "./rows.ts";
+import { jsonFixture } from '../test/helpers/perch-assets.ts'
+import { parseRows } from './rows.ts'
 
-import type { ShardRows } from "./rows.ts";
+import type { ShardRows } from './rows.ts'
 
 // ONE-FORMAT OF30: a declared species may carry its view projection (Nalati's balbal guest).
 const blob = {
-  id: "fixture.blob",
-  kind: "blob",
-  label: "Blob",
+  id: 'fixture.blob',
+  kind: 'blob',
+  label: 'Blob',
   aggressive: false,
   lockable: true,
   dims: {
@@ -23,9 +23,9 @@ const blob = {
   },
   variants: [
     {
-      id: "grey",
-      label: "Grey",
-      rarity: "common",
+      id: 'grey',
+      label: 'Grey',
+      rarity: 'common',
       weight: 1,
       scale: [1, 1],
       hp: 10,
@@ -38,7 +38,7 @@ const blob = {
       },
     },
   ],
-};
+}
 function rows(species: unknown): ShardRows {
   return parseRows({
     species: [species],
@@ -48,19 +48,19 @@ function rows(species: unknown): ShardRows {
     loot: [],
     strikes: [],
     looks: [],
-  });
+  })
 }
 
-test("OF30: a species row carries a projection program", (): void => {
-  const projection = { program: jsonFixture("perch-projection") };
+test('OF30: a species row carries a projection program', (): void => {
+  const projection = { program: jsonFixture('perch-projection') }
   expect(rows({ ...blob, projection }).species[0]?.projection?.program).toEqual(
     projection.program,
-  );
-});
+  )
+})
 
-test("OF30: a species without one parses byte-identical, and a bad one refuses", (): void => {
-  expect(JSON.stringify(rows(blob).species[0])).toBe(JSON.stringify(blob));
+test('OF30: a species without one parses byte-identical, and a bad one refuses', (): void => {
+  expect(JSON.stringify(rows(blob).species[0])).toBe(JSON.stringify(blob))
   expect((): ShardRows =>
     rows({ ...blob, projection: { program: {} } }),
-  ).toThrow();
-});
+  ).toThrow()
+})
