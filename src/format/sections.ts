@@ -23,7 +23,6 @@ import type { HeldFinishesRows } from './heldFinishes.ts';
 import type { LoadoutRows } from './loadout.ts';
 import type { HeldEquipmentRows } from './heldEquipment.ts';
 import type { CompletionRows } from './completion.ts';
-import type { SpeciesPrograms } from './speciesPrograms.ts';
 import type { Shardfile } from './shardSchema.ts';
 import type { DeclaredBodyOpsRows } from './bodySlots.ts';
 import type { CreatureStrikes } from './creatures.ts';
@@ -101,13 +100,14 @@ export interface PlatformSections {
   'look/look': Pick<Shardfile, 'look' | 'presentation'>;
   'look/map': Pick<Shardfile, 'map'>;
   'look/materials': { readonly rows: Pick<Rows, 'looks'> };
+  /** ONE-FORMAT OF30: retired; an older product may carry it, nothing reads it. */
+  'actors/species-programs': unknown;
   /** new (KA5): sim-side steering mechanics, independently selected by decisions. */
   'actors/moves': ActorMoves;
   'actors/spawn-scripts': SpawnScriptRows[];
   /** Stateless return-policy modules are admitted but never auto-scheduled. */
   'actors/return-scripts': ReturnModuleRow[];
   /** Callback-free gameplay species, in each owning world's original registration order. */
-  'actors/species-programs': SpeciesPrograms;
   'actors/creatures': Pick<Shardfile, 'creatures'>;
   'actors/crowds': Pick<Shardfile, 'crowds'>;
   'actors/npcs': Pick<Shardfile, 'questNpcs'>;

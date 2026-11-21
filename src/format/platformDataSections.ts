@@ -19,11 +19,11 @@ import { LoadoutSchema, type LoadoutRows } from './loadout.ts';
 import { HeldFinishesSchema, type HeldFinishesRows } from './heldFinishes.ts';
 import { HeldGearSchema, type HeldGearRows } from './heldGear.ts';
 import * as v from 'valibot';
+import { isJsonData } from './json.ts';
 import { HeldEquipmentSchema, type HeldEquipmentRows } from './heldEquipment.ts';
 import { HeldMeleeSchema } from './items.ts';
 import type { NativeSweptPolicyRows } from './items.ts';
 import { CompletionSchema, type CompletionRows } from './completion.ts';
-import { SpeciesProgramsSchema, type SpeciesPrograms } from './speciesPrograms.ts';
 import { CreatureStrikesSchema, type CreatureStrikes } from './creatures.ts';
 import { ActorMovesSchema, type ActorMoves } from './actorMoves.ts';
 import { DecisionScriptsSchema, type DecisionScripts } from './decisionScripts.ts';
@@ -38,6 +38,9 @@ import { VehiclesSchema } from './vehicles.ts';
 import { WaterFieldSchema } from './water-field.ts';
 import type { WaterFieldRows } from './water-field.ts';
 import type { Vehicles } from './vehicles.ts';
+
+/** ONE-FORMAT OF30: a retired section an older product may still carry: plain JSON, read by nothing. */
+const RETIRED_SECTION: v.GenericSchema<unknown, unknown> = v.pipe(v.unknown(), v.check(isJsonData, 'A retired section must be plain JSON'));
 
 /** New plain-value sections supplement the unchanged v1 model assembled from the older section envelopes. */
 export interface PlatformDataSections {
@@ -63,7 +66,8 @@ export interface PlatformDataSections {
   'held/melee': NativeSweptPolicyRows;
   'ui/completion': CompletionRows;
   'sim/runtime-plan': NativeRuntimePlanData;
-  'actors/species-programs': SpeciesPrograms;
+  /** ONE-FORMAT OF30: retired. An older product still carrying it admits; nothing reads it. */
+  'actors/species-programs': unknown;
   'actors/moves': ActorMoves;
   'actors/spawn-scripts': SpawnScriptRows[];
   'actors/return-scripts': ReturnModuleRow[];
@@ -86,6 +90,7 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'models/island-library': { schema: ResolvedIslandLibrarySchema },
   'player/stealth':{schema:StealthRowsSchema},
   'explore/catalogue': { schema: ExplorerCatalogueSchema },
+  'actors/species-programs': { schema: RETIRED_SECTION },
   'look/rigged-hulls': { schema: RiggedHullBookSchema },
   'look/hull-book': { schema: HullLookBookSchema },
   'look/toon': { schema: ToonLookSchema },
@@ -103,7 +108,6 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'held/melee': { schema: HeldMeleeSchema },
   'ui/completion': { schema: CompletionSchema },
   'sim/runtime-plan': { schema: NativeRuntimePlanSchema },
-  'actors/species-programs': { schema: SpeciesProgramsSchema },
   'actors/moves': { schema: ActorMovesSchema },
   'actors/spawn-scripts': { schema: SpawnScriptsSchema },
   'actors/return-scripts': { schema: ReturnModulesSchema },
@@ -144,7 +148,7 @@ export function parsePlatformDataSection(name: 'held/loadout', value: unknown): 
 export function parsePlatformDataSection(name: 'held/finishes', value: unknown): HeldFinishesRows;
 export function parsePlatformDataSection(name: 'held/gear', value: unknown): HeldGearRows;
 export function parsePlatformDataSection(name: 'held/equipment', value: unknown): HeldEquipmentRows;
-export function parsePlatformDataSection(name: 'actors/species-programs', value: unknown): SpeciesPrograms;
+export function parsePlatformDataSection(name: 'actors/species-programs', value: unknown): unknown;
 export function parsePlatformDataSection(name: 'actors/moves', value: unknown): ActorMoves;
 export function parsePlatformDataSection(name: 'actors/strikes', value: unknown): CreatureStrikes;
 export function parsePlatformDataSection(name: 'actors/spawn-scripts', value: unknown): SpawnScriptRows[];
