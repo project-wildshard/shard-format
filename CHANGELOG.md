@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.66.1 (2026-11-21)
+
+- A roster's hunt tags now project to JSON Schema, so a shard that declares its roster's hunt builds with the SDK.
+- A keeper may name no species programme: its plan stands without one.
+
 ## v0.66.0 (2026-11-21)
 
 - A shard's spawn, loadout and audio live in their own sections now; an older level manifest is lifted at the door.
