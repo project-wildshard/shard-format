@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.69.0 (2026-11-21)
+
+- Format 0.1.0.2: shard.json names its format in formatVersion (like "0.1.0.2"); the separate version field is gone.
+- New files drop the always-empty schemas, runtime.files, runtime.lines and runtime.trust fields.
+- Older files still load: the migration chain rewrites them to 0.1.0.2.
+- Writers pass their old shard.json rows through outputIndexEnvelope (./version) to get their version's shape.
+
 ## v0.68.1 (2026-11-21)
 
 - Saved games load again on the newest engine: the save-state migrations are back where the engine reads them.
