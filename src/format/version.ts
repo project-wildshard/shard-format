@@ -111,7 +111,40 @@ function writesIndexFormatVersion(version: string): boolean {
   )
 }
 
+/** A copy of a JSON object without `keys`; anything else as it is. */
+function withoutKeys(value: unknown, keys: readonly string[]): unknown {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return value
+  }
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      ([key]: readonly [string, unknown]): boolean => !keys.includes(key),
+    ),
+  )
+}
+
+/** SHARD-COMPAT CP14: writers build the legacy `shard.json` rows (`formatVersion: 2`, `version`, the always-empty lists)
+ * and pass them here. At a `version` of 0.1.0.2 or later this returns the envelope that version writes: `formatVersion`
+ * is the version, and `version`, `schemas`, `runtime.files`, `runtime.lines`, `runtime.trust` and
+ * `requires.capabilities` go. An older `version` comes back unchanged. */
+function outputIndexEnvelope(
+  rows: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  const { version } = rows
+  if (typeof version !== 'string' || !writesIndexFormatVersion(version)) {
+    return { ...rows }
+  }
+  const { version: _version, schemas: _schemas, ...rest } = rows
+  return {
+    ...rest,
+    formatVersion: version,
+    requires: withoutKeys(rest['requires'], ['capabilities']),
+    runtime: withoutKeys(rest['runtime'], ['files', 'lines', 'trust']),
+  }
+}
+
 export {
+  outputIndexEnvelope,
   SHARDFILE_VERSION,
   SHARDFILE_VERSIONS,
   LEGACY_INDEX_VERSIONS,

@@ -11,6 +11,7 @@ import {
   LEGACY_INDEX_VERSIONS,
   LEGACY_LAYOUT,
   shardfileFormatOf,
+  outputIndexEnvelope,
   compareShardfileVersions,
   compatibleShardfileVersion,
   parseShardfileVersion,
@@ -46,6 +47,26 @@ test('CP14 (FP25): the legacy envelope names its format in version, 0.1.0.2 in f
     expect(shardfileFormatOf({ formatVersion: version })).toBe(version)
   }
   expect((): unknown => shardfileFormatOf({ formatVersion: 2 })).toThrow()
+})
+
+test('CP14: a writer passes legacy rows through outputIndexEnvelope and gets the envelope its version spells', (): void => {
+  const legacy = {
+    format: 'wildshard.shardfile',
+    formatVersion: LEGACY_LAYOUT,
+    schemas: [],
+    requires: { sdk: '0.1.0.2', capabilities: [], commons: [] },
+    runtime: { kind: 'client-plan', files: [], lines: 0, binds: [] },
+  }
+  expect(outputIndexEnvelope({ ...legacy, version: '0.1.0.1' })).toEqual({
+    ...legacy,
+    version: '0.1.0.1',
+  })
+  expect(outputIndexEnvelope({ ...legacy, version: '0.1.0.2' })).toEqual({
+    format: 'wildshard.shardfile',
+    formatVersion: '0.1.0.2',
+    requires: { sdk: '0.1.0.2', commons: [] },
+    runtime: { kind: 'client-plan', binds: [] },
+  })
 })
 
 test('the additive window never reaches a newer or breaking format', (): void => {

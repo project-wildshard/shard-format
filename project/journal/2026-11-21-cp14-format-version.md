@@ -23,3 +23,7 @@ drops it at its Track F row.
 
 Order (J486, CP3): this release, then the API pins it and deploys, then engine pins it, then the SDK writes the new
 envelope.
+
+Writers keep building the legacy rows and pass them through `outputIndexEnvelope` (./version), which returns the
+envelope their version spells. One call per writer (sharddev outputProduct, engine fixtures), instead of each writer
+learning which fields 0.1.0.2 drops.
