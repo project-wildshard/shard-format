@@ -15,3 +15,7 @@ The hunt's hit tag was a `v.custom`, which cannot project to JSON Schema, so
 every build naming `actors/roster.json` (Pine) refused once its roster schema
 carried the hunt. The tag is a regex now, the same law, as `catalogueEconomy`
 writes its tag; a test walks the roster schema for any custom (opus-of-pine).
+
+The runtime plan's keeper programme goes optional the same way: Sky Reach and the Dunes ship a keeper with no program
+species and no homes (their creatures are declared rows), so `population.rows.program` was a dead copy of their
+strikes. A plan may leave it out; one that names it is still checked whole.
