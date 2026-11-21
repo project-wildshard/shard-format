@@ -344,7 +344,7 @@
     "./shardSchema": "./src/format/shardSchema.ts",
     "./emptyShardfile": "./src/format/empty-shardfile.ts",
     "./migrate": "./src/format/format-migrate.ts",
-    "./migrations": "./src/format/format-migrations.ts",
+    "./formatMigrations": "./src/format/format-migrations.ts",
     "./shardSections": "./src/format/shardSections.ts",
     "./sketch": "./src/format/sketch.ts",
     "./skinAssets": "./src/format/skinAssets.ts",

@@ -30,3 +30,6 @@
 - FE5: the release job (npm-publish.yml) runs the corpus (corpus.yml, also
   nightly) before npm publish; a failure blocks unless corpus/known-failures.json
   lists it with its owner (Pine r1 to r6 under CP1 today).
+- Fix: 0.68.0 listed ./migrations twice, so the chain (306ffac) shadowed the
+  state migrations engine imports. ./migrations is the state module again;
+  the chain is ./formatMigrations. exports-unique.test.ts guards it.
