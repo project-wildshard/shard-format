@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.69.1 (2026-11-21)
+
+- Format 0.1.0.2 keeps requires.capabilities: dropping it broke the build source hash of every existing shard file.
+- requires.sdk and requires.capabilities are now deprecated: validate warns on them until writers stop writing them.
+- 0.69.0 is superseded; pin 0.69.1.
+
 ## v0.69.0 (2026-11-21)
 
 - Format 0.1.0.2: shard.json names its format in formatVersion (like "0.1.0.2"); the separate version field is gone.
