@@ -1,5 +1,6 @@
 import * as v from 'valibot';
 import { LimbPopulationSchema } from './limbPopulation.ts';
+import { NativeHuntSchema, type NativeHuntRows } from './speciesPrograms.ts';
 
 const key = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
 const finite = v.pipe(v.number(), v.finite());
@@ -37,6 +38,10 @@ export const NativePopulationRowsSchema: v.GenericSchema<NativePopulationRowsInp
   identities: v.array(identity), ordinary: v.record(key, v.array(key)),
   reserves: v.array(v.strictObject({ kind: key, variant: v.nullable(key) })),
   homes: v.array(v.strictObject({ ...identity.entries, x: finite, z: finite, stream: key })),
+  // ONE-FORMAT OF30: a roster on a product with no species programme names the declared species it runs, in its native
+  // registration order (a listed row's `spawnOnly` rows lend their variants as that kind's spawn-only variants), and its hunt
+  species: v.exactOptional(v.pipe(v.array(v.strictObject({ id: key, spawnOnly: v.exactOptional(v.pipe(v.array(key), v.maxLength(16))) })), v.maxLength(256))),
+  hunt: v.exactOptional(NativeHuntSchema),
 });
 
 /** Admit once, before any native actor or RNG draw is installed. */
@@ -88,6 +93,8 @@ interface NativePopulationRowsInputFields {
         kind: string;
         variant: (string) | null;
     })[];
+    species?: { id: string; spawnOnly?: string[] }[];
+    hunt?: NativeHuntRows;
     homes: (Omit<{
         kind: string;
         variant: string;
@@ -142,6 +149,8 @@ interface NativePopulationRowsFields {
         kind: string;
         variant: (string) | null;
     })[];
+    species?: { id: string; spawnOnly?: string[] }[];
+    hunt?: NativeHuntRows;
     homes: (Omit<{
         kind: string;
         variant: string;
