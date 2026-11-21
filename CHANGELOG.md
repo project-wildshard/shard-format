@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.65.0 (2026-11-21)
+
+- A plain upload can declare field water: a `world/field` section with a pond raster and a water level.
+
 ## v0.64.0 (2026-11-21)
 
 - A creature's body can put its pivot at ground level (`bodyY: 0`), as a flying rig's often does.
