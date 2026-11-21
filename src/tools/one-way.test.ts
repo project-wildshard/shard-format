@@ -21,6 +21,9 @@ test('pinned inventories stay at or below every one-way ceiling', async (): Prom
     engineRevision:
       process.env['WS_ONE_WAY_ENGINE_REVISION'] ?? baseline.engineRevision,
     sdkRevision: process.env['WS_ONE_WAY_SDK_REVISION'] ?? baseline.sdkRevision,
+    audited: baseline.pins.map(
+      (pin: Readonly<{ slug: string }>): string => pin.slug,
+    ),
   })
   assert.deepEqual(countRises(baseline.counts, current.counts), [])
   assert.deepEqual(

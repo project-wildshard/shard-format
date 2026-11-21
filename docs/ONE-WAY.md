@@ -15,7 +15,8 @@ and ceilings. A drop is allowed; a rise or a new counter needs a fix.
   package sources/docs; corpus JSON is inventoried separately.
 - Git inputs come from immutable objects, excluding loose edits. Every blob
   is checked against its Git object hash before decoding.
-- Eight product tarballs come from that engine revision's pin catalogue.
+- Product tarballs come from that engine revision's pin catalogue, narrowed
+  to the slugs the baseline's `pins` records (no slug list in code).
   Each must match its SHA-256 and exact byte length. Cached pins are read
   without writing a cache; public mirrors provide a fallback.
 - Sky Reach is named `far-reach` in the engine catalogue. Other names:

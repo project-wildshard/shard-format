@@ -15,3 +15,6 @@ ratchet stays flat); the dead exports and golden `files` entries dropped.
 
 FP13 commit: `art/` removed after shard-brasscap took it; ratchet slugs from
 the baseline.
+
+FP13 commit: `art/` removed after shard-brasscap took it; ratchet slugs from
+the baseline.

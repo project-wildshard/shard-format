@@ -23,6 +23,7 @@ import type { SourceFile } from './one-way-source.ts'
 import type { InferOutput } from 'valibot'
 
 const MIN_BYTES = 1
+const MIN_PINS = 1
 const FETCH_TIMEOUT_MS = 30_000
 const PinSchema = object({
   slug: string(),
@@ -31,16 +32,6 @@ const PinSchema = object({
 })
 const PinsSchema = object({ shards: array(PinSchema) })
 type ProductPin = InferOutput<typeof PinSchema>
-const WANTED = new Set([
-  'blender-template',
-  'template',
-  'sunscar-dunes',
-  'far-reach',
-  'nine-dragon-stack',
-  'driftwood-isle',
-  'pine-hollow',
-  'nalati-grasslands',
-])
 const decoder = new TextDecoder('utf-8', { fatal: true })
 
 function verifyArchive(
@@ -105,7 +96,12 @@ async function readProduct(pin: Readonly<ProductPin>): Promise<ProductFacts> {
   return productFacts(pin.slug, jsonFiles(readTar(bytes)))
 }
 
-function enginePins(engine: readonly SourceFile[]): readonly ProductPin[] {
+/** The engine's own pin catalogue names the audited products; `audited` narrows it to a recorded set (the
+ * baseline's pins), so the format repo never keeps a slug list of its own (FORMAT-PRUNE FP13). */
+function enginePins(
+  engine: readonly SourceFile[],
+  audited?: ReadonlySet<string>,
+): readonly ProductPin[] {
   const file = engine.find(
     (row: Readonly<SourceFile>): boolean =>
       row.path === 'test/pins/shardfiles.json',
@@ -115,12 +111,15 @@ function enginePins(engine: readonly SourceFile[]): readonly ProductPin[] {
   }
   const parsed: unknown = JSON.parse(file.text)
   const pins = parse(PinsSchema, parsed).shards.filter(
-    (pin: Readonly<ProductPin>): boolean => WANTED.has(pin.slug),
+    (pin: Readonly<ProductPin>): boolean => audited?.has(pin.slug) ?? true,
+  )
+  const slugs = new Set(
+    pins.map((pin: Readonly<ProductPin>): string => pin.slug),
   )
   if (
-    new Set(pins.map((pin: Readonly<ProductPin>): string => pin.slug)).size !==
-      WANTED.size ||
-    pins.length !== WANTED.size
+    pins.length < MIN_PINS ||
+    slugs.size !== pins.length ||
+    (audited !== undefined && slugs.size !== audited.size)
   ) {
     throw new Error('The engine pin is missing or repeats an audited shard')
   }
@@ -130,8 +129,9 @@ function enginePins(engine: readonly SourceFile[]): readonly ProductPin[] {
 /** Use the product inventory at the same source revision as the engine counters. */
 async function pinnedProducts(
   engine: readonly SourceFile[],
+  audited?: ReadonlySet<string>,
 ): Promise<readonly ProductFacts[]> {
-  const pins = enginePins(engine)
+  const pins = enginePins(engine, audited)
   const products: ProductFacts[] = []
   for (const pin of pins) {
     // eslint-disable-next-line no-await-in-loop -- Keep one large tarball alive at a time.
