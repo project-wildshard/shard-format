@@ -401,6 +401,7 @@
     "./viewProgram": "./src/format/viewProgram.ts",
     "./voicePatches": "./src/format/voicePatches.ts",
     "./water": "./src/format/water.ts",
+    "./waterField": "./src/format/water-field.ts",
     "./waterWaves": "./src/format/waterWaves.ts",
     "./waterWorld": "./src/format/waterWorld.ts",
     "./weaponProfiles": "./src/format/weaponProfiles.ts",

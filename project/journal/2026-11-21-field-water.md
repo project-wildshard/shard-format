@@ -8,3 +8,4 @@ the same, so the primitive table had it as `later`. A `world/field` section
 now does: the hash of a square f32 pond raster, its res and size, and the
 water level. A positive pond sample is water at that level, sampled with the
 baked-terrain law, as the grass field's pond is.
+The engine imports it as `@wildshard/format/waterField`.
