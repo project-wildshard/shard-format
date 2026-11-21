@@ -27,3 +27,6 @@
 - PR3: a stale or invalid cook preparation refuses `preparation-invalid` in
   both validators (was lumped into `cook-invalid`); validation.json stays
   a hint. docs/preparation.md lists each prepared part's code.
+- FE5: the release job (npm-publish.yml) runs the corpus (corpus.yml, also
+  nightly) before npm publish; a failure blocks unless corpus/known-failures.json
+  lists it with its owner (Pine r1 to r6 under CP1 today).

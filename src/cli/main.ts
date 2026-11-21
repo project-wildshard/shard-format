@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { readFile } from 'node:fs/promises'
 import { parseArgs } from 'node:util'
 
+import { corpusGate, readKnownFailures } from './corpus-gate.ts'
 import { corpusReport, runCorpus } from './corpus.ts'
 import { packFolder } from './pack.ts'
 import { summary, validateShardfile } from './validate.ts'
@@ -16,6 +18,7 @@ const NONE = 0
 const FIRST_CLI_ARG = 2
 const DEFAULT_API = 'https://api.wildshard.io'
 const DEFAULT_CACHE = 'tmp/corpus'
+const KNOWN_FAILURES = 'corpus/known-failures.json'
 
 const USAGE = `Usage: shard-format <command> [options]
 
@@ -137,9 +140,15 @@ async function corpus(args: CliArgs): Promise<number> {
     validator: await readVersion(),
   })
   process.stdout.write(`${corpusReport(rows)}\n`)
-  return rows.some((found): boolean => found.verdict === 'fails')
-    ? EXIT_INVALID
-    : EXIT_OK
+  // SHARD-COMPAT FE5: only a failure not listed with its owner blocks a release.
+  const listed = await readFile(KNOWN_FAILURES, 'utf8').catch(
+    (): string => '[]',
+  )
+  const gate = corpusGate(rows, readKnownFailures(listed))
+  if (gate.lines.length > NONE) {
+    process.stdout.write(`${gate.lines.join('\n')}\n`)
+  }
+  return gate.blocking.length > NONE ? EXIT_INVALID : EXIT_OK
 }
 
 async function runCommand(args: CliArgs): Promise<number> {
