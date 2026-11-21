@@ -19,6 +19,9 @@ export const ClaimedPickupSchema: v.GenericSchema<ClaimedPickupRowsInput, Claime
     towardPlayer: v.exactOptional(v.strictObject({ distance: v.pipe(finite, v.minValue(0)), epsilon: v.pipe(finite, v.minValue(0)) })) })),
   toast: v.exactOptional(text),
 });
+/** ONE-FORMAT OF31g1 (Q37): the shard's one currency: what its coin is called, the pickup model a kill bursts and the Bag icon. */
+const currency: v.GenericSchema<CurrencyRowsInput, CurrencyRows> = v.strictObject({ id: key, name: v.pipe(text, v.nonEmpty()),
+  model: v.pipe(v.string(), v.regex(/^(?=.{1,128}$)[a-z][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*$/u)), icon: key });
 const grantSchema = v.strictObject({ id: effectId, key, unless: v.exactOptional(v.pipe(v.array(key), v.maxLength(32))), stacks: v.exactOptional(v.pipe(positive, v.maxValue(1024))) });
 const grants = v.pipe(v.array(grantSchema), v.maxLength(128));
 /** Bounded data selectors lower to the existing weighted-table predicate and count laws. */
@@ -42,7 +45,8 @@ export function parseLootTables(input: unknown): v.InferOutput<typeof LootTables
   return rows;
 }
 /** Inert economy content; ownership, transactions, attributes and menu lifetimes stay with their existing services. */
-export const LootEconomySchema: v.StrictObjectSchema<{ readonly presentation: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['presentation'], undefined>, Exclude<LootEconomy['presentation'], undefined>>, undefined>; readonly exchange: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['exchange'], undefined>, Exclude<LootEconomy['exchange'], undefined>>, undefined>; readonly pickups: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['pickups'], undefined>, Exclude<LootEconomy['pickups'], undefined>>, undefined>; readonly tables: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['tables'], undefined>, Exclude<LootEconomy['tables'], undefined>>, undefined>; readonly progression: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['progression'], undefined>, Exclude<LootEconomy['progression'], undefined>>, undefined>; readonly effects: v.GenericSchema<LootEconomyInput['effects'], LootEconomy['effects']>; readonly goods: v.GenericSchema<LootEconomyInput['goods'], LootEconomy['goods']>; readonly grants: v.StrictObjectSchema<{ readonly player: v.GenericSchema<LootEconomyInput['grants']['player'], LootEconomy['grants']['player']>; readonly worn: v.GenericSchema<LootEconomyInput['grants']['worn'], LootEconomy['grants']['worn']>; readonly weapons: v.GenericSchema<LootEconomyInput['grants']['weapons'], LootEconomy['grants']['weapons']>; }, undefined>; readonly finds: v.GenericSchema<LootEconomyInput['finds'], LootEconomy['finds']>; readonly marks: v.GenericSchema<LootEconomyInput['marks'], LootEconomy['marks']>; }, undefined> = v.strictObject({
+export const LootEconomySchema: v.StrictObjectSchema<{ readonly currency: v.ExactOptionalSchema<v.GenericSchema<CurrencyRowsInput, CurrencyRows>, undefined>; readonly presentation: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['presentation'], undefined>, Exclude<LootEconomy['presentation'], undefined>>, undefined>; readonly exchange: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['exchange'], undefined>, Exclude<LootEconomy['exchange'], undefined>>, undefined>; readonly pickups: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['pickups'], undefined>, Exclude<LootEconomy['pickups'], undefined>>, undefined>; readonly tables: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['tables'], undefined>, Exclude<LootEconomy['tables'], undefined>>, undefined>; readonly progression: v.ExactOptionalSchema<v.GenericSchema<Exclude<LootEconomyInput['progression'], undefined>, Exclude<LootEconomy['progression'], undefined>>, undefined>; readonly effects: v.GenericSchema<LootEconomyInput['effects'], LootEconomy['effects']>; readonly goods: v.GenericSchema<LootEconomyInput['goods'], LootEconomy['goods']>; readonly grants: v.StrictObjectSchema<{ readonly player: v.GenericSchema<LootEconomyInput['grants']['player'], LootEconomy['grants']['player']>; readonly worn: v.GenericSchema<LootEconomyInput['grants']['worn'], LootEconomy['grants']['worn']>; readonly weapons: v.GenericSchema<LootEconomyInput['grants']['weapons'], LootEconomy['grants']['weapons']>; }, undefined>; readonly finds: v.GenericSchema<LootEconomyInput['finds'], LootEconomy['finds']>; readonly marks: v.GenericSchema<LootEconomyInput['marks'], LootEconomy['marks']>; }, undefined> = v.strictObject({
+  currency: v.exactOptional(currency),
   presentation:v.exactOptional(LootPresentationSchema),
   exchange: v.exactOptional(ExchangeSchema),
   pickups: v.exactOptional(v.pipe(v.record(key, ClaimedPickupSchema), v.maxEntries(128))),
@@ -141,7 +145,10 @@ export type LootTablesRows = ({
         })[];
     };
 })[];
+interface CurrencyRowsInput { id: string; name: string; model: string; icon: string; }
+interface CurrencyRows { id: string; name: string; model: string; icon: string; }
 interface LootEconomyInputFields {
+    currency?: CurrencyRowsInput;
     presentation?: v.InferInput<typeof LootPresentationSchema>;
     exchange?: v.InferInput<typeof ExchangeSchema>;
     pickups?: Record<string, ClaimedPickupRowsInput>;
@@ -174,6 +181,7 @@ interface LootEconomyInputFields {
 }
 export type LootEconomyInput = { [Key in keyof LootEconomyInputFields]: LootEconomyInputFields[Key] };
 interface LootEconomyFields {
+    currency?: CurrencyRows;
     presentation?: v.InferOutput<typeof LootPresentationSchema>;
     exchange?: v.InferOutput<typeof ExchangeSchema>;
     pickups?: Record<string, ClaimedPickupRows>;
