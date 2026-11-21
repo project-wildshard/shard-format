@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.69.2 (2026-11-21)
+
+- Driftwood, Nalati, Nine Dragon and Pine are armed again: a new upload past the loading ceiling is refused.
+
 ## v0.69.1 (2026-11-21)
 
 - Format 0.1.0.2 keeps requires.capabilities: dropping it broke the build source hash of every existing shard file.
