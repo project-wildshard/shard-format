@@ -367,8 +367,11 @@ export function performanceReportLines(report: PerformanceReport): string[] {
     ...report.issues.map(issue => `${issue.severity.toUpperCase()}: ${issue.metric}: ${issue.actual} > ${issue.limit}`)];
 }
 
-/** Offline soft-cap policy and the hard loading ceiling (J445). */
-export function offlineMemoryAdmission(_policy: 'warn' | 'refuse'): MemoryAdmission {
+/** Offline soft-cap policy and the hard loading ceiling (J445). A stored shard file was judged at its upload (CP10):
+ *  no memory line refuses it again. */
+export function offlineMemoryAdmission(_policy: 'warn' | 'refuse', judged: 'upload' | 'stored' = 'upload'): MemoryAdmission {
   // The hard loading ceiling applies to the armed list.
-  return new MemoryAdmission((): boolean => true, (owner, kind): number => ratchetLimit(owner, kind, MEMORY_HARD_BYTES));
+  return new MemoryAdmission((): boolean => true, judged === 'stored'
+    ? (): number => Number.POSITIVE_INFINITY
+    : (owner, kind): number => ratchetLimit(owner, kind, MEMORY_HARD_BYTES));
 }

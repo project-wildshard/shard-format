@@ -19,6 +19,7 @@ import { parseShardfile } from './shardSchema.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { AssetAdmission } from './assetAdmission.ts'
+import type { Judged, PolicyVerdict } from './policy-verdict.ts'
 import type { OutputIndex } from './outputIndex.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
 import type { AssetPasses } from './shardfile-stream-assets.ts'
@@ -29,22 +30,26 @@ function admitHead(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   index: OutputIndex,
   payloads: ReadonlyMap<string, unknown>,
-): Shardfile {
+  judged: Judged = 'upload',
+): Readonly<{ shard: Shardfile; policy: PolicyVerdict }> {
   const shard = withIssueCode('shard-schema', (): Shardfile =>
     parseShardfile(assembleOutputShardfile(index, payloads), payloads),
   )
   withIssueCode('declared-costs', (): void => {
-    preflightDeclaredCosts(shard, offlineMemoryAdmission('warn'))
+    preflightDeclaredCosts(shard, offlineMemoryAdmission('warn', judged))
   })
-  withIssueCode('performance-targets', (): void => {
-    // MG6 epoch 5: the index lets the estimate count only the files a phone fetches (no mount bytes in the stream).
-    assertShardfileTargets(shard, 'warn', {
-      sections: payloads,
-      mountedImages: 0,
-      index,
-    })
-  })
-  return shard
+  const policy = withIssueCode(
+    'performance-targets',
+    (): PolicyVerdict =>
+      // MG6 epoch 5: the index lets the estimate count only the files a phone fetches (no mount bytes in the stream).
+      assertShardfileTargets(
+        shard,
+        'warn',
+        { sections: payloads, mountedImages: 0, index },
+        judged,
+      ),
+  )
+  return { shard, policy }
 }
 
 /** The shard's head and its asset admission's first steps, or the refusal they gave: thrown only after the packs, the
@@ -55,24 +60,41 @@ function admitBeforeAssets(
   payloads: ReadonlyMap<string, unknown>,
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's row type, only read
   scripts: ScriptAdmissionRows,
-): Readonly<{ admission: AssetAdmission | undefined; refusal: unknown }> {
+  judged: Judged = 'upload',
+): Readonly<{
+  admission: AssetAdmission | undefined
+  refusal: unknown
+  policy: PolicyVerdict | undefined
+  judged: Judged
+}> {
   try {
-    const head = admitHead(index, payloads)
+    const head = admitHead(index, payloads, judged)
     return {
       admission: withIssueCode('asset-admission', (): AssetAdmission =>
-        assetAdmission(head, offlineMemoryAdmission('warn'), scripts, payloads),
+        assetAdmission(
+          head.shard,
+          offlineMemoryAdmission('warn', judged),
+          scripts,
+          payloads,
+        ),
       ),
       refusal: undefined,
+      policy: head.policy,
+      judged,
     }
   } catch (error) {
-    return { admission: undefined, refusal: error }
+    return { admission: undefined, refusal: error, policy: undefined, judged }
   }
 }
 
 /** `validateShardfileAssets` from the commons on, over what the later reads found. */
 function admitAssets(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- the admission state, which the commons update
-  before: Readonly<{ admission: AssetAdmission | undefined; refusal: unknown }>,
+  before: Readonly<{
+    admission: AssetAdmission | undefined
+    refusal: unknown
+    judged?: Judged
+  }>,
   later: Readonly<AssetPasses>,
   hash: (bytes: Readonly<Uint8Array>) => string,
 ): Shardfile {
@@ -91,7 +113,7 @@ function admitAssets(
     return admitAfterFiles(
       admission,
       later.assets,
-      offlineMemoryAdmission('warn'),
+      offlineMemoryAdmission('warn', before.judged),
     )
   })
 }

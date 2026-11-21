@@ -46,6 +46,7 @@ import type {
   StreamMember,
   WalkPorts,
 } from './shardfile-stream-tar.ts'
+import type { Judged, PolicyVerdict } from './policy-verdict.ts'
 import type { Shardfile } from './shardSchema.ts'
 
 /** The host services a streaming validation needs. */
@@ -58,6 +59,8 @@ interface StreamValidationPorts {
   readonly decode?: (
     stored: AsyncIterable<Uint8Array>,
   ) => AsyncIterable<Uint8Array>
+  /** SHARD-COMPAT CP10: `'stored'` for an already-admitted original; memory and budget policy only reports. */
+  readonly judged?: Judged
 }
 
 /** What one streaming validation found. */
@@ -73,6 +76,8 @@ interface StreamedShardfile {
   readonly scripts: ScriptAdmissionRows
   /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
   readonly warnings: readonly string[]
+  /** CP10: the policy verdict and its rule version, for the API to store beside an upload. */
+  readonly policy: PolicyVerdict
   /** True only when every check `validateShardfileFolder` runs has run: always, since AC6a2. */
   readonly complete: boolean
   /** The checks still to run, by name, while `complete` is false: none, since AC6a2. */
@@ -263,7 +268,7 @@ async function validateShardfileStream(
   )
   const { sections, warnings, scripts } = readSections(replay, index)
   replayBeforePacks(replay, index, scripts)
-  const before = admitBeforeAssets(index, sections, scripts)
+  const before = admitBeforeAssets(index, sections, scripts, ports.judged)
   const later = await assetPasses({
     open,
     ports,
@@ -276,7 +281,11 @@ async function validateShardfileStream(
   const shard = admitAssets(before, later, ports.hash)
   admitTail(shard, { index, payloads: sections, hash: ports.hash })
   const { hash, bytes, tarBytes } = walked
+  if (before.policy === undefined) {
+    throw new Error('admitted with no policy verdict')
+  }
   return {
+    policy: before.policy,
     hash,
     bytes,
     tarBytes,

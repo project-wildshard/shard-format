@@ -25,6 +25,7 @@ import { memoryContext, offlineMemoryIssues } from './memory-line.ts';
 import { runtimeTierIssues } from './runtime-tier.ts';
 import type { MemoryContext } from './memory-line.ts';
 import { mountedImageBytes, NO_BYTES } from './boot-memory-cost.ts';
+import { policyVerdict, type Judged, type PolicyVerdict } from './policy-verdict.ts';
 
 /**
  * P1-F3 format validation of a built shardfile product (format 2: `shard.json`, sections, blobs, packs): the schema,
@@ -54,6 +55,9 @@ export interface ShardfileValidationPorts {
   readonly definedJson?: (schemaBytes: Uint8Array, bytes: Uint8Array, name: string | undefined) => void;
   /** Import check for a copied `runtime/` file (the retired copied-runtime arm). Without it such files are refused. */
   readonly runtimeImports?: (path: string, source: string) => void;
+  /** SHARD-COMPAT CP10: `'stored'` for a shard file already admitted (a stored original, an engine pin, a cook): memory
+   *  and budget policy only reports, since it was judged at upload. Default `'upload'`: the policy refuses. */
+  readonly judged?: Judged;
   /** D31: hold no file's bytes between checks. `assets`, here and in the result, reads each file again from `files`, so a
    *  host's peak is its largest file rather than the shard, at the cost of those repeat reads. */
   readonly readThrough?: boolean;
@@ -71,6 +75,8 @@ export interface ValidatedShardfile {
   readonly scripts: ScriptAdmissionRows;
   /** Admitted with a warning: grandfathered script side lines (`SCRIPT_SIDE_GRANDFATHER`, SERVER-PARITY SS11). */
   readonly warnings: readonly string[];
+  /** CP10: the policy verdict and its rule version, for the API to store beside an upload. */
+  readonly policy: PolicyVerdict;
   /** AUDIO AU5: the shard's own recordings (audio mounts and non-commons `audio.recordings`), measured from their bytes. */
   readonly audio: readonly RecordingMeasure[];
 }
@@ -110,22 +116,30 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
   return kind;
 }
 
-/** Refuse the declared targets a policy treats as refusals, before any byte is read or executed. */
-export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse', context: MemoryContext = new Map()): void {
+/** Refuse the declared targets a policy treats as refusals, before any byte is read or executed; return the verdict.
+ *  A stored shard file (CP10) is never refused here: it was judged at its upload. */
+export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse', context: MemoryContext = new Map(), judged: Judged = 'upload'): PolicyVerdict {
   // J412: the memory gates are ratchets; an issue within a zone's baseline reports (`memory-ratchet.ts`) and is not thrown here.
-  const issues = [...staleRuntimeIssues(source.runtime, undefined, source.identity), ...offlineMemoryIssues(source, context), ...runtimeTierIssues(source), ...performanceTargetIssues(source, policy)].filter(issue => issue.severity === 'refusal');
-  if (issues.length === 0) return;
-  throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
+  const found = [...staleRuntimeIssues(source.runtime, undefined, source.identity), ...offlineMemoryIssues(source, context), ...runtimeTierIssues(source), ...performanceTargetIssues(source, policy)];
+  const issues = found.filter(issue => issue.severity === 'refusal');
+  if (issues.length > 0 && judged === 'upload') throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));
+  return policyVerdict(source.identity.slug, judged, found);
 }
 
 /** Admit a whole shardfile's declared costs and its actual immutable bytes through the defining contracts. */
 export function admitShardfileFolder(input: unknown, assets: ReadonlyMap<string, Uint8Array>, hash: (bytes: Uint8Array) => string,
   policy: 'warn' | 'refuse' = 'refuse', scripts: ScriptAdmissionRows = [], context?: MemoryContext): Shardfile {
+  return admitJudged(input, assets, hash, policy, scripts, context).shard;
+}
+
+/** `admitShardfileFolder` with the CP10 verdict, judged at upload or (`'stored'`) only reported. */
+function admitJudged(input: unknown, assets: ReadonlyMap<string, Uint8Array>, hash: (bytes: Uint8Array) => string,
+  policy: 'warn' | 'refuse', scripts: ScriptAdmissionRows, context?: MemoryContext, judged: Judged = 'upload'): { shard: Shardfile; policy: PolicyVerdict } {
   const sections = context === undefined ? undefined : memoryContext(context).sections;
   const source = coded('shard-schema', (): Shardfile => parseShardfile(input, sections));
-  coded('declared-costs', (): void => { preflightDeclaredCosts(source, offlineMemoryAdmission(policy)); });
-  coded('performance-targets', (): void => { assertShardfileTargets(source, policy, context); });
-  return coded('asset-admission', (): Shardfile => validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy), undefined, scripts, sections));
+  coded('declared-costs', (): void => { preflightDeclaredCosts(source, offlineMemoryAdmission(policy, judged)); });
+  const verdict = coded('performance-targets', (): PolicyVerdict => assertShardfileTargets(source, policy, context, judged));
+  return { shard: coded('asset-admission', (): Shardfile => validateShardfileAssets(source, assets, hash, offlineMemoryAdmission(policy, judged), undefined, scripts, sections)), policy: verdict };
 }
 
 /** Refuse world target rows that name items or quests the shardfile does not declare. */
@@ -238,8 +252,8 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
     coded('runtime-files', (): void => { ports.runtimeImports?.(entry.path, decoder().decode(read(entry))); });
   }
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
-  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index });
+  const { shard, policy } = admitJudged(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index }, ports.judged);
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
-  return { index, shard, assets, sections: payloads, scripts, warnings, audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
+  return { index, shard, assets, sections: payloads, scripts, warnings, policy, audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
 }

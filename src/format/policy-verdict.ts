@@ -1,0 +1,52 @@
+import { zoneArmed } from './memory-armed.ts'
+import { MEMORY_EPOCH } from './memory-epoch.ts'
+
+/**
+ * SHARD-COMPAT CP10 (J486 D1.1, Jake 2026-11-21): memory lines, budgets and runtime targets judge a shard file once,
+ * at upload. The API stores this verdict and its rule version (the memory epoch) beside the original; a stored
+ * original, an engine shard pin and a cook validate with `judged: 'stored'`, so a newer policy reaches new uploads only
+ * and never re-judges what was already admitted. Readability (schemas, inventory, hashes, preparation) is judged every
+ * time either way.
+ */
+type Judged = 'upload' | 'stored'
+
+interface PolicyIssue {
+  readonly code: string
+  readonly metric: string
+  readonly actual: number
+  readonly limit: number
+  readonly severity: 'refusal' | 'warning'
+}
+
+interface PolicyVerdict {
+  readonly judged: Judged
+  /** The rule version the verdict was reached under. */
+  readonly epoch: number
+  /** Whether the zone was on the armed list (J426) when judged. */
+  readonly armed: boolean
+  /** Every policy issue found: warnings on an upload (a refusal throws); warnings and would-be refusals when stored. */
+  readonly issues: readonly PolicyIssue[]
+}
+
+function policyVerdict(
+  slug: string | undefined,
+  judged: Judged,
+  issues: readonly PolicyIssue[],
+): PolicyVerdict {
+  return {
+    judged,
+    epoch: MEMORY_EPOCH,
+    armed: zoneArmed(slug),
+    issues: issues.map(
+      ({ code, metric, actual, limit, severity }): PolicyIssue => ({
+        code,
+        metric,
+        actual,
+        limit,
+        severity,
+      }),
+    ),
+  }
+}
+
+export { type Judged, type PolicyIssue, type PolicyVerdict, policyVerdict }
