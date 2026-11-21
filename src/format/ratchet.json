@@ -2533,7 +2533,7 @@
    "typescript(explicit-function-return-type)": 5,
    "typescript(prefer-readonly-parameter-types)": 3,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 52,
+   "unicorn(max-nested-calls)": 47,
    "unicorn(numeric-separators-style)": 2,
    "unicorn(prefer-spread)": 1
   },
@@ -4305,7 +4305,7 @@
    "eslint(id-length)": 5,
    "eslint(no-magic-numbers)": 23,
    "import(no-namespace)": 1,
-   "typescript(explicit-function-return-type)": 10,
+   "typescript(explicit-function-return-type)": 9,
    "typescript(prefer-readonly-parameter-types)": 7,
    "unicorn(filename-case)": 1,
    "unicorn(max-nested-calls)": 32,
