@@ -10,6 +10,7 @@ import { beforeAll, expect, test } from 'vitest'
 import { zoneArmed } from './memory-armed.ts'
 import { MEMORY_EPOCH } from './memory-epoch.ts'
 import { MEMORY_HARD_BYTES } from './memory-line.ts'
+import { asJudged } from './policy-verdict.ts'
 import {
   offlineMemoryAdmission,
   prepareAssetDecoders,
@@ -132,4 +133,15 @@ test('CP10: offline admission never refuses a stored shard file over the hard li
   expect(offlineMemoryAdmission('refuse', 'stored').accept(request(over))).toBe(
     true,
   )
+})
+
+test('CP10: a stored original: its file facts only warn in the cook; measured script costs still refuse', (): void => {
+  const issues = [
+    { code: 'perf-loading-memory', severity: 'refusal' as const },
+    { code: 'perf-script-cpu', severity: 'refusal' as const },
+  ]
+  expect(
+    asJudged(issues, 'stored').map(({ severity }): string => severity),
+  ).toEqual(['warning', 'refusal'])
+  expect(asJudged(issues, 'upload')).toEqual(issues)
 })

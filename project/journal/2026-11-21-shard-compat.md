@@ -17,3 +17,4 @@
 - FE3: `shard-format corpus` validates every original the API lists, as
   stored, from the public list and download (no token); verdicts cache by
   hash and validator version.
+  (The cook half landed after the corpus commit, which carries its note.)

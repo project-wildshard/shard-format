@@ -14,6 +14,8 @@ import type { ShardTerrain } from "./terrain.ts";
 import { worstContentCost, memoryTargetWarnings, nearbyContentCost } from "./budget.ts";
 import { CONTENT_CAPS as C } from './contentBounds.ts';
 import { ARMED_LINES } from './memory-armed.ts';
+import { asJudged } from './policy-verdict.ts';
+import type { Judged } from './policy-verdict.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
 import { ratchetLimit } from './memory-ratchet.ts';
 import { MEMORY_HARD_BYTES, memoryLineIssues, runtimeOfflineBytes } from './memory-line.ts';
@@ -28,7 +30,7 @@ import type { IssueCodeOf } from './issue-codes.ts';
 import { isNavigationData, navigationCost } from './navigationBytes.ts';
 
 type PerformancePolicy = 'refuse' | 'warn';
-interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex }
+interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex; readonly judged?: Judged }
 
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
 function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number; index?: TierIndex }>): PerformanceReport['memory'] {
@@ -347,8 +349,8 @@ export function performanceReport(source: Shardfile, observations: PerformanceOb
   if (observations.scripts.samples < 60 || observations.fuel.samples < 60) check(['perf-script-samples-missing', 'missing execution samples'], 60, Math.min(observations.scripts.samples, observations.fuel.samples));
   // An explicit cold-network estimate, not a measured phone loading claim. The guide names both assumptions.
   const bytesPerSecond = 1_000_000, setupSeconds = 1;
-  return { slug: source.identity.slug, policy, pass: !issues.some(issue => issue.severity === 'refusal'), native, memory, views, graphs, scripts: observations, download,
-    estimatedPlayable: { seconds: setupSeconds + download.playable / bytesPerSecond, bytesPerSecond, setupSeconds }, issues };
+  return { slug: source.identity.slug, policy, pass: !asJudged(issues, resolved.judged).some(issue => issue.severity === 'refusal'), native, memory, views, graphs, scripts: observations, download,
+    estimatedPlayable: { seconds: setupSeconds + download.playable / bytesPerSecond, bytesPerSecond, setupSeconds }, issues: asJudged(issues, resolved.judged) };
 }
 
 /** Human-readable card keeps estimates visibly distinct from measurements and prints every enforced limit. */

@@ -49,6 +49,22 @@ function policyVerdict(
   }
 }
 
+/** What the host measures on its own engine build (script CPU and fuel) still refuses; the file's own facts do not. */
+const MEASURED = 'perf-script-'
+
+/** A performance report's issues for a stored original (engine `checkShardfile` in the cook): a fact of the file judged
+ * at upload only warns; an upload keeps every severity. */
+function asJudged<
+  Issue extends Readonly<{ code: string; severity: 'refusal' | 'warning' }>,
+>(issues: readonly Issue[], judged: Judged | undefined): Issue[] {
+  if (judged !== 'stored') {
+    return [...issues]
+  }
+  return issues.map((issue: Issue): Issue =>
+    issue.code.startsWith(MEASURED) ? issue : { ...issue, severity: 'warning' },
+  )
+}
+
 /** The verdict each admitted shard object was judged with: read back by the validators, so no signature grows. */
 const VERDICTS = new WeakMap<object, PolicyVerdict>()
 
@@ -73,6 +89,7 @@ export {
   type PolicyIssue,
   type PolicyVerdict,
   admittedVerdict,
+  asJudged,
   policyVerdict,
   recordVerdict,
 }
