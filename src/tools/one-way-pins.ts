@@ -24,7 +24,8 @@ import type { InferOutput } from 'valibot'
 
 const MIN_BYTES = 1
 const MIN_PINS = 1
-const FETCH_TIMEOUT_MS = 30_000
+/** A pinned archive is up to a few hundred MB, and the signal covers the body too: CI's runner took over 30 s for Pine. */
+const FETCH_TIMEOUT_MS = 180_000
 const PinSchema = object({
   slug: string(),
   hash: pipe(string(), regex(/^[a-f0-9]{64}$/u)),
