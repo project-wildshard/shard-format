@@ -119,6 +119,7 @@ and nothing else. A **plain value** section holds its own schema's value, define
 | `world/collision` | `wildshard:world/collision@1` | root `meshCollision` | `installShardfileColliders` (both) |
 | `world/days` | `wildshard:world/days@1` | root `rows.days` | `declaredDay` (both) |
 | `world/edge` | `wildshard:world/edge@1` | root `edge`, `entryways` | `createPortalTraversal` (both) |
+| `world/field` | `wildshard:world/field@1` | plain value | `bindShardfileSim` (server) |
 | `world/movers` | `wildshard:world/movers@1` | root `movers` | `createComposedMoverHost` (server), `installClientMoverOwners` (page) |
 | `world/navigation` | `wildshard:world/navigation@1` | root `navigation` | `installProductNavigation` (page) |
 | `world/physics` | `wildshard:world/physics@1` | plain value | none: Handed to the runtime's explicitly imported native host. |

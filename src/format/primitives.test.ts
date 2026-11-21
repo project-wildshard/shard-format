@@ -16,6 +16,7 @@ import {
   ACCEPTED_SECTION_VERSIONS,
   sectionSchemaIssue,
 } from './section-versions.ts'
+import { WaterFieldSchema } from './water-field.ts'
 
 const corpus = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
 const indexText = readFileSync(new URL('shard.json', corpus), 'utf8')
@@ -225,4 +226,21 @@ test('OF17d: the handwritten corpus derives its declared families', (): void => 
   expect(names(corpusSections())).toEqual(
     expect.arrayContaining(['collision', 'plumbing']),
   )
+})
+
+test('OF40b: a world/field section switches the field water on', (): void => {
+  const pond = 'a'.repeat(64)
+  expect(from('world/field', { level: 1, res: 2, size: 4, pond })).toEqual([
+    'water.field',
+  ])
+  expect(
+    safeParse(WaterFieldSchema, { level: 1, res: 2, size: 4, pond }).success,
+  ).toBe(true)
+  expect(
+    safeParse(WaterFieldSchema, { level: 1, res: 1, size: 4, pond }).success,
+  ).toBe(false)
+  expect(
+    safeParse(WaterFieldSchema, { level: 1, res: 2, size: 4, pond: 'x' })
+      .success,
+  ).toBe(false)
 })

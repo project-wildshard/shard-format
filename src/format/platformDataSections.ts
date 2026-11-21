@@ -33,6 +33,8 @@ import { ReturnModulesSchema, type ReturnModuleRow, ViewModulesSchema, type View
 import { NativeRuntimePlanSchema, type NativeRuntimePlanData } from './nativeRuntimePlan.ts';
 import { TreeSetSchema, type TreeSetRows } from './treeSetRows.ts';
 import { VehiclesSchema } from './vehicles.ts';
+import { WaterFieldSchema } from './water-field.ts';
+import type { WaterFieldRows } from './water-field.ts';
 import type { Vehicles } from './vehicles.ts';
 
 /** New plain-value sections supplement the unchanged v1 model assembled from the older section envelopes. */
@@ -70,6 +72,8 @@ export interface PlatformDataSections {
   'world/scenes': WorldScenesSection;
   'world/trees': TreeSetRows;
   'world/vehicles': Vehicles;
+  /** ONE-FORMAT OF40b: the field water (a pond raster at a level). */
+  'world/field': WaterFieldRows;
 }
 
 /** Defining parsers for the first independently authored platform sections. */
@@ -107,6 +111,7 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'world/scenes': { schema: WorldScenesSchema },
   'world/trees': { schema: TreeSetSchema },
   'world/vehicles': { schema: VehiclesSchema },
+  'world/field': { schema: WaterFieldSchema },
 } as const;
 
 /** Client feature inputs that remain legacy root envelopes. These defining

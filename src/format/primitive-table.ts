@@ -197,7 +197,12 @@ const TABLE: readonly Primitive[] = [
     },
     hosts: ['water.sea', 'world.water'],
   },
-  { name: 'water.field', row: 'OF40', on: 'later', hosts: ['water.field'] },
+  {
+    name: 'water.field',
+    row: 'OF40',
+    on: { section: 'world/field', path: [] },
+    hosts: ['water.field'],
+  },
   {
     name: 'grapple',
     row: 'OF41',

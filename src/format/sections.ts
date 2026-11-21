@@ -15,6 +15,7 @@ import type { ReturnModuleRow, ViewModuleRow } from './scriptContract.ts';
 import type { WorldScenesSection } from './worldScenes.ts';
 import type { TreeSetRows } from './treeSetRows.ts';
 import type { Vehicles } from './vehicles.ts';
+import type { WaterFieldRows } from './water-field.ts';
 import type { HeldArmsRows } from './heldArms.ts';
 import type { HeldGearRows } from './heldGear.ts';
 import type { HeldFinishesRows } from './heldFinishes.ts';
@@ -91,6 +92,7 @@ export interface PlatformSections {
   'world/trees': TreeSetRows;
   /** MIRROR-SALT-ZONE MSZ1: vehicle kinds (seats, hull, handling, sounds) and the docks they stand at. */
   'world/vehicles': Vehicles;
+  'world/field': WaterFieldRows;
   'world/days': { readonly rows: Pick<Rows, 'days'> };
   'world/weather': { readonly rows: Pick<Rows, 'weather'> };
   'look/look': Pick<Shardfile, 'look' | 'presentation'>;
