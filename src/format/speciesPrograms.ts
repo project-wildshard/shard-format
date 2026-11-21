@@ -78,7 +78,8 @@ const SpeciesProgramSchema: v.GenericSchema<SpeciesProgramDataInput, SpeciesProg
 function readSpeciesProgram(input: unknown): SpeciesProgramData { return v.parse(SpeciesProgramSchema, input); }
 
 const names = v.pipe(v.array(id), v.maxLength(64));
-const tag = v.custom<`${string}.${string}`>(value => typeof value === 'string' && value.length <= 128 && /^[a-z][a-zA-Z0-9.-]*\.[a-zA-Z0-9.-]+$/u.test(value));
+// a regex, not v.custom: a roster's hunt (actors/roster.json) projects to JSON Schema (ONE-FORMAT OF23e4)
+const tag = v.pipe(v.string(), v.maxLength(128), v.regex(/^[a-z][a-zA-Z0-9.-]*\.[a-zA-Z0-9.-]+$/u)) as v.GenericSchema<`${string}.${string}`>;
 const nativeFightFields = v.strictObject({ telegraphed: v.exactOptional(v.boolean()), attackers: v.exactOptional(v.pipe(positive, v.integer(), v.maxValue(1024))),
     maxHitDamage: v.exactOptional(nonnegative), capExempt: v.exactOptional(names), capExemptTags: v.exactOptional(IncomingCapTagsSchema),
     input: v.exactOptional(v.strictObject({ bufferMs: nonnegative, coyoteMs: nonnegative })) });

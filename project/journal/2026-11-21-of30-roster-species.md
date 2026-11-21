@@ -10,3 +10,8 @@ only on a product with no species programme.
 
 The ground boss's binding gets the same treatment: `decision` and `body` (the King's decision brain and body recipe,
 which only the species programme held) are optional binding fields; its exact strikes go to `actors/strikes`.
+
+The hunt's hit tag was a `v.custom`, which cannot project to JSON Schema, so
+every build naming `actors/roster.json` (Pine) refused once its roster schema
+carried the hunt. The tag is a regex now, the same law, as `catalogueEconomy`
+writes its tag; a test walks the roster schema for any custom (opus-of-pine).
