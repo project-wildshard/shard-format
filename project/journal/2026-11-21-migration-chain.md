@@ -66,3 +66,11 @@ Pine r1 and r2 then fail on a second break: their `page.life` program runs the `
 SERVER-PARITY SS11 split into the view row `pine.ambient` at r3. Mending that needs a step that edits a named JSON blob
 (FORMAT-PRUNE FP10), so they stay listed under it. FP14 to FP16 also add the species-program family sections and
 `admission.server` to `deprecations.ts`.
+
+## FP17: the legacy fields, sorted
+
+None can be migrated by data alone. `items.legacySlot` is shard data only (a closed list of engine-native weapon names),
+so it is a deprecation: Driftwood r8, Pine r5 and r9 and Nalati r4 use it. The species book's `piercing.legacy` goes
+with the species-program family (FP15). The rest map old save keys or saved shapes and stay as save bridges until a
+save wipe (J149), listed in `SAVE_BRIDGES` with the engine code that reads them: `legacyItem`, `legacyNamespace`,
+`legacyObservation`, quest `reward.legacy`, the elite `legacy` block and the spawn-script `legacy` block.

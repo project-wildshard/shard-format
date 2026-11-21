@@ -7,6 +7,7 @@ import { beforeAll, describe, expect, test } from 'vitest'
 
 import {
   DEPRECATIONS,
+  SAVE_BRIDGES,
   deprecationReport,
   deprecationsUsed,
 } from './deprecations.ts'
@@ -104,6 +105,21 @@ describe('the deprecation counter (FE7)', (): void => {
     expect(
       deprecationsUsed({ index: { version: '0.1.0.1' }, sections: new Map() }),
     ).toEqual([])
+  })
+
+  test('FP17: legacySlot is deprecated anywhere in a section; save bridges name their reader', (): void => {
+    const shard = {
+      index: { version: '0.1.0.1' },
+      sections: new Map<string, unknown>([
+        ['rows', { items: [{ equipment: { id: 'bow', legacySlot: 'bow' } }] }],
+      ]),
+    }
+    expect(deprecationsUsed(shard).map((row): string => row.id)).toEqual([
+      'items.legacySlot',
+    ])
+    for (const bridge of SAVE_BRIDGES) {
+      expect(bridge.reader, bridge.path).toMatch(/^engine /u)
+    }
   })
 
   test('the folder validator warns on an original and not on its migrated copy', (): void => {
