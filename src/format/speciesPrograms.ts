@@ -78,7 +78,8 @@ const SpeciesProgramSchema: v.GenericSchema<SpeciesProgramDataInput, SpeciesProg
 function readSpeciesProgram(input: unknown): SpeciesProgramData { return v.parse(SpeciesProgramSchema, input); }
 
 const names = v.pipe(v.array(id), v.maxLength(64));
-// a regex, not v.custom: a roster's hunt (actors/roster.json) projects to JSON Schema (ONE-FORMAT OF23e4)
+// A regex, not v.custom: a roster's hunt (actors/roster.json) projects to JSON Schema (ONE-FORMAT OF23e4).
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the regex is the template's law, as catalogueEconomy's tag
 const tag = v.pipe(v.string(), v.maxLength(128), v.regex(/^[a-z][a-zA-Z0-9.-]*\.[a-zA-Z0-9.-]+$/u)) as v.GenericSchema<`${string}.${string}`>;
 const nativeFightFields = v.strictObject({ telegraphed: v.exactOptional(v.boolean()), attackers: v.exactOptional(v.pipe(positive, v.integer(), v.maxValue(1024))),
     maxHitDamage: v.exactOptional(nonnegative), capExempt: v.exactOptional(names), capExemptTags: v.exactOptional(IncomingCapTagsSchema),

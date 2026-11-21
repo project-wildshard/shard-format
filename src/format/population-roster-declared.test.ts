@@ -1,6 +1,9 @@
 import { expect, test } from 'vitest'
 
-import { NativePopulationRowsSchema, parseNativePopulationRows } from './populationRoster.ts'
+import {
+  NativePopulationRowsSchema,
+  parseNativePopulationRows,
+} from './populationRoster.ts'
 
 // ONE-FORMAT OF30: a roster with no species programme names its declared species and carries its own hunt settings.
 const base = {
@@ -54,21 +57,38 @@ test('an unknown hunt field refuses', (): void => {
   ).toThrow()
 })
 
+/** Paths of every v.custom inside a Valibot schema tree (a custom cannot project to JSON Schema). */
+function customPaths(root: unknown): string[] {
+  const seen = new Set<unknown>()
+  const walk = (node: unknown, path: string): string[] => {
+    if (typeof node !== 'object' || node === null || seen.has(node)) {
+      return []
+    }
+    seen.add(node)
+    const own = 'type' in node && node.type === 'custom' ? [path] : []
+    return [
+      ...own,
+      ...Object.entries(node).flatMap(
+        (entry: readonly [string, unknown]): string[] =>
+          walk(entry[1], `${path}.${entry[0]}`),
+      ),
+    ]
+  }
+  return walk(root, 'roster')
+}
+
+function huntTagged(tag: string): () => unknown {
+  return (): unknown =>
+    parseNativePopulationRows({
+      ...base,
+      hunt: { ...hunt, hit: { namespace: 'creature', tags: [tag] } },
+    })
+}
+
 // OF23e4: the roster's hunt holds no v.custom, so actors/roster.json still projects to JSON Schema for named JSON files
 test('the roster schema holds no custom schema and its hunt tags keep their law', (): void => {
-  const customs: string[] = []
-  const walk = (node: unknown, path: string, seen: Set<unknown>): void => {
-    if (typeof node !== 'object' || node === null || seen.has(node)) return
-    seen.add(node)
-    const row = node as Record<string, unknown>
-    if (row['kind'] === 'schema' && row['type'] === 'custom') customs.push(path)
-    for (const key of ['entries', 'item', 'items', 'wrapped', 'options', 'pipe', 'key', 'value', 'rest']) walk(row[key], `${path}.${key}`, seen)
-    if (Array.isArray(node) || (row['kind'] === undefined && path.endsWith('entries'))) for (const [key, child] of Object.entries(row)) walk(child, `${path}.${key}`, seen)
-  }
-  walk(NativePopulationRowsSchema, 'roster', new Set())
-  expect(customs).toEqual([])
-  const tagged = (tag: string) => () => parseNativePopulationRows({ ...base, hunt: { ...hunt, hit: { namespace: 'creature', tags: [tag] } } })
-  expect(tagged('feel.blow')).not.toThrow()
-  expect(tagged('Feel.blow')).toThrow()
-  expect(tagged('noDot')).toThrow()
+  expect(customPaths(NativePopulationRowsSchema)).toEqual([])
+  expect(huntTagged('feel.blow')).not.toThrow()
+  expect(huntTagged('Feel.blow')).toThrow()
+  expect(huntTagged('noDot')).toThrow()
 })
