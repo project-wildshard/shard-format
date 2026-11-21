@@ -191,6 +191,14 @@ function programMountValid(
     )
   }
 }
+function failureOf(run: () => void): string | undefined {
+  try {
+    run()
+    return undefined
+  } catch (error: unknown) {
+    return error instanceof Error ? error.message : String(error)
+  }
+}
 function requireCookPreparation(
   index: Frozen<OutputIndex>,
   cook:
@@ -218,14 +226,22 @@ function requireCookPreparation(
   if (cook?.version !== VERSION) {
     throw new Error(`Missing cook preparation: run ${fix}`)
   }
-  if (
-    cook.inputHash !==
+  // SHARD-COMPAT PR5 (J487): every failing prepared part is named, not the first.
+  const failures = [
+    cook.inputHash ===
     digest(cookPreparationBytes(index, cook.mounts, cook.renderer))
-  ) {
-    throw new Error(`stale cook preparation: run ${fix}`)
+      ? undefined
+      : `stale cook preparation: run ${fix}`,
+    failureOf((): void => {
+      fenceValid(index, { fence: cook.fence ?? [], mounts: cook.mounts }, fix)
+    }),
+    failureOf((): void => {
+      programMountValid(index, cook, digest)
+    }),
+  ].filter((row: string | undefined): row is string => row !== undefined)
+  if (failures.length > ZERO) {
+    throw new Error(failures.join('; '))
   }
-  fenceValid(index, { fence: cook.fence ?? [], mounts: cook.mounts }, fix)
-  programMountValid(index, cook, digest)
 }
 function readEntryPrograms(input: unknown): EntryPrograms {
   return parse(EntryProgramsSchema, input)

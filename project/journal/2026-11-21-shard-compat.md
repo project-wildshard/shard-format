@@ -22,3 +22,5 @@
   fence, recorded programs and renderer fingerprint are the engine-coupled
   part; the page takes the reversible position (fence by rule, programs as
   cook output, renderer out of preparation).
+- PR5 first step: requireCookPreparation names every failing prepared part
+  (stale inputHash, fence, programs mount) in one refusal, not the first.

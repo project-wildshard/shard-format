@@ -112,6 +112,11 @@ test('required preparation refuses stale product inputs at the pack edge', (): v
   const run = cli(['pack', folder, '--out', path.join(dir, 'stale.tar')])
   assert.notEqual(run.status, 0)
   assert.match(run.stderr, /stale.*wildshard prepare/u)
+  // SHARD-COMPAT PR5 (J487): every failing part is named, not the first.
+  assert.match(
+    run.stderr,
+    /stale cook preparation.*; stale GLSL program mount/u,
+  )
 })
 
 test('a prepared product validates and packs; changing a bound input refuses', (): void => {
