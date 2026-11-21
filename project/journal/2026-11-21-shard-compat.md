@@ -10,3 +10,10 @@
 - The first CP10 push hit the src/format ratchet (max-params, max-lines).
   Now `judged` rides the memory context and the verdict is recorded against
   the admitted shard object (a WeakMap), so no signature grows.
+- CP10, the cook's half: `performanceReport` takes `judged: 'stored'`, so
+  engine's `checkShardfile` warns on a stored file's own facts (memory
+  lines, download budgets, stale readings) and refuses only what it measures
+  on its build (script CPU and fuel).
+- FE3: `shard-format corpus` validates every original the API lists, as
+  stored, from the public list and download (no token); verdicts cache by
+  hash and validator version.

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util'
 
+import { corpusReport, runCorpus } from './corpus.ts'
 import { packFolder } from './pack.ts'
 import { summary, validateShardfile } from './validate.ts'
 import { readVersion } from './version.ts'
@@ -13,6 +14,8 @@ const NONE = 0
 
 // Arguments start after [node, script] in process.argv.
 const FIRST_CLI_ARG = 2
+const DEFAULT_API = 'https://api.wildshard.io'
+const DEFAULT_CACHE = 'tmp/corpus'
 
 const USAGE = `Usage: shard-format <command> [options]
 
@@ -24,6 +27,10 @@ Commands:
                        Tar a folder into a shardfile: what its sections
                        measure follows them, and format's validator must
                        pass. Writes <slug>.tar by default
+  corpus [--api <url>] [--cache <dir>]
+                       Validate every stored shard file the API keeps,
+                       as stored originals; list every failure. Exits 3
+                       when any fails
 
 Options:
   --version            Print the version
@@ -35,6 +42,8 @@ interface CliArgs {
   readonly operands: readonly string[]
   readonly help: boolean
   readonly out: string | undefined
+  readonly api: string
+  readonly cache: string
   readonly version: boolean
 }
 
@@ -45,6 +54,8 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     options: {
       help: { type: 'boolean', default: false },
       out: { type: 'string' },
+      api: { type: 'string', default: DEFAULT_API },
+      cache: { type: 'string', default: DEFAULT_CACHE },
       version: { type: 'boolean', default: false },
     },
   })
@@ -54,6 +65,8 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     operands,
     help: values.help,
     out: values.out,
+    api: values.api,
+    cache: values.cache,
     version: values.version,
   }
 }
@@ -113,6 +126,22 @@ async function pack(args: CliArgs): Promise<number> {
   return await packReport(dir, args.out)
 }
 
+async function corpus(args: CliArgs): Promise<number> {
+  if (args.operands.length > NONE) {
+    process.stderr.write(`shard-format: corpus takes no operands\n\n${USAGE}`)
+    return EXIT_USAGE
+  }
+  const rows = await runCorpus({
+    api: args.api,
+    cache: args.cache,
+    validator: await readVersion(),
+  })
+  process.stdout.write(`${corpusReport(rows)}\n`)
+  return rows.some((found): boolean => found.verdict === 'fails')
+    ? EXIT_INVALID
+    : EXIT_OK
+}
+
 async function runCommand(args: CliArgs): Promise<number> {
   if (args.command === undefined) {
     return printUsage(EXIT_USAGE)
@@ -122,6 +151,9 @@ async function runCommand(args: CliArgs): Promise<number> {
   }
   if (args.command === 'pack') {
     return await pack(args)
+  }
+  if (args.command === 'corpus') {
+    return await corpus(args)
   }
   process.stderr.write(
     `shard-format: unknown command ${args.command}\n\n${USAGE}`,
