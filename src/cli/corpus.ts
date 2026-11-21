@@ -61,6 +61,12 @@ interface CorpusRow {
   readonly cached: boolean
 }
 
+type Judgement = Readonly<{
+  verdict: 'valid' | 'fails'
+  reason?: string
+  transient: boolean
+}>
+
 interface CorpusOptions {
   readonly api: string
   readonly cache: string
@@ -73,6 +79,10 @@ const TAR_MAGIC_AT = 257
 const TAR_MAGIC = 'ustar'
 const PEEK_BYTES = 512
 const FETCH_TIMEOUT_MS = 900_000
+/** One original is at most a few hundred MB; a download that takes longer has stalled. */
+const DOWNLOAD_TIMEOUT_MS = 180_000
+const DOWNLOAD_TRIES = 3
+const FIRST_TRY = 1
 const OK_LOW = 200
 const OK_HIGH = 300
 const SHORT_HASH = 12
@@ -105,7 +115,7 @@ async function download(
   const url = new URL(`/api/shardfiles/${hash}`, options.api)
   const response = await (options.fetch ?? fetch)(url, {
     headers: { 'accept-encoding': 'br' },
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
   })
   if (response.status < OK_LOW || response.status >= OK_HIGH) {
     throw new Error(`download ${hash}: HTTP ${String(response.status)}`)
@@ -128,13 +138,45 @@ async function firstBytes(file: string): Promise<Uint8Array> {
 }
 
 /** One original through the stream validator, as a stored file. */
+/** A download, tried again when it stalls or drops; the last error is thrown. */
+async function downloadWithRetries(
+  options: Readonly<CorpusOptions>,
+  hash: string,
+  file: string,
+): Promise<void> {
+  let last: unknown = undefined
+  for (
+    let attempt = FIRST_TRY;
+    attempt <= DOWNLOAD_TRIES;
+    attempt += FIRST_TRY
+  ) {
+    try {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- a retry waits for the try before it
+      await download(options, hash, file)
+      return
+    } catch (error: unknown) {
+      last = error
+    }
+  }
+  throw last
+}
+
+/** One original through the stream validator, as a stored file. A download that never completes is not a verdict. */
 async function judge(
   options: Readonly<CorpusOptions>,
   hash: string,
-): Promise<Readonly<{ verdict: 'valid' | 'fails'; reason?: string }>> {
+): Promise<Judgement> {
   const file = path.join(options.cache, `${hash}.download`)
   try {
-    await download(options, hash, file)
+    try {
+      await downloadWithRetries(options, hash, file)
+    } catch (error: unknown) {
+      return {
+        verdict: 'fails',
+        reason: `download: ${shortReason(error)}`,
+        transient: true,
+      }
+    }
     const plain = isPlainTar(await firstBytes(file))
     await validateShardfileStream(
       (): AsyncIterable<Uint8Array> => createReadStream(file),
@@ -143,9 +185,9 @@ async function judge(
         judged: 'stored',
       },
     )
-    return { verdict: 'valid' }
+    return { verdict: 'valid', transient: false }
   } catch (error: unknown) {
-    return { verdict: 'fails', reason: shortReason(error) }
+    return { verdict: 'fails', reason: shortReason(error), transient: false }
   } finally {
     await rm(file, { force: true })
   }
@@ -187,11 +229,13 @@ async function row(
     }
   }
   await mkdir(options.cache, { recursive: true })
-  const judged = await judge(options, stored.hash)
-  await writeFile(
-    path.join(options.cache, `${stored.hash}.json`),
-    `${JSON.stringify({ validator: options.validator, ...judged })}\n`,
-  )
+  const { transient, ...judged } = await judge(options, stored.hash)
+  if (!transient) {
+    await writeFile(
+      path.join(options.cache, `${stored.hash}.json`),
+      `${JSON.stringify({ validator: options.validator, ...judged })}\n`,
+    )
+  }
   return { ...base, ...judged, reason: judged.reason, cached: false }
 }
 
