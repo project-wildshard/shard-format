@@ -43,6 +43,15 @@ function runtime(files: readonly SourceFile[]): readonly SourceFile[] {
       !/\.(?:test|spec)\./u.test(file.path),
   )
 }
+/** A migration chain step names the old shape it rewrites (J486); it moves the count toward zero, so it is not counted. */
+function withoutChainSteps(
+  files: readonly SourceFile[],
+): readonly SourceFile[] {
+  return files.filter(
+    (file: Readonly<SourceFile>): boolean =>
+      !/^src\/format\/format-migration-[^/]+\.ts$/u.test(file.path),
+  )
+}
 function named(
   files: readonly SourceFile[],
   suffix: string,
@@ -176,7 +185,7 @@ function sourceCounts(
     ),
     'sdk.grid-pointer-references': occurrences(sdk, /\bgridShardfile\b/gu),
     'format.grid-pointer-references': occurrences(
-      runtime(input.format),
+      withoutChainSteps(runtime(input.format)),
       /\bgridShardfile\b/gu,
     ),
     'engine.access-gate-references': occurrences(engine, /\bfirstParty\b/gu),

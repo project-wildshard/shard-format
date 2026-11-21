@@ -54,6 +54,11 @@ const input: SourceInventory = {
       'src/format/compendiumRows.ts',
       "icon: v.picklist(['antlers', 'boar', 'bear'])",
     ),
+    files('src/format/minimap.ts', 'gridShardfile: v.exactOptional(text)'),
+    files(
+      'src/format/format-migration-prune.ts',
+      "const OLD_POINTER = 'gridShardfile'",
+    ),
   ],
 }
 
@@ -106,6 +111,10 @@ test('source inventory covers the audit seams without counting runtime test fixt
   assert.equal(counts['sdk.old-kind-source-rows'], 1)
   assert.equal(counts['engine.kind-keyed-tables'], 2)
   assert.equal(counts['format.kind-keyed-tables'], 1)
+})
+
+test('a migration chain step names the old pointer it rewrites without counting', (): void => {
+  assert.equal(sourceCounts(input)['format.grid-pointer-references'], 1)
 })
 
 test('each planted pointer or vocabulary growth fails only its own counter', (): void => {
