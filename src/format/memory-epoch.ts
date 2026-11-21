@@ -1,4 +1,4 @@
-import { staleReadingAdmitted } from './memory-ratchet.ts'
+import { staleReadingAdmitted } from './memory-armed.ts'
 
 /** MEMORY-GATES MG5 (J408, Jake 2026-11-17: "a stale runtimeCost is refused"): the memory model a runtime home's
  * `runtimeCost` reading must have been taken against. It rises when the model changes what it charges (MG6 adds shader
@@ -46,7 +46,7 @@ function staleRuntimeIssues(
   current: number = OLDEST_CURRENT_EPOCH,
   identity?: Readonly<{ slug: string; revision: number }>,
 ): StaleRuntimeIssue[] {
-  const admitted = staleReadingAdmitted(identity?.slug, identity?.revision)
+  const admitted = staleReadingAdmitted(identity?.slug)
   const rows: EpochRow[] = []
   const cost = runtime === null ? undefined : runtime.cost
   if (cost !== undefined) {

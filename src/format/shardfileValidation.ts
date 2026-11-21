@@ -123,7 +123,7 @@ export function outputBlobExtension(kind: OutputFile['kind'], bytes: Uint8Array)
 /** Refuse the declared targets a policy treats as refusals, before any byte is read or executed; return the verdict.
  *  A stored shard file (CP10, the context's `judged`) is never refused here: it was judged at its upload. */
 export function assertShardfileTargets(source: Shardfile, policy: 'warn' | 'refuse', context: MemoryContext = new Map()): PolicyVerdict {
-  // J412: the memory gates are ratchets; an issue within a zone's baseline reports (`memory-ratchet.ts`) and is not thrown here.
+  // J412: the memory gates are ratchets; an issue in a zone not armed reports (`memory-armed.ts`) and is not thrown here.
   const found = [...staleRuntimeIssues(source.runtime, undefined, source.identity), ...offlineMemoryIssues(source, context), ...runtimeTierIssues(source), ...performanceTargetIssues(source, policy)];
   const issues = found.filter(issue => issue.severity === 'refusal'), judged = memoryContext(context).judged ?? 'upload';
   if (issues.length > 0 && judged === 'upload') throw issueError('performance-targets', issues.map(issue => `REFUSAL: ${issue.metric}: ${issue.actual} > ${issue.limit}`).join('\n'));

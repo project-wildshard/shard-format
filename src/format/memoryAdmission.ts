@@ -35,7 +35,7 @@ export class MemoryAdmission {
   private readonly developer: () => boolean;
   private readonly hardBytes: number | ((owner: string, kind: 'playing' | 'loading') => number);
   /** `hardBytes` (J408): applies to playing and loading even with an override; a function gives each owner its own
-   *  line (J412's ratchet, `memory-ratchet.ts`). */
+   *  line (J412's ratchet, `memory-armed.ts`). */
   constructor(developer: () => boolean = () => false, hardBytes: number | ((owner: string, kind: 'playing' | 'loading') => number) = Number.POSITIVE_INFINITY) { this.developer = developer; this.hardBytes = hardBytes; }
 
   /** True for an in-envelope request or a Developer override. False means the caller retains its original refusal path. */

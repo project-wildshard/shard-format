@@ -2,8 +2,7 @@ import { parse } from 'valibot'
 
 import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
-import { ARMED_LINES } from './memory-armed.ts'
-import { ratchetNote, ratchetSeverity } from './memory-ratchet.ts'
+import { ARMED_LINES, ratchetNote, ratchetSeverity } from './memory-armed.ts'
 import { runtimeAccountedBytes, RuntimeCostSchema } from './runtimeCost.ts'
 
 import type { TierIndex } from './phone-files.ts'
@@ -45,7 +44,7 @@ function hardLineIssue(
       : overHardLine(bytes)
   return {
     code: `perf-${kind}-memory`,
-    metric: `worst ${kind} total bytes${over}${severity === 'warning' ? ratchetNote(slug, kind) : ''}`,
+    metric: `worst ${kind} total bytes${over}${severity === 'warning' ? ratchetNote(slug) : ''}`,
     actual: bytes,
     limit: line,
     severity,

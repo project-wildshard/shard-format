@@ -8,12 +8,12 @@ import {
   ARMED_LINES,
   ARMED_ZONES,
   armedLine,
-  HELD_ZONES,
+  ratchetLimit,
+  ratchetSeverity,
   zoneArmed,
 } from './memory-armed.ts'
 import { OLDEST_CURRENT_EPOCH, staleRuntimeIssues } from './memory-epoch.ts'
 import { hardLineIssue, MEMORY_HARD_BYTES } from './memory-line.ts'
-import { ratchetLimit, ratchetSeverity } from './memory-ratchet.ts'
 import { MemoryAdmission } from './memoryAdmission.ts'
 import { offlineMemoryAdmission } from './shardfile-assets.ts'
 
@@ -75,21 +75,18 @@ test('J445: Far Reach at 1,027 MB playing reports and admits under 1.5 GB loadin
   ).toBe(true)
 })
 
-test('J424: a held zone reports only until engine re-pins it, and keeps the readings it re-arms with', (): void => {
-  expect(Object.keys(HELD_ZONES).toSorted()).toEqual([
+test('FP12: the zones once held are simply not armed, so they report only', (): void => {
+  for (const slug of [
     'driftwood-isle',
     'nalati-grasslands',
     'nine-dragon-stack',
     'pine-hollow',
-  ])
-  for (const [slug, zone] of Object.entries(HELD_ZONES)) {
+  ]) {
     expect(zoneArmed(slug), slug).toBe(false)
     expect(Object.hasOwn(ARMED_ZONES, slug), slug).toBe(false)
     expect(armedLine(slug, 'loading'), slug).toBeUndefined()
     expect(hardLineIssue('loading', 2e9, slug).severity, slug).toBe('warning')
     expect(stale(slug), slug).toBe('warning')
-    expect(zone.held.length, slug).toBeGreaterThan(0)
-    expect(zone.loadingBytes, slug).toBeLessThanOrEqual(ARMED_LINES.loading)
   }
 })
 

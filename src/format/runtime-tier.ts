@@ -1,5 +1,5 @@
 import { UNNAMED_TIER, budgetTierLimits } from './budget-tiers.ts'
-import { ratchetNote, ratchetSeverity } from './memory-ratchet.ts'
+import { ratchetNote, ratchetSeverity } from './memory-armed.ts'
 import { runtimeAccountedBytes } from './runtimeCost.ts'
 
 import type { BudgetTier } from './budget-tiers.ts'
@@ -8,7 +8,7 @@ import type { BudgetTier } from './budget-tiers.ts'
 type RuntimeTierSource = Readonly<{
   runtime: Readonly<{ cost?: unknown }> | null
   budgets: Readonly<{ client?: unknown; tier?: BudgetTier }>
-  /** J412: the zone whose ratchet baseline applies (`memory-ratchet.ts`). */
+  /** J412: the zone whose armed state applies (`memory-armed.ts`). */
   identity?: Readonly<{ slug: string }>
 }>
 
@@ -42,7 +42,7 @@ function runtimeTierIssues(source: RuntimeTierSource): RuntimeTierIssue[] {
   return [
     {
       code: 'runtime-tier-memory',
-      metric: `runtime accounted bytes over the ${tier} tier's memory (OF10c1a: name a larger tier or shrink the runtime)${severity === 'warning' ? ratchetNote(source.identity?.slug, 'runtime') : ''}`,
+      metric: `runtime accounted bytes over the ${tier} tier's memory (OF10c1a: name a larger tier or shrink the runtime)${severity === 'warning' ? ratchetNote(source.identity?.slug) : ''}`,
       actual,
       limit,
       severity,

@@ -39,3 +39,11 @@ path) and `renameKind`. `checkMigrations` runs before every chain run and refuse
 format version, steps out of version order, and a save-affecting step with no `saveMigration`. `touches: 'files'`
 routes like `affects: render`: the copy's author preparation is stale and the box's cook prepares again. Editing named
 JSON blobs (FP10) stays out until a step needs it, since a blob's path carries its hash and other rows depend on it.
+
+## FP12: the slug-keyed memory tables go
+
+CP10 judges a stored original by its stored verdict, so the four held products no longer need a hold and the J412
+baselines are never read for them. `memory-ratchet.ts` (four slug-keyed baselines and `staleRevision`) and
+`memory-armed.json`'s `held` block are deleted; its four decisions (`ratchetLimit`, `ratchetSeverity`, `ratchetNote`,
+`staleReadingAdmitted`) live in `memory-armed.ts` and read only the armed list. The four zones stay unarmed, as they
+were; the armed list itself moves to the API catalogue at FP27.
