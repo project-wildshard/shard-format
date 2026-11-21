@@ -15,6 +15,8 @@ interface InventoryInputs {
   readonly sdkRoot: string
   readonly sdkRevision: string
   readonly formatRoot: string
+  /** The recorded product slugs; every engine pin when absent. */
+  readonly audited?: readonly string[]
 }
 interface CorpusIdentity {
   readonly root: string
@@ -99,11 +101,13 @@ async function collectInventory(
     revisionFiles(input.sdkRoot, input.sdkRevision),
     workingFiles(input.formatRoot),
   ])
-  const products = await pinnedProducts(engine)
+  const audited =
+    input.audited === undefined ? undefined : new Set(input.audited)
+  const products = await pinnedProducts(engine, audited)
   return {
     engineRevision: input.engineRevision,
     sdkRevision: input.sdkRevision,
-    pins: enginePins(engine),
+    pins: enginePins(engine, audited),
     corpus: corpusIdentities(format),
     counts: {
       ...sourceCounts({

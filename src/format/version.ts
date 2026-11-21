@@ -42,22 +42,25 @@ function compareShardfileVersions(left: unknown, right: unknown): number {
   return ZERO
 }
 
-/** A reader accepts its own additive revision and the previous one in the same breaking format.
- * Future additions can introduce required declarations, so they still require a newer reader. */
+/** The oldest format a reader admits (J486). Below it a shard file needs the migration chain or a re-upload. */
+const SHARDFILE_FLOOR = '0.1.0.0'
+
+/** A reader admits every format at or below its own in the same breaking format, down to the floor (J486,
+ * replacing WR11's N and N-1 window). Additive counters only add optional fields, so an older file is still a
+ * valid file; a newer one can carry declarations the reader does not know, so it waits for a newer reader. */
 function compatibleShardfileVersion(
   input: unknown,
   reader: unknown = SHARDFILE_VERSION,
 ): boolean {
   try {
-    const [major, minor, breaking, additive] = parseShardfileVersion(input)
-    const [readMajor, readMinor, readBreaking, readAdditive] =
-      parseShardfileVersion(reader)
+    const [major, minor, breaking] = parseShardfileVersion(input)
+    const [readMajor, readMinor, readBreaking] = parseShardfileVersion(reader)
     return (
       major === readMajor &&
       minor === readMinor &&
       breaking === readBreaking &&
-      additive <= readAdditive &&
-      additive >= Math.max(ZERO, readAdditive - ONE)
+      compareShardfileVersions(input, reader) <= ZERO &&
+      compareShardfileVersions(input, SHARDFILE_FLOOR) >= ZERO
     )
   } catch {
     return false
@@ -72,6 +75,7 @@ function shardfileRevision(input: unknown): number {
 export {
   SHARDFILE_VERSION,
   SHARDFILE_VERSIONS,
+  SHARDFILE_FLOOR,
   type ShardfileVersion,
   type ShardfileVersionParts,
   parseShardfileVersion,
