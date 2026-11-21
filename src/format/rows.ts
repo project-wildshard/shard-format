@@ -11,6 +11,7 @@ import { CreatureAttackableSchema, CreatureMountSchema, creatureMountRules, Crea
 import type { CreatureAbilityInput, CreatureLayers } from './creature-layers.ts';
 import { creatureSizeRules } from './creature-sizes.ts';
 import { SKIN_CLIPS_RECIPE, SkinClipMapSchema } from './skins.ts';
+import { ActorProjectionV2Schema, type ActorProjectionV2Rows } from './actorProjectionV2.ts';
 import type { SkinClipMap } from './skins.ts';
 
 const id = v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9.:-]*$/u), v.maxLength(128));
@@ -74,7 +75,9 @@ const species = v.strictObject({ id, kind: id, label: text, capExempt: v.exactOp
   type: v.exactOptional(CreatureTypeSchema), body: v.exactOptional(CreatureBodySchema),
   temperament: v.exactOptional(CreatureTemperamentSchema), senses: v.exactOptional(CreatureSensesSchema),
   abilities: v.exactOptional(abilities), presentation: v.exactOptional(CreaturePresentationSchema), mount: v.exactOptional(CreatureMountSchema),
-  attackable: v.exactOptional(CreatureAttackableSchema) });
+  attackable: v.exactOptional(CreatureAttackableSchema),
+  // ONE-FORMAT OF30: a declared species may carry its view projection (Nalati's balbal guest), so no species programme holds it
+  projection: v.exactOptional(ActorProjectionV2Schema) });
 const parameter = v.union([finite, v.boolean(), text, v.pipe(v.array(finite), v.maxLength(16))]);
 const animationParameters = v.record(id, parameter);
 const lookAnimation = v.strictObject({
@@ -153,7 +156,7 @@ type ShardRows = { strikes: (StrikeRows)[]; weather: (({ id: string; states: ({ 
 type SpeciesRowInput = Omit<SpeciesRow, "abilities"> & { abilities?: CreatureAbilityInput[] };
 
 /** A species keeps its old fields, with optional explicit creature layers. */
-interface SpeciesRow extends CreatureLayers { capExempt?: boolean; harvest?: HarvestDrop[]; id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; capsuleAxis?: 'y' | 'z'; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; }
+interface SpeciesRow extends CreatureLayers { capExempt?: boolean; projection?: ActorProjectionV2Rows; harvest?: HarvestDrop[]; id: string; kind: string; label: string; aggressive: boolean; lockable: boolean; dims: { bodyY: number; bodyHalfLen: number; bodyRadius: number; headRadius: number; legLen: number; feet: ([number, number])[]; halfWidth: number; capsuleAxis?: 'y' | 'z'; }; flight?: { altitude: number; above?: 'ground' | 'world'; climbRate: number; diveRate: number; lockRange?: number; bank?: number; }; variants: ({ id: string; label: string; rarity: 'common' | 'uncommon' | 'rare' | 'legendary'; weight: number; scale: [number, number]; hp: number; mods: { speed: number; chargeDist: number; damageTaken: number; chargeDamage: number; relentless: boolean; }; })[]; }
 
 export { rowRules, RowsSchema, parseRows };
 export type { StrikeRowsInput, StrikeRows, ShardRowsInput, ShardRows, SpeciesRow };
