@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.66.0 (2026-11-21)
+
+- A shard's spawn, loadout and audio live in their own sections now; an older level manifest is lifted at the door.
+- The level manifest's weapon and map image are optional: nothing reads them any more.
+- A native population roster names the declared species it runs and carries its own hunt settings.
+- A native boss binding can carry its own decision programme and body; headless vehicle docks are carried.
+
 ## v0.65.0 (2026-11-21)
 
 - A plain upload can declare field water: a `world/field` section with a pond raster and a water level.
