@@ -1,6 +1,7 @@
 import * as v from 'valibot';
 import { LimbPopulationSchema } from './limbPopulation.ts';
-import { NativeHuntSchema, type NativeHuntRows } from './speciesPrograms.ts';
+import { NativeHuntSchema } from './speciesPrograms.ts';
+import type { NativeHuntRows } from './speciesPrograms.ts';
 
 const key = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
 const finite = v.pipe(v.number(), v.finite());
@@ -8,6 +9,11 @@ const count = v.pipe(finite, v.integer(), v.minValue(0), v.maxValue(1024));
 const point = v.strictObject({ x: finite, z: finite });
 const identity = v.strictObject({ kind: key, variant: key });
 const poseTriple=v.tuple([finite,finite,finite]);
+const MAX_SPAWN_ONLY = 16;
+const MAX_DECLARED_SPECIES = 256;
+const spawnOnly = v.pipe(v.array(key), v.maxLength(MAX_SPAWN_ONLY));
+const declaredRow = v.strictObject({ id: key, spawnOnly: v.exactOptional(spawnOnly) });
+const declaredSpecies = v.pipe(v.array(declaredRow), v.maxLength(MAX_DECLARED_SPECIES));
 /** Native pose recipes retain the complete ordered local joint hierarchy. */
 export const TamingPoseFileSchema:v.GenericSchema<TamingPoseFileRows,TamingPoseFileRows>=v.strictObject({
   poses:v.pipe(v.array(v.strictObject({kind:key,variant:key,pose:v.strictObject({
@@ -40,7 +46,7 @@ export const NativePopulationRowsSchema: v.GenericSchema<NativePopulationRowsInp
   homes: v.array(v.strictObject({ ...identity.entries, x: finite, z: finite, stream: key })),
   // ONE-FORMAT OF30: a roster on a product with no species programme names the declared species it runs, in its native
   // registration order (a listed row's `spawnOnly` rows lend their variants as that kind's spawn-only variants), and its hunt
-  species: v.exactOptional(v.pipe(v.array(v.strictObject({ id: key, spawnOnly: v.exactOptional(v.pipe(v.array(key), v.maxLength(16))) })), v.maxLength(256))),
+  species: v.exactOptional(declaredSpecies),
   hunt: v.exactOptional(NativeHuntSchema),
 });
 
