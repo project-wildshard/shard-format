@@ -1,7 +1,6 @@
 // oxlint-disable typescript/prefer-readonly-parameter-types -- test fixtures, only read
 import { expect, test } from 'vitest'
 
-import { headlessSections, productHeadlessSections } from './headless-sections.ts'
 import { PLATFORM_DATA_SECTIONS } from './platformDataSections.ts'
 import { ACCEPTED_SECTION_VERSIONS } from './section-versions.ts'
 import { parseVehicles, vehicleRules } from './vehicles.ts'
@@ -289,13 +288,4 @@ test("a kind's panel and sounds resolve, and a dock never takes a mover's id", (
     'vehicle kind salt.land-sail names the panel salt.land-sail, which props.panels does not declare',
     "vehicle dock yard.sail has a mover's id",
   ])
-})
-
-test('vehicle docks survive both headless transports and keep their personal locks', (): void => {
-  const vehicles = { ...fixture, docks: fixture.docks.map(dock => dock.per === 'player' ? { ...dock, requiresFlag: 'mirror.cup.licensed' } : dock) }
-  const product = { has: (name: string): boolean => name === 'world/vehicles', section: (): Vehicles => vehicles }
-  const sent = productHeadlessSections(product)
-  const received = headlessSections(structuredClone(sent))
-  expect(received.get('world/vehicles')).toEqual(parseVehicles(vehicles))
-  expect(() => headlessSections(new Map([['world/vehicles', { docks: [] }]]))).toThrow()
 })

@@ -13,3 +13,7 @@ Admit world/vehicles in the shared transport catalogue. The
 regression sends a two-kind product through both transport
 passes, preserving the personal dock locks and rejecting
 malformed section data. It fails before the fix.
+
+Keep the round-trip regression in its own file: the existing
+vehicle test was already at its line cap. Format the new proof
+and preserve validation of personal-only dock locks.
