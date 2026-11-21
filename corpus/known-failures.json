@@ -3,12 +3,12 @@
     "hash": "0e246ab03210d777619bf1fb09bbaa9da1bbcaea5093a8adfce913508762f084",
     "slug": "pine-hollow",
     "revision": 1,
-    "owner": "meta FORMAT-PRUNE FP10 (opus-format-prune): after the chain, script side: sim pine.life in page-only page.life (SERVER-PARITY SS11); needs a named-JSON chain step"
+    "owner": "meta FORMAT-PRUNE FP10 (opus-format-prune): after the chain, SS7 refuses sim pine.life run by page-only page.life; SS11 retired it at r3. No lossless step: page.life refuses carcasses and guide without that program. Prune candidate"
   },
   {
     "hash": "f45e25f2b4f532c75166d567ea58c074a28f6383e0d545ad27c0f8cd0aba2171",
     "slug": "pine-hollow",
     "revision": 2,
-    "owner": "meta FORMAT-PRUNE FP10 (opus-format-prune): after the chain, script side: sim pine.life in page-only page.life (SERVER-PARITY SS11); needs a named-JSON chain step"
+    "owner": "meta FORMAT-PRUNE FP10 (opus-format-prune): after the chain, SS7 refuses sim pine.life run by page-only page.life; SS11 retired it at r3. No lossless step: page.life refuses carcasses and guide without that program. Prune candidate"
   }
 ]
