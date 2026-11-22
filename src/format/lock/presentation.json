@@ -1,0 +1,12 @@
+{
+  "./presentation#MapSchema": {"type":"strict_object","expects":"Object"},
+  "./presentation#MapSchema.image": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]},
+  "./presentation#MapSchema.tilesHash": {"ref":"./presentation#MapSchema.image"},
+  "./presentation#PresentationSchema": {"type":"strict_object","expects":"Object"},
+  "./presentation#PresentationSchema.biome": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./presentation#PresentationSchema.blurb": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=512","requirement":512}]},
+  "./presentation#PresentationSchema.card": {"type":"strict_object","expects":"Object"},
+  "./presentation#PresentationSchema.card.landscape": {"ref":"./presentation#MapSchema.image"},
+  "./presentation#PresentationSchema.card.portrait": {"ref":"./presentation#MapSchema.image"},
+  "./presentation#PresentationSchema.card.thumb": {"ref":"./presentation#MapSchema.image"}
+}

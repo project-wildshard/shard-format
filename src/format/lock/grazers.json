@@ -1,0 +1,5 @@
+{
+  "./grazers#ChallengeGrazerSchema": {"ref":"./creatures#CreaturesSchema.brains[]|6"},
+  "./grazers#GrazerSchema": {"ref":"./creatures#CreaturesSchema.brains[]|10"},
+  "./grazers#RamGrazerSchema": {"ref":"./creatures#CreaturesSchema.brains[]|5"}
+}

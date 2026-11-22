@@ -1,0 +1,3 @@
+{
+  "./audioBank#AudioBankSchema": {"ref":"./audio#AudioDataSchema.bank?"}
+}

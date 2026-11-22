@@ -1,0 +1,8 @@
+{
+  "./cueDirector#CueDirectorSchema": {"ref":"./clientCues#ClientCuesSchema.rows"},
+  "./cueDirector#CueDirectorWireSchema": {"type":"strict_object","expects":"Object"},
+  "./cueDirector#CueDirectorWireSchema.fields": {"ref":"./clientCues#ClientCuesSchema.rows.fields"},
+  "./cueDirector#CueDirectorWireSchema.rows": {"ref":"./clientCues#ClientCuesSchema.rows.rows"},
+  "./cueDirector#CueDirectorWireSchema.sprays": {"ref":"./clientCues#ClientCuesSchema.rows.sprays"},
+  "./cueDirector#CueDirectorWireSchema.version": {"ref":"./clientCues#ClientCuesSchema.rows.version"}
+}

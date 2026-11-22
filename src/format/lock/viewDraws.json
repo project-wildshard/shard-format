@@ -1,0 +1,4 @@
+{
+  "./viewDraws#TILE_TRIANGLES": {"desktop":400000,"phone":40000},
+  "./viewDraws#VIEW_DRAWS": {"desktop":400,"phone":150}
+}

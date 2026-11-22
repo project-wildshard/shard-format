@@ -1,0 +1,4 @@
+{
+  "./runtimeBinds#RUNTIME_BOUND_SECTIONS": ["quests","ledger","items","spawns","state","terrain","props","modes","clientChannels","movers","loot"],
+  "./runtimeBinds#RuntimeBindsSchema": {"ref":"./outputIndex#OutputIndexSchema.runtime?.binds"}
+}

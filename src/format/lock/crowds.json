@@ -1,0 +1,15 @@
+{
+  "./crowds#CrowdWeaponTargetSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]},
+  "./crowds#FlockSchema": {"type":"strict_object","expects":"Object"},
+  "./crowds#FlockSchema.bleatCue": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-z][a-z0-9_.:-]*$/u","requirement":"re:/^[a-z][a-z0-9_.:-]*$/u"},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./crowds#FlockSchema.count": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=1","requirement":1},{"kind":"validation","type":"max_value","expects":"<=256","requirement":256}]},
+  "./crowds#FlockSchema.grazeStep": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=15","requirement":15}]},
+  "./crowds#FlockSchema.id": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-z][a-z0-9.:-]*$/u","requirement":"re:/^[a-z][a-z0-9.:-]*$/u"},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./crowds#FlockSchema.kind": {"type":"literal","expects":"\"flock\"","literal":"flock"},
+  "./crowds#FlockSchema.range": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=8","requirement":8},{"kind":"validation","type":"max_value","expects":"<=500","requirement":500}]},
+  "./crowds#FlockSchema.runSpeed": {"ref":"./crowds#FlockSchema.grazeStep"},
+  "./crowds#FlockSchema.seed": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=4294967295","requirement":4294967295}]},
+  "./crowds#FlockSchema.walkSpeed": {"ref":"./crowds#FlockSchema.grazeStep"},
+  "./crowds#FlockSchema.x": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=-100000","requirement":-100000},{"kind":"validation","type":"max_value","expects":"<=100000","requirement":100000}]},
+  "./crowds#FlockSchema.z": {"ref":"./crowds#FlockSchema.x"}
+}

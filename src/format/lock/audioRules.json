@@ -1,0 +1,3 @@
+{
+  "./audioRules#AUDIO_RULES": {"budgetAmberBytes":6000000,"budgetRedBytes":10000000,"kbps":{"music":{"mono":48,"stereo":64},"sfx":{"mono":40,"stereo":48}},"maxSeconds":180,"sampleRate":48000,"slack":1.1}
+}

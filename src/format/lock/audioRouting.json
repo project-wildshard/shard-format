@@ -1,0 +1,4 @@
+{
+  "./audioRouting#AudioRoutingSchema": {"ref":"./audio#AudioDataSchema.routing?"},
+  "./audioRouting#AudioVoiceBindingsSchema": {"ref":"./audio#AudioDataSchema.voiceBindings?"}
+}

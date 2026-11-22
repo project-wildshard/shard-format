@@ -1,0 +1,4 @@
+{
+  "./plumbing#PlumbingAskSchema": {"type":"custom","expects":"unknown"},
+  "./plumbing#PlumbingSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:99a7ff65e2e7065c"}]}
+}

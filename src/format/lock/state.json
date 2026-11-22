@@ -1,0 +1,23 @@
+{
+  "./state#StateSchema": {"type":"strict_object","expects":"Object","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:dd520676531f2dbb"}]},
+  "./state#StateSchema.player": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./state#StateSchema.playerKey": {"type":"literal","expects":"\"actorId\"","literal":"actorId"},
+  "./state#StateSchema.player[]": {"type":"strict_object","expects":"Object"},
+  "./state#StateSchema.player[].default": {"type":"union","expects":"(boolean | number | string)"},
+  "./state#StateSchema.player[].default|0": {"type":"boolean","expects":"boolean"},
+  "./state#StateSchema.player[].default|1": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"}]},
+  "./state#StateSchema.player[].default|2": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"max_length","expects":"<=4096","requirement":4096}]},
+  "./state#StateSchema.player[].id": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"max_value","expects":"<=2147483647","requirement":2147483647}]},
+  "./state#StateSchema.player[].max": {"type":"optional","expects":"(number | undefined)"},
+  "./state#StateSchema.player[].max?": {"ref":"./state#StateSchema.player[].default|1"},
+  "./state#StateSchema.player[].min": {"type":"optional","expects":"(number | undefined)"},
+  "./state#StateSchema.player[].min?": {"ref":"./state#StateSchema.player[].default|1"},
+  "./state#StateSchema.player[].name": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-z][a-z0-9.-]*$/u","requirement":"re:/^[a-z][a-z0-9.-]*$/u"},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./state#StateSchema.player[].privacy": {"type":"picklist","expects":"(\"public\" | \"owner\" | \"host\")"},
+  "./state#StateSchema.player[].privacy|": ["public","owner","host"],
+  "./state#StateSchema.player[].type": {"type":"picklist","expects":"(\"bool\" | \"i32\" | \"f64\" | \"string\")"},
+  "./state#StateSchema.player[].type|": ["bool","i32","f64","string"],
+  "./state#StateSchema.shared": {"ref":"./state#StateSchema.player"},
+  "./state#StateSchema.sharedOwner": {"type":"literal","expects":"\"host\"","literal":"host"},
+  "./state#StateSchema.version": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=1","requirement":1},{"kind":"validation","type":"max_value","expects":"<=9007199254740991","requirement":9007199254740991}]}
+}

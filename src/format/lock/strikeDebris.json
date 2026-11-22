@@ -1,0 +1,4 @@
+{
+  "./strikeDebris#StrikeDebrisJsonGuard": {"type":"custom","expects":"unknown"},
+  "./strikeDebris#StrikeDebrisSchema": {"ref":"./actorProjectionV2#ActorProjectionStepV2Schema.operations[]|11.strike.debris?"}
+}

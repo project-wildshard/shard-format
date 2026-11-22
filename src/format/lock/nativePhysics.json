@@ -1,0 +1,8 @@
+{
+  "./nativePhysics#NativeArraySliceSchema": {"type":"strict_object","expects":"Object"},
+  "./nativePhysics#NativeArraySliceSchema.byteLength": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=2147483644","requirement":2147483644},{"kind":"validation","type":"multiple_of","expects":"%4","requirement":4}]},
+  "./nativePhysics#NativeArraySliceSchema.byteOffset": {"ref":"./nativePhysics#NativeArraySliceSchema.byteLength"},
+  "./nativePhysics#NativeArraySliceSchema.file": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=240","requirement":240},{"kind":"validation","type":"regex","expects":"/^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*\\/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.bin$/u","requirement":"re:/^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*\\/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*\\.bin$/u"}]},
+  "./nativePhysics#NativeGroundFileSchema": {"type":"strict_object","expects":"Object"},
+  "./nativePhysics#NativeGroundFileSchema.file": {"ref":"./nativePhysics#NativeArraySliceSchema.file"}
+}

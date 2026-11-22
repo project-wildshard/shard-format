@@ -20,8 +20,10 @@ import type { Baseline } from './ratchet.ts'
 //   init    write the baseline as it stands (the import commit only)
 
 const TARGET = 'src/format'
-// The baseline is generated; oxfmt never judges it.
+// The baseline and the format lock (FE1, one row per line) are generated;
+// oxfmt never judges them.
 const BASELINE_PATH = `${TARGET}/ratchet.json`
+const LOCK_FOLDER = `${TARGET}/lock/`
 const ROOT = new URL('../../', import.meta.url)
 const BASELINE = new URL(BASELINE_PATH, ROOT)
 const EXIT_OK = 0
@@ -68,7 +70,9 @@ async function measure(): Promise<Baseline> {
   const lines = formatted.split('\n').map((line: string): string => line.trim())
   const unformatted = lines.filter(
     (line: string): boolean =>
-      line.startsWith(`${TARGET}/`) && line !== BASELINE_PATH,
+      line.startsWith(`${TARGET}/`) &&
+      line !== BASELINE_PATH &&
+      !line.startsWith(LOCK_FOLDER),
   )
   return { lint: countLint(JSON.parse(lint)), unformatted }
 }

@@ -1,0 +1,4 @@
+{
+  "./keyedSky#KEYED_SKY": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]},
+  "./keyedSky#SKY_PRESET": {"bg":"number","cloudA":"number","cloudLit":"colour","cloudSun":"colour","disc":"colour","env":"number","far":"colour","fogDist":"number","fogHeight":"number","fogSun":"colour","glow":"colour","halo":"colour","haloO":"number","hemiGround":"colour","hemiI":"number","hemiSky":"colour","key":"name","lamps":"number","light":"colour","lightI":"number","rays":"number","sat":"number","vol":"number","volColor":"colour"}
+}

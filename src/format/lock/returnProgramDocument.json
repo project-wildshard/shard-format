@@ -1,0 +1,4 @@
+{
+  "./returnProgramDocument#ReturnProgramDocumentSchema": {"ref":"./heldWeaponDocuments#BladeDocumentSchema|1.power|1.program|0"},
+  "./returnProgramDocument#ReturnProgramWireDocumentSchema": {"ref":"./creaturePerch#CreaturePerchBodiesSchema[].program"}
+}

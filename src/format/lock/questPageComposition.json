@@ -1,0 +1,5 @@
+{
+  "./questPageComposition#ChapterViewSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]},
+  "./questPageComposition#QuestPageCompositionSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]},
+  "./questPageComposition#QuestPageSchema": {"ref":"./questPageComposition#QuestPageCompositionSchema"}
+}

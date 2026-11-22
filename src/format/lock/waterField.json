@@ -1,0 +1,7 @@
+{
+  "./waterField#WaterFieldSchema": {"type":"strict_object","expects":"Object"},
+  "./waterField#WaterFieldSchema.level": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=-250","requirement":-250},{"kind":"validation","type":"max_value","expects":"<=250","requirement":250}]},
+  "./waterField#WaterFieldSchema.pond": {"ref":"./admissionLate#AdmissionLateSchema[].hash"},
+  "./waterField#WaterFieldSchema.res": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=2","requirement":2},{"kind":"validation","type":"max_value","expects":"<=2048","requirement":2048}]},
+  "./waterField#WaterFieldSchema.size": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=5e-324","requirement":5e-324},{"kind":"validation","type":"max_value","expects":"<=1000","requirement":1000}]}
+}

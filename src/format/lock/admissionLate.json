@@ -1,0 +1,9 @@
+{
+  "./admissionLate#AdmissionLateSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=4096","requirement":4096},{"kind":"validation","type":"check","expects":null,"requirement":"fn:93d056153ff00265"}]},
+  "./admissionLate#AdmissionLateSchema[]": {"type":"strict_object","expects":"Object"},
+  "./admissionLate#AdmissionLateSchema[].at": {"type":"exact_optional","expects":"Array"},
+  "./admissionLate#AdmissionLateSchema[].at?": {"type":"tuple","expects":"Array"},
+  "./admissionLate#AdmissionLateSchema[].at?[0]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=-250","requirement":-250},{"kind":"validation","type":"max_value","expects":"<=250","requirement":250}]},
+  "./admissionLate#AdmissionLateSchema[].at?[1]": {"ref":"./admissionLate#AdmissionLateSchema[].at?[0]"},
+  "./admissionLate#AdmissionLateSchema[].hash": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]}
+}

@@ -1,0 +1,13 @@
+{
+  "./scriptAdmissionV2#SCRIPT_V2_REVISIONS": {"abi":2,"admission":1,"compiler":1,"minor":0},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema": {"type":"strict_object","expects":"Object"},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.abi": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.artifact.abi"},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.admissionRevision": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.artifact.admissionRevision"},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.compilerRevision": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.artifact.compilerRevision"},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.hash": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.artifact.hash"},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.ioBytes": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.artifact.ioBytes"},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.lane": {"type":"picklist","expects":"(\"sim\" | \"project\" | \"view\")"},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.lane|": ["sim","project","view"],
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.minor": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.artifact.minor"},
+  "./scriptAdmissionV2#ScriptArtifactV2Schema.pages": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.artifact.pages"}
+}

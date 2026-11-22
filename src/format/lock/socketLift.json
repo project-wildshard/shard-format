@@ -1,0 +1,3 @@
+{
+  "./socketLift#SocketLiftSchema": {"ref":"./entryways#EntrywaysSchema[].lift?"}
+}

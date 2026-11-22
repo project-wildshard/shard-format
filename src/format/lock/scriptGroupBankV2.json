@@ -1,0 +1,3 @@
+{
+  "./scriptGroupBankV2#GroupBankV2Schema": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.groups?.bank"}
+}

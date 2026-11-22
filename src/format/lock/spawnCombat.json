@@ -1,0 +1,4 @@
+{
+  "./spawnCombat#SpawnCombatSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"array","expects":"Array"},{"kind":"validation","type":"max_length","expects":"<=32","requirement":32},{"kind":"validation","type":"check","expects":null,"requirement":"fn:f2d4b6edc26f75d4"}]},
+  "./spawnCombat#StrikeTellKindSchema": {"ref":"./creatureLayers#CreatureAbilitySchema.tell?"}
+}

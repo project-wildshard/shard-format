@@ -1,0 +1,3 @@
+{
+  "./liftRider#LiftRiderSchema": {"ref":"./clientState#ClientCheckpointSchema|0.liftRider?"}
+}

@@ -1,0 +1,4 @@
+{
+  "./migrations#LogicalStateSchema": {"ref":"./clientState#ClientCheckpointSchema|1.state"},
+  "./migrations#MigrationsSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"array","expects":"Array"},{"kind":"validation","type":"max_length","expects":"<=64","requirement":64},{"kind":"validation","type":"check","expects":null,"requirement":"fn:6ae8000b696f24b4"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:ab134941797f9937"}]}
+}

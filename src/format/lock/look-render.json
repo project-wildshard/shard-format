@@ -1,0 +1,14 @@
+{
+  "./look-render#LOOK_LIGHT_MOTES_MAX": 2048,
+  "./look-render#LookLampFlickerSchema": {"ref":"./look-light#LookLampSchema.flicker?"},
+  "./look-render#LookLampHaloSchema": {"ref":"./look-light#LookLampSchema.halo?"},
+  "./look-render#LookMotesSchema": {"ref":"./look-light#LookLightSchema.motes?"},
+  "./look-render#LookShadowSchema": {"ref":"./look-light#LookLightSchema.shadow?"},
+  "./look-render#LookVignetteSchema": {"type":"strict_object","expects":"Object"},
+  "./look-render#LookVignetteSchema.darkness": {"ref":"./look-light#LookLampSchema.flicker?.amount"},
+  "./look-render#LookVignetteSchema.offset": {"ref":"./look-light#LookLampSchema.flicker?.amount"},
+  "./look-render#lampDecay": {"ref":"./look-light#LookLampSchema.decay"},
+  "./look-render#lampFlicker": {"ref":"./look-light#LookLampSchema.flicker"},
+  "./look-render#lampHalo": {"ref":"./look-light#LookLampSchema.halo"},
+  "./look-render#lampPanel": {"ref":"./look-light#LookLampSchema.panel?"}
+}

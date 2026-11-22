@@ -1,0 +1,3 @@
+{
+  "./geometryPack#PackedGeometryRowsSchema": {"ref":"./caveInterior#CaveInteriorSchema.roof.rows"}
+}

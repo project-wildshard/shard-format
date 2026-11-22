@@ -1,0 +1,7 @@
+{
+  "./scriptSides#SCRIPT_V1_FEATURE_SIDES": {"sim":"both","view":"view"},
+  "./scriptSides#SCRIPT_V1_SIDES": ["sim","view"],
+  "./scriptSides#SCRIPT_V1_VIEW_COMMANDS": ["channel","cue","timer"],
+  "./scriptSides#SCRIPT_V2_LANE_SIDES": {"project":"both","sim":"server","view":"view"},
+  "./scriptSides#VIEW_WRITES_GAMEPLAY": "view script writes no gameplay (only timer, cue and channel commands)"
+}

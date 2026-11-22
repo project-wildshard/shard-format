@@ -1,0 +1,3 @@
+{
+  "./toonLighting#ToonLightingSchema": {"ref":"./heldArms#HeldArmsSchema|0.look.lighting"}
+}

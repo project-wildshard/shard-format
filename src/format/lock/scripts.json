@@ -1,0 +1,10 @@
+{
+  "./scripts#ScriptBindingsSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=10000","requirement":10000}]},
+  "./scripts#ScriptBindingsSchema[]": {"type":"strict_object","expects":"Object"},
+  "./scripts#ScriptBindingsSchema[].actorId": {"type":"nullable","expects":"(string | null)"},
+  "./scripts#ScriptBindingsSchema[].actorId?": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./scripts#ScriptBindingsSchema[].entity": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=1","requirement":1},{"kind":"validation","type":"max_value","expects":"<=2147483647","requirement":2147483647}]},
+  "./scripts#ScriptBindingsSchema[].kind": {"type":"picklist","expects":"(\"server\" | \"entity\")"},
+  "./scripts#ScriptBindingsSchema[].kind|": ["server","entity"],
+  "./scripts#ScriptBindingsSchema[].module": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^(?:commons:)?[a-f0-9]{64}$/u","requirement":"re:/^(?:commons:)?[a-f0-9]{64}$/u"}]}
+}

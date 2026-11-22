@@ -1,0 +1,6 @@
+{
+  "./scriptAbi#SCRIPT_ABI": {"assemblyscript":"0.28.20","binaryen":"132.0.0","callDepth":64,"maxBytes":262144,"maxFunctions":512,"maxGlobals":128,"maxLocals":1024,"memoryPages":64,"version":0},
+  "./scriptAbi#SCRIPT_EXPORTS": {"__start":[],"abi_version":[127],"in_cap":[127],"in_ptr":[127],"init":[127,127,0],"on_tick":[],"out_cap":[127],"out_count":[127],"out_ptr":[127]},
+  "./scriptAbi#SCRIPT_IMPORTS": {"abort":[127,127,127,127,0],"enter":[0],"finite32":[125,125],"finite64":[124,124],"fuel":[127,0],"leave":[0],"query":[127,127,127,127]},
+  "./scriptAbi#SCRIPT_PARAMETER_QUERY": 410
+}

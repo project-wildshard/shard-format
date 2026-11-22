@@ -1,0 +1,9 @@
+{
+  "./questGraph#QuestGraphSchema": {"type":"strict_object","expects":"Object"},
+  "./questGraph#QuestGraphSchema.actions": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64}]},
+  "./questGraph#QuestGraphSchema.actions[]": {"type":"strict_object","expects":"Object"},
+  "./questGraph#QuestGraphSchema.actions[].row": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=96","requirement":96}]},
+  "./questGraph#QuestGraphSchema.actions[].summon": {"ref":"./questGraph#QuestGraphSchema.actions[].row"},
+  "./questGraph#QuestGraphSchema.actor": {"ref":"./questGraph#QuestGraphSchema.actions[].row"},
+  "./questGraph#QuestGraphSchema.step": {"ref":"./questGraph#QuestGraphSchema.actions[].row"}
+}

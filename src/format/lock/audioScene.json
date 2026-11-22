@@ -1,0 +1,4 @@
+{
+  "./audioScene#AudioSceneSchema": {"ref":"./audio#AudioDataSchema.scene?"},
+  "./audioScene#SampledAudioSceneSchema": {"ref":"./audio#AudioDataSchema.sampledScene?"}
+}

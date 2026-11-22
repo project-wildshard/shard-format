@@ -1,0 +1,19 @@
+{
+  "./level-start-rows#LevelAudioSchema": {"ref":"./audio#AudioDataSchema.level?"},
+  "./level-start-rows#LevelLoadoutSchema": {"type":"strict_object","expects":"Object"},
+  "./level-start-rows#LevelLoadoutSchema.held": {"type":"exact_optional","expects":"string"},
+  "./level-start-rows#LevelLoadoutSchema.held?": {"ref":"./audio#AudioDataSchema.level?.ambience"},
+  "./level-start-rows#LevelLoadoutSchema.loans": {"type":"exact_optional","expects":"Array"},
+  "./level-start-rows#LevelLoadoutSchema.loans?": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=256","requirement":256},{"kind":"validation","type":"check","expects":null,"requirement":"fn:729823164aeb1e74"}]},
+  "./level-start-rows#LevelLoadoutSchema.loans?[]": {"type":"strict_object","expects":"Object"},
+  "./level-start-rows#LevelLoadoutSchema.loans?[].id": {"ref":"./audio#AudioDataSchema.level?.ambience"},
+  "./level-start-rows#LevelLoadoutSchema.loans?[].in": {"type":"literal","expects":"\"practice\"","literal":"practice"},
+  "./level-start-rows#LevelLoadoutSchema.pickups": {"type":"exact_optional","expects":"Array"},
+  "./level-start-rows#LevelLoadoutSchema.pickups?": {"type":"array","expects":"Array"},
+  "./level-start-rows#LevelLoadoutSchema.pickups?[]": {"type":"strict_object","expects":"Object"},
+  "./level-start-rows#LevelLoadoutSchema.pickups?[].at": {"ref":"./audio#AudioDataSchema.level?.ambience"},
+  "./level-start-rows#LevelLoadoutSchema.pickups?[].id": {"ref":"./audio#AudioDataSchema.level?.ambience"},
+  "./level-start-rows#LevelLoadoutSchema.start": {"ref":"./audio#AudioDataSchema.level?.samples?.omitLoops?"},
+  "./level-start-rows#LevelLoadoutSchema.tools": {"ref":"./audio#AudioDataSchema.level?.samples?.omitLoops?"},
+  "./level-start-rows#LevelLoadoutSchema.weapons": {"ref":"./audio#AudioDataSchema.level?.samples?.omitLoops?"}
+}

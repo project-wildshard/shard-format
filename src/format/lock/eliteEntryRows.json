@@ -1,0 +1,6 @@
+{
+  "./eliteEntryRows#ELITE_BODY_COLUMNS": [{"id":1,"name":"playerCrouched","source":{"field":"crouched","kind":"player"}},{"id":2,"name":"playerFwdX","source":{"field":"forwardX","kind":"player"}},{"id":3,"name":"playerFwdZ","source":{"field":"forwardZ","kind":"player"}},{"id":4,"name":"grassHeight","source":{"at":"self","kind":"grass"}},{"id":5,"name":"windX","source":{"field":"x","kind":"wind"}},{"id":6,"name":"windZ","source":{"field":"z","kind":"wind"}}],
+  "./eliteEntryRows#ELITE_CONDITION_COLUMNS": [{"id":1,"name":"phase","source":{"field":"dayPhase","kind":"clock"}},{"id":2,"name":"storm","source":{"field":"stormActive","kind":"weather"}}],
+  "./eliteEntryRows#EliteEntryPageRowsSchema": {"ref":"./clientPlan#ClientFeatureSchema|17.rows"},
+  "./eliteEntryRows#EliteEntryRowsSchema": {"ref":"./clientPlan#ClientFeatureSchema|17.rows.entry"}
+}

@@ -1,0 +1,16 @@
+{
+  "./edgeProfiles#EdgeProfileSchema": {"type":"strict_object","expects":"Object","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:193924237e09106a"}]},
+  "./edgeProfiles#EdgeProfileSchema.colours": {"type":"array","expects":"Array"},
+  "./edgeProfiles#EdgeProfileSchema.colours[]": {"type":"tuple","expects":"Array"},
+  "./edgeProfiles#EdgeProfileSchema.colours[][0]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=1","requirement":1}]},
+  "./edgeProfiles#EdgeProfileSchema.colours[][1]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=1","requirement":1}]},
+  "./edgeProfiles#EdgeProfileSchema.colours[][2]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=1","requirement":1}]},
+  "./edgeProfiles#EdgeProfileSchema.heights": {"type":"array","expects":"Array"},
+  "./edgeProfiles#EdgeProfileSchema.heights[]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=-250","requirement":-250},{"kind":"validation","type":"max_value","expects":"<=250","requirement":250}]},
+  "./edgeProfiles#EdgeProfileSchema.roadHeight": {"type":"literal","expects":"0","literal":0},
+  "./edgeProfiles#EdgeProfilesSchema": {"type":"strict_object","expects":"Object"},
+  "./edgeProfiles#EdgeProfilesSchema.east": {"ref":"./edgeProfiles#EdgeProfileSchema"},
+  "./edgeProfiles#EdgeProfilesSchema.north": {"ref":"./edgeProfiles#EdgeProfileSchema"},
+  "./edgeProfiles#EdgeProfilesSchema.south": {"ref":"./edgeProfiles#EdgeProfileSchema"},
+  "./edgeProfiles#EdgeProfilesSchema.west": {"ref":"./edgeProfiles#EdgeProfileSchema"}
+}

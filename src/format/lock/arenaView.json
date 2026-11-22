@@ -1,0 +1,4 @@
+{
+  "./arenaView#ARENA_BURNT_PER_FRAME": 64,
+  "./arenaView#ARENA_VIEW": {"cells":{"alpha":"arena.aim.alpha","bend":"arena.pose.bend","castL":"arena.pose.castL","raise":"arena.pose.raise","struck":"arena.aim.struck"},"fire":{"arrays":{"burnt":"arena.field.burnt","ground":"arena.field.ground","lifetimes":"arena.field.lifetimes","modes":"arena.field.modes"},"draws":{"flames":"arena.flames","scorch":"arena.scorch","smoke":"arena.smoke"},"fields":["on","clear","windX","windZ","windSpeed","smokeCap","smokeRate","scorchCap"],"slot":"arena.fire","values":"arena.fire"},"pose":["bend","raise","castL"],"slot":"arena.frame","sources":{"clocks":"arena.clocks","life":"arena.life","pose":"arena.pose","spear":"arena.spear"},"spear":["x","z"],"tells":{"fork":"arena.fork","spear":"arena.spear"},"whirls":{"draws":{"debris":"arena.debris"},"fields":["k","shown","x","y","z"],"slot":"arena.whirls","values":"arena.whirls"}}
+}

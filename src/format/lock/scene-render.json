@@ -1,0 +1,16 @@
+{
+  "./scene-render#CORNER_CHANNEL": "_CORNER",
+  "./scene-render#CardMotionSchema": {"ref":"./materialFamilies#EmissiveMaterialSchema.motion?"},
+  "./scene-render#SWAY_CHANNEL": "_SWAY",
+  "./scene-render#SWING_CHANNEL": "_SWING",
+  "./scene-render#SurfaceSwaySchema": {"ref":"./materialFamilies#FamilyMaterialSchema|1.sway?"},
+  "./scene-render#UvScrollSchema": {"ref":"./materialFamilies#FamilyMaterialSchema|1.uvScroll?"},
+  "./scene-render#emissiveCard": {"ref":"./materialFamilies#EmissiveMaterialSchema.card"},
+  "./scene-render#emissiveMotion": {"ref":"./materialFamilies#EmissiveMaterialSchema.motion"},
+  "./scene-render#surfaceBlend": {"ref":"./materialFamilies#FamilyMaterialSchema|1.blend"},
+  "./scene-render#surfaceDepthOffset": {"ref":"./materialFamilies#FamilyMaterialSchema|1.depthOffset"},
+  "./scene-render#surfaceOpacity": {"ref":"./materialFamilies#FamilyMaterialSchema|1.opacity"},
+  "./scene-render#surfaceSway": {"ref":"./materialFamilies#FamilyMaterialSchema|1.sway"},
+  "./scene-render#surfaceSwing": {"ref":"./materialFamilies#EmissiveMaterialSchema.swing"},
+  "./scene-render#surfaceUvScroll": {"ref":"./materialFamilies#FamilyMaterialSchema|1.uvScroll"}
+}

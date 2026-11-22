@@ -1,0 +1,7 @@
+{
+  "./audioWaiver#AudioWaiverSchema": {"type":"strict_object","expects":"Object"},
+  "./audioWaiver#AudioWaiverSchema.maxBytes": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"safe_integer","expects":null,"requirement":"fn:c9f0ee58890f970c"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=450000000","requirement":450000000}]},
+  "./audioWaiver#AudioWaiverSchema.reason": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=240","requirement":240}]},
+  "./audioWaiver#AudioWaiverSchema.shard": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=64","requirement":64}]},
+  "./audioWaiver#AudioWaiverSchema.until": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"iso_date","expects":null,"requirement":"re:/^\\d{4}-(?:0[1-9]|1[0-2])-(?:[12]\\d|0[1-9]|3[01])$/u"}]}
+}

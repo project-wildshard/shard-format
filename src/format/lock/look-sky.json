@@ -1,0 +1,5 @@
+{
+  "./look-sky#LOOK_SKY_BUDGET": {"instructions":1024,"nodes":640,"samplers":0},
+  "./look-sky#LookSkySchema": {"type":"strict_object","expects":"Object"},
+  "./look-sky#LookSkySchema.graph": {"type":"unknown","expects":"unknown","pipe":[{"kind":"transformation","type":"raw_transform"}]}
+}

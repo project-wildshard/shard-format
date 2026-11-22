@@ -1,0 +1,3 @@
+{
+  "./populationRespawn#NativeReturnRowsSchema": {"ref":"./populationKeeper#PopulationKeeperRowsSchema.ecology"}
+}

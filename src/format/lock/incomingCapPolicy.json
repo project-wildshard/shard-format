@@ -1,0 +1,4 @@
+{
+  "./incomingCapPolicy#IncomingCapTagsSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=512","requirement":512},{"kind":"validation","type":"check","expects":null,"requirement":"fn:069a002d8056c03d"}]},
+  "./incomingCapPolicy#IncomingCapTagsSchema[]": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"max_length","expects":"<=521","requirement":521},{"kind":"validation","type":"check","expects":null,"requirement":"fn:5754a91437d7abf7"}]}
+}

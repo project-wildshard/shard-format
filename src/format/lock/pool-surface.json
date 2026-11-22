@@ -1,0 +1,19 @@
+{
+  "./pool-surface#PoolRippleSchema": {"type":"strict_object","expects":"Object"},
+  "./pool-surface#PoolRippleSchema.amplitude": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=0.05","requirement":0.05}]},
+  "./pool-surface#PoolRippleSchema.scale": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=20","requirement":20}]},
+  "./pool-surface#PoolRippleSchema.speed": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=8","requirement":8}]},
+  "./pool-surface#PoolSurfaceSchema": {"type":"strict_object","expects":"Object"},
+  "./pool-surface#PoolSurfaceSchema.fresnel": {"type":"tuple","expects":"Array"},
+  "./pool-surface#PoolSurfaceSchema.fresnel[0]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=1","requirement":1}]},
+  "./pool-surface#PoolSurfaceSchema.fresnel[1]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0.5","requirement":0.5},{"kind":"validation","type":"max_value","expects":"<=8","requirement":8}]},
+  "./pool-surface#PoolSurfaceSchema.reflect": {"type":"picklist","expects":"(\"planar\" | \"sky\")"},
+  "./pool-surface#PoolSurfaceSchema.reflect|": ["planar","sky"],
+  "./pool-surface#PoolSurfaceSchema.resolution": {"type":"exact_optional","expects":"number"},
+  "./pool-surface#PoolSurfaceSchema.resolution?": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=128","requirement":128},{"kind":"validation","type":"max_value","expects":"<=2048","requirement":2048}]},
+  "./pool-surface#PoolSurfaceSchema.ripple": {"ref":"./pool-surface#PoolRippleSchema"},
+  "./pool-surface#PoolSurfaceSchema.tint": {"type":"tuple","expects":"Array"},
+  "./pool-surface#PoolSurfaceSchema.tint[0]": {"ref":"./pool-surface#PoolSurfaceSchema.fresnel[0]"},
+  "./pool-surface#PoolSurfaceSchema.tint[1]": {"ref":"./pool-surface#PoolSurfaceSchema.fresnel[0]"},
+  "./pool-surface#PoolSurfaceSchema.tint[2]": {"ref":"./pool-surface#PoolSurfaceSchema.fresnel[0]"}
+}

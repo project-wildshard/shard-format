@@ -1,0 +1,4 @@
+{
+  "./uniformRows#UniformRowSchema": {"ref":"./heldJianDocument#HeldJianDocumentSchema.look.vm{v}"},
+  "./uniformRows#UniformRowsSchema": {"ref":"./heldJianDocument#HeldJianDocumentSchema.look.vm"}
+}

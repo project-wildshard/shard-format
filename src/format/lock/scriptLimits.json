@@ -1,0 +1,3 @@
+{
+  "./scriptLimits#SCRIPT_LIMITS": {"effects":128,"events":32,"failures":3,"fuelPerCall":2000000,"fuelPerTick":8000000,"instances":9,"memoryBytes":24000000,"queries":64,"spawns":8}
+}

@@ -1,0 +1,6 @@
+{
+  "./accent#ACCENTS": {"apricot":"#f8bd84","azure":"#5ca3fd","citron":"#efe345","coral":"#fe9b98","cornflower":"#a5acfe","ember":"#fe8169","iris":"#bc8bfe","jade":"#59e1a2","lilac":"#dda9f7","lime":"#ade74e","marigold":"#fbbb2d","mint":"#99f0ca","moss":"#89c06a","orchid":"#e989e1","periwinkle":"#ccccf8","pink":"#f9add0","rose":"#fc7b9d","sand":"#beaf91","tangerine":"#ff9550","teal":"#54cec2"},
+  "./accent#ACCENT_IDS": ["ember","coral","tangerine","apricot","marigold","citron","lime","moss","jade","mint","teal","azure","cornflower","periwinkle","iris","lilac","orchid","pink","rose","sand"],
+  "./accent#AccentSchema": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:877157eeb0411bd8"},{"kind":"schema","type":"custom","expects":"unknown"}]},
+  "./accent#ROAD_ACCENT": "#8fe3ff"
+}

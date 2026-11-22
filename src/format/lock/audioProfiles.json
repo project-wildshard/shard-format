@@ -1,0 +1,21 @@
+{
+  "./audioProfiles#AudioAmbienceLifecycleSchema": {"ref":"./audio#AudioDataSchema.zones?.lifecycle?"},
+  "./audioProfiles#AudioAmbienceRoutingSchema": {"ref":"./audio#AudioDataSchema.zones?.routing?"},
+  "./audioProfiles#AudioLoopEmitterSchema": {"ref":"./audio#AudioDataSchema.emitters?{v}"},
+  "./audioProfiles#AudioLoopGraphSchema": {"ref":"./audio#AudioDataSchema.loopGraphs?{v}"},
+  "./audioProfiles#AudioMixExpressionSchema": {"ref":"./audio#AudioDataSchema.ambience?.phrases?[].program.steps[]|0.value"},
+  "./audioProfiles#AudioMixSchema": {"ref":"./audio#AudioDataSchema.zones?.mix?"},
+  "./audioProfiles#AudioMusicSchema": {"ref":"./audio#AudioDataSchema.music?"},
+  "./audioProfiles#AudioNodeSchema": {"ref":"./audio#AudioDataSchema.zones?.nodes?[]"},
+  "./audioProfiles#AudioObservationSystemSchema": {"ref":"./audio#AudioDataSchema.observations?[]"},
+  "./audioProfiles#AudioOneShotScheduleSchema": {"ref":"./audio#AudioDataSchema.zones?.schedules?[]"},
+  "./audioProfiles#AudioPcmProgramSchema": {"ref":"./audio#AudioDataSchema.pcm?{v}"},
+  "./audioProfiles#AudioPhraseProgramSchema": {"ref":"./audio#AudioDataSchema.ambience?.phrases?[].program"},
+  "./audioProfiles#AudioPhraseScheduleSchema": {"ref":"./audio#AudioDataSchema.ambience?.phrases?[]"},
+  "./audioProfiles#AudioPlaybackSchema": {"ref":"./audio#AudioDataSchema.playback?"},
+  "./audioProfiles#AudioSampleMixSchema": {"ref":"./audio#AudioDataSchema.zones?.sampleMix?"},
+  "./audioProfiles#AudioSamplesSchema": {"ref":"./audio#AudioDataSchema.samples?"},
+  "./audioProfiles#AudioSurfaceSchema": {"ref":"./audio#AudioDataSchema.surfaces?"},
+  "./audioProfiles#AudioZonesSchema": {"ref":"./audio#AudioDataSchema.zones?"},
+  "./audioProfiles#SynthBedGraphSchema": {"ref":"./audio#AudioDataSchema.zones?.graph?"}
+}

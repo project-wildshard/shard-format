@@ -1,0 +1,4 @@
+{
+  "./worldScenes#WorldScenePoolSchema": {"ref":"./graphArmsRows#GraphArmsSchema.pendants.geometry[]"},
+  "./worldScenes#WorldScenesSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:c1db5fde01289176"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:b188075cad367458"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:66461ed8a7737d75"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:01098756cf383eab"}]}
+}

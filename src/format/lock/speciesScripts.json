@@ -1,0 +1,3 @@
+{
+  "./speciesScripts#ScriptSpeciesSchema": {"ref":"./speciesBrain#SpeciesBrainSchema|6.data"}
+}

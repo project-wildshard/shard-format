@@ -1,0 +1,17 @@
+{
+  "./rangedPage#ForestRoofMaskSchema": {"type":"strict_object","expects":"Object"},
+  "./rangedPage#ForestRoofMaskSchema.floors": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./rangedPage#ForestRoofMaskSchema.floors[]": {"type":"strict_object","expects":"Object"},
+  "./rangedPage#ForestRoofMaskSchema.floors[].hd": {"ref":"./rainPresentation#RainPresentationSchema.cover.roofs[].frame.x"},
+  "./rangedPage#ForestRoofMaskSchema.floors[].hw": {"ref":"./rainPresentation#RainPresentationSchema.cover.roofs[].frame.x"},
+  "./rangedPage#ForestRoofMaskSchema.floors[].rot": {"ref":"./rainPresentation#RainPresentationSchema.cover.roofs[].frame.x"},
+  "./rangedPage#ForestRoofMaskSchema.floors[].x": {"ref":"./rainPresentation#RainPresentationSchema.cover.roofs[].frame.x"},
+  "./rangedPage#ForestRoofMaskSchema.floors[].y": {"ref":"./rainPresentation#RainPresentationSchema.cover.roofs[].frame.x"},
+  "./rangedPage#ForestRoofMaskSchema.floors[].z": {"ref":"./rainPresentation#RainPresentationSchema.cover.roofs[].frame.x"},
+  "./rangedPage#ForestRoofMaskSchema.roofs": {"ref":"./rainPresentation#RainPresentationSchema.cover.roofs"},
+  "./rangedPage#ForestWeatherObservationSchema": {"type":"strict_object","expects":"Object"},
+  "./rangedPage#ForestWeatherObservationSchema.audio": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=512","requirement":512}]},
+  "./rangedPage#ForestWeatherObservationSchema.guide": {"ref":"./rangedPage#ForestWeatherObservationSchema.audio"},
+  "./rangedPage#ForestWeatherObservationSchema.page": {"ref":"./rangedPage#ForestWeatherObservationSchema.audio"},
+  "./rangedPage#RangedPageSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]}
+}

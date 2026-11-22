@@ -1,0 +1,6 @@
+{
+  "./pbr-emissive#PbrEmissiveColourSchema": {"ref":"./materialFamilies#FamilyMaterialSchema|1.emissive?"},
+  "./pbr-emissive#PbrEmissiveIntensitySchema": {"ref":"./materialFamilies#FamilyMaterialSchema|1.emissiveIntensity?"},
+  "./pbr-emissive#pbrEmissive": {"ref":"./materialFamilies#FamilyMaterialSchema|1.emissive"},
+  "./pbr-emissive#pbrEmissiveIntensity": {"ref":"./materialFamilies#FamilyMaterialSchema|1.emissiveIntensity"}
+}

@@ -1,0 +1,5 @@
+{
+  "./traversal#TraversalSchema": {"type":"strict_object","expects":"Object"},
+  "./traversal#TraversalSchema.hoverCap": {"type":"optional","expects":"(number | undefined)","default":14},
+  "./traversal#TraversalSchema.hoverCap?": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=0.1","requirement":0.1},{"kind":"validation","type":"max_value","expects":"<=14","requirement":14}]}
+}

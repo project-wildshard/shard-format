@@ -1,0 +1,12 @@
+{
+  "./groupBrains#CreaturePatrolsSchema": {"ref":"./creatures#CreaturesSchema.patrols?"},
+  "./groupBrains#GUARDED_STALLION_STATES": ["watch","warn","display","charge","wheel","lead","beaten","ridden"],
+  "./groupBrains#GrazerGroupSchema": {"ref":"./creatures#CreaturesSchema.groups?[]|3"},
+  "./groupBrains#GroupBrainSchema": {"ref":"./creatures#CreaturesSchema.groups?[]"},
+  "./groupBrains#GroupGuestBindingSchema": {"ref":"./creatures#PageGroupRowsSchema.packGuest?.binding"},
+  "./groupBrains#GuardedHerdGuestSchema": {"ref":"./creatures#NativeGroupRowsSchema.steps[]|0.guest?.binding"},
+  "./groupBrains#HERD_DRIVE_PLAN_FIELDS": ["kind","state","yaw","speed","turn","targetX","targetZ","pathEvery","blendX","blendZ","headUp","lookKind","lookX","lookZ","lookWeight","flags","memoryMask","gt","gyaw","gs","snT","pin","rear","sound"],
+  "./groupBrains#HerdGroupSchema": {"ref":"./creatures#CreaturesSchema.groups?[]|1"},
+  "./groupBrains#PackGroupSchema": {"ref":"./creatures#CreaturesSchema.groups?[]|0"},
+  "./groupBrains#StalkerGroupSchema": {"ref":"./creatures#CreaturesSchema.groups?[]|2"}
+}

@@ -1,0 +1,3 @@
+{
+  "./uiStrings#UiStringsSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:d389e9a407bee7fb"},{"kind":"schema","type":"record","expects":"Object"},{"kind":"validation","type":"max_entries","expects":"<=1024","requirement":1024}]}
+}

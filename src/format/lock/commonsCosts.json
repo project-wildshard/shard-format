@@ -1,0 +1,10 @@
+{
+  "./commonsCosts#CommonsCostSchema": {"type":"strict_object","expects":"Object"},
+  "./commonsCosts#CommonsCostSchema.decoded": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"safe_integer","expects":null,"requirement":"fn:c9f0ee58890f970c"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0}]},
+  "./commonsCosts#CommonsCostSchema.draws": {"ref":"./commonsCosts#CommonsCostSchema.decoded"},
+  "./commonsCosts#CommonsCostSchema.gpu": {"ref":"./commonsCosts#CommonsCostSchema.decoded"},
+  "./commonsCosts#CommonsCostSchema.triangles": {"ref":"./commonsCosts#CommonsCostSchema.decoded"},
+  "./commonsCosts#CommonsCostsSchema": {"type":"record","expects":"Object","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:3274255ca7cd96a6"}]},
+  "./commonsCosts#CommonsCostsSchema{k}": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]},
+  "./commonsCosts#CommonsCostsSchema{v}": {"ref":"./commonsCosts#CommonsCostSchema"}
+}

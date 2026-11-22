@@ -1,0 +1,12 @@
+{
+  "./admissionServer#AdmissionServerSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=256","requirement":256},{"kind":"validation","type":"check","expects":null,"requirement":"fn:4af2be821e5f35c4"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:fe477962c2f92ec3"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:962f096cb5fddfb3"}]},
+  "./admissionServer#AdmissionServerSchema[]": {"type":"strict_object","expects":"Object"},
+  "./admissionServer#AdmissionServerSchema[].bytes": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=9007199254740991","requirement":9007199254740991}]},
+  "./admissionServer#AdmissionServerSchema[].hash": {"ref":"./admissionLate#AdmissionLateSchema[].hash"},
+  "./admissionServer#AdmissionServerSchema[].kind": {"type":"picklist","expects":"(\"json\" | \"bin\" | \"tile\")"},
+  "./admissionServer#AdmissionServerSchema[].kind|": ["json","bin","tile"],
+  "./admissionServer#AdmissionServerSchema[].name": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"max_length","expects":"<=240","requirement":240},{"kind":"validation","type":"regex","expects":"/^server\\/[a-z0-9][a-z0-9.-]*(?:\\/[a-z0-9][a-z0-9.-]*)*$/u","requirement":"re:/^server\\/[a-z0-9][a-z0-9.-]*(?:\\/[a-z0-9][a-z0-9.-]*)*$/u"}]},
+  "./admissionServer#AdmissionServerSchema[].path": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"max_length","expects":"<=240","requirement":240}]},
+  "./admissionServer#AdmissionServerSchema[].schema": {"type":"exact_optional","expects":"string"},
+  "./admissionServer#AdmissionServerSchema[].schema?": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=240","requirement":240}]}
+}

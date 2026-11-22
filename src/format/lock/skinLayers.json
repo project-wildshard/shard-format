@@ -1,0 +1,3 @@
+{
+  "./skinLayers#SkinPoseLayerSchema": {"ref":"./skinData#SkinBindingSchema.poseLayers?{v}[]"}
+}

@@ -1,0 +1,9 @@
+{
+  "./harvestRows#HarvestDropsSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64},{"kind":"validation","type":"check","expects":null,"requirement":"fn:3c94e72f8c6e812c"}]},
+  "./harvestRows#HarvestDropsSchema[]": {"type":"strict_object","expects":"Object"},
+  "./harvestRows#HarvestDropsSchema[].count": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=1","requirement":1},{"kind":"validation","type":"max_value","expects":"<=64","requirement":64}]},
+  "./harvestRows#HarvestDropsSchema[].item": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-z][a-zA-Z0-9.:-]*$/u","requirement":"re:/^[a-z][a-zA-Z0-9.:-]*$/u"},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./harvestRows#HarvestDropsSchema[].variants": {"type":"exact_optional","expects":"Array"},
+  "./harvestRows#HarvestDropsSchema[].variants?": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=64","requirement":64},{"kind":"validation","type":"check","expects":null,"requirement":"fn:3c6baa1909bd485a"}]},
+  "./harvestRows#HarvestDropsSchema[].variants?[]": {"ref":"./harvestRows#HarvestDropsSchema[].item"}
+}

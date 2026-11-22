@@ -1,0 +1,15 @@
+{
+  "./meshCollision#MeshCollisionSchema": {"type":"strict_object","expects":"Object","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:f2d53feab4281e9e"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:d695ed29c089e1c3"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:d54600cb00cc7daf"}]},
+  "./meshCollision#MeshCollisionSchema.panels": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64}]},
+  "./meshCollision#MeshCollisionSchema.panels[]": {"type":"strict_object","expects":"Object"},
+  "./meshCollision#MeshCollisionSchema.panels[].file": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]},
+  "./meshCollision#MeshCollisionSchema.panels[].id": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-z][a-zA-Z0-9.-]*$/u","requirement":"re:/^[a-z][a-zA-Z0-9.-]*$/u"},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./meshCollision#MeshCollisionSchema.panels[].initialActive": {"type":"boolean","expects":"boolean"},
+  "./meshCollision#MeshCollisionSchema.panels[].panel": {"ref":"./meshCollision#MeshCollisionSchema.panels[].id"},
+  "./meshCollision#MeshCollisionSchema.tiles": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64}]},
+  "./meshCollision#MeshCollisionSchema.tiles[]": {"type":"strict_object","expects":"Object"},
+  "./meshCollision#MeshCollisionSchema.tiles[].file": {"ref":"./meshCollision#MeshCollisionSchema.panels[].file"},
+  "./meshCollision#MeshCollisionSchema.tiles[].x": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=7","requirement":7}]},
+  "./meshCollision#MeshCollisionSchema.tiles[].z": {"ref":"./meshCollision#MeshCollisionSchema.tiles[].x"},
+  "./meshCollision#MeshCollisionSchema.version": {"type":"literal","expects":"1","literal":1}
+}

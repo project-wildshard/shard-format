@@ -1,0 +1,6 @@
+{
+  "./budget-tiers#BUDGET_TIERS": {"large":{"bandwidthBytes":100000000,"cpuMicrosPerFrame":4000,"gpu":{"instructions":8192,"nodes":4096,"passes":4,"samplers":16},"memoryBytes":536870912},"medium":{"bandwidthBytes":50000000,"cpuMicrosPerFrame":2000,"gpu":{"instructions":3072,"nodes":1280,"passes":3,"samplers":8},"memoryBytes":268435456},"small":{"bandwidthBytes":25000000,"cpuMicrosPerFrame":1000,"gpu":{"instructions":1024,"nodes":512,"passes":2,"samplers":4},"memoryBytes":134217728}},
+  "./budget-tiers#BudgetTierSchema": {"type":"picklist","expects":"(\"small\" | \"medium\" | \"large\")"},
+  "./budget-tiers#BudgetTierSchema|": ["small","medium","large"],
+  "./budget-tiers#UNNAMED_TIER": "large"
+}

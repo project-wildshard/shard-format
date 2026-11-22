@@ -1,0 +1,4 @@
+{
+  "./viewProgram#VIEW_TELL_SHAPES": {"lane":["x","z","x1","z1","width","alpha"],"ring":["x","z","radius","alpha"],"wedge":["x","z","yaw","reach","fill","alpha"]},
+  "./viewProgram#ViewProgramSchema": {"ref":"./clientPlan#ClientFeatureSchema|41.rows"}
+}

@@ -1,0 +1,4 @@
+{
+  "./scriptFuelV2#V2_ENTRY_SIGNATURES": {"ws_init":[127,127,127],"ws_project":[127],"ws_step":[127,127],"ws_view":[124,124,127]},
+  "./scriptFuelV2#V2_WORK_ENTRIES": {"project":"ws_project","sim":"ws_step","view":"ws_view"}
+}

@@ -1,0 +1,18 @@
+{
+  "./contentBounds#CELL_ABOVE": 250,
+  "./contentBounds#CELL_BELOW": 250,
+  "./contentBounds#CELL_HEIGHT": 500,
+  "./contentBounds#CHUNK_HALF": 250,
+  "./contentBounds#CHUNK_SIZE": 500,
+  "./contentBounds#CONTENT_CAPS": {"engineBase":262144000,"far":{"compressed":1000000,"draws":1,"resident":1600000,"triangles":8000},"farCount":9,"l0":{"compressed":300000,"draws":8,"resident":4000000,"size":62.5,"triangles":40000},"l0Count":40,"l1":{"compressed":200000,"draws":2,"resident":2000000,"size":125,"triangles":10000},"l1Count":32,"library":{"compressed":8000000,"resident":25000000},"libraryCount":4,"loading":1800000000,"nearRadius":150,"overlap":80000000,"pitch":562.5,"playing":1200000000,"residentFactor":1.11,"shadowRadius":80,"sim":{"compressed":2000000,"resident":25000000},"simCount":4},
+  "./contentBounds#CONTENT_MB": 1000000,
+  "./contentBounds#ENGINE_BASE_BYTES": 262144000,
+  "./contentBounds#ENTRY_ASPHALT": 15,
+  "./contentBounds#ENTRY_WIDTH": 8,
+  "./contentBounds#GRID_CELL_COUNT": 49,
+  "./contentBounds#GRID_RADIUS": 3,
+  "./contentBounds#HORIZON_RADIUS": 2300,
+  "./contentBounds#MEMORY_GATES": {"explorerMB":1200,"loadingMB":1800,"reportOnly":true},
+  "./contentBounds#ROAD_LENGTH": 60,
+  "./contentBounds#ROAD_WIDTH": 15
+}

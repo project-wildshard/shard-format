@@ -1,0 +1,12 @@
+{
+  "./fur-strands#FurStrandsSchema": {"type":"strict_object","expects":"Object"},
+  "./fur-strands#FurStrandsSchema.bristle": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=1","requirement":1}]},
+  "./fur-strands#FurStrandsSchema.contrast": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=2","requirement":2}]},
+  "./fur-strands#FurStrandsSchema.grizzle": {"ref":"./fur-strands#FurStrandsSchema.bristle"},
+  "./fur-strands#FurStrandsSchema.normalStrength": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=8","requirement":8}]},
+  "./fur-strands#FurStrandsSchema.root": {"ref":"./fur-strands#FurStrandsSchema.bristle"},
+  "./fur-strands#FurStrandsSchema.seed": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=2147483647","requirement":2147483647}]},
+  "./fur-strands#FurStrandsSchema.strandLen": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=1","requirement":1},{"kind":"validation","type":"max_value","expects":"<=64","requirement":64}]},
+  "./fur-strands#furStrands": {"type":"exact_optional","expects":"Object"},
+  "./fur-strands#furStrands?": {"ref":"./fur-strands#FurStrandsSchema"}
+}

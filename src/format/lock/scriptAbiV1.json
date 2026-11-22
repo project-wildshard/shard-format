@@ -1,0 +1,9 @@
+{
+  "./scriptAbiV1#SCRIPT_V1_COMMANDS": {"ability":27,"actorChannel":28,"body.place":20,"body.retire":22,"body.spawn":17,"body.teleport":18,"body.visible":21,"channel":13,"collider.enabled":19,"cue":12,"despawn":6,"encounter":15,"field":4,"flag":7,"grant":10,"heal":24,"impulse":14,"lockable":23,"move":1,"pull":25,"reward":11,"root":26,"signal":9,"spawn":5,"stop":3,"strike":2,"timer":8,"view.channel":100,"view.clip":101,"view.field":105,"view.sound":103,"view.vfx":102,"view.visible":104,"weather":16},
+  "./scriptAbiV1#SCRIPT_V1_EVENTS": {"channel":32,"cue":31,"death":9,"field":30,"flag":12,"hit":7,"interact":6,"move.done":10,"part.broken":19,"player.join":15,"player.leave":16,"signal":13,"spawned":17,"start":1,"stop":18,"strike.done":11,"strike.target":14,"threshold":8,"tick":2,"timer":3,"zone.enter":4,"zone.leave":5},
+  "./scriptAbiV1#SCRIPT_V1_EXPORTS": {"ws_abi":[127],"ws_handle":[127],"ws_init":[127,127,0],"ws_io":[127]},
+  "./scriptAbiV1#SCRIPT_V1_IMPORTS": {"abort":[127,127,127,127,0],"enter":[0],"finite32":[125,125],"finite64":[124,124],"fuel":[127,0],"leave":[0],"ws_list":[127,124,124,127,127,127],"ws_read":[127,124,124,124]},
+  "./scriptAbiV1#SCRIPT_V1_LAYOUT": {"commandWidth":5,"commands":32,"decisionDivisor":6,"eventWidth":6,"events":16,"fixedHz":60,"header":8,"major":1,"maximumPages":4,"params":32,"slotBytes":8,"state":16},
+  "./scriptAbiV1#SCRIPT_V1_LISTS": {"actorsInZone":1,"declaredFloor":7,"groundHeight":3,"nearestWalkable":4,"path":5,"playersWithin":2,"radial":6},
+  "./scriptAbiV1#SCRIPT_V1_READS": {"actorInZone":13,"alive":6,"bearing":19,"bodyAlive":23,"bodyVisible":25,"bodyX":20,"bodyY":21,"bodyYaw":24,"bodyZ":22,"distance":8,"field":7,"flag":10,"hpShare":5,"moving":15,"nearestPlayer":9,"playerFlag":17,"playerIntent":26,"playersInZone":14,"random":12,"spawnGroupAlive":18,"strikeState":16,"timerLeft":11,"x":1,"y":2,"yaw":4,"z":3}
+}

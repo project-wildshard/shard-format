@@ -1,0 +1,6 @@
+{
+  "./scriptWireV2#V2_DIRECTORY_BYTES": 528,
+  "./scriptWireV2#V2_DIRECTORY_ENTRY_BYTES": 24,
+  "./scriptWireV2#V2_HEADER_BYTES": 128,
+  "./scriptWireV2#V2_REGION_STRIDES": [64,8,8,8,96,16,80,32,56,64,80,64,8,1,32,8,80,8,48,16,64,64]
+}

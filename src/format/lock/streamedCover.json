@@ -1,0 +1,10 @@
+{
+  "./streamedCover#CoverCompositionSchema": {"type":"strict_object","expects":"Object"},
+  "./streamedCover#CoverCompositionSchema.mesh": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"max_length","expects":"<=512","requirement":512}]},
+  "./streamedCover#CoverCompositionSchema.name": {"ref":"./streamedCover#CoverCompositionSchema.mesh"},
+  "./streamedCover#CoverCompositionSchema.placement": {"ref":"./streamedCover#CoverCompositionSchema.mesh"},
+  "./streamedCover#CoverCompositionSchema.userData": {"type":"record","expects":"Object"},
+  "./streamedCover#CoverCompositionSchema.userData{k}": {"ref":"./streamedCover#CoverCompositionSchema.mesh"},
+  "./streamedCover#CoverCompositionSchema.userData{v}": {"type":"boolean","expects":"boolean"},
+  "./streamedCover#StreamedCoverSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"object","expects":"Object"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:b3e96a67b86ef4a3"}]}
+}

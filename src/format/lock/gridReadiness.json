@@ -1,0 +1,12 @@
+{
+  "./gridReadiness#GridStructuralEvidenceSchema": {"type":"strict_object","expects":"Object"},
+  "./gridReadiness#GridStructuralEvidenceSchema.criteria": {"type":"strict_object","expects":"Object"},
+  "./gridReadiness#GridStructuralEvidenceSchema.criteria.bakedTiles": {"type":"strict_object","expects":"Object"},
+  "./gridReadiness#GridStructuralEvidenceSchema.criteria.bakedTiles.evidence": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=1024","requirement":1024}]},
+  "./gridReadiness#GridStructuralEvidenceSchema.criteria.bakedTiles.verdict": {"type":"picklist","expects":"(\"pass\" | \"fail\")"},
+  "./gridReadiness#GridStructuralEvidenceSchema.criteria.bakedTiles.verdict|": ["pass","fail"],
+  "./gridReadiness#GridStructuralEvidenceSchema.criteria.edgeProfile": {"ref":"./gridReadiness#GridStructuralEvidenceSchema.criteria.bakedTiles"},
+  "./gridReadiness#GridStructuralEvidenceSchema.criteria.fourEntryways": {"ref":"./gridReadiness#GridStructuralEvidenceSchema.criteria.bakedTiles"},
+  "./gridReadiness#GridStructuralEvidenceSchema.criteria.hudAccent": {"ref":"./gridReadiness#GridStructuralEvidenceSchema.criteria.bakedTiles"},
+  "./gridReadiness#GridStructuralEvidenceSchema.version": {"type":"literal","expects":"1","literal":1}
+}

@@ -1,0 +1,8 @@
+{
+  "./sceneRefs#HandleIdSchema": {"ref":"./clientPlan#ClientFeatureSchema|17.rows.debug?"},
+  "./sceneRefs#ObservationRefSchema": {"ref":"./chapterDirector#ChapterWakeSchema.cues[].effects[]|0.when?"},
+  "./sceneRefs#ScenePointRefSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"union","expects":"Object"}]},
+  "./sceneRefs#SceneRefSchema": {"type":"union","expects":"unknown"},
+  "./sceneRefs#SceneRefSchema|0": {"ref":"./sceneRefs#ScenePointRefSchema"},
+  "./sceneRefs#SceneRefSchema|1": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]}
+}

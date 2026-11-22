@@ -1,0 +1,8 @@
+{
+  "./version#INDEX_FORMAT_VERSIONS": ["0.1.0.2"],
+  "./version#LEGACY_INDEX_VERSIONS": ["0.1","0.1.0.0","0.1.0.1"],
+  "./version#LEGACY_LAYOUT": 2,
+  "./version#SHARDFILE_FLOOR": "0.1.0.0",
+  "./version#SHARDFILE_VERSION": "0.1.0.2",
+  "./version#SHARDFILE_VERSIONS": ["0.1","0.1.0.0","0.1.0.1","0.1.0.2"]
+}

@@ -1,0 +1,3 @@
+{
+  "./cellField#CellFieldSchema": {"ref":"./arenaScriptRows#ArenaScriptFightFileSchema.arenaScript.field"}
+}

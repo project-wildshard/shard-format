@@ -1,0 +1,4 @@
+{
+  "./stillImage#IMAGE_ASSET_LIMITS": {"bytes":4194304,"chunks":1024,"dimension":8192,"pixels":16777216},
+  "./stillImage#STILL_IMAGE_LIMITS": {"bytes":4194304,"chunks":1024,"dimension":4096}
+}

@@ -1,0 +1,17 @@
+{
+  "./detail-layer#DetailLayerSchema": {"type":"strict_object","expects":"Object"},
+  "./detail-layer#DetailLayerSchema.grain": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=1","requirement":1}]},
+  "./detail-layer#DetailLayerSchema.moss": {"type":"exact_optional","expects":"Object"},
+  "./detail-layer#DetailLayerSchema.moss?": {"type":"strict_object","expects":"Object"},
+  "./detail-layer#DetailLayerSchema.moss?.amount": {"ref":"./detail-layer#DetailLayerSchema.grain"},
+  "./detail-layer#DetailLayerSchema.moss?.colour": {"type":"tuple","expects":"Array"},
+  "./detail-layer#DetailLayerSchema.moss?.colour[0]": {"ref":"./detail-layer#DetailLayerSchema.grain"},
+  "./detail-layer#DetailLayerSchema.moss?.colour[1]": {"ref":"./detail-layer#DetailLayerSchema.grain"},
+  "./detail-layer#DetailLayerSchema.moss?.colour[2]": {"ref":"./detail-layer#DetailLayerSchema.grain"},
+  "./detail-layer#DetailLayerSchema.mottle": {"ref":"./detail-layer#DetailLayerSchema.grain"},
+  "./detail-layer#DetailLayerSchema.relief": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=2","requirement":2}]},
+  "./detail-layer#DetailLayerSchema.scale": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0.02","requirement":0.02},{"kind":"validation","type":"max_value","expects":"<=20","requirement":20}]},
+  "./detail-layer#DetailMossSchema": {"ref":"./detail-layer#DetailLayerSchema.moss?"},
+  "./detail-layer#detailLayer": {"type":"exact_optional","expects":"Object"},
+  "./detail-layer#detailLayer?": {"ref":"./detail-layer#DetailLayerSchema"}
+}

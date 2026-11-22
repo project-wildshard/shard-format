@@ -1,0 +1,4 @@
+{
+  "./creatureRanks#CREATURE_RANKS": {"champion":{"damage":2,"hp":10,"loot":5,"size":1.35},"elite":{"damage":1.5,"hp":4,"loot":3,"size":1.2},"legendary":{"damage":2.5,"hp":25,"loot":8,"size":1.5},"veteran":{"damage":1.25,"hp":2,"loot":2,"size":1.1}},
+  "./creatureRanks#CREATURE_RANK_NAMES": ["veteran","elite","champion","legendary"]
+}

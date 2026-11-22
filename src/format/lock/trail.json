@@ -1,0 +1,3 @@
+{
+  "./trail#FollowTrailSamplingSchema": {"ref":"./heldEquipment#HeldEquipmentSchema.launcher.rows.launcher.tracer.row.follow"}
+}

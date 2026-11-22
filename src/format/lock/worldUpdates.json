@@ -1,0 +1,3 @@
+{
+  "./worldUpdates#WorldUpdatesSchema": {"ref":"./clientPlan#ClientFeatureSchema|5.rows"}
+}

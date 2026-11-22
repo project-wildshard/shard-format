@@ -1,0 +1,10 @@
+{
+  "./postStack#POST_NORMAL_PREPASS_COST": 160,
+  "./postStack#POST_STACK_BUDGET": {"instructions":1000,"passes":4},
+  "./postStack#PostStackSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=4","requirement":4}]},
+  "./postStack#PostStackSchema[]": {"type":"union","expects":"Object"},
+  "./postStack#PostStackSchema[]|0": {"type":"strict_object","expects":"Object"},
+  "./postStack#PostStackSchema[]|0.graph": {"type":"unknown","expects":"unknown","pipe":[{"kind":"transformation","type":"raw_transform"}]},
+  "./postStack#PostStackSchema[]|1": {"type":"strict_object","expects":"Object"},
+  "./postStack#PostStackSchema[]|1.file": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]}
+}

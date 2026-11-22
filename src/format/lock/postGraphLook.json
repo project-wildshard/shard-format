@@ -1,0 +1,5 @@
+{
+  "./postGraphLook#PaintedWorldSchema": {"ref":"./heldJianDocument#HeldJianDocumentSchema.look.post.painted?"},
+  "./postGraphLook#PostGraphLookSchema": {"ref":"./heldJianDocument#HeldJianDocumentSchema.look.post"},
+  "./postGraphLook#ScaledPostInputSchema": {"ref":"./heldJianDocument#HeldJianDocumentSchema.look.post.passes{v}"}
+}

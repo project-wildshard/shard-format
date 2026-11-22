@@ -1,0 +1,3 @@
+{
+  "./spawnTables#SpawnTablesSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"array","expects":"Array"},{"kind":"validation","type":"max_length","expects":"<=256","requirement":256},{"kind":"validation","type":"check","expects":null,"requirement":"fn:8d68b198ec5eae52"}]}
+}

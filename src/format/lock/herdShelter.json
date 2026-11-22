@@ -1,0 +1,22 @@
+{
+  "./herdShelter#PopulationShelterSchema": {"type":"strict_object","expects":"Object"},
+  "./herdShelter#PopulationShelterSchema.environment": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./herdShelter#PopulationShelterSchema.herdLimit": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=1","requirement":1},{"kind":"validation","type":"max_value","expects":"<=1024","requirement":1024}]},
+  "./herdShelter#PopulationShelterSchema.look": {"type":"strict_object","expects":"Object"},
+  "./herdShelter#PopulationShelterSchema.look.bigTree": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0}]},
+  "./herdShelter#PopulationShelterSchema.look.clear": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.look.coverBias": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.look.dry": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.look.heightBias": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.look.homeHold": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.look.homeR": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.look.kinds": {"type":"array","expects":"Array"},
+  "./herdShelter#PopulationShelterSchema.look.kinds[]": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1}]},
+  "./herdShelter#PopulationShelterSchema.look.reach": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.look.spotR": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.look.wet": {"ref":"./herdShelter#PopulationShelterSchema.look.bigTree"},
+  "./herdShelter#PopulationShelterSchema.program": {"type":"unknown","expects":"unknown"},
+  "./herdShelter#PopulationShelterSchema.roster": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./herdShelter#PopulationShelterSchema.step": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./herdShelter#PopulationShelterSchema.weather": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]}
+}

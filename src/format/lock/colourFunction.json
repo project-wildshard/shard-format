@@ -1,0 +1,6 @@
+{
+  "./colourFunction#ColourFunctionBookSchema": {"type":"record","expects":"Object","pipe":[{"kind":"validation","type":"max_entries","expects":"<=32","requirement":32}]},
+  "./colourFunction#ColourFunctionBookSchema{k}": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/u","requirement":"re:/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/u"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:2cd8b570a63251fb"}]},
+  "./colourFunction#ColourFunctionBookSchema{v}": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:be50bc7c9b860d9e"}]},
+  "./colourFunction#ColourFunctionSchema": {"ref":"./colourFunction#ColourFunctionBookSchema{v}"}
+}

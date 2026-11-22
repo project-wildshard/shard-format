@@ -1,0 +1,3 @@
+{
+  "./sceneMotion#SceneMotionSchema": {"ref":"./clientPlan#ClientFeatureSchema|49.rows"}
+}

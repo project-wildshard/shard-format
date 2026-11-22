@@ -1,0 +1,3 @@
+{
+  "./declaredQuestPage#DeclaredQuestPageSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:a19693bf82187e79"}]}
+}

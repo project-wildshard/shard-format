@@ -1,0 +1,6 @@
+{
+  "./wireLimits#CLIENT_SCRIPT_LIMITS": {"bindings":128,"emitters":16,"fields":24,"parameters":64,"particlesLive":4096,"particlesPerTick":256},
+  "./wireLimits#RUNTIME_RESIDENT_FACTOR": 1.11,
+  "./wireLimits#WIRE_CELL": {"above":250,"below":250,"entryWidth":8,"half":250},
+  "./wireLimits#WIRE_TILE_SIZES": {"l0":62.5,"l1":125}
+}

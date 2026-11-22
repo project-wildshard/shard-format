@@ -1,0 +1,7 @@
+{
+  "./nativeAssembly#NATIVE_ASSEMBLY_DATA_SCHEMA": "@wildshard/format/nativeAssembly#NativeAssemblyDataSchema",
+  "./nativeAssembly#NATIVE_ASSEMBLY_FILE": "server/native-assembly.json",
+  "./nativeAssembly#NATIVE_ASSEMBLY_SCHEMA": "@wildshard/format/nativeAssembly#NativeAssemblySchema",
+  "./nativeAssembly#NativeAssemblyDataSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"}]},
+  "./nativeAssembly#NativeAssemblySchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]}
+}

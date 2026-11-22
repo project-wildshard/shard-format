@@ -1,0 +1,11 @@
+{
+  "./cookPreparation#CookPreparationSchema": {"type":"strict_object","expects":"Object"},
+  "./cookPreparation#CookPreparationSchema.fence": {"ref":"./cookData#CookDataSchema|1.fence"},
+  "./cookPreparation#CookPreparationSchema.inputHash": {"ref":"./cookData#CookDataSchema|1.fence[]"},
+  "./cookPreparation#CookPreparationSchema.packs": {"ref":"./cookData#CookDataSchema|1.packs"},
+  "./cookPreparation#CookPreparationSchema.programs": {"ref":"./cookData#CookDataSchema|1.programs"},
+  "./cookPreparation#CookPreparationSchema.renderer": {"ref":"./cookData#CookDataSchema|1.fence[]"},
+  "./cookPreparation#CookPreparationSchema.version": {"ref":"./cookData#CookDataSchema|2.version"},
+  "./cookPreparation#EntryProgramsSchema": {"ref":"./cookData#CookDataSchema|1.programs"},
+  "./cookPreparation#MAX_COOK_BYTES": 8388608
+}

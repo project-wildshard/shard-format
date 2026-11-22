@@ -41,3 +41,20 @@
 
 `pnpm check`, which pre-push runs, now runs `src/ci/exports-unique.test.ts` (opus-compat-w1's test for
 0.68.0's doubled `./migrations`); it ran only in hosted CI's test:ci before.
+
+## FE1: the format lock (opus-compat-w2, finished by opus-compat-w3)
+
+The format lock, `src/format/lock/`, records every package export: a valibot
+schema node by node (one row per node, so one `maxLength` change moves one
+row), plain data constants as rows, functions excluded with the reason,
+predicates and getters by a hash of their code, and the chain id over the
+migration sources with comments stripped. `pnpm lock:write` rewrites it;
+`pnpm check:lock` (in `pnpm check`, so pre-push) refuses a stale one and
+names the files that moved. It was one 3.67 MB file; the pre-commit caps a
+blob at 1 MB, so it is a folder now: `index.json` (chain id, exclusions) and
+one `<subpath>.json` per export (largest `audio.json`, 215 KB; 3.3 MB in
+all, after dropping each node's constant `kind: schema` and default
+`async: false`). A test fails if any file passes 512 KB. One row per line;
+kept out of the npm package (`!src/format/lock/**`) and the src/format
+format ratchet (generated, like ratchet.json). Keys sort by code unit, not
+locale, so CI and the Mac write the same bytes. FE2's classifier reads it.

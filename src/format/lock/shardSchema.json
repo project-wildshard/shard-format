@@ -1,0 +1,4 @@
+{
+  "./shardSchema#LOOK_LUT_BYTES": 143748,
+  "./shardSchema#ShardfileSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"raw_check","expects":null},{"kind":"schema","type":"strict_object","expects":"Object"},{"kind":"validation","type":"raw_check","expects":null},{"kind":"validation","type":"check","expects":null,"requirement":"fn:e35185a9b17665a1"},{"kind":"validation","type":"raw_check","expects":null}]}
+}

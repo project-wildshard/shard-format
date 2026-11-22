@@ -1,0 +1,8 @@
+{
+  "./worldEntry#WorldEntrySchema": {"type":"strict_object","expects":"Object"},
+  "./worldEntry#WorldEntrySchema.blocks": {"type":"record","expects":"Object"},
+  "./worldEntry#WorldEntrySchema.blocks{k}": {"ref":"./worldAssembly#WorldAssemblyStageSchema|18.rows[]|0.id"},
+  "./worldEntry#WorldEntrySchema.blocks{v}": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=1024","requirement":1024}]},
+  "./worldEntry#WorldEntrySchema.blocks{v}[]": {"ref":"./worldAssembly#WorldAssemblyStageSchema|18.rows[]"},
+  "./worldEntry#WorldEntryStepSchema": {"ref":"./worldAssembly#WorldAssemblyStageSchema|18.rows[]"}
+}

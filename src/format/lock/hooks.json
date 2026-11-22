@@ -1,0 +1,15 @@
+{
+  "./hooks#HooksSchema": {"type":"strict_object","expects":"Object"},
+  "./hooks#HooksSchema.conditions": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=256","requirement":256}]},
+  "./hooks#HooksSchema.conditions[]": {"type":"strict_object","expects":"Object"},
+  "./hooks#HooksSchema.conditions[].equals": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"}]},
+  "./hooks#HooksSchema.conditions[].fieldId": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=1","requirement":1},{"kind":"validation","type":"max_value","expects":"<=2147483647","requirement":2147483647}]},
+  "./hooks#HooksSchema.conditions[].id": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-z][a-zA-Z0-9.-]*$/u","requirement":"re:/^[a-z][a-zA-Z0-9.-]*$/u"},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./hooks#HooksSchema.conditions[].scope": {"type":"picklist","expects":"(\"shared\" | \"player\")"},
+  "./hooks#HooksSchema.conditions[].scope|": ["shared","player"],
+  "./hooks#HooksSchema.scenes": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=256","requirement":256}]},
+  "./hooks#HooksSchema.scenes[]": {"type":"strict_object","expects":"Object"},
+  "./hooks#HooksSchema.scenes[].id": {"ref":"./hooks#HooksSchema.conditions[].id"},
+  "./hooks#HooksSchema.scenes[].type": {"ref":"./hooks#HooksSchema.conditions[].fieldId"},
+  "./hooks#HooksSchema.scenes[].value": {"ref":"./hooks#HooksSchema.conditions[].equals"}
+}

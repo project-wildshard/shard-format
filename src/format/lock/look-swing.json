@@ -1,0 +1,6 @@
+{
+  "./look-swing#LOOK_SWINGS_MAX": 32,
+  "./look-swing#LookSwingSchema": {"ref":"./look-light#LookLightSchema.swings?[]"},
+  "./look-swing#LookSwingsSchema": {"ref":"./look-light#LookLightSchema.swings?"},
+  "./look-swing#swingNumber": {"ref":"./look-light#LookLampSchema.swing?"}
+}

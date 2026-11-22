@@ -1,0 +1,5 @@
+{
+  "./directorStages#DirectorStagesSchema": {"ref":"./bossProfiles#BossOwnerRowSchema.stages"},
+  "./directorStages#DirectorsSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=16","requirement":16},{"kind":"validation","type":"check","expects":null,"requirement":"fn:729823164aeb1e74"}]},
+  "./directorStages#DirectorsSchema[]": {"ref":"./bossProfiles#BossOwnerRowSchema.stages"}
+}

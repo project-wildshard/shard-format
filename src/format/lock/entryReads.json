@@ -1,0 +1,16 @@
+{
+  "./entryReads#EntryReadSetSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=128","requirement":128},{"kind":"validation","type":"check","expects":null,"requirement":"fn:bb5022be77ad2267"}]},
+  "./entryReads#EntryReadSetSchema[]": {"type":"strict_object","expects":"Object"},
+  "./entryReads#EntryReadSetSchema[].at": {"type":"tuple","expects":"Array"},
+  "./entryReads#EntryReadSetSchema[].at[0]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=-250","requirement":-250},{"kind":"validation","type":"max_value","expects":"<=250","requirement":250}]},
+  "./entryReads#EntryReadSetSchema[].at[1]": {"ref":"./entryReads#EntryReadSetSchema[].at[0]"},
+  "./entryReads#EntryReadSetSchema[].reads": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=8192","requirement":8192},{"kind":"validation","type":"check","expects":null,"requirement":"fn:a0db47b63606ebc8"}]},
+  "./entryReads#EntryReadSetSchema[].reads[]": {"type":"strict_object","expects":"Object"},
+  "./entryReads#EntryReadSetSchema[].reads[].bytes": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"safe_integer","expects":null,"requirement":"fn:c9f0ee58890f970c"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=256000000","requirement":256000000}]},
+  "./entryReads#EntryReadSetSchema[].reads[].hash": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]},
+  "./entryReads#EntryReadSetSchema[].reads[].url": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=512","requirement":512},{"kind":"validation","type":"regex","expects":"/^(?:\\/(?:assets|shardfiles)\\/)?[a-zA-Z0-9_-][a-zA-Z0-9_./-]*(?:\\?v=[a-f0-9]{6,64})?$/u","requirement":"re:/^(?:\\/(?:assets|shardfiles)\\/)?[a-zA-Z0-9_-][a-zA-Z0-9_./-]*(?:\\?v=[a-f0-9]{6,64})?$/u"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:fa42ff22a3618177"}]},
+  "./entryReads#EntryReadSetSchema[].region": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=96","requirement":96},{"kind":"validation","type":"regex","expects":"/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/u","requirement":"re:/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/u"}]},
+  "./entryReads#EntryReadSetSchema[].tier": {"type":"picklist","expects":"(\"phone\" | \"desktop\")"},
+  "./entryReads#EntryReadSetSchema[].tier|": ["phone","desktop"],
+  "./entryReads#EntryReadUrlSchema": {"ref":"./entryReads#EntryReadSetSchema[].reads[].url"}
+}

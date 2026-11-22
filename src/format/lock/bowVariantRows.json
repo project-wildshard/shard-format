@@ -1,0 +1,17 @@
+{
+  "./bowVariantRows#BowSourceMultipliersSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./bowVariantRows#BowSourceMultipliersSchema[]": {"type":"strict_object","expects":"Object"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].id": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=512","requirement":512}]},
+  "./bowVariantRows#BowSourceMultipliersSchema[].mul": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0}]},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when": {"type":"strict_object","expects":"Object"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.sourceTags": {"type":"exact_optional","expects":"Array"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.sourceTags?": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64}]},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.sourceTags?[]": {"type":"custom","expects":"unknown"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.targetState": {"type":"exact_optional","expects":"Array"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.targetState?": {"ref":"./bowVariantRows#BowSourceMultipliersSchema[].when.sourceTags?"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.targetTags": {"type":"exact_optional","expects":"Array"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.targetTags?": {"ref":"./bowVariantRows#BowSourceMultipliersSchema[].when.sourceTags?"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.weaponTags": {"type":"exact_optional","expects":"Array"},
+  "./bowVariantRows#BowSourceMultipliersSchema[].when.weaponTags?": {"ref":"./bowVariantRows#BowSourceMultipliersSchema[].when.sourceTags?"},
+  "./bowVariantRows#BowVariantSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]}
+}

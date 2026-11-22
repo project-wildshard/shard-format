@@ -1,0 +1,7 @@
+{
+  "./creatureVolumes#CreatureLockSchema": {"ref":"./creatureLayers#CreatureBodySchema.lock?"},
+  "./creatureVolumes#CreatureSocketNameSchema": {"ref":"./creatureLayers#CreatureAbilitySchema.from?"},
+  "./creatureVolumes#CreatureVolumeSchema": {"ref":"./creatureLayers#CreatureBodySchema.volumes?[]"},
+  "./creatureVolumes#CreatureVolumesSchema": {"ref":"./creatureLayers#CreatureBodySchema.volumes?"},
+  "./creatureVolumes#MAX_VOLUMES": 16
+}

@@ -1,0 +1,6 @@
+{
+  "./nearPlaceholder#NEAR_COLOUR": "near-colour",
+  "./nearPlaceholder#NEAR_LIGHT": "near-light",
+  "./nearPlaceholder#NEAR_PLACEHOLDER_LIMITS": {"cells":4,"contentBytes":6000000,"contentFiles":32,"residentBytes":34000000,"terrainBytes":2500000,"terrainFiles":16},
+  "./nearPlaceholder#NearPlaceholderSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:517de480419cd3d9"}]}
+}

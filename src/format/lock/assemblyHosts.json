@@ -1,0 +1,4 @@
+{
+  "./assemblyHosts#ASSEMBLY_HOSTS": {"clamp":"clamp(value, min, max)","proveTerrainEntries":"the terrain entry walk: (physics, entryways, heightAt, spec) => the shard's proven entries"},
+  "./assemblyHosts#ASSEMBLY_HOST_HEAD": "host"
+}

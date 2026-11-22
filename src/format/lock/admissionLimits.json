@@ -1,0 +1,3 @@
+{
+  "./admissionLimits#SHARDFILE_ADMISSION_LIMITS": {"commons":1024,"files":4096,"idCharacters":128,"sourceBytes":2000000,"stateFields":128,"textCharacters":4096,"waterBodies":64,"wireBytes":256000000}
+}

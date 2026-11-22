@@ -1,0 +1,10 @@
+{
+  "./moverLifecycle#MoverAtEndSchema": {"type":"strict_object","expects":"Object","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:95d03668dcf6bc6c"}]},
+  "./moverLifecycle#MoverAtEndSchema.equals": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=-3.141592653589793","requirement":-3.141592653589793},{"kind":"validation","type":"max_value","expects":"<=3.141592653589793","requirement":3.141592653589793}]},
+  "./moverLifecycle#MoverAtEndSchema.field": {"type":"picklist","expects":"(1 | 2 | 3 | 4 | 5 | 6)"},
+  "./moverLifecycle#MoverAtEndSchema.field|": [1,2,3,4,5,6],
+  "./moverLifecycle#MoverLifecycleRowsSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"array","expects":"Array"},{"kind":"validation","type":"max_length","expects":"<=32","requirement":32},{"kind":"validation","type":"check","expects":null,"requirement":"fn:729823164aeb1e74"}]},
+  "./moverLifecycle#MoverRestoreFromSchema": {"type":"strict_object","expects":"Object"},
+  "./moverLifecycle#MoverRestoreFromSchema.action": {"type":"literal","expects":"\"end\"","literal":"end"},
+  "./moverLifecycle#MoverRestoreFromSchema.flag": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[A-Za-z][A-Za-z0-9._:-]*$/u","requirement":"re:/^[A-Za-z][A-Za-z0-9._:-]*$/u"},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]}
+}

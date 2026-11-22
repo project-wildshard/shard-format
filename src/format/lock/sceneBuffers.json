@@ -1,0 +1,3 @@
+{
+  "./sceneBuffers#SceneBuffersSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:1aeeb0a6f729da2b"}]}
+}

@@ -1,0 +1,15 @@
+{
+  "./lightEmitters#LightEmittersSchema": {"ref":"./clientPlan#ClientFeatureSchema|60.rows"},
+  "./lightEmitters#LightPoolRowSchema": {"type":"strict_object","expects":"Object"},
+  "./lightEmitters#LightPoolRowSchema.at": {"type":"tuple","expects":"Array"},
+  "./lightEmitters#LightPoolRowSchema.at[0]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"}]},
+  "./lightEmitters#LightPoolRowSchema.at[1]": {"ref":"./lightEmitters#LightPoolRowSchema.at[0]"},
+  "./lightEmitters#LightPoolRowSchema.at[2]": {"ref":"./lightEmitters#LightPoolRowSchema.at[0]"},
+  "./lightEmitters#LightPoolRowSchema.colour": {"ref":"./lightEmitters#LightPoolRowSchema.at"},
+  "./lightEmitters#LightPoolRowSchema.cut": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=5e-324","requirement":5e-324}]},
+  "./lightEmitters#LightPoolRowSchema.gain": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0}]},
+  "./lightEmitters#LightPoolRowSchema.id": {"ref":"./clientPlan#ClientFeatureSchema|17.rows.debug?"},
+  "./lightEmitters#LightPoolRowSchema.initially": {"type":"optional","expects":"(boolean | undefined)","default":true},
+  "./lightEmitters#LightPoolRowSchema.initially?": {"type":"boolean","expects":"boolean"},
+  "./lightEmitters#LightPoolRowSchema.radius": {"ref":"./lightEmitters#LightPoolRowSchema.cut"}
+}

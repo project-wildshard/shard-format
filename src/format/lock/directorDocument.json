@@ -1,0 +1,12 @@
+{
+  "./directorDocument#DirectorDocumentSchema": {"type":"strict_object","expects":"Object"},
+  "./directorDocument#DirectorDocumentSchema.bindings": {"type":"null","expects":"null"},
+  "./directorDocument#DirectorDocumentSchema.declaration": {"ref":"./director#DirectorSchema"},
+  "./directorDocument#DirectorDocumentSchema.module": {"type":"strict_object","expects":"Object"},
+  "./directorDocument#DirectorDocumentSchema.module.bytes": {"type":"string","expects":"string"},
+  "./directorDocument#DirectorDocumentSchema.module.file": {"type":"exact_optional","expects":"string"},
+  "./directorDocument#DirectorDocumentSchema.module.file?": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=240","requirement":240}]},
+  "./directorDocument#DirectorDocumentSchema.module.module": {"type":"string","expects":"string"},
+  "./directorDocument#DirectorDocumentSchema.seed": {"type":"number","expects":"number"},
+  "./directorDocument#DirectorDocumentSchema.stages": {"ref":"./bossProfiles#BossOwnerRowSchema.stages"}
+}

@@ -1,0 +1,11 @@
+{
+  "./nativeGeometryChannels#NativeAttributeSchema": {"type":"strict_object","expects":"Object"},
+  "./nativeGeometryChannels#NativeAttributeSchema.itemSize": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=1","requirement":1},{"kind":"validation","type":"max_value","expects":"<=4","requirement":4}]},
+  "./nativeGeometryChannels#NativeAttributeSchema.normalized": {"type":"boolean","expects":"boolean"},
+  "./nativeGeometryChannels#NativeAttributeSchema.semantic": {"type":"string","expects":"string"},
+  "./nativeGeometryChannels#NativeAttributeSchema.storage": {"type":"picklist","expects":"(\"Float32Array\" | \"Float16Array\" | \"Uint16Array\" | \"Uint32Array\" | \"Int16Array\" | \"Int8Array\" | \"Uint8Array\")"},
+  "./nativeGeometryChannels#NativeAttributeSchema.storage|": ["Float32Array","Float16Array","Uint16Array","Uint32Array","Int16Array","Int8Array","Uint8Array"],
+  "./nativeGeometryChannels#NativeAttributesSchema": {"type":"record","expects":"Object"},
+  "./nativeGeometryChannels#NativeAttributesSchema{k}": {"type":"string","expects":"string"},
+  "./nativeGeometryChannels#NativeAttributesSchema{v}": {"ref":"./nativeGeometryChannels#NativeAttributeSchema"}
+}

@@ -1,0 +1,3 @@
+{
+  "./scriptGroupStepV2#GroupStepV2Schema": {"ref":"./actorProjectionV2#ActorProjectionV2Schema.program.v2?.groups?"}
+}

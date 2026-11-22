@@ -1,0 +1,5 @@
+{
+  "./nativeGround#NativeGroundSchema": {"type":"strict_object","expects":"Object"},
+  "./nativeGround#NativeGroundSchema.file": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]},
+  "./nativeGround#NativeGroundSchema.version": {"type":"literal","expects":"1","literal":1}
+}

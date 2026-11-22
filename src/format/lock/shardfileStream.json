@@ -1,0 +1,4 @@
+{
+  "./shardfileStream#STREAM_BLOB_CAP": 32000000,
+  "./shardfileStream#STREAM_KEPT_CAP": 48000000
+}

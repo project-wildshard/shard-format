@@ -1,0 +1,13 @@
+{
+  "./pagePreparation#PagePathRampSchema": {"ref":"./clientPlan#ClientFeatureSchema|11.rows"},
+  "./pagePreparation#PageTerrainCutSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]},
+  "./pagePreparation#PageWaterBindingSchema": {"type":"strict_object","expects":"Object"},
+  "./pagePreparation#PageWaterBindingSchema.centre": {"ref":"./clientPlan#ClientFeatureSchema|11.rows.id"},
+  "./pagePreparation#PageWaterBindingSchema.look": {"ref":"./clientPlan#ClientFeatureSchema|11.rows.id"},
+  "./pagePreparation#PageWaterBindingSchema.looks": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=8","requirement":8}]},
+  "./pagePreparation#PageWaterBindingSchema.looks[]": {"ref":"./clientPlan#ClientFeatureSchema|11.rows.id"},
+  "./pagePreparation#PageWaterBindingSchema.object": {"ref":"./clientPlan#ClientFeatureSchema|11.rows.id"},
+  "./pagePreparation#PageWaterBindingSchema.probe": {"ref":"./clientPlan#ClientFeatureSchema|11.rows.id"},
+  "./pagePreparation#PageWaterBindingSchema.ripples": {"ref":"./clientPlan#ClientFeatureSchema|11.rows.id"},
+  "./pagePreparation#PageWaterBindingSchema.skyline": {"ref":"./clientPlan#ClientFeatureSchema|11.rows.id"}
+}

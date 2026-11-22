@@ -1,0 +1,7 @@
+{
+  "./rigLooks#RIG_LOOK_RECIPE": "platform.rig",
+  "./rigLooks#RigLookParametersSchema": {"type":"strict_object","expects":"Object"},
+  "./rigLooks#RigLookParametersSchema.body": {"type":"exact_optional","expects":"string"},
+  "./rigLooks#RigLookParametersSchema.body?": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=128","requirement":128}]},
+  "./rigLooks#RigLookParametersSchema.library": {"ref":"./rigLooks#RigLookParametersSchema.body?"}
+}

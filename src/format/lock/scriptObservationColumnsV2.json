@@ -1,0 +1,3 @@
+{
+  "./scriptObservationColumnsV2#ObservationColumnsV2Schema": {"ref":"./actorProjectionV2#ActorProjectionStepV2Schema.columns"}
+}

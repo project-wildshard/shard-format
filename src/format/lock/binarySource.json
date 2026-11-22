@@ -1,0 +1,17 @@
+{
+  "./binarySource#BinaryDataSchema": {"type":"strict_object","expects":"Object"},
+  "./binarySource#BinaryDataSchema.data": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1}]},
+  "./binarySource#BinaryFileSchema": {"type":"strict_object","expects":"Object"},
+  "./binarySource#BinaryFileSchema.file": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=256","requirement":256}]},
+  "./binarySource#BinarySourceBanksSchema": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64},{"kind":"validation","type":"check","expects":null,"requirement":"fn:65533d95a0612981"}]},
+  "./binarySource#BinarySourceBanksSchema[]": {"type":"strict_object","expects":"Object"},
+  "./binarySource#BinarySourceBanksSchema[].bytes": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"safe_integer","expects":null,"requirement":"fn:c9f0ee58890f970c"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=16777216","requirement":16777216}]},
+  "./binarySource#BinarySourceBanksSchema[].file": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=256","requirement":256}]},
+  "./binarySource#BinarySourceBanksSchema[].members": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=256","requirement":256}]},
+  "./binarySource#BinarySourceBanksSchema[].members[]": {"type":"strict_object","expects":"Object"},
+  "./binarySource#BinarySourceBanksSchema[].members[].bytes": {"ref":"./binarySource#BinarySourceBanksSchema[].bytes"},
+  "./binarySource#BinarySourceBanksSchema[].members[].file": {"ref":"./binarySource#BinarySourceBanksSchema[].file"},
+  "./binarySource#BinarySourceBanksSchema[].members[].offset": {"ref":"./binarySource#BinarySourceBanksSchema[].bytes"},
+  "./binarySource#BinarySourceBanksSchema[].members[].sha256": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]},
+  "./binarySource#BinarySourceSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"union","expects":"Object"}]}
+}

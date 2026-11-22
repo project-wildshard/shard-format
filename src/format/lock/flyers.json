@@ -1,0 +1,6 @@
+{
+  "./flyers#BurstFlyerSchema": {"ref":"./creatures#CreaturesSchema.brains[]|9"},
+  "./flyers#DiverSchema": {"ref":"./creatures#CreaturesSchema.brains[]|11"},
+  "./flyers#OrbitDiverSchema": {"ref":"./creatures#CreaturesSchema.brains[]|7"},
+  "./flyers#PatrolDiverSchema": {"ref":"./creatures#CreaturesSchema.brains[]|8"}
+}

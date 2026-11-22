@@ -1,0 +1,20 @@
+{
+  "./decisionPublication#DecisionPublicationSchema": {"type":"strict_object","expects":"Object"},
+  "./decisionPublication#DecisionPublicationSchema.channels": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=512","requirement":512}]},
+  "./decisionPublication#DecisionPublicationSchema.channels[]": {"type":"strict_object","expects":"Object"},
+  "./decisionPublication#DecisionPublicationSchema.channels[].channel": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"integer","expects":null,"requirement":"fn:cb673ad28c5bd64a"},{"kind":"validation","type":"min_value","expects":">=0","requirement":0},{"kind":"validation","type":"max_value","expects":"<=2147483647","requirement":2147483647}]},
+  "./decisionPublication#DecisionPublicationSchema.channels[].value": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"}]},
+  "./decisionPublication#DecisionPublicationSchema.events": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=16384","requirement":16384}]},
+  "./decisionPublication#DecisionPublicationSchema.events[]": {"type":"strict_object","expects":"Object"},
+  "./decisionPublication#DecisionPublicationSchema.events[].actor": {"ref":"./decisionPublication#DecisionPublicationSchema.channels[].channel"},
+  "./decisionPublication#DecisionPublicationSchema.events[].id": {"ref":"./decisionPublication#DecisionPublicationSchema.channels[].channel"},
+  "./decisionPublication#DecisionPublicationSchema.events[].kind": {"type":"picklist","expects":"(\"move\" | \"strike\" | \"cue\")"},
+  "./decisionPublication#DecisionPublicationSchema.events[].kind|": ["move","strike","cue"],
+  "./decisionPublication#DecisionPublicationSchema.events[].target": {"ref":"./decisionPublication#DecisionPublicationSchema.channels[].channel"},
+  "./decisionPublication#DecisionPublicationSchema.fields": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=240000","requirement":240000}]},
+  "./decisionPublication#DecisionPublicationSchema.fields[]": {"type":"strict_object","expects":"Object"},
+  "./decisionPublication#DecisionPublicationSchema.fields[].actor": {"ref":"./decisionPublication#DecisionPublicationSchema.channels[].channel"},
+  "./decisionPublication#DecisionPublicationSchema.fields[].field": {"ref":"./decisionPublication#DecisionPublicationSchema.channels[].channel"},
+  "./decisionPublication#DecisionPublicationSchema.fields[].value": {"ref":"./decisionPublication#DecisionPublicationSchema.channels[].value"},
+  "./decisionPublication#DecisionPublicationSchema.tick": {"ref":"./decisionPublication#DecisionPublicationSchema.channels[].channel"}
+}

@@ -1,0 +1,6 @@
+{
+  "./decisionScripts#BorrowedDecisionSchema": {"ref":"./bossEncounter#NativeBossBindingSchema.decision?"},
+  "./decisionScripts#DecisionScriptRowDocumentSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:99160ea7652cab7f"},{"kind":"schema","type":"strict_object","expects":"Object"}]},
+  "./decisionScripts#DecisionScriptsSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:8f9a2bd56bcacc5c"},{"kind":"schema","type":"array","expects":"Array"},{"kind":"validation","type":"max_length","expects":"<=64","requirement":64},{"kind":"validation","type":"check","expects":null,"requirement":"fn:f0e6ce915eb1640f"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:f344c9c8a992437f"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:d8d7e661bdef3b39"},{"kind":"transformation","type":"transform"}]},
+  "./decisionScripts#SCRIPT_V1_REFERENCE_KINDS": ["actors","moves","strikes","cues","fields","flags","zones","spots","targets","spawns","signals","facts","rewards","channels","impulses","weather","bodies","colliders"]
+}

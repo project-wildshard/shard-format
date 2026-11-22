@@ -1,0 +1,5 @@
+{
+  "./toonLook#TOON_DAY_PRESET": {"cloudShadow":"number","disc":"colour","dusk":"number","fogNear":"colour","fogSun":"colour","hemiGround":"colour","hemiI":"number","hemiSky":"colour","lift":"colour","light":"colour","lightI":"number","rim":"colour","sky":{"below":"colour","cloudLit":"colour","cloudShade":"colour","horizon":"colour","night":"number","sunGlow":"colour","zenith":"colour"}},
+  "./toonLook#ToonDaySchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:869cce171977d817"}]},
+  "./toonLook#ToonLookSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]}
+}
