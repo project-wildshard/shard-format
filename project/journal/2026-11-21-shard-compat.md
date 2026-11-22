@@ -36,3 +36,8 @@
 - CP10 re-arms Driftwood, Nalati, Nine Dragon and Pine at their epoch-8
   readings now Pine r10 is live and Nalati r5 is pinned. Pins and cooks
   validate judged stored, so only new uploads meet the armed lines.
+
+## C6: the push gate refuses a duplicate exports key (opus-compat-w2)
+
+`pnpm check`, which pre-push runs, now runs `src/ci/exports-unique.test.ts` (opus-compat-w1's test for
+0.68.0's doubled `./migrations`); it ran only in hosted CI's test:ci before.
