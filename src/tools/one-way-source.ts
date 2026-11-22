@@ -24,8 +24,13 @@ const NEXT = 1
 const SIZE_FIELD = 2
 const LINE_FEED = 10
 
+// The format lock (FE1) mirrors every schema as data; it is generated, not
+// source, so its names never count toward a one-way ceiling.
+const LOCK_FOLDER = 'src/format/lock/'
+
 function sourcePath(name: string): boolean {
   return (
+    !name.startsWith(LOCK_FOLDER) &&
     /\.(?:[cm]?[jt]sx?|json|md)$/u.test(name) &&
     (/^(?:src\/|docs\/|packages\/[^/]+\/(?:src|docs)\/)/u.test(name) ||
       /^packages\/[^/]+\/[^/]+\.md$/u.test(name) ||
