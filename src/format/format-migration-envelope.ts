@@ -12,6 +12,7 @@ type JsonRecord = Record<string, unknown>
 
 const ENVELOPE = '0.1.0.2'
 const PREPARATION_MARKER = '0.1.0.3'
+const SAVE_REVISION = '0.1.0.4'
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -64,6 +65,23 @@ const preparationMarker: FormatMigration = {
   },
 }
 
+/** FORMAT-PRUNE FP26 (J493): the save lineage `identity.revision` is spelled `identity.saveRevision`. Data only: the
+ * number is kept, so every save keyed by it still matches. */
+const saveRevisionName: FormatMigration = {
+  id: 'fp26-save-revision',
+  to: SAVE_REVISION,
+  touches: 'data',
+  affects: [],
+  apply: (shard: MigratingShard): void => {
+    const { identity } = shard.index
+    if (!isRecord(identity) || !Object.hasOwn(identity, 'revision')) {
+      return
+    }
+    identity['saveRevision'] = identity['revision']
+    Reflect.deleteProperty(identity, 'revision')
+  },
+}
+
 /** The format version a `shard.json` declares, as written, or `undefined`: `formatVersion` from 0.1.0.2, else the
  * legacy `version` beside the layout marker. */
 function declaredShardfileFormat(index: Readonly<JsonRecord>): unknown {
@@ -89,5 +107,6 @@ export {
   dropEmptyIndexFields,
   formatVersionField,
   preparationMarker,
+  saveRevisionName,
   writeShardfileFormat,
 }

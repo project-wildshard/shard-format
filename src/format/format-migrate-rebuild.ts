@@ -12,6 +12,7 @@ import {
   rows,
 } from './format-migrate-inventory.ts'
 import { assembleOutputShardfile } from './outputIndex.ts'
+import { asWrittenIdentity } from './save-revision.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { Hash, JsonRecord, Listed } from './format-migrate-inventory.ts'
@@ -165,7 +166,9 @@ function rebuildSourceHash(
 ): void {
   const source = assembleOutputShardfile(copy.index, shard.sections)
   record(copy.index['build'], 'build')['sourceHash'] = copy.hash(
-    validationSourceBytes(source),
+    validationSourceBytes(
+      asWrittenIdentity(source, copy.index['formatVersion']),
+    ),
   )
 }
 

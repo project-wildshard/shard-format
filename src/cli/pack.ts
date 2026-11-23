@@ -7,6 +7,7 @@ import {
   parseOutputIndex,
 } from '../format/outputIndex.ts'
 import { receiptCost } from '../format/receipt-cost.ts'
+import { asWrittenIdentity } from '../format/save-revision.ts'
 import { packFromMembers } from '../format/shardfile-reads.ts'
 import { writeTar } from '../format/tar.ts'
 import { validationSourceBytes } from '../format/validationReceipt.ts'
@@ -56,6 +57,9 @@ interface PackRow extends Listed {
 /** The rows of `shard.json` this reads; the rest passes through. */
 interface HeldIndex {
   readonly build: Readonly<{ sourceHash: string }>
+  /** FP26: which spelling of the save lineage the hashes cover. */
+  readonly formatVersion?: unknown
+  readonly identity?: unknown
   readonly files: readonly Listed[]
   readonly packs?: readonly PackRow[] | undefined
   readonly schemas?: readonly Listed[] | undefined
@@ -197,7 +201,21 @@ function sourceHash(index: HeldIndex, files: Files): string {
       jsonOf(held(files, row.path)),
     ]),
   )
-  return sha256(validationSourceBytes(assembleOutputShardfile(index, payloads)))
+  // FP26: an older format's hash covers the identity as it wrote it (`revision`).
+  const shard = assembleOutputShardfile(index, payloads)
+  return sha256(
+    validationSourceBytes(asWrittenIdentity(shard, index.formatVersion)),
+  )
+}
+
+/** `shard.json` with its new source hash, the save lineage spelled as its format writes it (FP26). */
+function indexBytes(index: HeldIndex, source: string): Uint8Array {
+  const build = { ...index.build, sourceHash: source }
+  const written = asWrittenIdentity(
+    { ...index, identity: index.identity, build },
+    index.formatVersion,
+  )
+  return validationSourceBytes(written)
 }
 
 /** The index's bytes, and the receipt that names them. */
@@ -206,8 +224,7 @@ function sealed(
   files: Files,
 ): readonly (readonly [string, Uint8Array])[] {
   const source = sourceHash(index, files)
-  const build = { ...index.build, sourceHash: source }
-  const bytes = validationSourceBytes({ ...index, build })
+  const bytes = indexBytes(index, source)
   const receipt = files.get(RECEIPT)
   if (receipt === undefined) {
     return [[INDEX, bytes]]

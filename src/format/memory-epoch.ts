@@ -44,7 +44,7 @@ function staleRuntimeCost(
 function staleRuntimeIssues(
   runtime: Readonly<{ cost?: EpochRow | undefined }> | null,
   current: number = OLDEST_CURRENT_EPOCH,
-  identity?: Readonly<{ slug: string; revision: number }>,
+  identity?: Readonly<{ slug: string; saveRevision: number }>,
 ): StaleRuntimeIssue[] {
   const admitted = staleReadingAdmitted(identity?.slug)
   const rows: EpochRow[] = []

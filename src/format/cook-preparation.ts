@@ -27,6 +27,7 @@ import {
   LEGACY_PREPARATION_SPEC,
   PREPARATION_SPEC,
 } from './preparation-spec.ts'
+import { asWrittenIdentity } from './save-revision.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
@@ -215,7 +216,7 @@ function cookPreparationBytes(
 ): Uint8Array {
   const { cook: _cook, ...inputs } = index
   return validationSourceBytes({
-    index: inputs,
+    index: asWrittenIdentity(inputs, index.formatVersion),
     mounts,
     ...(renderer === undefined ? {} : { renderer }),
   })

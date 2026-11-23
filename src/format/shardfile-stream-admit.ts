@@ -11,13 +11,13 @@ import {
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { assembleOutputShardfile } from './outputIndex.ts'
 import { admittedVerdict, recordVerdict } from './policy-verdict.ts'
+import { writtenSourceBytes } from './save-revision.ts'
 import { offlineMemoryAdmission } from './shardfile-assets.ts'
 import {
   assertShardfileTargets,
   checkWorldTargets,
 } from './shardfileValidation.ts'
 import { parseShardfile } from './shardSchema.ts'
-import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { AssetAdmission } from './assetAdmission.ts'
 import type { OutputIndex } from './outputIndex.ts'
@@ -134,7 +134,7 @@ function admitTail(
 ): void {
   checkWorldTargets(shard, product.payloads.get('world/targets'))
   if (
-    product.hash(validationSourceBytes(shard)) !==
+    product.hash(writtenSourceBytes(shard, product.index.formatVersion)) !==
     product.index.build.sourceHash
   ) {
     throw issueError(

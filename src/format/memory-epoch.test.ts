@@ -52,7 +52,7 @@ test('MG5: an older epoch is stale and names the re-measure; a current one is no
 })
 
 test('MG5: the report refuses each stale reading of an armed zone, the images-first one included', (): void => {
-  const armed = { slug: 'brasscap-mesa', revision: 9 }
+  const armed = { slug: 'brasscap-mesa', saveRevision: 9 }
   expect(staleRuntimeIssues({}, 2, armed)).toEqual([])
   expect(
     staleRuntimeIssues(

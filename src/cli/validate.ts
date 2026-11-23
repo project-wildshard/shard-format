@@ -188,7 +188,7 @@ async function validateShardfile(target: string): Promise<ValidationSummary> {
   )
   return {
     slug: valid.shard.identity.slug,
-    revision: valid.shard.identity.revision,
+    revision: valid.shard.identity.saveRevision,
     sections: valid.sections.size,
     assets: valid.assets.size,
     sourceHash: valid.index.build.sourceHash,

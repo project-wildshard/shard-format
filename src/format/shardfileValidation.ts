@@ -1,6 +1,7 @@
 import { cookMountPath, readCookData } from './cook-data.ts';
 import { requireCookPreparation } from './cook-preparation.ts';
 import { parseOutputIndex, validateOutputSection, assembleOutputShardfile, type OutputFile, type OutputIndex } from './outputIndex.ts';
+import { asWrittenIdentity } from './save-revision.ts';
 import { decisionModuleContracts, scriptAdmissionRows, type ScriptAdmissionRows, type ScriptContract } from './scriptContract.ts';
 import { registeredJsonContract, validateRegisteredJson } from './registeredJson.ts';
 import { validatePlatformFile } from './platformFileFamilies.ts';
@@ -252,6 +253,6 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
   const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index, judged: ports.judged ?? 'upload' });
   checkWorldTargets(shard, payloads.get('world/targets'));
-  if (ports.hash(validationSourceBytes(shard)) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
+  if (ports.hash(validationSourceBytes(asWrittenIdentity(shard, index.formatVersion))) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
   return { index, shard, assets, sections: payloads, scripts, ...deprecationReport({ index, sections: payloads }, warnings), policy: admittedVerdict(shard), audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
 }

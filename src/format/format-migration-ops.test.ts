@@ -28,7 +28,7 @@ type Json = Record<string, unknown>
 
 const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
   .pathname
-const CURRENT = '0.1.0.3'
+const CURRENT = '0.1.0.4'
 
 function sha256(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')

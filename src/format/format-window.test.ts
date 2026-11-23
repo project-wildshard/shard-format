@@ -12,7 +12,7 @@ import { SHARDFILE_VERSION } from './version.ts'
 
 function refusal(index: unknown): ShardfileFormatWindowError | undefined {
   try {
-    assertFormatWindow(index, '0.1.0.3')
+    assertFormatWindow(index, SHARDFILE_VERSION)
   } catch (error: unknown) {
     if (error instanceof ShardfileFormatWindowError) {
       return error
@@ -27,9 +27,10 @@ describe('the format window (CP2)', (): void => {
     const above = refusal({ formatVersion: '0.1.0.9' })
     assert.ok(above !== undefined)
     assert.equal(above.above, true)
-    assert.match(
-      above.message,
-      /format 0\.1\.0\.9, above this reader's 0\.1\.0\.3/u,
+    assert.ok(
+      above.message.includes(
+        `format 0.1.0.9, above this reader's ${SHARDFILE_VERSION}`,
+      ),
     )
   })
 

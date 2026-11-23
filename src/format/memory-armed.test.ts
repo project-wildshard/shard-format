@@ -37,7 +37,7 @@ function request(owner: string, loadingBytes: number): MemoryAdmissionRequest {
 function stale(slug: string): string | undefined {
   return staleRuntimeIssues({ cost: { epoch: 1 } }, OLDEST_CURRENT_EPOCH, {
     slug,
-    revision: 1,
+    saveRevision: 1,
   })[0]?.severity
 }
 

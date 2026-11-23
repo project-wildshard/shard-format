@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 
 import { outputSectionPayloads } from '../../format/outputFields.ts'
 import { parseOutputIndex } from '../../format/outputIndex.ts'
+import { asWrittenIdentity } from '../../format/save-revision.ts'
 import { parseShardfileField } from '../../format/shardSchema.ts'
 import { validationSourceBytes } from '../../format/validationReceipt.ts'
 import { outputFixture } from './output-fixture.ts'
@@ -82,8 +83,13 @@ function nativeProduct(metadata?: unknown): Product {
       }
     },
   )
-  index.build.sourceHash = sha256(validationSourceBytes(source))
-  files.set('shard.json', validationSourceBytes(index))
+  index.build.sourceHash = sha256(
+    validationSourceBytes(asWrittenIdentity(source, index.formatVersion)),
+  )
+  files.set(
+    'shard.json',
+    validationSourceBytes(asWrittenIdentity(index, index.formatVersion)),
+  )
   return { files, sections, index }
 }
 function memoryFiles(files: ReadonlyMap<string, Uint8Array>): ShardfileFiles {

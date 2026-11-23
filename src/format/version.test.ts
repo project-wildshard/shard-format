@@ -93,7 +93,8 @@ test('the additive window never reaches a newer or breaking format', (): void =>
   expect(compatibleShardfileVersion('0.1.0.1', '0.1')).toBe(false)
   expect(compatibleShardfileVersion('0.1.0.1', '0.1.0.2')).toBe(true)
   expect(compatibleShardfileVersion('0.1.0.2', '0.1.0.3')).toBe(true)
-  for (const version of ['0.1.0.4', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
+  expect(compatibleShardfileVersion('0.1.0.3', '0.1.0.4')).toBe(true)
+  for (const version of ['0.1.0.5', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
     expect(compatibleShardfileVersion(version)).toBe(false)
     expect((): unknown => parseShardfileField('version', version)).toThrow()
     expect((): unknown =>

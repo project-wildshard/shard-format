@@ -1,0 +1,17 @@
+{
+  "version": "0.1.0.4",
+  "entries": [
+    {
+      "path": "./version#SHARDFILE_VERSION",
+      "migration": "fp26-save-revision"
+    },
+    {
+      "path": "./outputIndex#OutputIndexSchema.identity",
+      "migration": "fp26-save-revision"
+    },
+    {
+      "path": "./shardSections#IdentitySchema",
+      "deprecation": "identity.revision"
+    }
+  ]
+}

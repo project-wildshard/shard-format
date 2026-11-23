@@ -10,10 +10,12 @@ import { FORMAT_MIGRATIONS, versionBelow } from './format-migrations.ts'
 import { readOutputDownloadIndex } from './outputDownload.ts'
 import { assembleOutputShardfile, parseOutputIndex } from './outputIndex.ts'
 import { preparationSpecOf } from './preparation-spec.ts'
+import { asWrittenIdentity } from './save-revision.ts'
 import { prepareAssetDecoders } from './shardfile-assets.ts'
 import { readCanonicalJson } from './shardfileValidation.ts'
 import { parseOutputLineageIndex } from './stateLineage.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
+import { SHARDFILE_VERSION } from './version.ts'
 
 import type { FormatMigration } from './format-migrations.ts'
 
@@ -63,7 +65,14 @@ describe('the migration chain', (): void => {
       sections.set(String(row['name']), json(files, String(row['path'])))
     }
     expect(
-      sha256(validationSourceBytes(assembleOutputShardfile(index, sections))),
+      sha256(
+        validationSourceBytes(
+          asWrittenIdentity(
+            assembleOutputShardfile(index, sections),
+            index['formatVersion'],
+          ),
+        ),
+      ),
     ).toBe((index['build'] as Json)['sourceHash'])
   })
 
@@ -134,7 +143,7 @@ describe('the migration chain', (): void => {
   test('a section edit rebuilds the inventory and the source hash', (): void => {
     const edit: FormatMigration = {
       id: 'test-edit',
-      to: '0.1.0.3',
+      to: '0.1.0.4',
       touches: 'data',
       affects: [],
       apply: (shard): void => {
@@ -150,13 +159,13 @@ describe('the migration chain', (): void => {
       ...FORMAT_MIGRATIONS.map((step: FormatMigration): string => step.id),
       'test-edit',
     ])
-    expect(migrated.to).toBe('0.1.0.3')
+    expect(migrated.to).toBe(SHARDFILE_VERSION)
     const { index } = validateMigrated(migrated.files, {
       hash: sha256,
       judged: 'stored',
     })
     // CP14 (FP25): the copy names its format in formatVersion, with no version and no layout marker.
-    expect(index.formatVersion).toBe('0.1.0.3')
+    expect(index.formatVersion).toBe(SHARDFILE_VERSION)
     expect(index.version).toBeUndefined()
     expect(index.schemas).toBeUndefined()
     expect(index.requires.capabilities).toEqual([])
@@ -219,13 +228,13 @@ describe('the preparation marker (PR4)', (): void => {
     const copy = migrateShardfile(corpusFiles(), { hash: sha256 })
     expect(copy.applied).toContain('pr4-preparation-marker')
     const index = json(copy.files, 'shard.json')
-    expect(index['formatVersion']).toBe('0.1.0.3')
+    expect(index['formatVersion']).toBe(SHARDFILE_VERSION)
     expect(Object.hasOwn(index, 'sdk')).toBe(false)
     expect(preparationSpecOf(parseOutputIndex(index))).toBe(
       original['sdk'] === '0.3' ? 3 : undefined,
     )
     expect((): unknown => parseOutputIndex({ ...index, sdk: '0.2' })).toThrow(
-      'Format 0.1.0.3 drops sdk',
+      `Format ${SHARDFILE_VERSION} drops sdk`,
     )
   })
 

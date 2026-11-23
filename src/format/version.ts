@@ -5,7 +5,7 @@ import { LEGACY_PREPARATION_SPEC, PREPARED_SDK } from './preparation-spec.ts'
 const ZERO = 0
 const ONE = 1
 
-const SHARDFILE_VERSION = '0.1.0.3'
+const SHARDFILE_VERSION = '0.1.0.4'
 /** Formats whose `shard.json` names its version in `version`, beside the frozen layout marker `formatVersion: 2`.
  * Legacy 0.1 is the byte-preserving spelling of 0.1.0.0. */
 const LEGACY_INDEX_VERSIONS: readonly ['0.1', '0.1.0.0', '0.1.0.1'] = [
@@ -15,10 +15,11 @@ const LEGACY_INDEX_VERSIONS: readonly ['0.1', '0.1.0.0', '0.1.0.1'] = [
 ] as const
 /** Formats whose `shard.json` names its version in `formatVersion` (SHARD-COMPAT CP14, FORMAT-PRUNE FP25): the
  * layout marker and `version` are gone, so a reader tells the two envelopes apart by the field's type. */
-const INDEX_FORMAT_VERSIONS: readonly ['0.1.0.2', typeof SHARDFILE_VERSION] = [
+const INDEX_FORMAT_VERSIONS: readonly [
   '0.1.0.2',
-  SHARDFILE_VERSION,
-] as const
+  '0.1.0.3',
+  typeof SHARDFILE_VERSION,
+] = ['0.1.0.2', '0.1.0.3', SHARDFILE_VERSION] as const
 const SHARDFILE_VERSIONS: readonly [
   ...typeof LEGACY_INDEX_VERSIONS,
   ...typeof INDEX_FORMAT_VERSIONS,
@@ -33,6 +34,9 @@ const SHARDFILE_VERSION_INDEX_RENAME = '0.1.0.2'
 /** The first format whose `shard.json` records the preparation spec version in `preparation` instead of the `sdk`
  * marker (SHARD-COMPAT PR4, J487; FORMAT-PRUNE FP5 folded in). */
 const SHARDFILE_VERSION_PREPARATION = '0.1.0.3'
+/** The first format whose `shard.json` names the save lineage `identity.saveRevision` instead of `identity.revision`
+ * (FORMAT-PRUNE FP26, J493): the number keys saves and only ever rises; it is not the API's shard revision. */
+const SHARDFILE_VERSION_SAVE_REVISION = '0.1.0.4'
 type ShardfileVersionParts = readonly [number, number, number, number]
 
 /** Read canonical bounded decimal components; the legacy two-part spelling has zero counters. */
@@ -124,6 +128,53 @@ function writesPreparationMarker(version: string): boolean {
   )
 }
 
+/** Whether a format version names the save lineage `identity.saveRevision` (0.1.0.4 on, FP26). */
+function writesSaveRevision(version: string): boolean {
+  return (
+    compareShardfileVersions(version, SHARDFILE_VERSION_SAVE_REVISION) >= ZERO
+  )
+}
+
+/** FP26: a copy of an identity row with `revision` spelled `saveRevision`; anything else as it is. */
+function withSaveRevision(identity: unknown): unknown {
+  if (
+    typeof identity !== 'object' ||
+    identity === null ||
+    Array.isArray(identity) ||
+    !Object.hasOwn(identity, 'revision')
+  ) {
+    return identity
+  }
+  const renamed = Object.entries(identity).map(
+    ([key, item]: readonly [string, unknown]): readonly [string, unknown] => [
+      key === 'revision' ? 'saveRevision' : key,
+      item,
+    ],
+  )
+  return Object.fromEntries(renamed)
+}
+
+/** The rows a version from 0.1.0.3 on changes in place: PR4's preparation marker, then FP26's save lineage. */
+function laterEnvelopeRows(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it changes the writer's envelope in place
+  envelope: Record<string, unknown>,
+  version: string,
+): void {
+  // SHARD-COMPAT PR4: from 0.1.0.3 the `sdk` marker goes; a prepared writer's `'0.3'` becomes the spec version it
+  // meant, unless the writer already names one in `preparation`.
+  if (writesPreparationMarker(version)) {
+    const { sdk } = envelope
+    Reflect.deleteProperty(envelope, 'sdk')
+    if (sdk === PREPARED_SDK && envelope['preparation'] === undefined) {
+      envelope['preparation'] = LEGACY_PREPARATION_SPEC
+    }
+  }
+  // FORMAT-PRUNE FP26: from 0.1.0.4 the save lineage is `identity.saveRevision`.
+  if (writesSaveRevision(version)) {
+    envelope['identity'] = withSaveRevision(envelope['identity'])
+  }
+}
+
 /** A copy of a JSON object without `keys`; anything else as it is. */
 function withoutKeys(value: unknown, keys: readonly string[]): unknown {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -167,14 +218,8 @@ function outputIndexEnvelope<Rows extends Readonly<Record<string, unknown>>>(
           formatVersion: version,
           runtime: withoutKeys(rest['runtime'], ['files', 'lines', 'trust']),
         }
-  // SHARD-COMPAT PR4: from 0.1.0.3 the `sdk` marker goes; a prepared writer's `'0.3'` becomes the spec version it
-  // meant, unless the writer already names one in `preparation`.
-  if (typeof version === 'string' && writesPreparationMarker(version)) {
-    const { sdk } = envelope
-    Reflect.deleteProperty(envelope, 'sdk')
-    if (sdk === PREPARED_SDK && envelope['preparation'] === undefined) {
-      envelope['preparation'] = LEGACY_PREPARATION_SPEC
-    }
+  if (typeof version === 'string') {
+    laterEnvelopeRows(envelope, version)
   }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the writer's own rows; only envelope fields change
   return envelope as IndexEnvelope<Rows>
@@ -193,7 +238,9 @@ export {
   shardfileFormatOf,
   writesIndexFormatVersion,
   writesPreparationMarker,
+  writesSaveRevision,
   SHARDFILE_VERSION_PREPARATION,
+  SHARDFILE_VERSION_SAVE_REVISION,
   SHARDFILE_FLOOR,
   type ShardfileVersion,
   type ShardfileVersionParts,

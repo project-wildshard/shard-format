@@ -6,6 +6,7 @@ import * as v from 'valibot';
 import { WIRE_CELL, WIRE_TILE_SIZES } from './wireLimits.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 import { SHARDFILE_VERSIONS } from './version.ts';
+import { oneSaveRevisionSpelling, saveRevisionOf } from './save-revision.ts';
 import type { ShardfileVersion } from './version.ts';
 import { RuntimeCostSchema } from './runtimeCost.ts';
 import { CommonsCostsSchema } from './commonsCosts.ts';
@@ -38,7 +39,11 @@ const file: v.StrictObjectSchema<{ readonly hash: v.GenericSchema<ShardFileRowsI
 const tileCount = (2 * CHUNK_HALF / WIRE_TILE_SIZES.l0) ** 2 + (2 * CHUNK_HALF / WIRE_TILE_SIZES.l1) ** 2;
 
 /** Stable authored shard identity and deterministic seed. */
-export const IdentitySchema: v.GenericSchema<ShardIdentityInput, ShardIdentity> = v.strictObject({ slug: name, name: v.pipe(v.string(), v.minLength(1), v.maxLength(limits.idCharacters)), author: v.pipe(v.string(), v.minLength(1), v.maxLength(limits.idCharacters)), revision: positive, seed: ShardNaturalSchema });
+/** FORMAT-PRUNE FP26 (J493): the save lineage is `saveRevision`. Format 0.1.0.3 and older spell it `revision`; either
+ * spelling reads (the index checks which one its format version writes) and both come out as `saveRevision`. */
+const IdentityRowSchema = v.strictObject({ slug: name, name: v.pipe(v.string(), v.minLength(1), v.maxLength(limits.idCharacters)), author: v.pipe(v.string(), v.minLength(1), v.maxLength(limits.idCharacters)), saveRevision: v.exactOptional(positive), revision: v.exactOptional(positive), seed: ShardNaturalSchema });
+function identityWithSaveRevision(row: Readonly<v.InferOutput<typeof IdentityRowSchema>>): ShardIdentity { const { revision: _old, saveRevision: _new, ...rest } = row; return { ...rest, saveRevision: saveRevisionOf(row) }; }
+export const IdentitySchema: v.GenericSchema<ShardIdentityInput, ShardIdentity> = v.pipe(IdentityRowSchema, v.check(oneSaveRevisionSpelling, 'Shard identity needs exactly one of saveRevision or revision'), v.transform(identityWithSaveRevision));
 /** Wire revision, capabilities and exact commons declarations. */
 export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ sdk: v.picklist(SHARDFILE_VERSIONS), capabilities: ShardNamesSchema, commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
 /** Authored compressed and resident ceilings. */
@@ -210,7 +215,10 @@ interface ShardIdentityInputFields {
     slug: string;
     name: string;
     author: string;
-    revision: ShardNaturalInput;
+    /** FP26: the save lineage. */
+    saveRevision?: ShardNaturalInput;
+    /** FP26: the save lineage's spelling up to format 0.1.0.3; give exactly one of the two. */
+    revision?: ShardNaturalInput;
     seed: ShardNaturalInput;
 }
 export type ShardIdentityInput = { [Key in keyof ShardIdentityInputFields]: ShardIdentityInputFields[Key] };
@@ -218,7 +226,8 @@ interface ShardIdentityFields {
     slug: string;
     name: string;
     author: string;
-    revision: ShardNatural;
+    /** FP26: the save lineage. It keys saves and never goes backwards; it is not the API's shard revision. */
+    saveRevision: ShardNatural;
     seed: ShardNatural;
 }
 export type ShardIdentity = { [Key in keyof ShardIdentityFields]: ShardIdentityFields[Key] };

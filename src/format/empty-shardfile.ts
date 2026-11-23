@@ -6,6 +6,7 @@ import { parseShardfile } from './shardSchema.ts'
 import { SHARDFILE_VERSION } from './version.ts'
 
 import type { Shardfile } from './shardSchema.ts'
+import type { ShardIdentityInput } from './shardSections.ts'
 
 /** Each starting door is as wide as the format's entry width. */
 function widened(
@@ -14,8 +15,9 @@ function widened(
   return { edge: row.edge, at: row.at, width: ENTRY_WIDTH }
 }
 
-/** A valid empty world; add baked content before shipping a playable shard. */
-function emptyShardfile(identity: Readonly<Shardfile['identity']>): Shardfile {
+/** A valid empty world; add baked content before shipping a playable shard. The identity takes `saveRevision`, or
+ * the spelling up to format 0.1.0.3, `revision` (FP26); the file comes back with `saveRevision`. */
+function emptyShardfile(identity: Readonly<ShardIdentityInput>): Shardfile {
   const { edgeSamples, edgeGrey, edgeHeight, requires, entryways, ...rest } =
     start
   const edge = {

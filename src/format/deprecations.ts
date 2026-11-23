@@ -3,6 +3,8 @@
  * deprecated it and its replacement, both validators warn when a shard file uses it, and the corpus counts the kept
  * files using each (`shard-format corpus`). A path with a migration is mended by the chain; one without waits for its
  * users to reach zero before it is deleted. */
+import { SAVE_REVISION_DEPRECATION } from './save-revision.ts'
+
 import type { OutputIndex } from './outputIndex.ts'
 
 /** One deprecated path. */
@@ -117,6 +119,7 @@ const RULES: readonly DeprecationRule[] = [
     uses: (shard: Readonly<DeprecationInput>): boolean =>
       field(shard.index, 'sdk') !== undefined,
   },
+  SAVE_REVISION_DEPRECATION,
   {
     id: 'requires.sdk',
     path: 'shard.json requires.sdk (SHARD-COMPAT CP8): a copy of the format version',

@@ -1,13 +1,18 @@
 import * as v from 'valibot';
 import { assertMigrationCompatibility } from './migrations.ts';
 import { StateSchema } from './state.ts';
+import { oneSaveRevisionSpelling, saveRevisionOf } from './save-revision.ts';
 import type { Shardfile } from './shardSchema.ts';
 import { isJsonDataWithFileSchemas } from './json.ts';
 import { IndexFormatVersionSchema, LegacyIndexVersionSchema } from './index-format-version.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 
-const identity = v.object({ slug: v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u)),
-  revision: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER)) });
+const lineageRevision = v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(Number.MAX_SAFE_INTEGER));
+// FORMAT-PRUNE FP26: a cached product of format 0.1.0.3 or older spells the save lineage `revision`; both read as `saveRevision`.
+const identityRow = v.object({ slug: v.pipe(v.string(), v.regex(/^[a-z][a-z0-9.-]*$/u)),
+  saveRevision: v.exactOptional(lineageRevision), revision: v.exactOptional(lineageRevision) });
+function lineageIdentity(row: Readonly<v.InferOutput<typeof identityRow>>): StateLineage['identity'] { return { slug: row.slug, saveRevision: saveRevisionOf(row) }; }
+const identity = v.pipe(identityRow, v.check(oneSaveRevisionSpelling, 'State lineage needs exactly one of saveRevision or revision'), v.transform(lineageIdentity));
 const lineage: v.GenericSchema<StateLineageInput, StateLineage> = v.object({ identity, state: StateSchema });
 
 /** Read only strict portable state and identity from a previously visited product. Its legacy geometry and scripts remain unadmitted. */
@@ -26,7 +31,7 @@ const inventory = v.object({ format: v.literal('wildshard.shardfile'), formatVer
     schema: v.pipe(v.string(), v.maxLength(240)) })), v.maxLength(256)),
   schemas: lineageSchemas });
 export interface OutputLineageIndex {
-  readonly identity: { readonly slug: string; readonly revision: number };
+  readonly identity: { readonly slug: string; readonly saveRevision: number };
   readonly sections: readonly { readonly path: string; readonly hash: string; readonly bytes: number; readonly name: string; readonly schema: string }[];
   readonly schemas: readonly { readonly path: string; readonly hash: string; readonly bytes: number }[];
 }
@@ -52,7 +57,7 @@ export function parseOutputLineageIndex(input: unknown): OutputLineageIndex {
 /** Preserve saved field identities across validated author revisions; declaration ordering is immaterial. */
 export function assertStateCompatibility(previous: StateLineage, next: Shardfile): void {
   v.parse(v.literal(previous.identity.slug, 'State revisions must name the same shard'), next.identity.slug);
-  if (next.identity.revision < previous.identity.revision) throw new Error('State revisions cannot move backwards');
+  if (next.identity.saveRevision < previous.identity.saveRevision) throw new Error('State revisions cannot move backwards');
   assertMigrationCompatibility(previous.state, next.state, next.migrations);
 }
 
@@ -61,7 +66,8 @@ export function assertStateCompatibility(previous: StateLineage, next: Shardfile
 interface StateLineageInputFields {
     identity: {
         slug: string;
-        revision: number;
+        saveRevision?: number;
+        revision?: number;
     };
     state: v.InferInput<typeof StateSchema>;
 }
@@ -69,7 +75,7 @@ export type StateLineageInput = { [Key in keyof StateLineageInputFields]: StateL
 interface StateLineageFields {
     identity: {
         slug: string;
-        revision: number;
+        saveRevision: number;
     };
     state: v.InferOutput<typeof StateSchema>;
 }
