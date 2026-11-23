@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.71.0 (2026-11-23)
+
+- A shard can declare which save revision it reads without changing the original upload.
+- Tools can use one JSON Schema for the shard format.
+- Authors can declare barter currency for their shard.
+
 ## v0.70.0 (2026-11-22)
 
 - Format 0.1.0.3: a prepared file records its preparation spec, not the old sdk marker; old files migrate on upload.
