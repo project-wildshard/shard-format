@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0.2",
+  "entries": [
+    {
+      "path": "./memory-armed#ARMED_ZONES",
+      "noFileChange": "CP10 re-arm (0.69.2): memory lines are judged once, at upload; stored files validate judged 'stored', so no kept file reads differently"
+    },
+    {
+      "path": "./memory-armed.json#json",
+      "noFileChange": "CP10 re-arm (0.69.2): the same table as ARMED_ZONES, as JSON"
+    }
+  ]
+}

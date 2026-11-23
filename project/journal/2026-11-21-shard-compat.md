@@ -75,3 +75,17 @@ kinds tested. By hand, v0.65.0 to v0.66.0 (locks built in a tmp checkout of
 each tag): 17 changes, all additive, which matches the release (optional
 boss decision/body, level audio, hunt/species, vehicle docks, page-start
 words optional in the manifest).
+
+## FE4: the format gate (opus-compat-w3)
+
+`pnpm check:format-gate`, in `pnpm check` (pre-push and CI), locks the
+newest release tag this tree contains with this tree's lock tool (in
+./tmp/format-gate, removed after), diffs it against the tree's lock (FE2)
+and refuses any breaking or review change that
+`src/format/breaks/<format version>.json` does not name: a migration id
+(FE8 chain), a deprecation id (FE7) or `noFileChange` with the reason. A
+migration or deprecation also needs the format version to rise above the
+tag's and a `corpus/format-versions/<version>/` fixture. Additive and
+deprecation changes pass. First run against v0.69.1: the two CP10 re-arm
+rows (ARMED_ZONES, memory-armed.json), named noFileChange in
+breaks/0.1.0.2.json. About 5 s.
