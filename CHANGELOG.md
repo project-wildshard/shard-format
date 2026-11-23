@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.72.0 (2026-11-23)
+
+- Shards with declared creature skins fit the upload validator’s streaming memory limit.
+- Shard files can report a newer preparation version before the reader tries to open it.
+
 ## v0.71.0 (2026-11-23)
 
 - A shard can declare which save revision it reads without changing the original upload.
