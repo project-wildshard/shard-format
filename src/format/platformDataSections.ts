@@ -135,8 +135,7 @@ export function parsePlatformDataSection(name: 'look/toon', value: unknown): Too
 export function parsePlatformDataSection(name: 'look/painted', value: unknown): PaintedLookRow;
 export function parsePlatformDataSection(name: 'look/colour-functions', value: unknown): ColourFunctionBook;
 export function parsePlatformDataSection(name: 'look/keyed-sky', value: unknown): KeyedSkyStyle;
-export function parsePlatformDataSection(name: 'client/plan', value: unknown): ClientPlan;
-export function parsePlatformDataSection(name: 'server/plan', value: unknown): ClientPlan;
+export function parsePlatformDataSection(name: 'client/plan' | 'server/plan', value: unknown): ClientPlan;
 export function parsePlatformDataSection(name: 'view/modules', value: unknown): ViewModuleRow[];
 export function parsePlatformDataSection(name: 'held/arms', value: unknown): HeldArmsRows;
 export function parsePlatformDataSection(name: 'held/loadout', value: unknown): LoadoutRows;
