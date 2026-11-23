@@ -402,6 +402,7 @@
     "./ui": "./src/format/ui.ts",
     "./uiStrings": "./src/format/uiStrings.ts",
     "./uniformRows": "./src/format/uniformRows.ts",
+    "./uploadCaps": "./src/format/upload-caps.ts",
     "./uploadWire": "./src/format/upload-wire.ts",
     "./validationReceipt": "./src/format/validationReceipt.ts",
     "./version": "./src/format/version.ts",

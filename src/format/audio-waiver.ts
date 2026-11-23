@@ -11,6 +11,8 @@ import {
   string,
 } from 'valibot'
 
+import { MAX_SHARDFILE_BYTES } from './upload-caps.ts'
+
 import type { GenericSchema } from 'valibot'
 
 // AUDIO AU5: a dated waiver for a shard over the audio budget's red line. It
@@ -35,7 +37,6 @@ const NONE = 0
 const ONE_CHAR = 1
 const REASON_LIMIT = 240
 const SLUG_LIMIT = 64
-const MAX_WAIVER_BYTES = 450_000_000
 
 const AudioWaiverSchema: GenericSchema<AudioWaiver, AudioWaiver> = strictObject(
   {
@@ -45,7 +46,7 @@ const AudioWaiverSchema: GenericSchema<AudioWaiver, AudioWaiver> = strictObject(
       number(),
       safeInteger(),
       minValue(NONE),
-      maxValue(MAX_WAIVER_BYTES),
+      maxValue(MAX_SHARDFILE_BYTES),
     ),
     reason: pipe(string(), minLength(ONE_CHAR), maxLength(REASON_LIMIT)),
   },
