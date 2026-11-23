@@ -1,0 +1,6 @@
+{
+  "./preparationSpec#LEGACY_PREPARATION_SPEC": 3,
+  "./preparationSpec#PREPARATION_SPEC": 4,
+  "./preparationSpec#PREPARATION_SPECS": [3,4],
+  "./preparationSpec#PREPARED_SDK": "0.3"
+}
