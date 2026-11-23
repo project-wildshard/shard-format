@@ -45,7 +45,7 @@ const IdentityRowSchema = v.strictObject({ slug: name, name: v.pipe(v.string(), 
 function identityWithSaveRevision(row: Readonly<v.InferOutput<typeof IdentityRowSchema>>): ShardIdentity { const { revision: _old, saveRevision: _new, ...rest } = row; return { ...rest, saveRevision: saveRevisionOf(row) }; }
 export const IdentitySchema: v.GenericSchema<ShardIdentityInput, ShardIdentity> = v.pipe(IdentityRowSchema, v.check(oneSaveRevisionSpelling, 'Shard identity needs exactly one of saveRevision or revision'), v.transform(identityWithSaveRevision));
 /** Wire revision, capabilities and exact commons declarations. */
-export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ sdk: v.picklist(SHARDFILE_VERSIONS), capabilities: ShardNamesSchema, commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
+export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ sdk: v.exactOptional(v.picklist(SHARDFILE_VERSIONS)), capabilities: ShardNamesSchema, commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
 /** Authored compressed and resident ceilings. */
 export const BudgetsSchema: v.GenericSchema<ShardBudgetsInput, ShardBudgets> = v.strictObject({
   /** Reviewed whole-client floor retained when an opaque runtime becomes declared data. */
@@ -232,7 +232,8 @@ interface ShardIdentityFields {
 }
 export type ShardIdentity = { [Key in keyof ShardIdentityFields]: ShardIdentityFields[Key] };
 interface ShardRequiresInputFields {
-    sdk: ShardfileVersion;
+    /** SHARD-COMPAT CP8: deprecated (a copy of the format version, never read); writers stop sourcing it. */
+    sdk?: ShardfileVersion;
     capabilities: ShardNamesInput;
     commons: (ShardHashInput)[];
     commonsWire?: Record<string, ShardNaturalInput> | undefined;
@@ -240,7 +241,7 @@ interface ShardRequiresInputFields {
 }
 export type ShardRequiresInput = { [Key in keyof ShardRequiresInputFields]: ShardRequiresInputFields[Key] };
 interface ShardRequiresFields {
-    sdk: ShardfileVersion;
+    sdk?: ShardfileVersion;
     capabilities: ShardNames;
     commons: (ShardHash)[];
     commonsWire: Record<string, ShardNatural>;
