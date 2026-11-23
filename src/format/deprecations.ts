@@ -5,6 +5,10 @@
 import { COOK_DEPRECATIONS } from './cook-deprecations.ts'
 import { SAVE_REVISION_DEPRECATION } from './save-revision.ts'
 import { SCHEMA_SOURCE_DEPRECATION } from './schema-source.ts'
+import {
+  SPECIES_FEATURE_DEPRECATIONS,
+  SPECIES_SECTION_DEPRECATIONS,
+} from './species-deprecations.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
 
@@ -47,12 +51,6 @@ const EMPTY_INDEX_FIELDS: readonly (readonly [string, string | undefined])[] = [
   ['schemas', undefined],
   ['runtime', 'files'],
   ['runtime', 'lines'],
-]
-/** FORMAT-PRUNE FP15: OF30 cut B leaves these as plain JSON nothing reads. */
-const SPECIES_PROGRAM_FAMILY: readonly string[] = [
-  'actors/species-programs',
-  'look/hull-book',
-  'look/rigged-hulls',
 ]
 
 function field(value: unknown, key: string): unknown {
@@ -124,6 +122,7 @@ const RULES: readonly DeprecationRule[] = [
   SAVE_REVISION_DEPRECATION,
   SCHEMA_SOURCE_DEPRECATION,
   ...COOK_DEPRECATIONS,
+  ...SPECIES_FEATURE_DEPRECATIONS,
   {
     id: 'requires.sdk',
     path: 'shard.json requires.sdk (SHARD-COMPAT CP8): a copy of the format version',
@@ -165,16 +164,7 @@ const RULES: readonly DeprecationRule[] = [
     uses: (shard: Readonly<DeprecationInput>): boolean =>
       field(field(shard.index, 'runtime'), 'trust') !== undefined,
   },
-  ...SPECIES_PROGRAM_FAMILY.map((name: string): DeprecationRule => ({
-    id: `section.${name}`,
-    path: `sections/${name} (the species-program family, FORMAT-PRUNE FP15)`,
-    since: CURRENT,
-    replacement:
-      'species rows and authored looks (actors/species); nothing reads it once OF30 lands',
-    migration: undefined,
-    uses: (shard: Readonly<DeprecationInput>): boolean =>
-      shard.sections.has(name),
-  })),
+  ...SPECIES_SECTION_DEPRECATIONS,
   {
     id: 'items.legacySlot',
     path: 'an item equipment row legacySlot: a closed list of engine-native weapon names (FORMAT-PRUNE FP17)',
