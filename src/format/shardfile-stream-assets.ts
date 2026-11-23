@@ -135,6 +135,12 @@ function namedKeys(
   )
 }
 
+/** A JSON's listed dependencies are held for the checks after the files (a skin file's GLB, its variant and phone
+ *  tables), but not its textures (`ktx2`, OF27b): no later check reads a texture's bytes (`validateSkinAssets` reads the
+ *  JSON and the GLB, and each texture's own costs were checked as it streamed, by `admitFileBytes`). Holding them put
+ *  Nalati r7's declared skin looks (OF30: 18 textures, 15.7 MB) over `PLACED_HOLD_CAP`. */
+const UNHELD_DEPENDENCY_KIND = 'ktx2'
+
 /** The placed keys, and the listed dependencies of the JSON among them (a skin file names its GLB; Codex review). */
 function placedKeys(
   shard: Readonly<AssetAdmission['shard']>,
@@ -155,7 +161,10 @@ function placedKeys(
     const row = rows.get(key)
     if (row?.kind === 'json') {
       for (const dependency of row.dependencies) {
-        for (const found of hashKeys(dependency, paths)) {
+        for (const found of hashKeys(dependency, paths).filter(
+          (held: string): boolean =>
+            rows.get(held)?.kind !== UNHELD_DEPENDENCY_KIND,
+        )) {
           keys.add(found)
         }
       }
@@ -508,4 +517,4 @@ async function assetPasses(base: AssetPassInput): Promise<AssetPasses> {
 }
 
 export type { AssetPassInput, AssetPasses, StoredSource }
-export { assetPasses }
+export { assetPasses, placedPaths }
