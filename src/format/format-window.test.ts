@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+
 import { describe, it } from 'vitest'
 
 import {
@@ -24,17 +25,19 @@ function refusal(index: unknown): ShardfileFormatWindowError | undefined {
 describe('the format window (CP2)', (): void => {
   it('refuses a newer file as above, naming both formats', (): void => {
     const above = refusal({ formatVersion: '0.1.0.9' })
-    assert.equal(above?.above, true)
+    assert.ok(above !== undefined)
+    assert.equal(above.above, true)
     assert.match(
-      above?.message ?? '',
+      above.message,
       /format 0\.1\.0\.9, above this reader's 0\.1\.0\.3/u,
     )
   })
 
   it('refuses a file below the floor as below', (): void => {
     const below = refusal({ formatVersion: 2, version: '0.0.9.0' })
-    assert.equal(below?.above, false)
-    assert.match(below?.message ?? '', /below the floor 0\.1\.0\.0/u)
+    assert.ok(below !== undefined)
+    assert.equal(below.above, false)
+    assert.match(below.message, /below the floor 0\.1\.0\.0/u)
   })
 
   it('passes every format from the floor to the reader, and leaves a malformed one to the schema', (): void => {
