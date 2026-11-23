@@ -6,6 +6,7 @@ import {
   formatJsonSchema,
   formatJsonSchemas,
   namedFormatJsonSchemas,
+  namedFormatSchema,
   registeredJsonSchema,
 } from './json-schema.ts'
 import {
@@ -14,6 +15,7 @@ import {
 } from './platformDataSections.ts'
 import { PLATFORM_FILE_FAMILIES } from './platformFileFamilies.ts'
 import { REGISTERED_JSON } from './registeredJson.ts'
+import { TerrainSchema } from './terrain.ts'
 
 import type { GenericSchema } from 'valibot'
 
@@ -95,4 +97,11 @@ test('FP9: a v.custom with no bridge is refused', (): void => {
     id: custom<string>((value): boolean => typeof value === 'string'),
   })
   expect((): unknown => formatJsonSchema(seeded)).toThrow(/custom/u)
+})
+
+test('FP9c: a named format root resolves to its defining schema, and an unknown name throws', (): void => {
+  expect(namedFormatSchema('terrain.Terrain')).toBe(TerrainSchema)
+  expect((): unknown => namedFormatSchema('nope.NoSchema')).toThrow(
+    'Unknown named format contract',
+  )
 })

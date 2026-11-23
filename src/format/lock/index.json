@@ -276,6 +276,7 @@
   "./jsonSchema#formatJsonSchemas": "function: behaviour, not a shape (its schema inputs are locked)",
   "./jsonSchema#namedFormatJsonSchema": "function: behaviour, not a shape (its schema inputs are locked)",
   "./jsonSchema#namedFormatJsonSchemas": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./jsonSchema#namedFormatSchema": "function: behaviour, not a shape (its schema inputs are locked)",
   "./jsonSchema#namedJsonSchema": "function: behaviour, not a shape (its schema inputs are locked)",
   "./jsonSchema#registeredJsonSchema": "function: behaviour, not a shape (its schema inputs are locked)",
   "./jsonSchema#schemaAt": "function: behaviour, not a shape (its schema inputs are locked)",

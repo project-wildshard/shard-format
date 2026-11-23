@@ -1237,17 +1237,23 @@ export function namedJsonSchema(
   return result
 }
 
-/** Project one registered consumer contract to its exact named draft-07 document.
- * Author tools name the contract without borrowing the format's Valibot object. */
-export function namedFormatJsonSchema(
-  name: string,
-): Readonly<Record<string, unknown>> {
+/** The defining Valibot root a named format contract resolves to (`terrain.Terrain`), for author tools
+ * that compose rows from named roots (the SDK's `NamedJsonComposition`, FORMAT-PRUNE FP9c). */
+export function namedFormatSchema(name: string): GenericSchema {
   if (!Object.hasOwn(wireRoots, name))
     throw new Error(`Unknown named format contract: ${name}`)
   const schema = wireRoots[name]
   if (schema === undefined)
     throw new Error(`Missing named format contract: ${name}`)
-  return namedJsonSchema(schema)
+  return schema
+}
+
+/** Project one registered consumer contract to its exact named draft-07 document.
+ * Author tools name the contract without borrowing the format's Valibot object. */
+export function namedFormatJsonSchema(
+  name: string,
+): Readonly<Record<string, unknown>> {
+  return namedJsonSchema(namedFormatSchema(name))
 }
 
 /** Build-only provenance catalogue from the defining format objects, independently checked by the product freeze. */
