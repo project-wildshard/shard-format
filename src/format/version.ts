@@ -1,9 +1,11 @@
+import { LEGACY_PREPARATION_SPEC, PREPARED_SDK } from './preparation-spec.ts'
+
 /** Canonical format revision, separate from the npm package and script ABI (J319).
  * The fourth component adds fields; the third changes their meaning. */
 const ZERO = 0
 const ONE = 1
 
-const SHARDFILE_VERSION = '0.1.0.2'
+const SHARDFILE_VERSION = '0.1.0.3'
 /** Formats whose `shard.json` names its version in `version`, beside the frozen layout marker `formatVersion: 2`.
  * Legacy 0.1 is the byte-preserving spelling of 0.1.0.0. */
 const LEGACY_INDEX_VERSIONS: readonly ['0.1', '0.1.0.0', '0.1.0.1'] = [
@@ -13,7 +15,8 @@ const LEGACY_INDEX_VERSIONS: readonly ['0.1', '0.1.0.0', '0.1.0.1'] = [
 ] as const
 /** Formats whose `shard.json` names its version in `formatVersion` (SHARD-COMPAT CP14, FORMAT-PRUNE FP25): the
  * layout marker and `version` are gone, so a reader tells the two envelopes apart by the field's type. */
-const INDEX_FORMAT_VERSIONS: readonly [typeof SHARDFILE_VERSION] = [
+const INDEX_FORMAT_VERSIONS: readonly ['0.1.0.2', typeof SHARDFILE_VERSION] = [
+  '0.1.0.2',
   SHARDFILE_VERSION,
 ] as const
 const SHARDFILE_VERSIONS: readonly [
@@ -27,6 +30,9 @@ type IndexFormatVersion = (typeof INDEX_FORMAT_VERSIONS)[number]
 const LEGACY_LAYOUT = 2
 /** The first format that writes its version in `formatVersion`. */
 const SHARDFILE_VERSION_INDEX_RENAME = '0.1.0.2'
+/** The first format whose `shard.json` records the preparation spec version in `preparation` instead of the `sdk`
+ * marker (SHARD-COMPAT PR4, J487; FORMAT-PRUNE FP5 folded in). */
+const SHARDFILE_VERSION_PREPARATION = '0.1.0.3'
 type ShardfileVersionParts = readonly [number, number, number, number]
 
 /** Read canonical bounded decimal components; the legacy two-part spelling has zero counters. */
@@ -111,6 +117,13 @@ function writesIndexFormatVersion(version: string): boolean {
   )
 }
 
+/** Whether a format version records `preparation` in place of the `sdk` marker (0.1.0.3 on, PR4). */
+function writesPreparationMarker(version: string): boolean {
+  return (
+    compareShardfileVersions(version, SHARDFILE_VERSION_PREPARATION) >= ZERO
+  )
+}
+
 /** A copy of a JSON object without `keys`; anything else as it is. */
 function withoutKeys(value: unknown, keys: readonly string[]): unknown {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -125,11 +138,16 @@ function withoutKeys(value: unknown, keys: readonly string[]): unknown {
 
 /** The rows `outputIndexEnvelope` returns: the writer's own rows, typed so it keeps reading them, with `version` and
  * `schemas` possibly gone and `formatVersion` possibly the version string. */
-type IndexEnvelope<Rows> = Omit<Rows, 'formatVersion' | 'schemas' | 'version'> &
+type IndexEnvelope<Rows> = Omit<
+  Rows,
+  'formatVersion' | 'schemas' | 'version' | 'sdk'
+> &
   Readonly<{
     formatVersion: unknown
     version?: unknown
     schemas?: unknown
+    sdk?: unknown
+    preparation?: unknown
   }>
 
 /** SHARD-COMPAT CP14: writers build the legacy `shard.json` rows (`formatVersion: 2`, `version`, the always-empty lists)
@@ -149,6 +167,15 @@ function outputIndexEnvelope<Rows extends Readonly<Record<string, unknown>>>(
           formatVersion: version,
           runtime: withoutKeys(rest['runtime'], ['files', 'lines', 'trust']),
         }
+  // SHARD-COMPAT PR4: from 0.1.0.3 the `sdk` marker goes; a prepared writer's `'0.3'` becomes the spec version it
+  // meant, unless the writer already names one in `preparation`.
+  if (typeof version === 'string' && writesPreparationMarker(version)) {
+    const { sdk } = envelope
+    Reflect.deleteProperty(envelope, 'sdk')
+    if (sdk === PREPARED_SDK && envelope['preparation'] === undefined) {
+      envelope['preparation'] = LEGACY_PREPARATION_SPEC
+    }
+  }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the writer's own rows; only envelope fields change
   return envelope as IndexEnvelope<Rows>
 }
@@ -165,6 +192,8 @@ export {
   type IndexFormatVersion,
   shardfileFormatOf,
   writesIndexFormatVersion,
+  writesPreparationMarker,
+  SHARDFILE_VERSION_PREPARATION,
   SHARDFILE_FLOOR,
   type ShardfileVersion,
   type ShardfileVersionParts,

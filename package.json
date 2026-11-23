@@ -241,6 +241,7 @@
     "./outputDownload": "./src/format/outputDownload.ts",
     "./outputFields": "./src/format/outputFields.ts",
     "./outputIndex": "./src/format/outputIndex.ts",
+    "./preparationSpec": "./src/format/preparation-spec.ts",
     "./overdraw": "./src/format/overdraw.ts",
     "./pageLife": "./src/format/pageLife.ts",
     "./pagePreparation": "./src/format/pagePreparation.ts",

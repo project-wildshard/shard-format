@@ -1,5 +1,5 @@
 {
- "chainId": "c7918e9b3f81878369f1b3f81a51b9fde7909189b5e9540bf5f79be1aabfacdb",
+ "chainId": "5ecd2b376763c2cc58ce294d5ef7d07aeecca84310b5ec2149a97a919ac707bf",
  "excluded": {
   "./aacIndex#indexRecordingAac": "function: behaviour, not a shape (its schema inputs are locked)",
   "./achievementCounters#parseAchievementCounterData": "function: behaviour, not a shape (its schema inputs are locked)",
@@ -104,6 +104,7 @@
   "./cookData#cookMountPath": "function: behaviour, not a shape (its schema inputs are locked)",
   "./cookData#readCookData": "function: behaviour, not a shape (its schema inputs are locked)",
   "./cookPreparation#cookPreparationBytes": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./cookPreparation#isPreparedCook": "function: behaviour, not a shape (its schema inputs are locked)",
   "./cookPreparation#readEntryPrograms": "function: behaviour, not a shape (its schema inputs are locked)",
   "./cookPreparation#requireCookPreparation": "function: behaviour, not a shape (its schema inputs are locked)",
   "./coverAppearance#parseCoverAppearance": "function: behaviour, not a shape (its schema inputs are locked)",
@@ -436,6 +437,8 @@
   "./practiceCourseRows#parseRidingPractice": "function: behaviour, not a shape (its schema inputs are locked)",
   "./preflight#preflightShardfile": "function: behaviour, not a shape (its schema inputs are locked)",
   "./preflight#preflightShardfileSteps": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./preparationSpec#isPreparationSpec": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./preparationSpec#preparationSpecOf": "function: behaviour, not a shape (its schema inputs are locked)",
   "./primitives#derivePrimitives": "function: behaviour, not a shape (its schema inputs are locked)",
   "./primitives#primitiveOfHost": "function: behaviour, not a shape (its schema inputs are locked)",
   "./primitives#switchesOf": "function: behaviour, not a shape (its schema inputs are locked)",
@@ -671,6 +674,7 @@
   "./version#parseShardfileVersion": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#shardfileFormatOf": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesIndexFormatVersion": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./version#writesPreparationMarker": "function: behaviour, not a shape (its schema inputs are locked)",
   "./viewDraws#viewDraws": "function: behaviour, not a shape (its schema inputs are locked)",
   "./viewProgram#viewTellShape": "function: behaviour, not a shape (its schema inputs are locked)",
   "./water#parseWaterSurface": "function: behaviour, not a shape (its schema inputs are locked)",

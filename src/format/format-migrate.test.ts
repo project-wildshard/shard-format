@@ -9,6 +9,7 @@ import { migrateShardfile, validateMigrated } from './format-migrate.ts'
 import { FORMAT_MIGRATIONS, versionBelow } from './format-migrations.ts'
 import { readOutputDownloadIndex } from './outputDownload.ts'
 import { assembleOutputShardfile, parseOutputIndex } from './outputIndex.ts'
+import { preparationSpecOf } from './preparation-spec.ts'
 import { prepareAssetDecoders } from './shardfile-assets.ts'
 import { readCanonicalJson } from './shardfileValidation.ts'
 import { parseOutputLineageIndex } from './stateLineage.ts'
@@ -133,7 +134,7 @@ describe('the migration chain', (): void => {
   test('a section edit rebuilds the inventory and the source hash', (): void => {
     const edit: FormatMigration = {
       id: 'test-edit',
-      to: '0.1.0.2',
+      to: '0.1.0.3',
       touches: 'data',
       affects: [],
       apply: (shard): void => {
@@ -149,20 +150,23 @@ describe('the migration chain', (): void => {
       ...FORMAT_MIGRATIONS.map((step: FormatMigration): string => step.id),
       'test-edit',
     ])
-    expect(migrated.to).toBe('0.1.0.2')
+    expect(migrated.to).toBe('0.1.0.3')
     const { index } = validateMigrated(migrated.files, {
       hash: sha256,
       judged: 'stored',
     })
     // CP14 (FP25): the copy names its format in formatVersion, with no version and no layout marker.
-    expect(index.formatVersion).toBe('0.1.0.2')
+    expect(index.formatVersion).toBe('0.1.0.3')
     expect(index.version).toBeUndefined()
     expect(index.schemas).toBeUndefined()
     expect(index.requires.capabilities).toEqual([])
   })
 
   test('CP14: the 0.1.0.2 copy reads in the full, lineage and download readers', (): void => {
-    const copy = migrateShardfile(corpusFiles(), { hash: sha256 })
+    const copy = migrateShardfile(corpusFiles(), {
+      hash: sha256,
+      to: '0.1.0.2',
+    })
     expect(copy.applied).toContain('cp14-format-version')
     expect(copy.applied).toContain('fp4-drop-empty-index-fields')
     const index = json(copy.files, 'shard.json')
@@ -175,7 +179,7 @@ describe('the migration chain', (): void => {
 
   test('CP14: a 0.1.0.2 index carrying a legacy field is refused naming it, and a legacy one missing one', (): void => {
     const index = json(
-      migrateShardfile(corpusFiles(), { hash: sha256 }).files,
+      migrateShardfile(corpusFiles(), { hash: sha256, to: '0.1.0.2' }).files,
       'shard.json',
     )
     expect((): unknown =>
@@ -206,5 +210,32 @@ describe('the migration chain', (): void => {
     expect(
       parseOutputLineageIndex({ ...index, sdk: '0.3' }).identity.slug,
     ).toBe('brasscap-mesa')
+  })
+})
+
+describe('the preparation marker (PR4)', (): void => {
+  test('the sdk marker becomes the preparation spec at 0.1.0.3', (): void => {
+    const original = json(corpusFiles(), 'shard.json')
+    const copy = migrateShardfile(corpusFiles(), { hash: sha256 })
+    expect(copy.applied).toContain('pr4-preparation-marker')
+    const index = json(copy.files, 'shard.json')
+    expect(index['formatVersion']).toBe('0.1.0.3')
+    expect(Object.hasOwn(index, 'sdk')).toBe(false)
+    expect(preparationSpecOf(parseOutputIndex(index))).toBe(
+      original['sdk'] === '0.3' ? 3 : undefined,
+    )
+    expect((): unknown => parseOutputIndex({ ...index, sdk: '0.2' })).toThrow(
+      'Format 0.1.0.3 drops sdk',
+    )
+  })
+
+  test('older formats keep sdk, and the spec reads back through the format', (): void => {
+    const original = json(corpusFiles(), 'shard.json')
+    expect((): unknown =>
+      parseOutputIndex({ ...original, preparation: 3 }),
+    ).toThrow('has no preparation field')
+    expect(preparationSpecOf({ sdk: '0.3' })).toBe(3)
+    expect(preparationSpecOf({ sdk: '0.2' })).toBeUndefined()
+    expect(preparationSpecOf({ preparation: 4 })).toBe(4)
   })
 })

@@ -5,7 +5,7 @@
  * It is deterministic (canonical JSON, no clock, network or randomness), always starts from the original, and twice
  * equals once. */
 import { readCookData } from './cook-data.ts'
-import { requireCookPreparation } from './cook-preparation.ts'
+import { isPreparedCook, requireCookPreparation } from './cook-preparation.ts'
 import {
   INDEX,
   RECEIPT,
@@ -77,7 +77,6 @@ interface Admitted {
 }
 
 const RUNNER = 1
-const PREPARED = 3
 const NONE = 0
 
 function chainId(migrations: readonly FormatMigration[], hash: Hash): string {
@@ -210,7 +209,7 @@ function writeCopy(
   const copy = { index, out, hash: plan.hash }
   rebuildInventory(copy, shard, {
     mountText,
-    reseal: cook?.version === PREPARED && !rendersAgain(plan.steps),
+    reseal: isPreparedCook(cook) && !rendersAgain(plan.steps),
   })
   copy.out.set(INDEX, validationSourceBytes(index))
   return copy.out
@@ -220,7 +219,7 @@ function preparationOf(
   cook: Readonly<CookData> | undefined,
   steps: readonly FormatMigration[],
 ): MigratedShardfile['preparation'] {
-  if (cook?.version !== PREPARED) {
+  if (!isPreparedCook(cook)) {
     return 'none'
   }
   return rendersAgain(steps) ? 'stale' : 'author'

@@ -3,6 +3,7 @@
  * version into `formatVersion` from 0.1.0.2 on (`writeShardfileFormat`), replacing the frozen layout marker `2`; these
  * steps drop the fields the new envelope no longer carries. Every dropped field held nothing: `version` repeats the
  * format version, and the other four are always empty with no reader. */
+import { LEGACY_PREPARATION_SPEC, PREPARED_SDK } from './preparation-spec.ts'
 import { LEGACY_LAYOUT, writesIndexFormatVersion } from './version.ts'
 
 import type { FormatMigration, MigratingShard } from './format-migrations.ts'
@@ -10,6 +11,7 @@ import type { FormatMigration, MigratingShard } from './format-migrations.ts'
 type JsonRecord = Record<string, unknown>
 
 const ENVELOPE = '0.1.0.2'
+const PREPARATION_MARKER = '0.1.0.3'
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -44,6 +46,24 @@ const dropEmptyIndexFields: FormatMigration = {
   },
 }
 
+/** SHARD-COMPAT PR4 (J487, FORMAT-PRUNE FP5 folded in): the `sdk` marker becomes `preparation`, the spec version the
+ * file was prepared to. `'0.3'` (prepared) is spec 3, the only spec that marker ever meant; `'0.2'` (built, not
+ * prepared) leaves no field. Data only: the copy's `cook.json` stays spec 3 and its input hash is re-sealed over the
+ * new index. */
+const preparationMarker: FormatMigration = {
+  id: 'pr4-preparation-marker',
+  to: PREPARATION_MARKER,
+  touches: 'data',
+  affects: [],
+  apply: (shard: MigratingShard): void => {
+    const { index } = shard
+    if (index['sdk'] === PREPARED_SDK) {
+      index['preparation'] = LEGACY_PREPARATION_SPEC
+    }
+    Reflect.deleteProperty(index, 'sdk')
+  },
+}
+
 /** The format version a `shard.json` declares, as written, or `undefined`: `formatVersion` from 0.1.0.2, else the
  * legacy `version` beside the layout marker. */
 function declaredShardfileFormat(index: Readonly<JsonRecord>): unknown {
@@ -68,5 +88,6 @@ export {
   declaredShardfileFormat,
   dropEmptyIndexFields,
   formatVersionField,
+  preparationMarker,
   writeShardfileFormat,
 }

@@ -36,6 +36,8 @@ const CURRENT = '0.1.0.1'
 /** Format 0.1.0.2's envelope (SHARD-COMPAT CP14, FORMAT-PRUNE FP4 and FP25). */
 const ENVELOPE = '0.1.0.2'
 const LEGACY_LAYOUT = 2
+/** Format 0.1.0.3: `preparation` replaces the `sdk` marker (SHARD-COMPAT PR4). */
+const PREPARATION_MARKER = '0.1.0.3'
 /** FORMAT-PRUNE FP4: always empty, never read. */
 const EMPTY_INDEX_FIELDS: readonly (readonly [string, string | undefined])[] = [
   ['schemas', undefined],
@@ -104,6 +106,16 @@ const RULES: readonly DeprecationRule[] = [
             ? field(shard.index, outer) !== undefined
             : field(field(shard.index, outer), inner) !== undefined,
       ),
+  },
+  {
+    id: 'shard.sdk-marker',
+    path: "shard.json sdk ('0.2' built, '0.3' prepared), the preparation marker (SHARD-COMPAT PR4, FORMAT-PRUNE FP5)",
+    since: PREPARATION_MARKER,
+    replacement:
+      'preparation: the preparation spec version (cook.json version), absent on an unprepared file',
+    migration: 'pr4-preparation-marker',
+    uses: (shard: Readonly<DeprecationInput>): boolean =>
+      field(shard.index, 'sdk') !== undefined,
   },
   {
     id: 'requires.sdk',

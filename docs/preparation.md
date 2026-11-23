@@ -15,14 +15,32 @@ consumer reads it and which schema checks it. A value whose computation changes 
 (PR4); a stored file at an older spec is migrated, or re-prepared by the box's cook when no migration can compute it
 (SP1b, J486 migrate first).
 
+## The preparation spec version (PR4)
+
+shard-format owns one number, the **preparation spec version**, beside the format version. A prepared file records
+it twice: `shard.json` `preparation` (from format 0.1.0.3) and `cook.json` `version`, and the two must agree. Read it
+with `preparationSpecOf(index)` (`src/format/cook-preparation.ts`); `undefined` means unprepared.
+
+| Spec | `cook.json` | Names an engine? | Written by |
+|---|---|---|---|
+| 3 | `version: 3`, `renderer` fingerprint, programs `{version: 2, build, ...}` | yes: the renderer and the program build | `wildshard prepare` up to SDK 0.4.25; formats up to 0.1.0.2 mark it `sdk: '0.3'` |
+| 4 | `version: 4`, no `renderer`, programs `{version: 3, lines, shaders, programs}` with no `build`; `inputHash` binds no renderer | no | `wildshard prepare` from the SDK that writes format 0.1.0.3 |
+
+Format 0.1.0.3 drops the `sdk` marker (`'0.2'` built, `'0.3'` prepared). The chain step `pr4-preparation-marker`
+turns `sdk: '0.3'` into `preparation: 3` and drops `sdk: '0.2'`; it is data only, so a migrated copy keeps its spec 3
+`cook.json` and its input hash is re-sealed. The deprecation counter reports the old marker as `shard.sdk-marker`.
+Writers pass their legacy rows through `outputIndexEnvelope` at version 0.1.0.3 with `preparation` set (or `sdk:
+'0.3'`, which becomes spec 3). Spec 4's programs are a warm-up hint: any engine may use or ignore them, and none refuses
+a file for them.
+
 ## Status
 
 | Section | Spec | Schema | Engine agnostic today |
 |---|---|---|---|
 | `cook.json` mounts | below | `CookDataSchema` (`src/format/cook-data.ts`) | yes |
 | `cook.json` fence | below | `CookPreparationSchema.fence` (`src/format/cook-preparation.ts`) | **no**: recorded by an engine boot |
-| `cook.json` programs | below | `EntryProgramsSchema` (`src/format/cook-preparation.ts`) | **no**: GLSL from one engine renderer |
-| `cook.json` renderer | below | `CookPreparationSchema.renderer` | **no**: an engine fingerprint |
+| `cook.json` programs | below | `EntryProgramsSchema` (spec 3), `SpecProgramsSchema` (spec 4) | spec 4 names no build; the GLSL still comes from one renderer (a hint) |
+| `cook.json` renderer | below | `CookPreparationSchema.renderer` (spec 3 only) | spec 3 **no**; spec 4 drops it |
 | `cook.json` inputHash | below | `cookPreparationBytes` (`src/format/cook-preparation.ts`) | yes, but it binds `renderer` |
 | `validation.json` | below | `ValidationReceipt` (`src/format/validationReceipt.ts`) | yes (format costs) |
 | `sim/runtime-plan` baked pieces | below | `src/format/headless-sections.ts` | yes |

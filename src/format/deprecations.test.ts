@@ -144,6 +144,7 @@ describe('the deprecation counter (FE7)', (): void => {
       'version.two-part',
       'shard.version',
       'shard.empty-fields',
+      'shard.sdk-marker',
       'requires.sdk',
       'requires.capabilities',
     ])

@@ -67,12 +67,33 @@ test('CP14: a writer passes legacy rows through outputIndexEnvelope and gets the
     requires: { sdk: '0.1.0.2', capabilities: [], commons: [] },
     runtime: { kind: 'client-plan', binds: [] },
   })
+  // PR4: from 0.1.0.3 the sdk marker goes; a prepared '0.3' becomes preparation spec 3 unless the writer names one.
+  const built = outputIndexEnvelope({
+    ...legacy,
+    sdk: '0.2',
+    version: '0.1.0.3',
+  })
+  expect(Object.hasOwn(built, 'sdk')).toBe(false)
+  expect(Object.hasOwn(built, 'preparation')).toBe(false)
+  expect(
+    outputIndexEnvelope({ ...legacy, sdk: '0.3', version: '0.1.0.3' })
+      .preparation,
+  ).toBe(3)
+  expect(
+    outputIndexEnvelope({
+      ...legacy,
+      sdk: '0.3',
+      preparation: 4,
+      version: '0.1.0.3',
+    }).preparation,
+  ).toBe(4)
 })
 
 test('the additive window never reaches a newer or breaking format', (): void => {
   expect(compatibleShardfileVersion('0.1.0.1', '0.1')).toBe(false)
   expect(compatibleShardfileVersion('0.1.0.1', '0.1.0.2')).toBe(true)
-  for (const version of ['0.1.0.3', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
+  expect(compatibleShardfileVersion('0.1.0.2', '0.1.0.3')).toBe(true)
+  for (const version of ['0.1.0.4', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
     expect(compatibleShardfileVersion(version)).toBe(false)
     expect((): unknown => parseShardfileField('version', version)).toThrow()
     expect((): unknown =>

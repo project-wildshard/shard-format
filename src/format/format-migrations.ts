@@ -5,6 +5,7 @@
 import {
   dropEmptyIndexFields,
   formatVersionField,
+  preparationMarker,
 } from './format-migration-envelope.ts'
 import { journalGlyphImages } from './format-migration-journal.ts'
 import { dropRuntimeTrust, shardfilePointer } from './format-migration-prune.ts'
@@ -71,6 +72,7 @@ const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
   dropRuntimeTrust,
   formatVersionField,
   dropEmptyIndexFields,
+  preparationMarker,
 ]
 
 /** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its

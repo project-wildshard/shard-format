@@ -14,8 +14,19 @@ import {
   strictObject,
   string,
   tuple,
+  union,
 } from 'valibot'
 
+import {
+  failureOf,
+  fenceValid,
+  preparationMarked,
+  programMountValid,
+} from './preparation-checks.ts'
+import {
+  LEGACY_PREPARATION_SPEC,
+  PREPARATION_SPEC,
+} from './preparation-spec.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
@@ -30,8 +41,10 @@ const MAX_BUILD = 160
 const MAX_FENCE = 8192
 const ZERO = 0
 const ONE = 1
-const VERSION = 3
+const VERSION: typeof LEGACY_PREPARATION_SPEC = LEGACY_PREPARATION_SPEC
 const PROGRAM_VERSION = 2
+/** Programs at spec 4: the same GLSL rows with no engine `build`. */
+const SPEC_PROGRAM_VERSION = 3
 const MAX_COOK_BYTES = 8_388_608
 
 /** Actual linked GLSL pairs, not decision programs. The recorder owns provenance. */
@@ -42,6 +55,14 @@ interface EntryPrograms {
   readonly shaders: readonly (readonly number[])[]
   readonly programs: readonly (readonly [number, number])[]
 }
+/** Spec 4's programs: a warm-up hint any engine may use or ignore; no engine build is named. */
+interface SpecPrograms {
+  readonly version: typeof SPEC_PROGRAM_VERSION
+  readonly lines: readonly string[]
+  readonly shaders: readonly (readonly number[])[]
+  readonly programs: readonly (readonly [number, number])[]
+}
+type AnyPrograms = EntryPrograms | SpecPrograms
 interface CookPreparation {
   readonly version: typeof VERSION
   readonly inputHash: string
@@ -49,6 +70,14 @@ interface CookPreparation {
   readonly packs: 'fence' | 'whole'
   readonly fence: readonly string[]
   readonly programs: EntryPrograms
+}
+/** Preparation spec 4 (PR4): spec 3 without the renderer fingerprint; programs without the engine build. */
+interface CookSpecPreparation {
+  readonly version: typeof PREPARATION_SPEC
+  readonly inputHash: string
+  readonly packs: 'fence' | 'whole'
+  readonly fence: readonly string[]
+  readonly programs: SpecPrograms
 }
 const natural = pipe(number(), safeInteger(), minValue(ZERO))
 const shader = pipe(array(natural), maxLength(MAX_LINES))
@@ -59,14 +88,14 @@ const lines = pipe(array(line), maxLength(MAX_LINES))
 const shaders = pipe(array(shader), maxLength(MAX_SHADERS))
 const build = pipe(string(), minLength(ONE), maxLength(MAX_BUILD))
 
-function programSourceValid(row: EntryPrograms): boolean {
+function programSourceValid(row: AnyPrograms): boolean {
   let size = ZERO
   for (const text of row.lines) {
     size += text.length
   }
   return size <= MAX_TEXT
 }
-function programLinesValid(row: EntryPrograms): boolean {
+function programLinesValid(row: AnyPrograms): boolean {
   for (const source of row.shaders) {
     for (const index of source) {
       if (index >= row.lines.length) {
@@ -76,7 +105,7 @@ function programLinesValid(row: EntryPrograms): boolean {
   }
   return true
 }
-function programPairsValid(row: EntryPrograms): boolean {
+function programPairsValid(row: AnyPrograms): boolean {
   const seen = new Set<string>()
   for (const pair of row.programs) {
     if (
@@ -97,12 +126,41 @@ const programRows: GenericSchema<unknown, EntryPrograms> = strictObject({
   shaders,
   programs,
 })
-const EntryProgramsSchema: GenericSchema<unknown, EntryPrograms> = pipe(
-  programRows,
-  check(programSourceValid, 'Program source exceeds cap'),
-  check(programLinesValid, 'Program line index is out of range'),
-  check(programPairsValid, 'Invalid or duplicate program pair'),
-)
+const specProgramRows: GenericSchema<unknown, SpecPrograms> = strictObject({
+  version: literal(SPEC_PROGRAM_VERSION),
+  lines,
+  shaders,
+  programs,
+})
+function programChecks<Row extends AnyPrograms>(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- a valibot schema, only piped
+  rows: GenericSchema<unknown, Row>,
+): GenericSchema<unknown, Row> {
+  return pipe(
+    rows,
+    check(
+      (row: Row): boolean => programSourceValid(row),
+      'Program source exceeds cap',
+    ),
+    check(
+      (row: Row): boolean => programLinesValid(row),
+      'Program line index is out of range',
+    ),
+    check(
+      (row: Row): boolean => programPairsValid(row),
+      'Invalid or duplicate program pair',
+    ),
+  )
+}
+const EntryProgramsSchema: GenericSchema<unknown, EntryPrograms> =
+  programChecks(programRows)
+const SpecProgramsSchema: GenericSchema<unknown, SpecPrograms> =
+  programChecks(specProgramRows)
+/** The programs mount at either spec, by its `version`. */
+const AnyProgramsSchema: GenericSchema<unknown, AnyPrograms> = union([
+  EntryProgramsSchema,
+  SpecProgramsSchema,
+])
 const hash = pipe(string(), regex(HASH))
 const fenceRows: GenericSchema<unknown, readonly string[]> = pipe(
   array(hash),
@@ -127,6 +185,20 @@ const CookPreparationSchema: GenericSchema<unknown, CookPreparation> & {
   fence,
   programs: EntryProgramsSchema,
 })
+const CookSpecPreparationSchema: GenericSchema<unknown, CookSpecPreparation> & {
+  readonly entries: {
+    readonly [Key in keyof CookSpecPreparation]: GenericSchema<
+      unknown,
+      CookSpecPreparation[Key]
+    >
+  }
+} = strictObject({
+  version: literal(PREPARATION_SPEC),
+  inputHash: hash,
+  packs: picklist(['fence', 'whole']),
+  fence,
+  programs: SpecProgramsSchema,
+})
 /** Omit only the pointer to preparation itself; all other transport/host inputs remain bound. */
 type Frozen<Value> = Value extends object
   ? { readonly [Key in keyof Value]: Frozen<Value[Key]> }
@@ -148,57 +220,6 @@ function cookPreparationBytes(
     ...(renderer === undefined ? {} : { renderer }),
   })
 }
-/** Shared by admission and the cook. Legacy sdk 0.2 is an explicit migration boundary. */
-function fenceValid(
-  index: Frozen<OutputIndex>,
-  lists: Readonly<{
-    fence: readonly string[]
-    mounts: readonly Readonly<{ hash: string }>[]
-  }>,
-  fix: string,
-): void {
-  const known = new Set<string>()
-  for (const file of index.files) {
-    known.add(file.hash)
-  }
-  for (const mount of lists.mounts) {
-    known.add(mount.hash)
-  }
-  for (const row of lists.fence) {
-    if (!known.has(row) && !index.requires.commons.includes(row)) {
-      throw new Error(`stale fence preparation: run ${fix}`)
-    }
-  }
-}
-function programMountValid(
-  index: Frozen<OutputIndex>,
-  cook: {
-    readonly programs?: EntryPrograms
-    readonly mounts: readonly Readonly<{ url: string; hash: string }>[]
-  },
-  digest: (bytes: Readonly<Uint8Array>) => string,
-): void {
-  const url = `/programs/${index.identity.slug}.json`
-  const mount = cook.mounts.find(
-    (row: Readonly<{ url: string; hash: string }>): boolean => row.url === url,
-  )
-  if (
-    cook.programs === undefined ||
-    mount?.hash !== digest(validationSourceBytes(cook.programs))
-  ) {
-    throw new Error(
-      `stale GLSL program mount: run wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`,
-    )
-  }
-}
-function failureOf(run: () => void): string | undefined {
-  try {
-    run()
-    return undefined
-  } catch (error: unknown) {
-    return error instanceof Error ? error.message : String(error)
-  }
-}
 function requireCookPreparation(
   index: Frozen<OutputIndex>,
   cook:
@@ -213,18 +234,15 @@ function requireCookPreparation(
         inputHash?: string
         renderer?: string
         fence?: readonly string[]
-        programs?: EntryPrograms
+        programs?: AnyPrograms
         packs?: 'fence' | 'whole'
       }>
     | undefined,
   digest: (bytes: Readonly<Uint8Array>) => string,
 ): void {
   const fix = `wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`
-  if (index.sdk === '0.2' && cook?.version !== VERSION) {
+  if (!preparationMarked(index, cook?.version, fix) || cook === undefined) {
     return
-  }
-  if (cook?.version !== VERSION) {
-    throw new Error(`Missing cook preparation: run ${fix}`)
   }
   // SHARD-COMPAT PR5 (J487): every failing prepared part is named, not the first.
   const failures = [
@@ -243,15 +261,31 @@ function requireCookPreparation(
     throw new Error(failures.join('; '))
   }
 }
-function readEntryPrograms(input: unknown): EntryPrograms {
-  return parse(EntryProgramsSchema, input)
+/** Whether a `cook.json` is prepared, at any spec this package reads (PR4). */
+function isPreparedCook(
+  cook: Readonly<{ version: number }> | undefined,
+): boolean {
+  return preparationMarked({ sdk: '0.2' }, cook?.version, '')
 }
-export type { EntryPrograms, CookPreparation }
+function readEntryPrograms(input: unknown): AnyPrograms {
+  return parse(AnyProgramsSchema, input)
+}
+export type {
+  AnyPrograms,
+  EntryPrograms,
+  SpecPrograms,
+  CookPreparation,
+  CookSpecPreparation,
+}
 export {
   CookPreparationSchema,
+  CookSpecPreparationSchema,
   EntryProgramsSchema,
+  SpecProgramsSchema,
+  AnyProgramsSchema,
   cookPreparationBytes,
   requireCookPreparation,
   readEntryPrograms,
+  isPreparedCook,
   MAX_COOK_BYTES,
 }

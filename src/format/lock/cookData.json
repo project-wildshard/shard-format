@@ -21,7 +21,7 @@
   "./cookData#CookDataSchema|1.mounts": {"ref":"./cookData#CookDataSchema|0.mounts"},
   "./cookData#CookDataSchema|1.packs": {"type":"picklist","expects":"(\"fence\" | \"whole\")"},
   "./cookData#CookDataSchema|1.packs|": ["fence","whole"],
-  "./cookData#CookDataSchema|1.programs": {"type":"strict_object","expects":"Object","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:56752283f989cfe0"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:d7b34837273a7f11"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:ba676d6847a45b61"}]},
+  "./cookData#CookDataSchema|1.programs": {"type":"strict_object","expects":"Object","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:1b276a57e0923aff"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:70d5ee445718fdda"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:0af83d19ca662d37"}]},
   "./cookData#CookDataSchema|1.programs.build": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"min_length","expects":">=1","requirement":1},{"kind":"validation","type":"max_length","expects":"<=160","requirement":160}]},
   "./cookData#CookDataSchema|1.programs.lines": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=32768","requirement":32768}]},
   "./cookData#CookDataSchema|1.programs.lines[]": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"max_length","expects":"<=2097152","requirement":2097152}]},
@@ -41,5 +41,17 @@
   "./cookData#CookDataSchema|2.packs": {"ref":"./cookData#CookDataSchema|1.packs"},
   "./cookData#CookDataSchema|2.programs": {"ref":"./cookData#CookDataSchema|1.programs"},
   "./cookData#CookDataSchema|2.renderer": {"ref":"./cookData#CookDataSchema|1.fence[]"},
-  "./cookData#CookDataSchema|2.version": {"type":"literal","expects":"3","literal":3}
+  "./cookData#CookDataSchema|2.version": {"type":"literal","expects":"3","literal":3},
+  "./cookData#CookDataSchema|3": {"type":"strict_object","expects":"Object"},
+  "./cookData#CookDataSchema|3.fence": {"ref":"./cookData#CookDataSchema|1.fence"},
+  "./cookData#CookDataSchema|3.inputHash": {"ref":"./cookData#CookDataSchema|1.fence[]"},
+  "./cookData#CookDataSchema|3.mounts": {"ref":"./cookData#CookDataSchema|0.mounts"},
+  "./cookData#CookDataSchema|3.packs": {"type":"picklist","expects":"(\"fence\" | \"whole\")"},
+  "./cookData#CookDataSchema|3.packs|": ["fence","whole"],
+  "./cookData#CookDataSchema|3.programs": {"type":"strict_object","expects":"Object","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:1b276a57e0923aff"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:70d5ee445718fdda"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:0af83d19ca662d37"}]},
+  "./cookData#CookDataSchema|3.programs.lines": {"ref":"./cookData#CookDataSchema|1.programs.lines"},
+  "./cookData#CookDataSchema|3.programs.programs": {"ref":"./cookData#CookDataSchema|1.programs.programs"},
+  "./cookData#CookDataSchema|3.programs.shaders": {"ref":"./cookData#CookDataSchema|1.programs.shaders"},
+  "./cookData#CookDataSchema|3.programs.version": {"type":"literal","expects":"3","literal":3},
+  "./cookData#CookDataSchema|3.version": {"type":"literal","expects":"4","literal":4}
 }

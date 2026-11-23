@@ -1,5 +1,6 @@
 import { platformFileFamily } from './platformFileFamilies.ts';
 import { MAX_COOK_BYTES } from './cook-preparation.ts';
+import { PREPARATION_SPECS, preparationSpecOf } from './preparation-spec.ts';
 import type { Ktx2DeviceCosts } from './ktx2Cost.ts';
 import { AdmissionLateSchema, lateLibraryRootsValid, type AdmissionLate } from './admissionLate.ts';
 import { AdmissionServerSchema, serverFilesExclusive, type AdmissionServer } from './admissionServer.ts';
@@ -15,9 +16,10 @@ import { ClientPlanRuntimeSchema } from './runtime.ts';
 import { RuntimeSpawnsSchema } from './runtimeSpawns.ts';
 import { RowsSchema } from './rows.ts';
 import { ShardHashSchema, ShardNaturalSchema, IdentitySchema, RequiresSchema, FilesSchema, type ShardIdentityInput, type ShardRequiresInput, type ShardReferencesInput, type ShardIdentity, type ShardRequires, type ShardReferences } from './shardSections.ts';
-import { LEGACY_LAYOUT } from './version.ts';
+import { LEGACY_LAYOUT, writesPreparationMarker } from './version.ts';
 import { IndexFormatVersionSchema, LegacyIndexVersionSchema } from './index-format-version.ts';
 import type { IndexFormatVersion, LegacyIndexVersion } from './version.ts';
+import type { PreparationSpec } from './preparation-spec.ts';
 import { isJsonData, isJsonDataWithFileSchemas } from './json.ts';
 import { clientOwnershipRules } from './clientOwnership.ts';
 import { PLATFORM_DATA_SECTIONS } from './platformDataSections.ts';
@@ -42,7 +44,12 @@ export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputInde
   format: v.literal('wildshard.shardfile'),
   /** SHARD-COMPAT CP14 (FP25): the format version itself from 0.1.0.2; the legacy envelope carries the frozen layout marker
    * `2` here and its version in `version`. `checkIndexEnvelope` holds each envelope to its own fields. */
-  formatVersion: IndexFormatVersionSchema, sdk: v.picklist(['0.2', '0.3']), version: LegacyIndexVersionSchema,
+  formatVersion: IndexFormatVersionSchema, version: LegacyIndexVersionSchema,
+  /** The legacy preparation marker (`'0.2'` built, `'0.3'` prepared) up to format 0.1.0.2; 0.1.0.3 drops it (PR4). */
+  sdk: v.exactOptional(v.picklist(['0.2', '0.3'])),
+  /** SHARD-COMPAT PR4 (J487): from format 0.1.0.3, the preparation spec version a prepared file was made to, owned by
+   * this package (`cook.json`'s `version`); absent on an unprepared file. It names no engine release. */
+  preparation: v.exactOptional(v.picklist(PREPARATION_SPECS)),
   identity: IdentitySchema, build: v.strictObject({ sourceHash: ShardHashSchema, validator: v.pipe(v.string(), v.minLength(1), v.maxLength(160)) }), requires: RequiresSchema,
   admission: v.strictObject({ budgets: ShardfileFieldSchemas.budgets, serverBudget: ShardfileFieldSchemas.serverBudget, authorCaps: ShardfileFieldSchemas.authorCaps, critical: ShardfileFieldSchemas.critical, library: ShardfileFieldSchemas.library, late: v.exactOptional(AdmissionLateSchema), server: v.exactOptional(AdmissionServerSchema), audioWaiver: v.exactOptional(AudioWaiverSchema) }),
   sections: v.pipe(v.array(section), v.maxLength(256)), schemas: emptySchemas,
@@ -83,9 +90,21 @@ function legacyIndexFields(index: OutputIndex): readonly string[] {
     index.runtime === null || !Object.hasOwn(index.runtime, 'trust') ? undefined : 'runtime.trust',
   ].filter((field): field is string => field !== undefined);
 }
+/** PR4: 0.1.0.3 on records `preparation` and drops `sdk`; below it `sdk` is required and `preparation` unknown. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot output, only read
+function checkPreparationMarker(index: OutputIndex): void {
+  const version = index.formatVersion === LEGACY_LAYOUT ? undefined : index.formatVersion;
+  if (version !== undefined && writesPreparationMarker(version)) {
+    if (index.sdk !== undefined) { throw new Error(`Format ${version} drops sdk; it records preparation (shard.json)`); }
+    return;
+  }
+  if (index.sdk === undefined) { throw new Error(`Format ${version ?? index.version ?? 'legacy'} needs sdk (shard.json)`); }
+  if (index.preparation !== undefined) { throw new Error(`Format ${version ?? index.version ?? 'legacy'} has no preparation field; it records sdk (shard.json)`); }
+}
 /** Hold each envelope to its own fields: the legacy one keeps every field its readers require, 0.1.0.2 carries none. */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot output, only read
 function checkIndexEnvelope(index: OutputIndex): void {
+  checkPreparationMarker(index);
   const carried = legacyIndexFields(index);
   if (index.formatVersion !== LEGACY_LAYOUT) {
     if (carried.length > 0) {
@@ -102,8 +121,9 @@ function checkIndexEnvelope(index: OutputIndex): void {
 function parseOutputIndexRows(input: unknown): OutputIndex {
   const index = v.parse(OutputIndexSchema, input);
   checkIndexEnvelope(index);
-  if (index.sdk === '0.3' && index.cook === undefined) { throw new Error(`Missing cook preparation: run wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`); }
-  if (index.sdk === '0.3' && index.cook !== undefined && index.cook.bytes > MAX_COOK_BYTES) { throw new Error('Cook preparation exceeds byte cap'); }
+  const prepared = preparationSpecOf(index) !== undefined;
+  if (prepared && index.cook === undefined) { throw new Error(`Missing cook preparation: run wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`); }
+  if (prepared && index.cook !== undefined && index.cook.bytes > MAX_COOK_BYTES) { throw new Error('Cook preparation exceeds byte cap'); }
   const paths = new Set(['shard.json', 'validation.json']), names = new Set<string>();
   if (index.ktx2Costs !== undefined) {
     const textures = new Map(index.files.filter(row=>row.kind==='ktx2' && row.commons!==true).map(row=>[row.hash,row]));
@@ -198,7 +218,8 @@ export function assembleOutputShardfile(input: unknown, sections: ReadonlyMap<st
 interface OutputIndexRowsInputFields {
     format: "wildshard.shardfile";
     formatVersion: typeof LEGACY_LAYOUT | IndexFormatVersion;
-    sdk: "0.2" | "0.3";
+    sdk?: "0.2" | "0.3";
+    preparation?: PreparationSpec;
     version?: LegacyIndexVersion;
     identity: ShardIdentityInput;
     build: {
@@ -296,7 +317,8 @@ export type OutputIndexRowsInput = { [Key in keyof OutputIndexRowsInputFields]: 
 interface OutputIndexRowsFields {
     format: "wildshard.shardfile";
     formatVersion: typeof LEGACY_LAYOUT | IndexFormatVersion;
-    sdk: "0.2" | "0.3";
+    sdk?: "0.2" | "0.3";
+    preparation?: PreparationSpec;
     version?: LegacyIndexVersion;
     identity: ShardIdentity;
     build: {

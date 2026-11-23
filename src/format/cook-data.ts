@@ -13,9 +13,15 @@ import {
   string,
 } from 'valibot'
 
-import { CookPreparationSchema } from './cook-preparation.ts'
+import {
+  CookPreparationSchema,
+  CookSpecPreparationSchema,
+} from './cook-preparation.ts'
 
-import type { CookPreparation } from './cook-preparation.ts'
+import type {
+  CookPreparation,
+  CookSpecPreparation,
+} from './cook-preparation.ts'
 import type { GenericSchema } from 'valibot'
 
 // C0 (J137, D5): what makes a shardfile stand alone, in one file beside
@@ -104,6 +110,11 @@ const PreparedCookDataSchema = strictObject({
   ...CookPreparationSchema.entries,
   mounts: mountRows,
 })
+/** SHARD-COMPAT PR4: preparation spec 4, which names no engine. */
+const SpecCookDataSchema = strictObject({
+  ...CookSpecPreparationSchema.entries,
+  mounts: mountRows,
+})
 const PREVIOUS_COOK_VERSION = 2
 const PreviousCookDataSchema = strictObject({
   version: literal(PREVIOUS_COOK_VERSION),
@@ -123,11 +134,19 @@ interface PreviousCookData extends Omit<
 interface PreparedCookData extends CookPreparation {
   readonly mounts: readonly CookMount[]
 }
-type CookData = LegacyCookData | PreviousCookData | PreparedCookData
+interface SpecCookData extends CookSpecPreparation {
+  readonly mounts: readonly CookMount[]
+}
+type CookData =
+  | LegacyCookData
+  | PreviousCookData
+  | PreparedCookData
+  | SpecCookData
 const CookDataSchema: GenericSchema<unknown, CookData> = variant('version', [
   LegacyCookDataSchema,
   PreviousCookDataSchema,
   PreparedCookDataSchema,
+  SpecCookDataSchema,
 ])
 
 /** Where a mount's bytes sit in a product. */

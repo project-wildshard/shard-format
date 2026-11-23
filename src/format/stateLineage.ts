@@ -18,7 +18,9 @@ const measured = { path, hash: v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/u)),
   bytes: v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(Number.MAX_SAFE_INTEGER)) };
 const lineageSchemas = v.exactOptional(v.pipe(v.array(v.strictObject(measured)), v.maxLength(128)));
 // SHARD-COMPAT CP14: either envelope; 0.1.0.2 names its format in formatVersion and drops version and schemas.
-const inventory = v.object({ format: v.literal('wildshard.shardfile'), formatVersion: IndexFormatVersionSchema, sdk: v.picklist(['0.2', '0.3']),
+const inventory = v.object({ format: v.literal('wildshard.shardfile'), formatVersion: IndexFormatVersionSchema,
+  // SHARD-COMPAT PR4: 0.1.0.3 drops `sdk` for `preparation`; the lineage reader needs neither.
+  sdk: v.exactOptional(v.picklist(['0.2', '0.3'])), preparation: v.exactOptional(v.unknown()),
   version: LegacyIndexVersionSchema, identity,
   sections: v.pipe(v.array(v.strictObject({ ...measured, name: v.pipe(v.string(), v.regex(/^[a-z][a-zA-Z0-9-]*\/[a-zA-Z][a-zA-Z0-9_-]*$/u)),
     schema: v.pipe(v.string(), v.maxLength(240)) })), v.maxLength(256)),
