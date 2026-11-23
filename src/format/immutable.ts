@@ -29,7 +29,9 @@ function canonical(input: unknown): unknown {
     return input.map((item: unknown): unknown => canonical(item))
   }
   if (typeof input === 'object' && input !== null) {
-    const entries = Object.entries(input).toSorted(byKey)
+    // Object.entries already creates a fresh array. The Node author entry also
+    // gets typechecked from consumers that use the ES2022 library.
+    const entries = Object.entries(input).sort(byKey)
     return Object.fromEntries(
       entries.map(
         ([key, value]: readonly [string, unknown]): [string, unknown] => [
