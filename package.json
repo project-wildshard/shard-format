@@ -132,6 +132,7 @@
     "./discoveryValues": "./src/format/discoveryValues.ts",
     "./easedFields": "./src/format/easedFields.ts",
     "./edgeProfiles": "./src/format/edgeProfiles.ts",
+    "./edgeObservations": "./src/format/edge-observations.ts",
     "./eliteContinuation": "./src/format/eliteContinuation.ts",
     "./eliteEntryRows": "./src/format/eliteEntryRows.ts",
     "./eliteFeature": "./src/format/eliteFeature.ts",
