@@ -5,3 +5,5 @@ SHARD-COMPAT PR6a: the creature rest rig and skin bounds move from engine to for
 PR6d: engine's serverReadsFile rule (bin, json, wasm, and the terrain's tile) moves to format's serverReads subpath.
 
 PR6c: engine's declaredPlayArea (manifest bounds under player.enter and world.runtime-hooks) moves to format's playArea subpath; it takes the plan's feature rows, not a folder.
+
+PR6b: engine's vehicleHulls (steer vehicles' panel boxes turned into the vehicle's frame, three.js quaternion steps ported term for term; 2000 random vehicles match engine bit for bit, -0 included) and treadBoxes move to format.

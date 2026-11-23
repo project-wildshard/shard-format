@@ -165,6 +165,8 @@
     "./creatureSkinBounds": "./src/format/creature-skin-bounds.ts",
     "./playArea": "./src/format/play-area.ts",
     "./serverReads": "./src/format/server-reads.ts",
+    "./treadBoxes": "./src/format/tread-boxes.ts",
+    "./vehicleHulls": "./src/format/vehicle-hulls.ts",
     "./glbBuffers": "./src/format/glbBuffers.ts",
     "./glbCost": "./src/format/glbCost.ts",
     "./glbImages": "./src/format/glbImages.ts",
