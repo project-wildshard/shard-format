@@ -675,8 +675,6 @@
    "import(exports-last)": 5,
    "import(group-exports)": 6,
    "import(no-namespace)": 1,
-   "typescript(explicit-function-return-type)": 2,
-   "typescript(prefer-readonly-parameter-types)": 1,
    "unicorn(filename-case)": 1,
    "unicorn(max-nested-calls)": 17,
    "unicorn(numeric-separators-style)": 1
@@ -5159,7 +5157,6 @@
   "src/format/clientPlan.ts",
   "src/format/clientScripts.ts",
   "src/format/clientState.ts",
-  "src/format/clientTrails.ts",
   "src/format/collectionDisplay.ts",
   "src/format/colourFunction.ts",
   "src/format/colourLut.ts",

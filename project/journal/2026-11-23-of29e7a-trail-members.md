@@ -8,3 +8,6 @@ the sim. Instead a trail row may name its `members` (declared spawn ids, 1 to 25
 two. This widens the schema: every admitted row still admits, so `breaks/0.1.0.4.json` names both lock paths as
 `noFileChange`. `client-trails-members.test.ts` proves the either-or. The engine half (OF29e7b) draws a members trail from
 the page's bodies by id; Sky Reach then names its rays and drops its row (OF29e7c).
+
+The first push left `clientTrails.ts` over the lint ratchet (the either-or and id checks as untyped arrows). The fix types both
+checks as named readonly functions, formats the file, and lowers its ratchet rows.

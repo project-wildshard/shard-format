@@ -1,6 +1,6 @@
 // ONE-FORMAT OF29e7a: a trail row names the declared spawns it follows (`members`) in place of a page population's group,
 // so Sky Reach's ray wake needs no `population.homes` row to say which bodies are the rays. Exactly one of the two.
-import * as v from 'valibot'
+import { safeParse } from 'valibot'
 import { expect, test } from 'vitest'
 
 import { ClientTrailsSchema } from './clientTrails.ts'
@@ -18,7 +18,7 @@ const ROW = {
 }
 /** Whether one trail row with `fields` admits. */
 function admits(fields: Readonly<Record<string, unknown>>): boolean {
-  return v.safeParse(ClientTrailsSchema, {
+  return safeParse(ClientTrailsSchema, {
     kind: 'fx.trail',
     rows: [{ ...ROW, ...fields }],
   }).success

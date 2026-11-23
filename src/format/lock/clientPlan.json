@@ -924,7 +924,7 @@
   "./clientPlan#ClientFeatureSchema|53": {"ref":"./clientNative#ClientPopulationSchema"},
   "./clientPlan#ClientFeatureSchema|54": {"type":"strict_object","expects":"Object"},
   "./clientPlan#ClientFeatureSchema|54.kind": {"type":"literal","expects":"\"fx.trail\"","literal":"fx.trail"},
-  "./clientPlan#ClientFeatureSchema|54.rows": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64},{"kind":"validation","type":"check","expects":null,"requirement":"fn:729823164aeb1e74"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:55f719af22ef245d"}]},
+  "./clientPlan#ClientFeatureSchema|54.rows": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64},{"kind":"validation","type":"check","expects":null,"requirement":"fn:623ca2a5e6a3c1f0"},{"kind":"validation","type":"check","expects":null,"requirement":"fn:c8016f4d4c82c3f8"}]},
   "./clientPlan#ClientFeatureSchema|54.rows[]": {"type":"strict_object","expects":"Object"},
   "./clientPlan#ClientFeatureSchema|54.rows[].every": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0.001","requirement":0.001}]},
   "./clientPlan#ClientFeatureSchema|54.rows[].group": {"type":"exact_optional","expects":"string"},
