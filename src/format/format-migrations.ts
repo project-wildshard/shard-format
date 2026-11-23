@@ -40,9 +40,6 @@ interface FormatMigration {
   readonly repairs?: (shard: Readonly<MigratingShard>) => boolean
 }
 
-/** FE11: called after each step with the shard as that step left it (the per-step goldens). */
-type StepHook = (id: string, shard: Readonly<MigratingShard>) => void
-
 const TWO_PART = 2
 const ZERO = 0
 const ONE = 1
@@ -131,6 +128,5 @@ export {
   checkMigrations,
   type FormatMigration,
   type MigratingShard,
-  type StepHook,
   versionBelow,
 }
