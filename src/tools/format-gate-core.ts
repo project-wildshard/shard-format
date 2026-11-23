@@ -1,7 +1,9 @@
 import { array, exactOptional, parse, strictObject, string } from 'valibot'
 
 import { compareShardfileVersions } from '../format/version.ts'
+import { deletionProblem, isDeletion } from './format-delete-gate.ts'
 
+import type { Usage } from '../cli/corpus-usage.ts'
 import type { Change } from '../cli/format-diff-data.ts'
 import type { Report } from '../cli/format-diff.ts'
 
@@ -51,6 +53,9 @@ interface GateInput {
   readonly fixture: boolean
   readonly migrations: ReadonlySet<string>
   readonly deprecations: ReadonlySet<string>
+  /** FE13: who uses each deprecated path and chain step (corpus/usage.json), and the clock it is judged by. */
+  readonly usage: Usage | undefined
+  readonly now?: number
 }
 
 interface GateResult {
@@ -71,8 +76,21 @@ function readBreakFile(text: string, version: string): BreakFile {
   return breaks
 }
 
+/** A break or review needs a break-file entry; a deletion answers to FE13 instead. */
 function needsEntry(change: Readonly<Change>): boolean {
-  return change.kind === 'breaking' || change.kind === 'review'
+  return (
+    (change.kind === 'breaking' || change.kind === 'review') &&
+    !isDeletion(change)
+  )
+}
+
+function deletionProblems(input: Readonly<GateInput>): readonly string[] {
+  return input.report.changes
+    .filter((change: Readonly<Change>): boolean => isDeletion(change))
+    .map((change: Readonly<Change>): string | undefined =>
+      deletionProblem(change, input.usage, input.now ?? Date.now()),
+    )
+    .filter((line: string | undefined): line is string => line !== undefined)
 }
 
 /** What is wrong with one change's entry, or nothing. */
@@ -169,6 +187,7 @@ function formatGate(input: Readonly<GateInput>): GateResult {
       )
       .filter((line: string | undefined): line is string => defined(line)),
     ...versionProblems(used, input),
+    ...deletionProblems(input),
   ]
   const counts = `${String(input.report.changes.length)} changes, ${String(needed.length)} breaking or review, ${String(used.length)} named in src/format/breaks/${input.version}.json`
   return {

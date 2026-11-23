@@ -1,9 +1,7 @@
 #!/usr/bin/env node
-import { readFile } from 'node:fs/promises'
 import { parseArgs } from 'node:util'
 
-import { corpusGate, readKnownFailures } from './corpus-gate.ts'
-import { corpusReport, runCorpus } from './corpus.ts'
+import { corpusCommand } from './corpus-command.ts'
 import { readLock } from './format-diff-lock.ts'
 import { formatDiffReport } from './format-diff-report.ts'
 import { formatDiff } from './format-diff.ts'
@@ -22,7 +20,6 @@ const JSON_INDENT = 1
 const FIRST_CLI_ARG = 2
 const DEFAULT_API = 'https://api.wildshard.io'
 const DEFAULT_CACHE = 'tmp/corpus'
-const KNOWN_FAILURES = 'corpus/known-failures.json'
 
 const USAGE = `Usage: shard-format <command> [options]
 
@@ -34,10 +31,11 @@ Commands:
                        Tar a folder into a shardfile: what its sections
                        measure follows them, and format's validator must
                        pass. Writes <slug>.tar by default
-  corpus [--api <url>] [--cache <dir>]
+  corpus [--api <url>] [--cache <dir>] [--usage <file>]
                        Validate every stored shard file the API keeps,
                        as stored originals; list every failure. Exits 3
-                       when any fails
+                       when any fails. --usage writes who uses each
+                       deprecated path and chain step (FE13 reads it)
   format-diff <a> <b> [--json]
                        Classify every change between two format locks
                        (a git ref or a folder holding src/format/lock):
@@ -58,6 +56,7 @@ interface CliArgs {
   readonly cache: string
   readonly version: boolean
   readonly json: boolean
+  readonly usage: string | undefined
 }
 
 function parseCliArgs(argv: readonly string[]): CliArgs {
@@ -71,6 +70,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
       cache: { type: 'string', default: DEFAULT_CACHE },
       version: { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
+      usage: { type: 'string' },
     },
   })
   const [command, ...operands] = positionals
@@ -83,6 +83,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     cache: values.cache,
     version: values.version,
     json: values.json,
+    usage: values.usage,
   }
 }
 
@@ -141,28 +142,6 @@ async function pack(args: CliArgs): Promise<number> {
   return await packReport(dir, args.out)
 }
 
-async function corpus(args: CliArgs): Promise<number> {
-  if (args.operands.length > NONE) {
-    process.stderr.write(`shard-format: corpus takes no operands\n\n${USAGE}`)
-    return EXIT_USAGE
-  }
-  const rows = await runCorpus({
-    api: args.api,
-    cache: args.cache,
-    validator: await readVersion(),
-  })
-  process.stdout.write(`${corpusReport(rows)}\n`)
-  // SHARD-COMPAT FE5: only a failure not listed with its owner blocks a release.
-  const listed = await readFile(KNOWN_FAILURES, 'utf8').catch(
-    (): string => '[]',
-  )
-  const gate = corpusGate(rows, readKnownFailures(listed))
-  if (gate.lines.length > NONE) {
-    process.stdout.write(`${gate.lines.join('\n')}\n`)
-  }
-  return gate.blocking.length > NONE ? EXIT_INVALID : EXIT_OK
-}
-
 async function formatDiffCommand(args: CliArgs): Promise<number> {
   const [before, after, ...extra] = args.operands
   if (before === undefined || after === undefined || extra.length > NONE) {
@@ -186,7 +165,13 @@ const COMMANDS: Readonly<Record<string, (args: CliArgs) => Promise<number>>> = {
   validate: async (args: CliArgs): Promise<number> =>
     await validate(args.operands),
   pack,
-  corpus,
+  corpus: async (args: CliArgs): Promise<number> => {
+    if (args.operands.length > NONE) {
+      process.stderr.write(`shard-format: corpus takes no operands\n\n${USAGE}`)
+      return EXIT_USAGE
+    }
+    return await corpusCommand(args)
+  },
   'format-diff': formatDiffCommand,
 }
 

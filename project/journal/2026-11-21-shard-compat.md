@@ -89,3 +89,13 @@ tag's and a `corpus/format-versions/<version>/` fixture. Additive and
 deprecation changes pass. First run against v0.69.1: the two CP10 re-arm
 rows (ARMED_ZONES, memory-armed.json), named noFileChange in
 breaks/0.1.0.2.json. About 5 s.
+
+## FE13: the delete gate, kept-originals half (opus-compat-w3)
+
+The lock now carries FE8's chain steps (`./format-chain#<id>`) beside
+FE7's deprecations, so FE2 sees a deleted step or deprecation as
+`deletes ... (FE13 gate)`. The format gate refuses such a deletion unless
+`corpus/usage.json` (`pnpm corpus:usage`, which is `shard-format corpus
+--usage`) is under 24 hours old and lists no kept original using it; it
+names the users otherwise. A deletion needs no break-file entry. Left: the
+shard repo pins half (a repo pinned to an SDK that still writes the part).

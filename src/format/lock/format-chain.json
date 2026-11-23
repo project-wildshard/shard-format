@@ -1,0 +1,8 @@
+{
+  "./format-chain#cp14-format-version": {"affects":[],"to":"0.1.0.2","touches":"data"},
+  "./format-chain#fp3-drop-runtime-trust": {"affects":[],"to":"0.1.0.1","touches":"data"},
+  "./format-chain#fp4-drop-empty-index-fields": {"affects":[],"to":"0.1.0.2","touches":"data"},
+  "./format-chain#fp6-four-part-version": {"affects":[],"to":"0.1.0.0","touches":"data"},
+  "./format-chain#fp8-shardfile-pointer": {"affects":[],"to":"0.1.0.1","touches":"data"},
+  "./format-chain#journal-glyph-images": {"affects":[],"to":"0.1.0.1","touches":"data"}
+}

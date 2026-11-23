@@ -38,6 +38,7 @@ function input(
     fixture: false,
     migrations: new Set(['drop-shard-tag']),
     deprecations: new Set(['shard.tag']),
+    usage: undefined,
     ...extra,
   }
 }

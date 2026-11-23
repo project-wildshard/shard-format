@@ -4,10 +4,12 @@ import { argv, stderr, stdout } from 'node:process'
 import { pathToFileURL } from 'node:url'
 
 import { DEPRECATIONS } from '../format/deprecations.ts'
+import { FORMAT_MIGRATIONS } from '../format/format-migrations.ts'
 import { chainIdOf, LockWalk } from './format-lock-core.ts'
 import { byKey, isRecord } from './format-lock-data.ts'
 
 import type { Deprecation } from '../format/deprecations.ts'
+import type { FormatMigration } from '../format/format-migrations.ts'
 import type { Excluded, Loaded } from './format-lock-core.ts'
 import type { Json, Rows } from './format-lock-data.ts'
 
@@ -23,6 +25,7 @@ const LOCK = path.join(ROOT, 'src/format/lock')
 const INDEX = 'index.json'
 // Not a package export: the lock adds FE7's table under this name.
 const DEPRECATIONS_SUBPATH = './deprecations'
+const CHAIN_SUBPATH = './format-chain'
 const CHAIN =
   /^(?:format-migrat|format-migrations|migrations|validationReceipt|canonical)/u
 const EXIT_OK = 0
@@ -133,6 +136,17 @@ function deprecationRows(): Loaded {
   return { module: Object.fromEntries(rows) }
 }
 
+/** FE8's chain steps, one row per id (what each writes), so FE13 sees a deleted step. */
+function chainRows(): Loaded {
+  const rows = FORMAT_MIGRATIONS.map(
+    (step: Readonly<FormatMigration>): readonly [string, unknown] => [
+      step.id,
+      { to: step.to, touches: step.touches, affects: [...step.affects] },
+    ],
+  )
+  return { module: Object.fromEntries(rows) }
+}
+
 /** The lock as the code stands. */
 async function lockNow(): Promise<Lock> {
   const walk = new LockWalk()
@@ -141,6 +155,7 @@ async function lockNow(): Promise<Lock> {
     walk.add(subpath, await load(target))
   }
   walk.add(DEPRECATIONS_SUBPATH, deprecationRows())
+  walk.add(CHAIN_SUBPATH, chainRows())
   return {
     chainId: chainIdOf(await chainSources()),
     rows: walk.rows,
