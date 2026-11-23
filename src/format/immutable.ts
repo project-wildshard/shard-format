@@ -31,6 +31,7 @@ function canonical(input: unknown): unknown {
   if (typeof input === 'object' && input !== null) {
     // Object.entries already creates a fresh array. The Node author entry also
     // gets typechecked from consumers that use the ES2022 library.
+    // oxlint-disable-next-line unicorn/no-array-sort -- Sort only the fresh entries array.
     const entries = Object.entries(input).sort(byKey)
     return Object.fromEntries(
       entries.map(
