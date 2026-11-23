@@ -76,7 +76,7 @@ export function parseLootEconomy(input: unknown): LootEconomy {
 }
 
 /** Barter admission keeps cards and transactions in one order, without coin-only ownership fields. */
-export const BarterEconomySchema: v.GenericSchema<BarterEconomyInput, BarterEconomy> = v.pipe(v.strictObject({ kind: v.literal('barter'),
+export const BarterEconomySchema: v.GenericSchema<BarterEconomyInput, BarterEconomy> = v.pipe(v.strictObject({ kind: v.literal('barter'), currency: v.exactOptional(currency),
   goods: v.pipe(v.array(v.strictObject({ id: key, name: text, does: text,
     icon: v.picklist(['bolt', 'rifle', 'longbow', 'crossbow']), price: count, tile: text })), v.minLength(1), v.maxLength(64)),
   exchange: ExchangeSchema, tables: LootTablesSchema,
@@ -215,6 +215,8 @@ interface LootEconomyFields {
 export type LootEconomy = { [Key in keyof LootEconomyFields]: LootEconomyFields[Key] };
 interface BarterEconomyInputFields {
     kind: 'barter';
+    /** FORMAT-PRUNE FP31: a barter shard names its coin too (Pine). */
+    currency?: CurrencyRowsInput;
     goods: ({
         id: string;
         name: string;
@@ -229,6 +231,7 @@ interface BarterEconomyInputFields {
 export type BarterEconomyInput = { [Key in keyof BarterEconomyInputFields]: BarterEconomyInputFields[Key] };
 interface BarterEconomyFields {
     kind: 'barter';
+    currency?: CurrencyRows;
     goods: ({
         id: string;
         name: string;
