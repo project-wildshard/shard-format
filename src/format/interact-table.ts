@@ -33,16 +33,6 @@ import {
  * y comes from the walkable floor there (platforms, else the terrain) unless `y` pins it (absolute) or `dy` lifts it.
  */
 
-/** Frozen compatibility vocabulary: remove with legacy shards (NEXT N5).
- * Live placement rows use QuestPlace and authored frame records instead. */
-export type PoiId =
-  | 'world'
-  | 'hut'
-  | 'lookout'
-  | 'wreck'
-  | 'shrine'
-  | 'cave'
-  | 'pier'
 /** Generic authored placement; `world` selects untransformed coordinates. */
 export interface QuestPlace {
   poi: string
@@ -56,11 +46,6 @@ export interface QuestPlace {
   dy?: number
   /** a model anchor name (`<poi>.<name>`, e.g. `wreck.holdDoor`); used instead of x / z / yaw when the model exports it */
   anchor?: string
-}
-
-/** Frozen compatibility placement: remove with legacy shards (NEXT N5). */
-export interface Place extends QuestPlace {
-  poi: PoiId
 }
 
 /** A borrowed world-space quest anchor; an explicit height bypasses floor lookup. */
@@ -264,7 +249,7 @@ export type ChestItem =
 interface Base {
   /** unique within the table, persisted (flags are named after it) */
   id: string
-  at: Place
+  at: QuestPlace
   /** the E action is refused (the prompt shows `lockedLabel`) until this holds */
   requires?: Cond
   lockedLabel?: string
