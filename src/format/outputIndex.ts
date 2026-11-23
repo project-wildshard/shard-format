@@ -10,6 +10,7 @@ import type { AudioWaiver } from './audio-waiver.ts';
 import { isOutputIndex, outputBlobPath } from './outputAddress.ts';
 import { OUTPUT_SECTIONS, assembleOutputTransport, isPlatformDataSection, type OutputHostSectionName } from './outputFields.ts';
 import * as v from 'valibot';
+import { assertFormatWindow } from './format-window.ts';
 import { assertCellBounds } from './cellBounds.ts';
 import { ShardfileFieldSchemas, parseShardfile, type Shardfile } from './shardSchema.ts';
 import { ClientPlanRuntimeSchema } from './runtime.ts';
@@ -70,6 +71,7 @@ export type OutputPlatformSectionName = OutputHostSectionName | keyof typeof OUT
 /** Parse the supported major and refuse duplicate, escaping or noncanonical inventory paths. */
 export function parseOutputIndex(input: unknown): OutputIndex {
   if (!isJsonDataWithFileSchemas(input)) throw new Error('Output index must contain plain JSON only');
+  assertFormatWindow(input);
   return parseOutputIndexRows(input);
 }
 /** Check plain data before detecting the disk envelope; legacy models return null.

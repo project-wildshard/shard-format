@@ -141,3 +141,11 @@ its JSON after every step in `corpus/format-goldens.json`; `--write`
 rewrites them. `migrateShardfile` takes an `onStep` hook. Covers Pine r5
 and r9, Nalati r4, Driftwood, Dunes, Saltwind and Brasscap. The parity
 half (migrated-old against rebuilt-new) is FE11b.
+
+## CP2a: the format window (opus-compat-w3, 11-22)
+
+`parseOutputIndex` first checks the declared format against the reader:
+above it throws `ShardfileFormatWindowError` (`above: true`, "read once the
+reader updates"), below `SHARDFILE_FLOOR` the same error with
+`above: false` naming the floor. A malformed version still falls to the
+schema. api-server maps it to 409 (retry after the API updates) and 422.
