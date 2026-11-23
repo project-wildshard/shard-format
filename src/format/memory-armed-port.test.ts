@@ -13,7 +13,10 @@ const LISTED = 'brasscap-mesa'
 const UNLISTED = 'fp27b-new-zone'
 const OVER = MEMORY_HARD_BYTES + 1
 
-function accepts(owner: string, armed?: boolean): boolean {
+function accepts(
+  owner: string,
+  armed?: boolean | ReadonlySet<string>,
+): boolean {
   return offlineMemoryAdmission('warn', 'upload', armed).accept({
     stage: 'declared',
     owner,
@@ -55,4 +58,13 @@ test('offline admission and the stored verdict take the armed port', (): void =>
     { slug: UNLISTED, saveRevision: 1, armed: true },
   )
   expect(stale[0]?.severity).toBe('refusal')
+})
+
+test("a host that reads the slug from the file passes the catalogue's armed slugs", (): void => {
+  const catalogue = new Set([UNLISTED])
+  expect(zoneArmed(armedZone(UNLISTED, catalogue))).toBe(true)
+  expect(zoneArmed(armedZone(LISTED, catalogue))).toBe(false)
+  expect(zoneArmed(armedZone(undefined, catalogue))).toBe(false)
+  expect(accepts(UNLISTED, catalogue)).toBe(false)
+  expect(accepts(LISTED, catalogue)).toBe(true)
 })

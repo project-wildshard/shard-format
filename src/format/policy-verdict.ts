@@ -16,7 +16,7 @@ type Judged = 'upload' | 'stored'
  *  the format's own list decides until FP27c removes it). */
 interface JudgedPorts {
   readonly judged?: Judged | undefined
-  readonly armed?: boolean | undefined
+  readonly armed?: boolean | ReadonlySet<string> | undefined
 }
 
 interface PolicyIssue {

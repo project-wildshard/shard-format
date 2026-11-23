@@ -96,7 +96,7 @@ type MemoryContext =
       index?: TierIndex
       judged?: 'upload' | 'stored'
       /** FP27b: the API catalogue's armed state for this shard; absent, the format's own list decides. */
-      armed?: boolean | undefined
+      armed?: boolean | ReadonlySet<string> | undefined
     }>
 
 function memoryContext(context: MemoryContext): Readonly<{
@@ -104,7 +104,7 @@ function memoryContext(context: MemoryContext): Readonly<{
   mountedImages: number
   index?: TierIndex
   judged?: 'upload' | 'stored'
-  armed?: boolean | undefined
+  armed?: boolean | ReadonlySet<string> | undefined
 }> {
   return context instanceof Map
     ? { sections: context, mountedImages: EMPTY_BYTES }

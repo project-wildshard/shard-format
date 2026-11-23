@@ -26,7 +26,7 @@ interface RuntimeTierIssue {
  */
 function runtimeTierIssues(
   source: RuntimeTierSource,
-  armed?: boolean,
+  armed?: boolean | ReadonlySet<string>,
 ): RuntimeTierIssue[] {
   const cost = source.runtime?.cost ?? source.budgets.client
   if (source.runtime === null || cost === undefined) {

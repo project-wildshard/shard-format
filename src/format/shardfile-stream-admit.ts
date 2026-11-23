@@ -63,14 +63,14 @@ function admitBeforeAssets(
   rows: Readonly<{
     scripts: ScriptAdmissionRows
     judged?: Judged | undefined
-    armed?: boolean | undefined
+    armed?: boolean | ReadonlySet<string> | undefined
   }>,
 ): Readonly<{
   admission: AssetAdmission | undefined
   refusal: unknown
   head?: Shardfile | undefined
   judged?: Judged | undefined
-  armed?: boolean | undefined
+  armed?: boolean | ReadonlySet<string> | undefined
 }> {
   const { scripts, judged, armed } = rows
   try {
@@ -102,7 +102,7 @@ function admitAssets(
     refusal: unknown
     head?: Shardfile | undefined
     judged?: Judged | undefined
-    armed?: boolean | undefined
+    armed?: boolean | ReadonlySet<string> | undefined
   }>,
   later: Readonly<AssetPasses>,
   hash: (bytes: Readonly<Uint8Array>) => string,

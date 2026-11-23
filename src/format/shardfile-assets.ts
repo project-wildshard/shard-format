@@ -29,7 +29,7 @@ import type { IssueCodeOf } from './issue-codes.ts';
 import { isNavigationData, navigationCost } from './navigationBytes.ts';
 
 type PerformancePolicy = 'refuse' | 'warn';
-interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex; readonly judged?: Judged; readonly armed?: boolean | undefined }
+interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex; readonly judged?: Judged; readonly armed?: boolean | ReadonlySet<string> | undefined }
 
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
 function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number; index?: TierIndex }>): PerformanceReport['memory'] {
@@ -370,7 +370,7 @@ export function performanceReportLines(report: PerformanceReport): string[] {
 
 /** Offline soft-cap policy and the hard loading ceiling (J445). A stored shard file was judged at its upload (CP10):
  *  no memory line refuses it again. */
-export function offlineMemoryAdmission(_policy: 'warn' | 'refuse', judged: 'upload' | 'stored' = 'upload', armed?: boolean): MemoryAdmission {
+export function offlineMemoryAdmission(_policy: 'warn' | 'refuse', judged: 'upload' | 'stored' = 'upload', armed?: boolean | ReadonlySet<string>): MemoryAdmission {
   // The hard loading ceiling applies to the armed list.
   return new MemoryAdmission((): boolean => true, judged === 'stored'
     ? (): number => Number.POSITIVE_INFINITY

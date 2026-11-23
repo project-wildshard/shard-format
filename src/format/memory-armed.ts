@@ -20,9 +20,20 @@ type ZoneRef =
   | undefined
   | Readonly<{ slug?: string | undefined; armed: boolean }>
 
-/** The zone as a gate takes it: the catalogue's word when admission gave one, else the bare slug. */
-function armedZone(slug: string | undefined, catalogue?: boolean): ZoneRef {
-  return catalogue === undefined ? slug : { slug, armed: catalogue }
+/** The zone as a gate takes it: the catalogue's word when admission gave one (this shard's, or the catalogue's armed
+ *  slugs when the host reads the slug only from the file), else the bare slug. */
+function armedZone(
+  slug: string | undefined,
+  catalogue?: boolean | ReadonlySet<string>,
+): ZoneRef {
+  if (catalogue === undefined) {
+    return slug
+  }
+  const word =
+    typeof catalogue === 'boolean'
+      ? catalogue
+      : slug !== undefined && catalogue.has(slug)
+  return { slug, armed: word }
 }
 
 function slugOf(zone: ZoneRef): string | undefined {

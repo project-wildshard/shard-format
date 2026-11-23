@@ -65,7 +65,7 @@ export interface ShardfileValidationPorts {
   readonly judged?: Judged;
   /** FORMAT-PRUNE FP27b: whether the API catalogue arms this shard (`/api/catalogue` `armed`). Admission passes it; absent,
    *  the format's own armed list decides until FP27c removes it. */
-  readonly armed?: boolean | undefined;
+  readonly armed?: boolean | ReadonlySet<string> | undefined;
   /** D31: hold no file's bytes between checks. `assets`, here and in the result, reads each file again from `files`, so a
    *  host's peak is its largest file rather than the shard, at the cost of those repeat reads. */
   readonly readThrough?: boolean;

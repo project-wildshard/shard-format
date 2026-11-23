@@ -48,7 +48,7 @@ function staleRuntimeIssues(
     slug: string
     saveRevision: number
     /** FP27b: the API catalogue's armed state; absent, the format's own list decides. */
-    armed?: boolean | undefined
+    armed?: boolean | ReadonlySet<string> | undefined
   }>,
 ): StaleRuntimeIssue[] {
   const admitted = staleReadingAdmitted(
