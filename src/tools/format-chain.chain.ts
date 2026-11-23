@@ -54,13 +54,17 @@ async function folderFiles(folder: string): Promise<Files> {
   return files
 }
 
-async function fixtureFiles(fixture: Readonly<Fixture>): Promise<Files> {
+async function fixtureFiles(
+  fixture: Readonly<Fixture>,
+  version: string,
+): Promise<Files> {
   if (fixture.folder !== undefined) {
     return await folderFiles(fixture.folder)
   }
   if (fixture.chainOf !== undefined) {
     return migrateShardfile(await folderFiles(fixture.chainOf), {
       hash: sha256,
+      to: version,
     }).files
   }
   if (fixture.pin === undefined) {
@@ -109,7 +113,7 @@ async function checkFixture(
   index: number,
   fixture: Readonly<Fixture>,
 ): Promise<void> {
-  const files = await fixtureFiles(fixture)
+  const files = await fixtureFiles(fixture, version)
   const declared = declaredVersion(files)
   assert.equal(
     compareShardfileVersions(declared, version),
@@ -141,7 +145,10 @@ const [flag, digestVersion = '', digestIndex = '0'] = process.argv.slice(ARGS)
 
 if (flag === DIGEST_FLAG) {
   const list = await fixtures(digestVersion)
-  const files = await fixtureFiles(list[Number(digestIndex)] ?? {})
+  const files = await fixtureFiles(
+    list[Number(digestIndex)] ?? {},
+    digestVersion,
+  )
   process.stdout.write(`${migrateShardfile(files, { hash: sha256 }).digest}\n`)
 } else {
   before(async (): Promise<void> => {

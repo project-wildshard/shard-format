@@ -11,3 +11,6 @@ no engine. So:
   leaving the file; that waits on the box recording them, SP1b, so the client keeps its warm-up meanwhile).
 - The chain step `pr4-preparation-marker` mends every stored file (data only, re-sealed), so the marker change breaks
   nobody once API then engine read 0.1.0.3 (CP3 order).
+
+- FE4 gate entries (0.1.0.3.json) and a 0.1.0.3 chain fixture; chainOf fixtures now migrate to their own version, so
+  the 0.1.0.2 fixture keeps testing 0.1.0.2 rather than jumping to the newest format.

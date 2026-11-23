@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0.3",
+  "entries": [
+    {
+      "path": "./version#SHARDFILE_VERSION",
+      "migration": "pr4-preparation-marker"
+    },
+    {
+      "path": "./cookPreparation#EntryProgramsSchema",
+      "noFileChange": "PR4: the same three program checks, wrapped once per programs version (spec 3 and spec 4); a spec 3 programs mount reads exactly as before"
+    },
+    {
+      "path": "./cookPreparation#CookPreparationSchema.programs",
+      "noFileChange": "PR4: the same three program checks, wrapped once per programs version; spec 3 cook.json reads exactly as before"
+    },
+    {
+      "path": "./cookData#CookDataSchema|=2.programs",
+      "noFileChange": "PR4: the same three program checks, wrapped once per programs version; cook.json version 2 reads exactly as before"
+    },
+    {
+      "path": "./cookData#CookDataSchema|=3.programs",
+      "noFileChange": "PR4: the same three program checks, wrapped once per programs version; cook.json version 3 reads exactly as before"
+    },
+    {
+      "path": "./memory-armed#ARMED_ZONES",
+      "noFileChange": "CP10 re-arm (0.69.2): memory lines are judged once, at upload; stored files validate judged 'stored', so no kept file reads differently"
+    },
+    {
+      "path": "./memory-armed.json#json",
+      "noFileChange": "CP10 re-arm (0.69.2): the same table as ARMED_ZONES, as JSON"
+    }
+  ]
+}
