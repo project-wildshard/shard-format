@@ -28,6 +28,14 @@
     {
       "path": "./clientTrails#ClientTrailsSchema.rows",
       "noFileChange": "OF29e7a: a trail row may name its members in place of its group (widening); every admitted row still admits"
+    },
+    {
+      "path": "./runtime-hosts.json#json",
+      "noFileChange": "HS6b: a new optional server/plan section (the server's copy of the feature rows); every admitted file still admits, none must carry it"
+    },
+    {
+      "path": "./sectionVersions#ACCEPTED_SECTION_VERSIONS",
+      "noFileChange": "HS6b: a new optional server/plan section (the server's copy of the feature rows); every admitted file still admits, none must carry it"
     }
   ]
 }
