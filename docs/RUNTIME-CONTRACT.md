@@ -388,7 +388,7 @@ on it. An unregistered name is refused ("Unregistered named JSON"), and `custom/
 | `^quests\/chapter-director\.json$` | `@wildshard/format/chapterDirector#ChapterDirectorSchema` |
 | `^quests\/(?:trader\|mill-door\|lanterns)\.json$` | `@wildshard/format/questInteractions#QuestPageInteractionsSchema` |
 | `^quests\/services\.json$` | `@wildshard/format/questSteps#QuestServiceActionsSchema` |
-| `^directors\/main\.json$` | `@wildshard/format/directorProduct#DirectorProductSchema` |
+| `^directors\/main\.json$` | `@wildshard/format/directorDocument#DirectorDocumentSchema` |
 | `^quests\/panels\.json$` | `@wildshard/format/panelTemplate#QuestPanelCatalogueSchema` |
 | `^world\/forest-weather\.json$` | `@wildshard/format/forestWeather#ForestWeatherSchema` |
 | `^quests\/persistence\.json$` | `@wildshard/format/namedJsonContracts#AdventurePersistenceSchema` |
