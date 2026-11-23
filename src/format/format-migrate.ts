@@ -36,7 +36,7 @@ import {
 
 import type { CookData } from './cook-data.ts'
 import type { Files, Hash, JsonRecord } from './format-migrate-inventory.ts'
-import type { FormatMigration, MigratingShard } from './format-migrations.ts'
+import type { FormatMigration, MigratingShard, StepHook } from './format-migrations.ts'
 import type { OutputIndex } from './outputIndex.ts'
 import type {
   ShardfileValidationPorts,
@@ -53,8 +53,6 @@ interface MigrateOptions {
   /** FE11: called after each step with the shard as that step left it (the per-step goldens). */
   readonly onStep?: StepHook
 }
-
-type StepHook = (id: string, shard: Readonly<MigratingShard>) => void
 
 interface MigratedShardfile {
   /** The migrated copy: the original's own map when nothing ran. */
@@ -296,7 +294,6 @@ function validateMigrated(
 export {
   type MigrateOptions,
   type MigratedShardfile,
-  type StepHook,
   migrateShardfile,
   validateMigrated,
 }
