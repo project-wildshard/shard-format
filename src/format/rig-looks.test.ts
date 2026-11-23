@@ -142,3 +142,10 @@ test('a keeper body, or a declared body with no look, still needs the species pr
   expect(rules(true, true)).toContain(SECTION)
   expect(rules(false, false)).toContain(PROGRAM)
 })
+
+test('OF29e5: a data page need not name population.homes, which the engine stands', (): void => {
+  expect(rules(true, false)).toContain('Data page requires quest.page')
+  expect(rules(true, false)).not.toContain(
+    'Data page requires population.homes',
+  )
+})
