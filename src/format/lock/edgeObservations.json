@@ -1,0 +1,13 @@
+{
+  "./edgeObservations#EdgeObservationSchema": {"type":"strict_object","expects":"Object"},
+  "./edgeObservations#EdgeObservationSchema.geometry": {"type":"exact_optional","expects":"(\"ground\" | \"void\")"},
+  "./edgeObservations#EdgeObservationSchema.geometry?": {"type":"picklist","expects":"(\"ground\" | \"void\")"},
+  "./edgeObservations#EdgeObservationSchema.geometry?|": ["ground","void"],
+  "./edgeObservations#EdgeObservationSchema.waterSurface": {"type":"exact_optional","expects":"number"},
+  "./edgeObservations#EdgeObservationSchema.waterSurface?": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"},{"kind":"validation","type":"min_value","expects":">=-250","requirement":-250},{"kind":"validation","type":"max_value","expects":"<=250","requirement":250}]},
+  "./edgeObservations#EdgeObservationsSchema": {"type":"strict_object","expects":"Object"},
+  "./edgeObservations#EdgeObservationsSchema.east": {"ref":"./edgeObservations#EdgeObservationSchema"},
+  "./edgeObservations#EdgeObservationsSchema.north": {"ref":"./edgeObservations#EdgeObservationSchema"},
+  "./edgeObservations#EdgeObservationsSchema.south": {"ref":"./edgeObservations#EdgeObservationSchema"},
+  "./edgeObservations#EdgeObservationsSchema.west": {"ref":"./edgeObservations#EdgeObservationSchema"}
+}
