@@ -250,7 +250,9 @@ export {
   SHARDFILE_FLOOR,
   type FormatVersion,
   type FormatVersionParts,
+  // oxlint-disable-next-line typescript/no-deprecated -- SP10: the old name stays exported as an alias until no consumer imports it (ST19).
   type ShardfileVersion,
+  // oxlint-disable-next-line typescript/no-deprecated -- SP10: as above.
   type ShardfileVersionParts,
   parseShardfileVersion,
   compareShardfileVersions,
