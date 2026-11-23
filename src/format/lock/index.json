@@ -335,6 +335,7 @@
   "./materials#presetLooks": "function: behaviour, not a shape (its schema inputs are locked)",
   "./materials#textureSamplerRules": "function: behaviour, not a shape (its schema inputs are locked)",
   "./memory-armed#armedLine": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./memory-armed#armedZone": "function: behaviour, not a shape (its schema inputs are locked)",
   "./memory-armed#ratchetLimit": "function: behaviour, not a shape (its schema inputs are locked)",
   "./memory-armed#ratchetNote": "function: behaviour, not a shape (its schema inputs are locked)",
   "./memory-armed#ratchetSeverity": "function: behaviour, not a shape (its schema inputs are locked)",

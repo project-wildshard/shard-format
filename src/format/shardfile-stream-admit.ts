@@ -21,7 +21,7 @@ import { parseShardfile } from './shardSchema.ts'
 
 import type { AssetAdmission } from './assetAdmission.ts'
 import type { OutputIndex } from './outputIndex.ts'
-import type { Judged, PolicyVerdict } from './policy-verdict.ts'
+import type { Judged, JudgedPorts, PolicyVerdict } from './policy-verdict.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
 import type { AssetPasses } from './shardfile-stream-assets.ts'
 import type { Shardfile } from './shardSchema.ts'
@@ -31,13 +31,14 @@ function admitHead(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
   index: OutputIndex,
   payloads: ReadonlyMap<string, unknown>,
-  judged: Judged = 'upload',
+  policy: Readonly<JudgedPorts>,
 ): Shardfile {
+  const { judged = 'upload', armed } = policy
   const shard = withIssueCode('shard-schema', (): Shardfile =>
     parseShardfile(assembleOutputShardfile(index, payloads), payloads),
   )
   withIssueCode('declared-costs', (): void => {
-    preflightDeclaredCosts(shard, offlineMemoryAdmission('warn', judged))
+    preflightDeclaredCosts(shard, offlineMemoryAdmission('warn', judged, armed))
   })
   const verdict = withIssueCode('performance-targets', (): PolicyVerdict =>
     // MG6 epoch 5: the index lets the estimate count only the files a phone fetches (no mount bytes in the stream).
@@ -46,6 +47,7 @@ function admitHead(
       mountedImages: 0,
       index,
       judged,
+      armed,
     }),
   )
   return recordVerdict(shard, verdict)
@@ -58,21 +60,26 @@ function admitBeforeAssets(
   index: OutputIndex,
   payloads: ReadonlyMap<string, unknown>,
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's row type, only read
-  rows: Readonly<{ scripts: ScriptAdmissionRows; judged?: Judged | undefined }>,
+  rows: Readonly<{
+    scripts: ScriptAdmissionRows
+    judged?: Judged | undefined
+    armed?: boolean | undefined
+  }>,
 ): Readonly<{
   admission: AssetAdmission | undefined
   refusal: unknown
   head?: Shardfile | undefined
   judged?: Judged | undefined
+  armed?: boolean | undefined
 }> {
-  const { scripts, judged } = rows
+  const { scripts, judged, armed } = rows
   try {
-    const head = admitHead(index, payloads, judged)
+    const head = admitHead(index, payloads, { judged, armed })
     return {
       admission: withIssueCode('asset-admission', (): AssetAdmission =>
         assetAdmission(
           head,
-          offlineMemoryAdmission('warn', judged),
+          offlineMemoryAdmission('warn', judged, armed),
           scripts,
           payloads,
         ),
@@ -80,6 +87,7 @@ function admitBeforeAssets(
       refusal: undefined,
       head,
       judged,
+      armed,
     }
   } catch (error) {
     return { admission: undefined, refusal: error }
@@ -94,6 +102,7 @@ function admitAssets(
     refusal: unknown
     head?: Shardfile | undefined
     judged?: Judged | undefined
+    armed?: boolean | undefined
   }>,
   later: Readonly<AssetPasses>,
   hash: (bytes: Readonly<Uint8Array>) => string,
@@ -114,7 +123,7 @@ function admitAssets(
       admitAfterFiles(
         admission,
         later.assets,
-        offlineMemoryAdmission('warn', before.judged),
+        offlineMemoryAdmission('warn', before.judged, before.armed),
       ),
       admittedVerdict(head),
     )

@@ -1,5 +1,5 @@
 import { UNNAMED_TIER, budgetTierLimits } from './budget-tiers.ts'
-import { ratchetNote, ratchetSeverity } from './memory-armed.ts'
+import { armedZone, ratchetNote, ratchetSeverity } from './memory-armed.ts'
 import { runtimeAccountedBytes } from './runtimeCost.ts'
 
 import type { BudgetTier } from './budget-tiers.ts'
@@ -24,7 +24,10 @@ interface RuntimeTierIssue {
  * ONE-FORMAT OF10c1a and J445: report a runtime's accounted bytes above its
  * named memory tier. A runtime with no named tier uses the large target.
  */
-function runtimeTierIssues(source: RuntimeTierSource): RuntimeTierIssue[] {
+function runtimeTierIssues(
+  source: RuntimeTierSource,
+  armed?: boolean,
+): RuntimeTierIssue[] {
   const cost = source.runtime?.cost ?? source.budgets.client
   if (source.runtime === null || cost === undefined) {
     return []
@@ -35,14 +38,18 @@ function runtimeTierIssues(source: RuntimeTierSource): RuntimeTierIssue[] {
   if (actual <= limit) {
     return []
   }
-  const severity = ratchetSeverity(source.identity?.slug, 'runtime', {
-    line: limit,
-    actual,
-  })
+  const severity = ratchetSeverity(
+    armedZone(source.identity?.slug, armed),
+    'runtime',
+    {
+      line: limit,
+      actual,
+    },
+  )
   return [
     {
       code: 'runtime-tier-memory',
-      metric: `runtime accounted bytes over the ${tier} tier's memory (OF10c1a: name a larger tier or shrink the runtime)${severity === 'warning' ? ratchetNote(source.identity?.slug) : ''}`,
+      metric: `runtime accounted bytes over the ${tier} tier's memory (OF10c1a: name a larger tier or shrink the runtime)${severity === 'warning' ? ratchetNote(armedZone(source.identity?.slug, armed)) : ''}`,
       actual,
       limit,
       severity,

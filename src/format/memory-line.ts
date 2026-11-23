@@ -2,9 +2,15 @@ import { parse } from 'valibot'
 
 import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
-import { ARMED_LINES, ratchetNote, ratchetSeverity } from './memory-armed.ts'
+import {
+  ARMED_LINES,
+  armedZone,
+  ratchetNote,
+  ratchetSeverity,
+} from './memory-armed.ts'
 import { runtimeAccountedBytes, RuntimeCostSchema } from './runtimeCost.ts'
 
+import type { ZoneRef } from './memory-armed.ts'
 import type { TierIndex } from './phone-files.ts'
 import type { Shardfile } from './shardSchema.ts'
 
@@ -27,7 +33,7 @@ function overHardLine(bytes: number): string {
 function hardLineIssue(
   kind: 'playing' | 'loading',
   bytes: number,
-  zone?: string | Readonly<{ slug: string; line: number }>,
+  zone?: ZoneRef | Readonly<{ slug: string; line: number }>,
 ): {
   readonly code: 'perf-playing-memory' | 'perf-loading-memory'
   readonly metric: string
@@ -36,7 +42,9 @@ function hardLineIssue(
   readonly severity: 'refusal' | 'warning'
 } {
   const { slug, line } =
-    typeof zone === 'object' ? zone : { slug: zone, line: ARMED_LINES[kind] }
+    typeof zone === 'object' && 'line' in zone
+      ? zone
+      : { slug: zone, line: ARMED_LINES[kind] }
   const severity = ratchetSeverity(slug, kind, { line, actual: bytes })
   const over =
     kind === 'playing'
@@ -54,7 +62,7 @@ function hardLineIssue(
 /** The offline memory thresholds apply equally to a build and its report. */
 function memoryLineIssues(
   cost: Readonly<Record<'playing' | 'loading', number>>,
-  slug: string,
+  slug: ZoneRef,
 ): ReturnType<typeof hardLineIssue>[] {
   return (['playing', 'loading'] as const)
     .filter((kind): boolean => cost[kind] > ARMED_LINES[kind])
@@ -87,6 +95,8 @@ type MemoryContext =
       mountedImages: number
       index?: TierIndex
       judged?: 'upload' | 'stored'
+      /** FP27b: the API catalogue's armed state for this shard; absent, the format's own list decides. */
+      armed?: boolean | undefined
     }>
 
 function memoryContext(context: MemoryContext): Readonly<{
@@ -94,6 +104,7 @@ function memoryContext(context: MemoryContext): Readonly<{
   mountedImages: number
   index?: TierIndex
   judged?: 'upload' | 'stored'
+  armed?: boolean | undefined
 }> {
   return context instanceof Map
     ? { sections: context, mountedImages: EMPTY_BYTES }
@@ -111,7 +122,7 @@ function offlineMemoryIssues(
   source: Shardfile,
   context: MemoryContext,
 ): ReturnType<typeof hardLineIssue>[] {
-  const { sections, mountedImages, index } = memoryContext(context)
+  const { sections, mountedImages, index, armed } = memoryContext(context)
   const native = source.runtime?.cost
   const runtime =
     native === undefined ? EMPTY_BYTES : runtimeOfflineBytes(native)
@@ -123,7 +134,7 @@ function offlineMemoryIssues(
     commons: runtime + commons,
     boot: bootMemoryCosts(source, sections, { mountedImages, index }),
   })
-  return memoryLineIssues(cost, source.identity.slug)
+  return memoryLineIssues(cost, armedZone(source.identity.slug, armed))
 }
 
 export {

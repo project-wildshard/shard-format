@@ -13,7 +13,7 @@ import type { Shardfile } from "./shardSchema.ts";
 import type { ShardTerrain } from "./terrain.ts";
 import { worstContentCost, memoryTargetWarnings, nearbyContentCost } from "./budget.ts";
 import { CONTENT_CAPS as C } from './contentBounds.ts';
-import { ARMED_LINES, ratchetLimit } from './memory-armed.ts';
+import { ARMED_LINES, armedZone, ratchetLimit } from './memory-armed.ts';
 import { asJudged } from './policy-verdict.ts';
 import type { Judged } from './policy-verdict.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
@@ -29,7 +29,7 @@ import type { IssueCodeOf } from './issue-codes.ts';
 import { isNavigationData, navigationCost } from './navigationBytes.ts';
 
 type PerformancePolicy = 'refuse' | 'warn';
-interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex; readonly judged?: Judged }
+interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex; readonly judged?: Judged; readonly armed?: boolean | undefined }
 
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
 function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number; index?: TierIndex }>): PerformanceReport['memory'] {
@@ -321,7 +321,7 @@ export function performanceReport(source: Shardfile, observations: PerformanceOb
   };
   if (native.unmeasuredViewAndDownload) check(['perf-native-view-unmeasured', 'native view/download measurement required'], 1, 0);
   if (source.runtime !== null && source.runtime.cost === undefined) check(['perf-native-resident-unmeasured', 'native resident measurement required'], 1, 0);
-  issues.push(...staleRuntimeIssues(source.runtime, undefined, source.identity), ...memoryLineIssues(worst, source.identity.slug));
+  issues.push(...staleRuntimeIssues(source.runtime, undefined, { ...source.identity, armed: resolved.armed }), ...memoryLineIssues(worst, armedZone(source.identity.slug, resolved.armed)));
   const library = reportCardClosure(source, source.library), critical = reportCardClosure(source, source.critical);
   const tileRoots = source.tiles.flatMap(tile => tile.files), farRoots = source.far?.files ?? [], nearRoots = nearPlaceholderRoots(source.near);
   const playable = reportCardClosure(source, [...source.critical, ...source.library, ...farRoots, ...source.tiles.filter(tile => tile.lod === 1 || near(tile, spawn.x, spawn.z)).flatMap(tile => tile.files)]);
@@ -370,9 +370,9 @@ export function performanceReportLines(report: PerformanceReport): string[] {
 
 /** Offline soft-cap policy and the hard loading ceiling (J445). A stored shard file was judged at its upload (CP10):
  *  no memory line refuses it again. */
-export function offlineMemoryAdmission(_policy: 'warn' | 'refuse', judged: 'upload' | 'stored' = 'upload'): MemoryAdmission {
+export function offlineMemoryAdmission(_policy: 'warn' | 'refuse', judged: 'upload' | 'stored' = 'upload', armed?: boolean): MemoryAdmission {
   // The hard loading ceiling applies to the armed list.
   return new MemoryAdmission((): boolean => true, judged === 'stored'
     ? (): number => Number.POSITIVE_INFINITY
-    : (owner, kind): number => ratchetLimit(owner, kind, MEMORY_HARD_BYTES));
+    : (owner, kind): number => ratchetLimit(armedZone(owner, armed), kind, MEMORY_HARD_BYTES));
 }

@@ -1,4 +1,4 @@
-import { staleReadingAdmitted } from './memory-armed.ts'
+import { armedZone, staleReadingAdmitted } from './memory-armed.ts'
 
 /** MEMORY-GATES MG5 (J408, Jake 2026-11-17: "a stale runtimeCost is refused"): the memory model a runtime home's
  * `runtimeCost` reading must have been taken against. It rises when the model changes what it charges (MG6 adds shader
@@ -44,9 +44,16 @@ function staleRuntimeCost(
 function staleRuntimeIssues(
   runtime: Readonly<{ cost?: EpochRow | undefined }> | null,
   current: number = OLDEST_CURRENT_EPOCH,
-  identity?: Readonly<{ slug: string; saveRevision: number }>,
+  identity?: Readonly<{
+    slug: string
+    saveRevision: number
+    /** FP27b: the API catalogue's armed state; absent, the format's own list decides. */
+    armed?: boolean | undefined
+  }>,
 ): StaleRuntimeIssue[] {
-  const admitted = staleReadingAdmitted(identity?.slug)
+  const admitted = staleReadingAdmitted(
+    armedZone(identity?.slug, identity?.armed),
+  )
   const rows: EpochRow[] = []
   const cost = runtime === null ? undefined : runtime.cost
   if (cost !== undefined) {

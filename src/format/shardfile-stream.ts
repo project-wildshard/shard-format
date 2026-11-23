@@ -39,7 +39,7 @@ import { readCanonicalJson } from './shardfileValidation.ts'
 
 import type { DeprecationReport } from './deprecations.ts'
 import type { OutputIndex } from './outputIndex.ts'
-import type { Judged, PolicyVerdict } from './policy-verdict.ts'
+import type { JudgedPorts, PolicyVerdict } from './policy-verdict.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
 import type { StoredSource } from './shardfile-stream-assets.ts'
 import type { KeptMember, Replay } from './shardfile-stream-rows.ts'
@@ -51,7 +51,7 @@ import type {
 import type { Shardfile } from './shardSchema.ts'
 
 /** The host services a streaming validation needs. */
-interface StreamValidationPorts {
+interface StreamValidationPorts extends JudgedPorts {
   /** Lowercase hex SHA-256 of exact bytes. */
   readonly hash: (bytes: Readonly<Uint8Array>) => string
   /** A fresh incremental SHA-256. */
@@ -60,7 +60,6 @@ interface StreamValidationPorts {
   readonly decode?: (
     stored: AsyncIterable<Uint8Array>,
   ) => AsyncIterable<Uint8Array>
-  readonly judged?: Judged
 }
 
 /** What one streaming validation found. */

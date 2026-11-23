@@ -1,6 +1,8 @@
 import { zoneArmed } from './memory-armed.ts'
 import { MEMORY_EPOCH } from './memory-epoch.ts'
 
+import type { ZoneRef } from './memory-armed.ts'
+
 /**
  * SHARD-COMPAT CP10 (J486 D1.1, Jake 2026-11-21): memory lines, budgets and runtime targets judge a shard file once,
  * at upload. The API stores this verdict and its rule version (the memory epoch) beside the original; a stored
@@ -9,6 +11,13 @@ import { MEMORY_EPOCH } from './memory-epoch.ts'
  * time either way.
  */
 type Judged = 'upload' | 'stored'
+
+/** How admission judges a shard: CP10's `judged`, and FP27b's `armed`, the API catalogue's armed state for it (absent,
+ *  the format's own list decides until FP27c removes it). */
+interface JudgedPorts {
+  readonly judged?: Judged | undefined
+  readonly armed?: boolean | undefined
+}
 
 interface PolicyIssue {
   readonly code: string
@@ -29,14 +38,14 @@ interface PolicyVerdict {
 }
 
 function policyVerdict(
-  slug: string | undefined,
+  zone: ZoneRef,
   judged: Judged,
   issues: readonly PolicyIssue[],
 ): PolicyVerdict {
   return {
     judged,
     epoch: MEMORY_EPOCH,
-    armed: zoneArmed(slug),
+    armed: zoneArmed(zone),
     issues: issues.map(
       ({ code, metric, actual, limit, severity }): PolicyIssue => ({
         code,
@@ -85,6 +94,7 @@ function admittedVerdict(shard: Readonly<object>): PolicyVerdict {
 }
 
 export {
+  type JudgedPorts,
   type Judged,
   type PolicyIssue,
   type PolicyVerdict,
