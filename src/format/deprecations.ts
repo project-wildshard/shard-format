@@ -3,6 +3,7 @@
  * both validators warn on it and the corpus counts its kept users (`shard-format corpus`). A path with a migration is
  * mended by the chain; one without is deleted once no kept file uses it. */
 import { COOK_DEPRECATIONS } from './cook-deprecations.ts'
+import { MANIFEST_MOVED_DEPRECATIONS } from './manifest-deprecations.ts'
 import { SAVE_REVISION_DEPRECATION } from './save-revision.ts'
 import { SCHEMA_SOURCE_DEPRECATION } from './schema-source.ts'
 import {
@@ -155,6 +156,7 @@ const RULES: readonly DeprecationRule[] = [
         'gridShardfile',
       ) !== undefined,
   },
+  ...MANIFEST_MOVED_DEPRECATIONS,
   {
     id: 'runtime.trust',
     path: 'shard.json runtime.trust',

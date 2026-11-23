@@ -150,6 +150,12 @@ describe('the deprecation counter (FE7)', (): void => {
       'cook.legacy-data',
       'requires.sdk',
       'requires.capabilities',
+      // OF9b5: this original's level manifest predates SDK 0.4.25's moves.
+      'manifest.spawn',
+      'manifest.audio',
+      'manifest.weapon',
+      'manifest.species',
+      'manifest.spawns',
     ])
     expect(
       validated.warnings.some((line: string): boolean =>
@@ -160,6 +166,15 @@ describe('the deprecation counter (FE7)', (): void => {
     expect(
       validateMigrated(copy.files, { hash: sha256, judged: 'stored' })
         .deprecations,
-    ).toEqual(['cook.legacy-data', 'requires.sdk', 'requires.capabilities'])
+    ).toEqual([
+      'cook.legacy-data',
+      'requires.sdk',
+      'requires.capabilities',
+      'manifest.spawn',
+      'manifest.audio',
+      'manifest.weapon',
+      'manifest.species',
+      'manifest.spawns',
+    ])
   })
 })
