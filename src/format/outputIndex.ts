@@ -1,6 +1,6 @@
 import { platformFileFamily } from './platformFileFamilies.ts';
 import { MAX_COOK_BYTES } from './cook-preparation.ts';
-import { PREPARATION_SPECS, preparationSpecOf } from './preparation-spec.ts';
+import { LEGACY_PREPARATION_SPEC, MAX_PREPARATION_SPEC, preparationSpecOf, unreadPreparationSpec } from './preparation-spec.ts';
 import type { Ktx2DeviceCosts } from './ktx2Cost.ts';
 import { AdmissionLateSchema, lateLibraryRootsValid, type AdmissionLate } from './admissionLate.ts';
 import { AdmissionServerSchema, serverFilesExclusive, type AdmissionServer } from './admissionServer.ts';
@@ -20,7 +20,6 @@ import { ShardHashSchema, ShardNaturalSchema, IdentitySchema, RequiresSchema, Fi
 import { LEGACY_LAYOUT, writesPreparationMarker, writesSaveRevision } from './version.ts';
 import { IndexFormatVersionSchema, LegacyIndexVersionSchema } from './index-format-version.ts';
 import type { IndexFormatVersion, LegacyIndexVersion } from './version.ts';
-import type { PreparationSpec } from './preparation-spec.ts';
 import { isJsonData, isJsonDataWithFileSchemas } from './json.ts';
 import { clientOwnershipRules } from './clientOwnership.ts';
 import { PLATFORM_DATA_SECTIONS } from './platformDataSections.ts';
@@ -40,6 +39,8 @@ const fileSchema = v.strictObject({ ...costs, path, kind: v.picklist(['glb', 'kt
 /** `files` and `lines` are always empty: the 0.1.0.2 envelope drops them (FORMAT-PRUNE FP4), the legacy one still carries them. */
 const runtimeFiles = v.exactOptional(v.pipe(v.array(v.strictObject({ ...measuredFile, lines: ShardNaturalSchema })), v.maxLength(0)));
 const runtime = v.strictObject({ ...v.omit(ClientPlanRuntimeSchema.pipe[0], ['spawns']).entries, trust: v.exactOptional(v.unknown()), files: runtimeFiles, lines: v.exactOptional(v.literal(0)) });
+/** SP1b1a: a spec this package reads, or a newer one up to `MAX_PREPARATION_SPEC`, kept unread. */
+const PreparationSpecNumberSchema = v.pipe(v.number(), v.integer(), v.minValue(LEGACY_PREPARATION_SPEC), v.maxValue(MAX_PREPARATION_SPEC));
 /** Format 2 inventories every emitted byte except its index and validation receipt. */
 export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputIndexRows> & { readonly entries: { readonly [Key in keyof OutputIndexRows]-?: v.GenericSchema<OutputIndexRowsInput[Key], OutputIndexRows[Key]> } } = v.strictObject({
   format: v.literal('wildshard.shardfile'),
@@ -49,8 +50,9 @@ export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputInde
   /** The legacy preparation marker (`'0.2'` built, `'0.3'` prepared) up to format 0.1.0.2; 0.1.0.3 drops it (PR4). */
   sdk: v.exactOptional(v.picklist(['0.2', '0.3'])),
   /** SHARD-COMPAT PR4 (J487): from format 0.1.0.3, the preparation spec version a prepared file was made to, owned by
-   * this package (`cook.json`'s `version`); absent on an unprepared file. It names no engine release. */
-  preparation: v.exactOptional(v.picklist(PREPARATION_SPECS)),
+   * this package (`cook.json`'s `version`); absent on an unprepared file. It names no engine release. SP1b1a: a spec above
+   * the ones this package reads parses too, kept and unread (`unreadPreparationSpec`). */
+  preparation: v.exactOptional(PreparationSpecNumberSchema),
   identity: IdentitySchema, build: v.strictObject({ sourceHash: ShardHashSchema, validator: v.pipe(v.string(), v.minLength(1), v.maxLength(160)) }), requires: RequiresSchema,
   admission: v.strictObject({ budgets: ShardfileFieldSchemas.budgets, serverBudget: ShardfileFieldSchemas.serverBudget, authorCaps: ShardfileFieldSchemas.authorCaps, critical: ShardfileFieldSchemas.critical, library: ShardfileFieldSchemas.library, late: v.exactOptional(AdmissionLateSchema), server: v.exactOptional(AdmissionServerSchema), audioWaiver: v.exactOptional(AudioWaiverSchema) }),
   sections: v.pipe(v.array(section), v.maxLength(256)), schemas: emptySchemas,
@@ -134,7 +136,7 @@ function parseOutputIndexRows(input: unknown): OutputIndex {
   const index = v.parse(OutputIndexSchema, input);
   checkIndexEnvelope(index);
   checkSaveRevisionSpelling(input, index);
-  const prepared = preparationSpecOf(index) !== undefined;
+  const prepared = preparationSpecOf(index) !== undefined || unreadPreparationSpec(index) !== undefined;
   if (prepared && index.cook === undefined) { throw new Error(`Missing cook preparation: run wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`); }
   if (prepared && index.cook !== undefined && index.cook.bytes > MAX_COOK_BYTES) { throw new Error('Cook preparation exceeds byte cap'); }
   const paths = new Set(['shard.json', 'validation.json']), names = new Set<string>();
@@ -232,7 +234,8 @@ interface OutputIndexRowsInputFields {
     format: "wildshard.shardfile";
     formatVersion: typeof LEGACY_LAYOUT | IndexFormatVersion;
     sdk?: "0.2" | "0.3";
-    preparation?: PreparationSpec;
+    /** A spec this package reads (3, 4), or a newer one kept unread (SP1b1a). */
+    preparation?: number;
     version?: LegacyIndexVersion;
     identity: ShardIdentityInput;
     build: {
@@ -331,7 +334,8 @@ interface OutputIndexRowsFields {
     format: "wildshard.shardfile";
     formatVersion: typeof LEGACY_LAYOUT | IndexFormatVersion;
     sdk?: "0.2" | "0.3";
-    preparation?: PreparationSpec;
+    /** A spec this package reads (3, 4), or a newer one kept unread (SP1b1a). */
+    preparation?: number;
     version?: LegacyIndexVersion;
     identity: ShardIdentity;
     build: {

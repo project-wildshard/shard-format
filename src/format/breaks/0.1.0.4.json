@@ -40,6 +40,10 @@
     {
       "path": "./outputFields#OUTPUT_SECTIONS",
       "noFileChange": "PR6f1: world/edge may carry an optional edgeObservations field (ground or void, water surface per side); every admitted file still admits, none must carry it"
+    },
+    {
+      "path": "./outputIndex#OutputIndexSchema.preparation",
+      "noFileChange": "SHARD-COMPAT SP1b1a: shard.json's preparation widens from the specs this package reads (3, 4) to any spec 3 to 255; every file read before reads the same, and a newer spec is kept unread (unreadPreparationSpec) so a cook names it stale instead of refusing the index"
     }
   ]
 }

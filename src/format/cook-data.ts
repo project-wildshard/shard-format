@@ -163,5 +163,23 @@ function readCookData(input: unknown): CookData {
   return data
 }
 
+/** SHARD-COMPAT SP1b1a: `cook.json`'s version alone, read without its rows, so a reader can name a newer spec
+ * (`unreadPreparationSpec`) before `readCookData` refuses it. `undefined` when it names no integer version. */
+function cookDataSpec(input: unknown): number | undefined {
+  if (typeof input !== 'object' || input === null) {
+    return undefined
+  }
+  const version: unknown = (input as { version?: unknown }).version
+  return typeof version === 'number' && Number.isInteger(version)
+    ? version
+    : undefined
+}
+
 export type { CookData, CookMount }
-export { COOK_DATA_PATH, CookDataSchema, cookMountPath, readCookData }
+export {
+  COOK_DATA_PATH,
+  CookDataSchema,
+  cookDataSpec,
+  cookMountPath,
+  readCookData,
+}

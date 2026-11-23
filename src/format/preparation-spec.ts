@@ -13,6 +13,9 @@ const PREPARATION_SPECS: readonly [
   typeof PREPARATION_SPEC,
 ] = [LEGACY_PREPARATION_SPEC, PREPARATION_SPEC] as const
 type PreparationSpec = (typeof PREPARATION_SPECS)[number]
+/** SHARD-COMPAT SP1b1a: the highest spec a `shard.json` may name. A spec above `PREPARATION_SPEC` is a newer package's:
+ * this reader keeps its number and reads none of its lists (`unreadPreparationSpec`). */
+const MAX_PREPARATION_SPEC = 255
 /** The legacy `sdk` marker's prepared value, which always meant spec 3. */
 const PREPARED_SDK = '0.3'
 
@@ -34,8 +37,29 @@ function preparationSpecOf(
   return index.sdk === PREPARED_SDK ? LEGACY_PREPARATION_SPEC : undefined
 }
 
+/** SP1b1a: the spec a `shard.json` names above every spec this package reads, or `undefined`. A cook names such a file
+ * `stale preparation` with both numbers (`unreadPreparationLine`) instead of refusing its index. */
+function unreadPreparationSpec(
+  index: Readonly<{ preparation?: unknown }>,
+): number | undefined {
+  const spec = index.preparation
+  return typeof spec === 'number' &&
+    Number.isInteger(spec) &&
+    spec > PREPARATION_SPEC &&
+    spec <= MAX_PREPARATION_SPEC
+    ? spec
+    : undefined
+}
+/** SP1b1a: `spec 5, reads 3 and 4`: what a file names beside what this package reads. */
+function unreadPreparationLine(spec: number): string {
+  return `spec ${String(spec)}, reads ${PREPARATION_SPECS.join(' and ')}`
+}
+
 export {
   LEGACY_PREPARATION_SPEC,
+  MAX_PREPARATION_SPEC,
+  unreadPreparationLine,
+  unreadPreparationSpec,
   PREPARATION_SPEC,
   PREPARATION_SPECS,
   PREPARED_SDK,

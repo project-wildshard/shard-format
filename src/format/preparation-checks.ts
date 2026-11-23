@@ -1,6 +1,11 @@
 /** The checks `requireCookPreparation` runs on a prepared file (SHARD-COMPAT PR4 and PR5, J487): the preparation
  * marker against `cook.json`'s spec, the fence and the programs mount. */
-import { isPreparationSpec, preparationSpecOf } from './preparation-spec.ts'
+import {
+  isPreparationSpec,
+  preparationSpecOf,
+  unreadPreparationLine,
+  unreadPreparationSpec,
+} from './preparation-spec.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { AnyPrograms } from './cook-preparation.ts'
@@ -81,6 +86,12 @@ function preparationMarked(
   version: number | undefined,
   fix: string,
 ): boolean {
+  const unread = unreadPreparationSpec(index)
+  if (unread !== undefined) {
+    throw new Error(
+      `shard.json names a newer preparation (${unreadPreparationLine(unread)}): update this reader or run ${fix}`,
+    )
+  }
   const spec = preparationSpecOf(index)
   const prepared = isPreparationSpec(version)
   const refusal =
