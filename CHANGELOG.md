@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.70.0 (2026-11-22)
+
+- Format 0.1.0.3: a prepared file records its preparation spec, not the old sdk marker; old files migrate on upload.
+- Preparation spec 4 names no engine, so an engine update no longer makes a prepared shard file stale.
+- New preparationSpec subpath: preparationSpecOf reads the spec back from any shard.json.
+
 ## v0.69.2 (2026-11-21)
 
 - Driftwood, Nalati, Nine Dragon and Pine are armed again: a new upload past the loading ceiling is refused.
