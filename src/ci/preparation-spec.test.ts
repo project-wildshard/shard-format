@@ -43,11 +43,25 @@ function writeJson(folder: string, name: string, value: unknown): Uint8Array {
   return bytes
 }
 
+const SPEC_FORMAT = '0.1.0.3'
+
+/** FP26a: a 0.1.0.3 file hashes its identity as written, `revision`, not the read-side `saveRevision`. */
+function asWrittenIdentity(source: object): object {
+  const identity: unknown = Reflect.get(source, 'identity')
+  if (typeof identity !== 'object' || identity === null) {
+    return source
+  }
+  const { saveRevision, ...rest } = { ...identity } as Record<string, unknown>
+  return saveRevision === undefined
+    ? source
+    : { ...source, identity: { ...rest, revision: saveRevision } }
+}
+
 /** The corpus index in the 0.1.0.3 envelope at spec 4, its source hash re-bound to the new index. */
 function specIndex(folder: string): Readonly<OutputIndex> {
   const raw = outputIndexEnvelope({
     ...readRecord(folder, 'shard.json'),
-    version: '0.1.0.3',
+    version: SPEC_FORMAT,
     preparation: 4,
     cook: { path: 'cook.json', hash: '0'.repeat(64), bytes: 0 },
   })
@@ -61,7 +75,7 @@ function specIndex(folder: string): Readonly<OutputIndex> {
     ),
   )
   const source = assembleOutputShardfile(raw, sections)
-  const sourceHash = sha256(validationSourceBytes(source))
+  const sourceHash = sha256(validationSourceBytes(asWrittenIdentity(source)))
   return parseOutputIndex({ ...raw, build: { ...parsed.build, sourceHash } })
 }
 

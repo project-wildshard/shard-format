@@ -57,6 +57,10 @@ const raw = readFileSync(path.join(PACKAGE, 'package.json'), 'utf8')
 const manifest = parse(ManifestSchema, JSON.parse(raw))
 const BIN = path.join(PACKAGE, manifest.bin['shard-format'] ?? 'no bin')
 for (const name of Object.keys(manifest.dependencies)) {
+  // A scoped dependency (`@valibot/to-json-schema`) needs its scope folder first.
+  mkdirSync(path.dirname(path.join(APP, 'node_modules', name)), {
+    recursive: true,
+  })
   symlinkSync(
     path.join(ROOT, 'node_modules', name),
     path.join(APP, 'node_modules', name),
