@@ -96,6 +96,18 @@ The stable identities (file hashes) the boot reads before the player has control
 these into the first pack, `'whole'` packs the level. Each hash must name a file in the index, a mount or a required
 common (`fenceValid`), unique, at most 8192. Today it is recorded from a cold boot; see the decision above.
 
+**The fence rule's radius (PR2, 11-22).** The rule uses the engine's own near ring, so any engine computes the same
+set. In the spawn cell's local frame (the cell centred on the origin, metres, XZ only), take the spawn point `(x, z)`.
+For each L0 tile (side `CONTENT_CAPS.l0.size`, 62.5 m, laid from the cell's `-width/2, -depth/2` corner), its
+distance is from the spawn to the nearest point of the tile's rectangle: `dx = max(minX - x, 0, x - maxX)`, the same
+for `dz`, and `d = hypot(dx, dz)` (0 inside the tile). The tile is in the fence when `d <= CONTENT_CAPS.nearRadius`
+(150 m, `src/format/contentBounds.ts`). L1 tiles (125 m) are in when `d <= 400` m, the streamer's L1 ring. The fence
+is then the hashes of the index's `critical` files, of every file those tiles' rows name, and of each file those
+files name, unique and sorted. This is the streamer's first ring at spawn (engine
+`src/client/engine/world/tileStreamer.ts`, `L0_RADIUS`, `L1_RADIUS`), so a boot reads nothing outside it before
+control. Worked check: a spawn at the centre of a 500 m cell takes 32 L0 tiles, the 6 x 6 block from -187.5 m to
+187.5 m on each axis less its 4 corner tiles, whose nearest corner sits at `hypot(125, 125)`, about 177 m.
+
 ### `cook.json` programs
 
 `{version: 2, build, lines, shaders, programs}`: deduplicated GLSL source lines, each shader a list of line indexes,
