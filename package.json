@@ -476,7 +476,8 @@
     "check:wire": "pnpm --dir packages/wire check && pnpm --dir packages/wire test && pnpm check:wire-proofs",
     "check:wire-proofs": "node --test src/scripts/wire/recordings-proof.mjs src/scripts/wire/graph-proof.mjs src/scripts/wire/prepared-frame-proof.mjs",
     "bench": "pnpm --dir packages/wire bench",
-    "check:bin-pins": "node kit/scripts/bin-pins.mjs"
+    "check:bin-pins": "node kit/scripts/bin-pins.mjs",
+    "reupload": "node src/tools/reupload.ts"
   },
   "dependencies": {
     "meshoptimizer": "1.2.0",

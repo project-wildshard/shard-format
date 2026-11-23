@@ -99,3 +99,16 @@ FE7's deprecations, so FE2 sees a deleted step or deprecation as
 --usage`) is under 24 hours old and lists no kept original using it; it
 names the users otherwise. A deletion needs no break-file entry. Left: the
 shard repo pins half (a repo pinned to an SDK that still writes the part).
+
+## CP17: the re-upload tool (opus-compat-w3, 11-22)
+
+`pnpm reupload <deprecation id>` plans, per shard whose newest kept
+revision uses the part: the API migrates it (the deprecation names a
+chain step), its first-party repo re-publishes it (`corpus/first-party.json`
+maps slug to repo; `publish.yml`, staging, version auto), or it gets a
+needs-author note. `--apply --preparation <release>` dispatches every
+first-party re-publish at once, polls the API for each new revision and
+counts again. Older revisions still count in FE7's kept total until
+CP12's daily prune takes them, so the report gives both counts. A dry
+run on `requires.sdk` lists 33 shards: writers still source it, so the
+apply waits for sharddev to stop writing it (CP8's drop).
