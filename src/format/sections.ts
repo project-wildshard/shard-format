@@ -63,6 +63,8 @@ export interface PlatformSections {
   'look/keyed-sky': KeyedSkyStyle;
   /** Client-only compiled feature declarations; ignored by the authoritative simulation. */
   'client/plan': ClientPlan;
+  /** SHARD-COMPAT HS6b: the feature rows the server reads, written beside `client/plan` so the page's plan is the page's. */
+  'server/plan': ClientPlan;
   'held/arms': HeldArmsRows;
   'held/gear': HeldGearRows;
   'held/finishes': HeldFinishesRows;

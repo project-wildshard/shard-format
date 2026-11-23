@@ -60,6 +60,7 @@ const DATA_SECTION_NAMES: Readonly<Record<keyof PlatformDataSections, true>> = {
   "look/colour-functions": true,
   "look/keyed-sky": true,
   "client/plan": true,
+  "server/plan": true,
   "view/modules": true,
   "held/arms": true,
   "held/gear": true,

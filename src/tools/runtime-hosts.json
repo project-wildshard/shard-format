@@ -40,6 +40,10 @@
     "client/plan": {
       "hosts": ["page installClientPhase"]
     },
+    "server/plan": {
+      "hosts": ["server serverPlan"],
+      "note": "SHARD-COMPAT HS6b: the server's copy of the feature rows; engine's seam (`src/server/game/shardfile/serverPlan.ts`) reads it, falling back to `client/plan` for a file without one until the roll."
+    },
     "collections/displays": {
       "hosts": ["page CollectionCatalogue"]
     },
