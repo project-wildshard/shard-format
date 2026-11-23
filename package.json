@@ -163,6 +163,7 @@
     "./geometryPack": "./src/format/geometryPack.ts",
     "./creatureRestRig": "./src/format/creature-rest-rig.ts",
     "./creatureSkinBounds": "./src/format/creature-skin-bounds.ts",
+    "./playArea": "./src/format/play-area.ts",
     "./serverReads": "./src/format/server-reads.ts",
     "./glbBuffers": "./src/format/glbBuffers.ts",
     "./glbCost": "./src/format/glbCost.ts",

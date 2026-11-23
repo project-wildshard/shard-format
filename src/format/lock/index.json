@@ -422,6 +422,8 @@
   "./platformFileFamilies#PLATFORM_FILE_FAMILIES": "not plain data: a class instance or a record holding functions",
   "./platformFileFamilies#platformFileFamily": "function: behaviour, not a shape (its schema inputs are locked)",
   "./platformFileFamilies#validatePlatformFile": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./playArea#declaredPlayArea": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./playArea#outerFloor": "function: behaviour, not a shape (its schema inputs are locked)",
   "./plumbing#parsePlumbing": "function: behaviour, not a shape (its schema inputs are locked)",
   "./plumbing#plumbingRules": "function: behaviour, not a shape (its schema inputs are locked)",
   "./populationRoster#parseNativePopulationRows": "function: behaviour, not a shape (its schema inputs are locked)",
