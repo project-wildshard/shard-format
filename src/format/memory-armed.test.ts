@@ -75,13 +75,8 @@ test('J445: Far Reach at 1,027 MB playing reports and admits under 1.5 GB loadin
   ).toBe(true)
 })
 
-test('CP10 (J486): the four zones once held are armed again, since pins are never re-judged', (): void => {
-  for (const slug of [
-    'driftwood-isle',
-    'nalati-grasslands',
-    'nine-dragon-stack',
-    'pine-hollow',
-  ]) {
+test('CP10 (J486): three of the four zones once held are armed again, since pins are never re-judged', (): void => {
+  for (const slug of ['driftwood-isle', 'nalati-grasslands', 'pine-hollow']) {
     expect(zoneArmed(slug), slug).toBe(true)
     expect(armedLine(slug, 'loading'), slug).toBe(ARMED_LINES.loading)
     expect(hardLineIssue('loading', 2e9, slug).severity, slug).toBe('refusal')
@@ -89,6 +84,15 @@ test('CP10 (J486): the four zones once held are armed again, since pins are neve
       ARMED_LINES.loading,
     )
   }
+})
+
+test('SM4: Nine Dragon is held again; its 1.96 GB offline loading total reports', (): void => {
+  const slug = 'nine-dragon-stack'
+  expect(zoneArmed(slug)).toBe(false)
+  expect(hardLineIssue('loading', 1_963_937_967, slug)).toMatchObject({
+    severity: 'warning',
+    limit: ARMED_LINES.loading,
+  })
 })
 
 test('J445: Brasscap warns above the playing target and refuses above the loading ceiling', (): void => {
