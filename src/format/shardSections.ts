@@ -7,7 +7,7 @@ import { WIRE_CELL, WIRE_TILE_SIZES } from './wireLimits.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 import { SHARDFILE_VERSIONS } from './version.ts';
 import { oneSaveRevisionSpelling, saveRevisionOf } from './save-revision.ts';
-import type { ShardfileVersion } from './version.ts';
+import type { FormatVersion } from './version.ts';
 import { RuntimeCostSchema } from './runtimeCost.ts';
 import { CommonsCostsSchema } from './commonsCosts.ts';
 import { ScriptBindingsSchema } from './scripts.ts';
@@ -233,7 +233,7 @@ interface ShardIdentityFields {
 export type ShardIdentity = { [Key in keyof ShardIdentityFields]: ShardIdentityFields[Key] };
 interface ShardRequiresInputFields {
     /** SHARD-COMPAT CP8: deprecated (a copy of the format version, never read); writers stop sourcing it. */
-    sdk?: ShardfileVersion;
+    sdk?: FormatVersion;
     capabilities: ShardNamesInput;
     commons: (ShardHashInput)[];
     commonsWire?: Record<string, ShardNaturalInput> | undefined;
@@ -241,7 +241,7 @@ interface ShardRequiresInputFields {
 }
 export type ShardRequiresInput = { [Key in keyof ShardRequiresInputFields]: ShardRequiresInputFields[Key] };
 interface ShardRequiresFields {
-    sdk?: ShardfileVersion;
+    sdk?: FormatVersion;
     capabilities: ShardNames;
     commons: (ShardHash)[];
     commonsWire: Record<string, ShardNatural>;

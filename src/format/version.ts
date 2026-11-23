@@ -24,7 +24,10 @@ const SHARDFILE_VERSIONS: readonly [
   ...typeof LEGACY_INDEX_VERSIONS,
   ...typeof INDEX_FORMAT_VERSIONS,
 ] = [...LEGACY_INDEX_VERSIONS, ...INDEX_FORMAT_VERSIONS] as const
-type ShardfileVersion = (typeof SHARDFILE_VERSIONS)[number]
+/** A format version (J319): the four-part number naming a shard file's shape (SHARD-COMPAT §2's word). */
+type FormatVersion = (typeof SHARDFILE_VERSIONS)[number]
+/** @deprecated SHARD-COMPAT SP10: the retired word; use `FormatVersion`. Kept until no consumer imports it (ST19). */
+type ShardfileVersion = FormatVersion
 type LegacyIndexVersion = (typeof LEGACY_INDEX_VERSIONS)[number]
 type IndexFormatVersion = (typeof INDEX_FORMAT_VERSIONS)[number]
 /** The frozen layout marker the legacy envelope carries in `formatVersion`. */
@@ -37,10 +40,13 @@ const SHARDFILE_VERSION_PREPARATION = '0.1.0.3'
 /** The first format whose `shard.json` names the save lineage `identity.saveRevision` instead of `identity.revision`
  * (FORMAT-PRUNE FP26, J493): the number keys saves and only ever rises; it is not the API's shard revision. */
 const SHARDFILE_VERSION_SAVE_REVISION = '0.1.0.4'
-type ShardfileVersionParts = readonly [number, number, number, number]
+/** A format version's four parts. */
+type FormatVersionParts = readonly [number, number, number, number]
+/** @deprecated SHARD-COMPAT SP10: use `FormatVersionParts`. */
+type ShardfileVersionParts = FormatVersionParts
 
 /** Read canonical bounded decimal components; the legacy two-part spelling has zero counters. */
-function parseShardfileVersion(input: unknown): ShardfileVersionParts {
+function parseShardfileVersion(input: unknown): FormatVersionParts {
   if (
     typeof input !== 'string' ||
     !/^(?:0|[1-9][0-9]{0,3})(?:\.(?:0|[1-9][0-9]{0,3}))(?:\.(?:0|[1-9][0-9]{0,3})\.(?:0|[1-9][0-9]{0,3}))?$/u.test(
@@ -95,7 +101,7 @@ function compatibleShardfileVersion(
 
 /** The format version a `shard.json` declares: `formatVersion` when it is a version string (0.1.0.2 on), else the
  * legacy `version` beside the layout marker `formatVersion: 2`. Throws when neither names a format. */
-function shardfileFormatOf(index: unknown): ShardfileVersion {
+function shardfileFormatOf(index: unknown): FormatVersion {
   const declared: unknown =
     typeof index === 'object' && index !== null
       ? Reflect.get(index, 'formatVersion')
@@ -242,6 +248,8 @@ export {
   SHARDFILE_VERSION_PREPARATION,
   SHARDFILE_VERSION_SAVE_REVISION,
   SHARDFILE_FLOOR,
+  type FormatVersion,
+  type FormatVersionParts,
   type ShardfileVersion,
   type ShardfileVersionParts,
   parseShardfileVersion,

@@ -16,7 +16,7 @@ import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
 import { preflightShardfile } from './preflight.ts';
 import { preflightAssetGraph } from './shardfile-assets.ts';
 import { SHARDFILE_VERSIONS } from './version.ts';
-import type { ShardfileVersion } from './version.ts';
+import type { FormatVersion } from './version.ts';
 import { UiSchema, uiRules } from './ui.ts';
 import { scriptBindingRules } from './scripts.ts';
 import { RowsSchema } from './rows.ts';
@@ -142,7 +142,7 @@ export const ShardfileFieldSchemas: { readonly [Key in keyof Shardfile]-?: v.Gen
 /** Public parsed output, independently named by section. The unchanged schema
  * is checked against this interface, so consumers need not expand its input tree. */
 export interface Shardfile {
-  version: ShardfileVersion;
+  version: FormatVersion;
   accent: v.InferOutput<typeof AccentSchema>;
   identity: v.InferOutput<typeof IdentitySchema>;
   presentation?: v.InferOutput<typeof PresentationSchema>;
@@ -476,7 +476,7 @@ export { parseShardfile, parseShardfileField };
 
 /** Admitted data contracts, independent of validator implementation metadata. */
 interface ShardfileRowsInputFields {
-    version: ShardfileVersion;
+    version: FormatVersion;
     accent: v.InferInput<typeof AccentSchema>;
     identity: v.InferInput<typeof IdentitySchema>;
     presentation?: v.InferInput<typeof PresentationSchema>;
@@ -555,7 +555,7 @@ interface ShardfileRowsInputFields {
 }
 export type ShardfileRowsInput = { [Key in keyof ShardfileRowsInputFields]: ShardfileRowsInputFields[Key] };
 interface ShardfileRowsFields {
-    version: ShardfileVersion;
+    version: FormatVersion;
     accent: v.InferOutput<typeof AccentSchema>;
     identity: v.InferOutput<typeof IdentitySchema>;
     presentation?: v.InferOutput<typeof PresentationSchema>;
