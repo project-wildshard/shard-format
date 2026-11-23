@@ -47,6 +47,7 @@ import { RuntimeSchema } from './runtime.ts';
 import { ClientScriptsSchema, clientScriptRules } from './clientScripts.ts';
 import { lampPanelErrors } from './look-swing.ts';
 import { ClientChannelsSchema } from './clientChannels.ts';
+import { EdgeObservationsSchema } from './edge-observations.ts';
 import { EdgeProfilesSchema } from './edgeProfiles.ts';
 import { EntrywaysSchema, entrywayRules } from './entryways.ts';
 import { ModesSchema } from './modes.ts';
@@ -101,6 +102,7 @@ const rawSchema: v.GenericSchema<ShardfileRowsInput, ShardfileRows> & { readonly
   serverBudget: ServerBudgetSchema,
   edge: EdgeProfilesSchema,
   entryways: EntrywaysSchema,
+  edgeObservations: v.exactOptional(EdgeObservationsSchema),
   movers: v.optional(MoversSchema, []),
   modes: v.exactOptional(ModesSchema),
   files: FilesSchema, tiles: TilesSchema, library: LibrarySchema, critical: CriticalSchema, late: v.exactOptional(AdmissionLateSchema),
@@ -157,6 +159,7 @@ export interface Shardfile {
   serverBudget: v.InferOutput<typeof ServerBudgetSchema>;
   edge: v.InferOutput<typeof EdgeProfilesSchema>;
   entryways: v.InferOutput<typeof EntrywaysSchema>;
+  edgeObservations?: v.InferOutput<typeof EdgeObservationsSchema>;
   movers: v.InferOutput<typeof MoversSchema>;
   modes?: v.InferOutput<typeof ModesSchema>;
   files: v.InferOutput<typeof FilesSchema>;
@@ -516,6 +519,7 @@ interface ShardfileRowsInputFields {
     serverBudget: v.InferInput<typeof ServerBudgetSchema>;
     edge: v.InferInput<typeof EdgeProfilesSchema>;
     entryways: v.InferInput<typeof EntrywaysSchema>;
+    edgeObservations?: v.InferInput<typeof EdgeObservationsSchema>;
     movers?: v.InferInput<typeof MoversSchema> | undefined;
     modes?: v.InferInput<typeof ModesSchema>;
     files: v.InferInput<typeof FilesSchema>;
@@ -595,6 +599,7 @@ interface ShardfileRowsFields {
     serverBudget: v.InferOutput<typeof ServerBudgetSchema>;
     edge: v.InferOutput<typeof EdgeProfilesSchema>;
     entryways: v.InferOutput<typeof EntrywaysSchema>;
+    edgeObservations?: v.InferOutput<typeof EdgeObservationsSchema>;
     movers: v.InferOutput<typeof MoversSchema>;
     modes?: v.InferOutput<typeof ModesSchema>;
     files: v.InferOutput<typeof FilesSchema>;

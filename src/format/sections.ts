@@ -78,7 +78,7 @@ export interface PlatformSections {
   'sim/runtime-plan': NativeRuntimePlanData;
   'world/tiles': Pick<Shardfile, 'tiles' | 'far' | 'near' | 'ring'>;
   'world/terrain': Pick<Shardfile, 'terrain' | 'nativeGround'>;
-  'world/edge': Pick<Shardfile, 'edge' | 'entryways'>;
+  'world/edge': Pick<Shardfile, 'edge' | 'entryways' | 'edgeObservations'>;
   'world/collision': Pick<Shardfile, 'meshCollision'>;
   'world/navigation': Pick<Shardfile, 'navigation'>;
   'world/props': Pick<Shardfile, 'props'>;

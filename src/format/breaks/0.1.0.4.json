@@ -36,6 +36,10 @@
     {
       "path": "./sectionVersions#ACCEPTED_SECTION_VERSIONS",
       "noFileChange": "HS6b: a new optional server/plan section (the server's copy of the feature rows); every admitted file still admits, none must carry it"
+    },
+    {
+      "path": "./outputFields#OUTPUT_SECTIONS",
+      "noFileChange": "PR6f1: world/edge may carry an optional edgeObservations field (ground or void, water surface per side); every admitted file still admits, none must carry it"
     }
   ]
 }

@@ -48,7 +48,7 @@ a file for them.
 | Terrain, mesh-collision and navigation blobs | below | `terrainTileBytes.ts`, `meshCollisionBytes.ts`, `navigationBytes.ts` | yes |
 | Hero card | below | the discovery mount, `manifest.card`, `presentation.card` | yes |
 | Rest rigs, skin heights, vehicle hulls, treads, play area, server reads, entry read set | rules (PR6a to PR6e) | the sections they read | yes: format code over the file |
-| Road strip edges | planned (PR6f) | none yet | re-derived by engine at release |
+| Road strip edges | `world/edge` (`edge`, `entryways`, and PR6f1's optional `edgeObservations`) | `EdgeProfilesSchema`, `EntrywaysSchema`, `EdgeObservationsSchema` (`src/format/edgeProfiles.ts`) | rows yes; observations yes once the SDK writes them (PR6f2), until then re-derived by engine |
 
 ## Issue codes (PR3)
 
@@ -168,7 +168,7 @@ there, naming that section.
 | PR6c | The play area and the fall floor at each spot | `playArea` | the manifest's bounds, `client/plan` (`player.enter`, `world.runtime-hooks`) |
 | PR6d | Which files the MMO server reads | `serverReads` | the index's file kinds, the terrain reference |
 | PR6e | The files each tier reads before control | `entryReadSet`, `wholeInputs` | the index, sections, `cook.json` fence |
-| PR6f | Road strip edges | planned | each cell's edges, at engine release |
+| PR6f | Road strip edges | `edgeObservations` (PR6f1, a field, not a rule) | per side: `geometry` (`ground` or `void`) and `waterSurface` (open water's height at the edge, metres, 0 is sea level, within ±250); PR6f2 has the SDK write them from the built world and engine read them instead of its registry (`manifest.ground.structures`, `minimap.openWater`) |
 
 Each rule was moved from engine unchanged in its arithmetic, and engine's own tests run on the format copy, so the
 values match the engine's bit for bit.
