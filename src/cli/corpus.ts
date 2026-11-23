@@ -1,5 +1,5 @@
 import { createWriteStream } from 'node:fs'
-import { mkdir, open, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
@@ -16,9 +16,12 @@ import {
   string,
 } from 'valibot'
 
+import { candidateField, onlyNamed } from './corpus-candidate.ts'
 import { storedDeprecations } from './corpus-deprecations.ts'
 import { withPins } from './corpus-pins.ts'
+import { firstBytes, isPlainTar } from './corpus-tar.ts'
 
+import type { Candidate } from './corpus-candidate.ts'
 import type { Pin } from './corpus-pins.ts'
 import type { InferOutput } from 'valibot'
 
@@ -65,12 +68,15 @@ interface CorpusRow {
   readonly deprecations: readonly string[]
   /** FE13: engine pins this original. */
   readonly pinned?: true
+  /** FE3b: the candidate's verdict, when one runs. */
+  readonly candidate?: string
 }
 
 type Judgement = Readonly<{
   verdict: 'valid' | 'fails'
   reason?: string
   deprecations?: readonly string[]
+  candidate?: string
   transient: boolean
 }>
 
@@ -81,12 +87,13 @@ interface CorpusOptions {
   readonly fetch?: typeof fetch
   /** FE13: engine's shard-file pins, judged with the kept originals. */
   readonly pins?: readonly Pin[]
+  /** FE3b: a candidate chain and validator judged beside the current one; every original is fetched again. */
+  readonly candidate?: Candidate
+  /** Only these shards' originals (`slug`, or one revision as `slug@r5`): a candidate run over the shards it targets. */
+  readonly only?: readonly string[]
 }
 
 const NONE = 0
-const TAR_MAGIC_AT = 257
-const TAR_MAGIC = 'ustar'
-const PEEK_BYTES = 512
 const FETCH_TIMEOUT_MS = 900_000
 /** One original is at most a few hundred MB; a download that takes longer has stalled. */
 const DOWNLOAD_TIMEOUT_MS = 180_000
@@ -103,14 +110,6 @@ function shortReason(error: unknown): string {
       ? `${String(error.code)}: `
       : ''
   return `${code}${text}`.split('\n')[FIRST] ?? text
-}
-
-/** Whether the first bytes are a plain tarball (`ustar` at 257) rather than Brotli. */
-function isPlainTar(head: Readonly<Uint8Array>): boolean {
-  const magic = new TextDecoder().decode(
-    head.subarray(TAR_MAGIC_AT, TAR_MAGIC_AT + TAR_MAGIC.length),
-  )
-  return magic === TAR_MAGIC
 }
 
 /** Downloads one original to `file`: the validator reads it twice, so it is fetched once and read from disk. */
@@ -133,18 +132,6 @@ async function download(
   await pipeline(Readable.fromWeb(response.body), createWriteStream(file))
 }
 
-async function firstBytes(file: string): Promise<Uint8Array> {
-  const handle = await open(file)
-  try {
-    const bytes = new Uint8Array(PEEK_BYTES)
-    await handle.read(bytes, NONE, PEEK_BYTES, NONE)
-    return bytes
-  } finally {
-    await handle.close()
-  }
-}
-
-/** One original through the stream validator, as a stored file. */
 /** A download, tried again when it stalls or drops; the last error is thrown. */
 async function downloadWithRetries(
   options: Readonly<CorpusOptions>,
@@ -185,8 +172,12 @@ async function judge(
       }
     }
     const plain = isPlainTar(await firstBytes(file))
-    const stored = await storedDeprecations(file, plain)
-    return { verdict: 'valid', ...stored, transient: false }
+    return {
+      verdict: 'valid',
+      ...(await storedDeprecations(file, plain)),
+      ...(await candidateField(options.candidate, file, plain)),
+      transient: false,
+    }
   } catch (error: unknown) {
     return { verdict: 'fails', reason: shortReason(error), transient: false }
   } finally {
@@ -203,10 +194,12 @@ async function cachedVerdict(
       await readFile(path.join(options.cache, `${hash}.json`), 'utf8'),
     )
     const cached = parse(CachedSchema, raw)
+    // FE3b: a candidate run judges every original again.
     // A valid verdict cached before FE7 has no deprecation list: judge it again.
     const stale =
       cached.verdict === 'valid' && cached.deprecations === undefined
-    return cached.validator === options.validator && !stale ? cached : undefined
+    const fresh = cached.validator === options.validator && !stale
+    return fresh && options.candidate === undefined ? cached : undefined
   } catch {
     return undefined
   }
@@ -268,7 +261,10 @@ async function listKept(
 async function runCorpus(
   options: Readonly<CorpusOptions>,
 ): Promise<CorpusRow[]> {
-  const shardfiles = await listKept(options)
+  const kept = await listKept(options)
+  const shardfiles = kept.filter((stored: StoredRecord): boolean =>
+    onlyNamed(options.only, stored.revisions),
+  )
   const pins = options.pins ?? []
   const pinned = new Set(pins.map((pin: Readonly<Pin>): string => pin.hash))
   const rows: CorpusRow[] = []
@@ -280,12 +276,7 @@ async function runCorpus(
   return rows
 }
 
-export {
-  type CorpusOptions,
-  type CorpusRow,
-  type StoredRecord,
-  isPlainTar,
-  runCorpus,
-}
+export { type CorpusOptions, type CorpusRow, type StoredRecord, runCorpus }
 
 export { corpusReport } from './corpus-report.ts'
+export { isPlainTar } from './corpus-tar.ts'

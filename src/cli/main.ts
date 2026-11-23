@@ -33,10 +33,16 @@ Commands:
                        measure follows them, and format's validator must
                        pass. Writes <slug>.tar by default
   corpus [--api <url>] [--cache <dir>] [--usage <file>] [--pins <file|url>]
+         [--candidate <module>] [--only <slug,...>]
                        Validate every stored shard file the API keeps,
                        as stored originals; list every failure. Exits 3
                        when any fails. --usage writes who uses each
                        deprecated path and chain step (FE13 reads it)
+                       --candidate <module> judges each original again
+                       under a candidate chain and validator (FE3b):
+                       valid, migrates or fails by path; --only <slugs>
+                       limits the run to those shards (slug@r5: one
+                       revision)
   format-diff <a> <b> [--json]
   format-diff <a>..<b> [--json]  (FE6) each lock change in the range, then the net delta
                        Classify every change between two format locks
@@ -60,6 +66,8 @@ interface CliArgs {
   readonly json: boolean
   readonly usage: string | undefined
   readonly pins: string | undefined
+  readonly candidate: string | undefined
+  readonly only: string | undefined
 }
 
 function parseCliArgs(argv: readonly string[]): CliArgs {
@@ -75,6 +83,8 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
       json: { type: 'boolean', default: false },
       usage: { type: 'string' },
       pins: { type: 'string' },
+      candidate: { type: 'string' },
+      only: { type: 'string' },
     },
   })
   const [command, ...operands] = positionals
@@ -89,6 +99,8 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     json: values.json,
     usage: values.usage,
     pins: values.pins,
+    candidate: values.candidate,
+    only: values.only,
   }
 }
 

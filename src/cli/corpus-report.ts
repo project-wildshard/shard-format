@@ -13,7 +13,7 @@ const VERDICT_WIDTH = 5
 function corpusReport(rows: readonly CorpusRow[]): string {
   const lines = rows.map(
     (found: Readonly<CorpusRow>): string =>
-      `${found.verdict.padEnd(VERDICT_WIDTH)} ${found.slug} r${String(found.revision)} ${found.hash.slice(FIRST, SHORT_HASH)}${found.reason === undefined ? '' : ` ${found.reason}`}`,
+      `${found.verdict.padEnd(VERDICT_WIDTH)} ${found.slug} r${String(found.revision)} ${found.hash.slice(FIRST, SHORT_HASH)}${found.reason === undefined ? '' : ` ${found.reason}`}${found.candidate === undefined ? '' : ` | candidate: ${found.candidate}`}`,
   )
   const failed = rows.filter(
     (found: Readonly<CorpusRow>): boolean => found.verdict === 'fails',

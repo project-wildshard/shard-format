@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 
+import { loadCandidate } from './corpus-candidate.ts'
 import { corpusGate, readKnownFailures } from './corpus-gate.ts'
 import { readPins } from './corpus-pins.ts'
 import { corpusReport } from './corpus-report.ts'
@@ -14,6 +15,8 @@ interface CorpusArgs {
   readonly cache: string
   readonly usage: string | undefined
   readonly pins: string | undefined
+  readonly candidate: string | undefined
+  readonly only: string | undefined
 }
 
 const EXIT_OK = 0
@@ -27,11 +30,18 @@ async function corpusRows(
 ): Promise<Readonly<{ rows: CorpusRow[]; validator: string }>> {
   const validator = await readVersion()
   const pins = args.pins === undefined ? [] : await readPins(args.pins)
+  const candidate =
+    args.candidate === undefined
+      ? {}
+      : { candidate: await loadCandidate(args.candidate) }
+  const only = args.only === undefined ? {} : { only: args.only.split(',') }
   const rows = await runCorpus({
     api: args.api,
     cache: args.cache,
     validator,
     pins,
+    ...candidate,
+    ...only,
   })
   return { rows, validator }
 }
