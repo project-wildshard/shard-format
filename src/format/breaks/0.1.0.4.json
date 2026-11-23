@@ -12,6 +12,14 @@
     {
       "path": "./shardSections#IdentitySchema",
       "deprecation": "identity.revision"
+    },
+    {
+      "path": "./memory-armed#ARMED_ZONES",
+      "noFileChange": "SM4: Nine Dragon leaves the armed list (held, J424); a list of slugs the memory gates read, no shard file field changes"
+    },
+    {
+      "path": "./memory-armed.json#json",
+      "noFileChange": "SM4: Nine Dragon leaves the armed list (held, J424); a list of slugs the memory gates read, no shard file field changes"
     }
   ]
 }
