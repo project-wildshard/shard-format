@@ -132,3 +132,12 @@ kept; 88 valid.
 
 FE3 timing, 11-22 on the MacBook: cold run 240 s (88 originals,
 3,436,128,801 stored bytes fetched); warm run 1 s (88 from cache).
+
+## FE11 goldens (opus-compat-w3, 11-22)
+
+`src/tools/format-goldens.chain.ts` (in `pnpm test:chain`) runs each
+corpus/format-versions fixture through the chain and pins the digest of
+its JSON after every step in `corpus/format-goldens.json`; `--write`
+rewrites them. `migrateShardfile` takes an `onStep` hook. Covers Pine r5
+and r9, Nalati r4, Driftwood, Dunes, Saltwind and Brasscap. The parity
+half (migrated-old against rebuilt-new) is FE11b.

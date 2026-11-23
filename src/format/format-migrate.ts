@@ -50,7 +50,11 @@ interface MigrateOptions {
   readonly to?: string
   /** The steps to run; the registry by default (tests inject their own). */
   readonly migrations?: readonly FormatMigration[]
+  /** FE11: called after each step with the shard as that step left it (the per-step goldens). */
+  readonly onStep?: StepHook
 }
+
+type StepHook = (id: string, shard: Readonly<MigratingShard>) => void
 
 interface MigratedShardfile {
   /** The migrated copy: the original's own map when nothing ran. */
@@ -154,10 +158,12 @@ function rendersAgain(steps: readonly FormatMigration[]): boolean {
 function runSteps(
   shard: MigratingShard,
   steps: readonly FormatMigration[],
+  onStep: StepHook | undefined,
 ): void {
   for (const step of steps) {
     step.apply(shard)
     writeShardfileFormat(shard.index, step.to)
+    onStep?.(step.id, shard)
   }
 }
 
@@ -188,6 +194,7 @@ function writeCopy(
     mountText: ReadonlyMap<string, string>
     steps: readonly FormatMigration[]
     hash: Hash
+    onStep?: StepHook | undefined
   }>,
 ): Map<string, Uint8Array> {
   const { index } = shard
@@ -200,7 +207,7 @@ function writeCopy(
       (row: Readonly<{ path: string }>): string => row.path,
     ),
   ])
-  runSteps(shard, plan.steps)
+  runSteps(shard, plan.steps, plan.onStep)
   const out = new Map(
     [...files].filter(
       ([path]: readonly [string, Uint8Array]): boolean => !gone.has(path),
@@ -253,6 +260,7 @@ function migrateShardfile(
           mountText,
           steps,
           hash: options.hash,
+          onStep: options.onStep,
         })
   return {
     files: copy,
@@ -288,6 +296,7 @@ function validateMigrated(
 export {
   type MigrateOptions,
   type MigratedShardfile,
+  type StepHook,
   migrateShardfile,
   validateMigrated,
 }
