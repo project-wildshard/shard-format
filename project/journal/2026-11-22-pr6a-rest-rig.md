@@ -7,3 +7,5 @@ PR6d: engine's serverReadsFile rule (bin, json, wasm, and the terrain's tile) mo
 PR6c: engine's declaredPlayArea (manifest bounds under player.enter and world.runtime-hooks) moves to format's playArea subpath; it takes the plan's feature rows, not a folder.
 
 PR6b: engine's vehicleHulls (steer vehicles' panel boxes turned into the vehicle's frame, three.js quaternion steps ported term for term; 2000 random vehicles match engine bit for bit, -0 included) and treadBoxes move to format.
+
+PR6e: engine's entryReadSet and wholeInputs move to format verbatim (entryReadSet, wholeInputs subpaths); docs/preparation.md lists PR6a to PR6e as rules over the file (no new sections, so PR3 needs no new schema), PR6f still planned.

@@ -47,7 +47,8 @@ a file for them.
 | `server/native-assembly.json` | below | `src/format/nativeAssembly.ts` | yes |
 | Terrain, mesh-collision and navigation blobs | below | `terrainTileBytes.ts`, `meshCollisionBytes.ts`, `navigationBytes.ts` | yes |
 | Hero card | below | the discovery mount, `manifest.card`, `presentation.card` | yes |
-| Creature volumes, collider shapes, seal solids, server rows, entry read set, road edges | planned (PR6a to PR6f) | none yet | re-derived by engine at runtime |
+| Rest rigs, skin heights, vehicle hulls, treads, play area, server reads, entry read set | rules (PR6a to PR6e) | the sections they read | yes: format code over the file |
+| Road strip edges | planned (PR6f) | none yet | re-derived by engine at release |
 
 ## Issue codes (PR3)
 
@@ -152,14 +153,22 @@ The discovery mount's `data.card`, else `manifest.card`, else `presentation.card
 Read by the API's hero gate (`api-server/src/server/shardfile/hero-gate.ts`), which reads the image's own header
 for its size.
 
-## Planned sections (PR6)
+## Rules over the shard (PR6)
 
-Values the engine re-derives from shard data today; each gets a section here and a schema when it moves into
-preparation:
+PR1 found values the engine re-derived from shard data with its own code. They are not new sections: each is a
+function of sections and blobs the file already carries, so it moves into format as a rule, and any consumer (the cook,
+the MMO server, the client, a tool) computes the same value from the file with no engine. A rule reads only prepared
+data, so it needs no schema of its own: the sections it reads are validated already (PR3), and a malformed one fails
+there, naming that section.
 
-- **PR6a** creature hit volumes, sockets and giant height (from the rig GLB);
-- **PR6b** prop, mesh and vehicle collider shapes;
-- **PR6c** arena seal solids, play area and fall floor;
-- **PR6d** the server's read set (which files the server needs);
-- **PR6e** the entry read set per tier;
-- **PR6f** road strip edges.
+| Row | Value | Format subpath | Reads |
+|---|---|---|---|
+| PR6a | A creature's rest rig (joints, parents, rest offsets) and its skin's rest height | `creatureRestRig`, `creatureSkinBounds` | the rig GLB (three.js 0.186's matrix steps, term for term) |
+| PR6b | Each steer vehicle's hull in its own frame; a stair's treads as boxes | `vehicleHulls`, `treadBoxes` | `movers`, `props.colliders` |
+| PR6c | The play area and the fall floor at each spot | `playArea` | the manifest's bounds, `client/plan` (`player.enter`, `world.runtime-hooks`) |
+| PR6d | Which files the MMO server reads | `serverReads` | the index's file kinds, the terrain reference |
+| PR6e | The files each tier reads before control | `entryReadSet`, `wholeInputs` | the index, sections, `cook.json` fence |
+| PR6f | Road strip edges | planned | each cell's edges, at engine release |
+
+Each rule was moved from engine unchanged in its arithmetic, and engine's own tests run on the format copy, so the
+values match the engine's bit for bit.
