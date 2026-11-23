@@ -58,6 +58,7 @@
     "./audioMeasure": "./src/format/audio-measure.ts",
     "./audioRules": "./src/format/audio-rules.ts",
     "./audioWaiver": "./src/format/audio-waiver.ts",
+    "./jsonSchema": "./src/format/json-schema.ts",
     "./shardfileAudio": "./src/format/shardfile-audio.ts",
     "./audioRouting": "./src/format/audioRouting.ts",
     "./audioScene": "./src/format/audioScene.ts",
@@ -488,6 +489,7 @@
     "reupload": "node src/tools/reupload.ts"
   },
   "dependencies": {
+    "@valibot/to-json-schema": "1.8.0",
     "meshoptimizer": "1.2.0",
     "valibot": "1.5.0"
   },
