@@ -4,6 +4,9 @@ import { parseArgs } from 'node:util'
 
 import { corpusGate, readKnownFailures } from './corpus-gate.ts'
 import { corpusReport, runCorpus } from './corpus.ts'
+import { readLock } from './format-diff-lock.ts'
+import { formatDiffReport } from './format-diff-report.ts'
+import { formatDiff } from './format-diff.ts'
 import { packFolder } from './pack.ts'
 import { summary, validateShardfile } from './validate.ts'
 import { readVersion } from './version.ts'
@@ -13,6 +16,7 @@ const EXIT_USAGE = 1
 const EXIT_CRASH = 2
 const EXIT_INVALID = 3
 const NONE = 0
+const JSON_INDENT = 1
 
 // Arguments start after [node, script] in process.argv.
 const FIRST_CLI_ARG = 2
@@ -34,6 +38,11 @@ Commands:
                        Validate every stored shard file the API keeps,
                        as stored originals; list every failure. Exits 3
                        when any fails
+  format-diff <a> <b> [--json]
+                       Classify every change between two format locks
+                       (a git ref or a folder holding src/format/lock):
+                       additive, deprecation, breaking or review, with
+                       rename? pairs and a suggested migration op
 
 Options:
   --version            Print the version
@@ -48,6 +57,7 @@ interface CliArgs {
   readonly api: string
   readonly cache: string
   readonly version: boolean
+  readonly json: boolean
 }
 
 function parseCliArgs(argv: readonly string[]): CliArgs {
@@ -60,6 +70,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
       api: { type: 'string', default: DEFAULT_API },
       cache: { type: 'string', default: DEFAULT_CACHE },
       version: { type: 'boolean', default: false },
+      json: { type: 'boolean', default: false },
     },
   })
   const [command, ...operands] = positionals
@@ -71,6 +82,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     api: values.api,
     cache: values.cache,
     version: values.version,
+    json: values.json,
   }
 }
 
@@ -151,18 +163,40 @@ async function corpus(args: CliArgs): Promise<number> {
   return gate.blocking.length > NONE ? EXIT_INVALID : EXIT_OK
 }
 
+async function formatDiffCommand(args: CliArgs): Promise<number> {
+  const [before, after, ...extra] = args.operands
+  if (before === undefined || after === undefined || extra.length > NONE) {
+    process.stderr.write(
+      `shard-format: format-diff takes two locks\n\n${USAGE}`,
+    )
+    return EXIT_USAGE
+  }
+  const cwd = process.cwd()
+  const report = formatDiff(
+    await readLock(before, cwd),
+    await readLock(after, cwd),
+  )
+  process.stdout.write(
+    `${args.json ? JSON.stringify(report, undefined, JSON_INDENT) : formatDiffReport(report)}\n`,
+  )
+  return EXIT_OK
+}
+
+const COMMANDS: Readonly<Record<string, (args: CliArgs) => Promise<number>>> = {
+  validate: async (args: CliArgs): Promise<number> =>
+    await validate(args.operands),
+  pack,
+  corpus,
+  'format-diff': formatDiffCommand,
+}
+
 async function runCommand(args: CliArgs): Promise<number> {
   if (args.command === undefined) {
     return printUsage(EXIT_USAGE)
   }
-  if (args.command === 'validate') {
-    return await validate(args.operands)
-  }
-  if (args.command === 'pack') {
-    return await pack(args)
-  }
-  if (args.command === 'corpus') {
-    return await corpus(args)
+  const command = COMMANDS[args.command]
+  if (command !== undefined) {
+    return await command(args)
   }
   process.stderr.write(
     `shard-format: unknown command ${args.command}\n\n${USAGE}`,

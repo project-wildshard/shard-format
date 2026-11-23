@@ -3,9 +3,11 @@ import path from 'node:path'
 import { argv, stderr, stdout } from 'node:process'
 import { pathToFileURL } from 'node:url'
 
+import { DEPRECATIONS } from '../format/deprecations.ts'
 import { chainIdOf, LockWalk } from './format-lock-core.ts'
 import { byKey, isRecord } from './format-lock-data.ts'
 
+import type { Deprecation } from '../format/deprecations.ts'
 import type { Excluded, Loaded } from './format-lock-core.ts'
 import type { Json, Rows } from './format-lock-data.ts'
 
@@ -19,6 +21,8 @@ import type { Json, Rows } from './format-lock-data.ts'
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const LOCK = path.join(ROOT, 'src/format/lock')
 const INDEX = 'index.json'
+// Not a package export: the lock adds FE7's table under this name.
+const DEPRECATIONS_SUBPATH = './deprecations'
 const CHAIN =
   /^(?:format-migrat|format-migrations|migrations|validationReceipt|canonical)/u
 const EXIT_OK = 0
@@ -111,6 +115,24 @@ async function load(target: string): Promise<Loaded> {
   }
 }
 
+/** FE7's deprecation table, one row per id, so FE2 sees a new deprecation as its own change. */
+function deprecationRows(): Loaded {
+  const rows = DEPRECATIONS.map(
+    (row: Readonly<Deprecation>): readonly [string, unknown] => [
+      row.id,
+      Object.fromEntries(
+        Object.entries(row).map(
+          ([key, value]: readonly [string, unknown]): readonly [
+            string,
+            unknown,
+          ] => [key, value ?? 'none'],
+        ),
+      ),
+    ],
+  )
+  return { module: Object.fromEntries(rows) }
+}
+
 /** The lock as the code stands. */
 async function lockNow(): Promise<Lock> {
   const walk = new LockWalk()
@@ -118,6 +140,7 @@ async function lockNow(): Promise<Lock> {
     // oxlint-disable-next-line no-await-in-loop -- modules load in a fixed order, so `ref` paths are stable
     walk.add(subpath, await load(target))
   }
+  walk.add(DEPRECATIONS_SUBPATH, deprecationRows())
   return {
     chainId: chainIdOf(await chainSources()),
     rows: walk.rows,

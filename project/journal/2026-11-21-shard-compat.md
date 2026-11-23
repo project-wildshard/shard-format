@@ -58,3 +58,20 @@ all, after dropping each node's constant `kind: schema` and default
 kept out of the npm package (`!src/format/lock/**`) and the src/format
 format ratchet (generated, like ratchet.json). Keys sort by code unit, not
 locale, so CI and the Mac write the same bytes. FE2's classifier reads it.
+
+## FE2: format-diff (opus-compat-w3)
+
+`shard-format format-diff <a> <b> [--json]` reads two format locks (a git
+ref, or a folder holding `src/format/lock`) and sorts every change into
+additive, deprecation, breaking or review, with `rename?` pairs and an FE8
+op (drop, fill, map, rename, renameKind, moveSection). Before comparing, it
+resolves `ref` rows into full subtrees, drops `expects` (derived text),
+folds wrappers into the node they wrap and keys variant options by their
+literal, so sharing a schema, making a field optional or inserting a
+variant option moves one row, not hundreds. Only the topmost added or
+removed path is reported. The lock now also carries FE7's deprecation table
+(`./deprecations#<id>`), so a new deprecation is its own change. 36 seeded
+kinds tested. By hand, v0.65.0 to v0.66.0 (locks built in a tmp checkout of
+each tag): 17 changes, all additive, which matches the release (optional
+boss decision/body, level audio, hunt/species, vehicle docks, page-start
+words optional in the manifest).
