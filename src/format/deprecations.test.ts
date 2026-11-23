@@ -145,6 +145,9 @@ describe('the deprecation counter (FE7)', (): void => {
       'shard.version',
       'shard.empty-fields',
       'shard.sdk-marker',
+      // FP19: the Brasscap template export is built and never prepared, on cook data version 1.
+      'shard.unprepared',
+      'cook.legacy-data',
       'requires.sdk',
       'requires.capabilities',
     ])
@@ -157,6 +160,6 @@ describe('the deprecation counter (FE7)', (): void => {
     expect(
       validateMigrated(copy.files, { hash: sha256, judged: 'stored' })
         .deprecations,
-    ).toEqual(['requires.sdk', 'requires.capabilities'])
+    ).toEqual(['cook.legacy-data', 'requires.sdk', 'requires.capabilities'])
   })
 })

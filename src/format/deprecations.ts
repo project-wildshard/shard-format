@@ -1,8 +1,8 @@
 // oxlint-disable typescript/prefer-readonly-parameter-types -- the index is valibot output, only read
-/** The deprecation counter (SHARD-COMPAT FE7, J486). A deprecated path still validates; it carries the version that
- * deprecated it and its replacement, both validators warn when a shard file uses it, and the corpus counts the kept
- * files using each (`shard-format corpus`). A path with a migration is mended by the chain; one without waits for its
- * users to reach zero before it is deleted. */
+/** The deprecation counter (SHARD-COMPAT FE7, J486). A deprecated path still validates, with its version and replacement;
+ * both validators warn on it and the corpus counts its kept users (`shard-format corpus`). A path with a migration is
+ * mended by the chain; one without is deleted once no kept file uses it. */
+import { COOK_DEPRECATIONS } from './cook-deprecations.ts'
 import { SAVE_REVISION_DEPRECATION } from './save-revision.ts'
 import { SCHEMA_SOURCE_DEPRECATION } from './schema-source.ts'
 
@@ -22,10 +22,11 @@ interface Deprecation {
   readonly migration: string | undefined
 }
 
-/** What a deprecation test reads: the index and each section by name. */
+/** What a deprecation test reads: the index, each section by name and, from the folder validator, `cook.json`. */
 interface DeprecationInput {
   readonly index: Readonly<OutputIndex> | Readonly<Record<string, unknown>>
   readonly sections: ReadonlyMap<string, unknown>
+  readonly cook?: unknown
 }
 
 interface DeprecationRule extends Deprecation {
@@ -122,6 +123,7 @@ const RULES: readonly DeprecationRule[] = [
   },
   SAVE_REVISION_DEPRECATION,
   SCHEMA_SOURCE_DEPRECATION,
+  ...COOK_DEPRECATIONS,
   {
     id: 'requires.sdk',
     path: 'shard.json requires.sdk (SHARD-COMPAT CP8): a copy of the format version',
