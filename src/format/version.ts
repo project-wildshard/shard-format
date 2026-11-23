@@ -1,6 +1,6 @@
 import { LEGACY_PREPARATION_SPEC, PREPARED_SDK } from './preparation-spec.ts'
 
-/** Canonical format revision, separate from the npm package and script ABI (J319).
+/** Canonical format version, separate from the npm package and script ABI (J319).
  * The fourth component adds fields; the third changes their meaning. */
 const ZERO = 0
 const ONE = 1
