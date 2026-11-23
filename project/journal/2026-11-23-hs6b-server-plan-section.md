@@ -9,3 +9,8 @@ by the engine's seam (HS6c). No chain step writes it: a repair step at the
 current format would make a migrated copy of every live shard and drop each
 one's receipt, so old files keep the seam's `client/plan` fallback until the
 roll re-uploads them.
+
+The section has its own schema, `ServerPlanSchema` (a version and up to 64 rows
+naming their kind), because FP9 refuses a new section that cannot project to
+JSON Schema and `client/plan`'s cannot yet. The engine's seam parses each row
+with the client plan's schema.

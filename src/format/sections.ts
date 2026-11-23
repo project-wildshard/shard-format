@@ -10,6 +10,7 @@ import type { ToonLookRow } from './toonLook.ts';
 import type { KeyedSkyStyle } from './keyedSky.ts';
 import type { SpawnScriptRows } from './spawnScripts.ts';
 import type { ClientPlan } from './clientPlan.ts';
+import type { ServerPlan } from './server-plan.ts';
 import type { NativeSweptPolicyRows } from './items.ts';
 import type { ReturnModuleRow, ViewModuleRow } from './scriptContract.ts';
 import type { WorldScenesSection } from './worldScenes.ts';
@@ -64,7 +65,7 @@ export interface PlatformSections {
   /** Client-only compiled feature declarations; ignored by the authoritative simulation. */
   'client/plan': ClientPlan;
   /** SHARD-COMPAT HS6b: the feature rows the server reads, written beside `client/plan` so the page's plan is the page's. */
-  'server/plan': ClientPlan;
+  'server/plan': ServerPlan;
   'held/arms': HeldArmsRows;
   'held/gear': HeldGearRows;
   'held/finishes': HeldFinishesRows;

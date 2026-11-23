@@ -10,6 +10,8 @@ import { ExplorerCatalogueSchema, type ExplorerCatalogue } from './explorerCatal
 import { ToonLookSchema, type ToonLookRow } from './toonLook.ts';
 import { KEYED_SKY, type KeyedSkyStyle } from './keyedSky.ts';
 import { ClientPlanSchema, type ClientPlan } from './clientPlan.ts';
+import { ServerPlanSchema } from './server-plan.ts';
+import type { ServerPlan } from './server-plan.ts';
 import { SpawnScriptsSchema, type SpawnScriptRows } from './spawnScripts.ts';
 import { WorldScenesSchema, type WorldScenesSection } from './worldScenes.ts';
 import { HeldArmsSchema, type HeldArmsRows } from './heldArms.ts';
@@ -51,7 +53,7 @@ export interface PlatformDataSections {
   'look/keyed-sky': KeyedSkyStyle;
   'client/plan': ClientPlan;
   /** SHARD-COMPAT HS6b: the server's own copy of the feature rows, so `client/plan` stays the page's. */
-  'server/plan': ClientPlan;
+  'server/plan': ServerPlan;
   'view/modules': ViewModuleRow[];
   'held/arms': HeldArmsRows;
   'held/gear': HeldGearRows;
@@ -91,7 +93,7 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'look/colour-functions': { schema: ColourFunctionBookSchema },
   'look/keyed-sky': { schema: KEYED_SKY },
   'client/plan': { schema: ClientPlanSchema },
-  'server/plan': { schema: ClientPlanSchema },
+  'server/plan': { schema: ServerPlanSchema },
   'view/modules': { schema: ViewModulesSchema },
   'held/arms': { schema: HeldArmsSchema },
   'held/gear': { schema: HeldGearSchema },
@@ -135,7 +137,7 @@ export function parsePlatformDataSection(name: 'look/toon', value: unknown): Too
 export function parsePlatformDataSection(name: 'look/painted', value: unknown): PaintedLookRow;
 export function parsePlatformDataSection(name: 'look/colour-functions', value: unknown): ColourFunctionBook;
 export function parsePlatformDataSection(name: 'look/keyed-sky', value: unknown): KeyedSkyStyle;
-export function parsePlatformDataSection(name: 'client/plan' | 'server/plan', value: unknown): ClientPlan;
+export function parsePlatformDataSection(name: 'client/plan', value: unknown): ClientPlan;
 export function parsePlatformDataSection(name: 'view/modules', value: unknown): ViewModuleRow[];
 export function parsePlatformDataSection(name: 'held/arms', value: unknown): HeldArmsRows;
 export function parsePlatformDataSection(name: 'held/loadout', value: unknown): LoadoutRows;
