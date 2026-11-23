@@ -15,7 +15,7 @@ function widened(
   return { edge: row.edge, at: row.at, width: ENTRY_WIDTH }
 }
 
-/** A valid empty world; add baked content before shipping a playable shard. The identity takes `saveRevision`, or
+/** A valid empty world, with no `requires.sdk` (SHARD-COMPAT CP8: a copy of the format version, deprecated); add baked content before shipping a playable shard. The identity takes `saveRevision`, or
  * the spelling up to format 0.1.0.3, `revision` (FP26); the file comes back with `saveRevision`. */
 function emptyShardfile(identity: Readonly<ShardIdentityInput>): Shardfile {
   const { edgeSamples, edgeGrey, edgeHeight, requires, entryways, ...rest } =
@@ -33,7 +33,7 @@ function emptyShardfile(identity: Readonly<ShardIdentityInput>): Shardfile {
     ...rest,
     version: SHARDFILE_VERSION,
     identity,
-    requires: { sdk: SHARDFILE_VERSION, ...requires },
+    requires,
     entryways: entryways.map(
       (row: Readonly<{ edge: string; at: readonly number[] }>): object =>
         widened(row),

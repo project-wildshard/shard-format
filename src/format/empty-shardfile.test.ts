@@ -18,6 +18,7 @@ test('the starting shard file parses at the current format', (): void => {
   expect(file.version).toBe(SHARDFILE_VERSION)
   expect(file.identity).toEqual(IDENTITY)
   expect(file.far).toBeNull()
+  expect('sdk' in file.requires).toBe(false)
   expect(file.edge.north.heights).toHaveLength(257)
   expect(
     file.entryways.map((row: Readonly<{ edge: string }>): string => row.edge),
