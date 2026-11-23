@@ -2790,7 +2790,7 @@
   },
   "src/format/platformDataSections.ts": {
    "eslint(id-length)": 1,
-   "import(consistent-type-specifier-style)": 31,
+   "import(consistent-type-specifier-style)": 30,
    "import(group-exports)": 37,
    "import(max-dependencies)": 1,
    "import(no-namespace)": 1,

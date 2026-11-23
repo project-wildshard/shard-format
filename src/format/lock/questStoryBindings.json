@@ -34,7 +34,7 @@
   "./questStoryBindings#QuestStoryBindingsSchema.collections[].names": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=256","requirement":256}]},
   "./questStoryBindings#QuestStoryBindingsSchema.collections[].names[]": {"ref":"./questStoryBindings#QuestStoryBindingsSchema.cable.arrival"},
   "./questStoryBindings#QuestStoryBindingsSchema.collections[].prefix": {"ref":"./questStoryBindings#QuestStoryBindingsSchema.cable.arrival"},
-  "./questStoryBindings#QuestStoryBindingsSchema.content": {"ref":"./clientPlan#ClientFeatureSchema|45.source"},
+  "./questStoryBindings#QuestStoryBindingsSchema.content": {"ref":"./clientPlan#ClientFeatureSchema|44.source"},
   "./questStoryBindings#QuestStoryBindingsSchema.debug": {"type":"strict_object","expects":"Object"},
   "./questStoryBindings#QuestStoryBindingsSchema.debug.browser": {"ref":"./questStoryBindings#QuestStoryBindingsSchema.cable.arrival"},
   "./questStoryBindings#QuestStoryBindingsSchema.debug.id": {"ref":"./questStoryBindings#QuestStoryBindingsSchema.cable.arrival"},

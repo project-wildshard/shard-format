@@ -44,6 +44,18 @@
     {
       "path": "./outputIndex#OutputIndexSchema.preparation",
       "noFileChange": "SHARD-COMPAT SP1b1a: shard.json's preparation widens from the specs this package reads (3, 4) to any spec 3 to 255; every file read before reads the same, and a newer spec is kept unread (unreadPreparationSpec) so a cook names it stale instead of refusing the index"
+    },
+    {
+      "path": "./clientPlan#ClientFeatureSchema|=population_product-creatures",
+      "noFileChange": "ONE-FORMAT OF30 cut B: population.product-creatures leaves the client plan with engine cut B, which already refuses it at runtime. The kept-originals corpus is the contract (FE3/FE5) and carries none of it; no current engine pin does either. 15 unpinned Driftwood r2 builds in the pin cache carry it (J486 prune candidates, not kept originals); one of them, 329f37d67d676ad001e2b39fad443ce84f9708cb14e062e67a5fede2ba34a3fb, validates on 0.71.0 and is refused after this. Coordinator's call 2026-11-23: no version bump"
+    },
+    {
+      "path": "./featureSides#CLIENT_FEATURE_SIDES",
+      "noFileChange": "ONE-FORMAT OF30 cut B: population.product-creatures leaves the client plan with engine cut B, which already refuses it at runtime. The kept-originals corpus is the contract (FE3/FE5) and carries none of it; no current engine pin does either. 15 unpinned Driftwood r2 builds in the pin cache carry it (J486 prune candidates, not kept originals); one of them, 329f37d67d676ad001e2b39fad443ce84f9708cb14e062e67a5fede2ba34a3fb, validates on 0.71.0 and is refused after this. Coordinator's call 2026-11-23: no version bump"
+    },
+    {
+      "path": "./featureSides#SIDE_TABLES",
+      "noFileChange": "ONE-FORMAT OF30 cut B: population.product-creatures leaves the client plan with engine cut B, which already refuses it at runtime. The kept-originals corpus is the contract (FE3/FE5) and carries none of it; no current engine pin does either. 15 unpinned Driftwood r2 builds in the pin cache carry it (J486 prune candidates, not kept originals); one of them, 329f37d67d676ad001e2b39fad443ce84f9708cb14e062e67a5fede2ba34a3fb, validates on 0.71.0 and is refused after this. Coordinator's call 2026-11-23: no version bump"
     }
   ]
 }

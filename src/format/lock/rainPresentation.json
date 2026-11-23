@@ -45,5 +45,5 @@
   "./rainPresentation#RainPresentationSchema.programs.splash": {"ref":"./rainPresentation#RainPresentationSchema.cover.page"},
   "./rainPresentation#RainPresentationSchema.rings": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=16","requirement":16}]},
   "./rainPresentation#RainPresentationSchema.rings[]": {"ref":"./rainPresentation#RainPresentationSchema.cover.page"},
-  "./rainPresentation#RainPresentationSchema.water": {"ref":"./clientPlan#ClientFeatureSchema|46.rows[]|0.surface"}
+  "./rainPresentation#RainPresentationSchema.water": {"ref":"./clientPlan#ClientFeatureSchema|45.rows[]|0.surface"}
 }
