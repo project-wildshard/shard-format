@@ -26,6 +26,7 @@ function usage(users: readonly string[], hoursOld: number): Usage {
     originals: 85,
     deprecations: users.length > 0 ? { 'requires.sdk': users } : {},
     migrations: {},
+    pins: 33,
   }
 }
 
@@ -101,5 +102,39 @@ describe('corpus usage (FE13)', (): void => {
       'fp8-shardfile-pointer': ['pine-hollow r5'],
     })
     assert.deepEqual(readUsage(JSON.stringify(found)), found)
+  })
+})
+
+describe('the delete gate counts engine pins (FE13, pins half)', (): void => {
+  it('an original only engine pins blocks the deletion, named as a pin', (): void => {
+    const rows = [
+      {
+        slug: 'pine-hollow',
+        revision: 3,
+        hash: 'c',
+        storedBytes: 1,
+        verdict: 'valid',
+        reason: undefined,
+        cached: true,
+        deprecations: ['requires.sdk'],
+        pinned: true,
+      },
+    ] as const
+    const found = corpusUsage(rows, '0.69.2', new Date(NOW))
+    const result = formatGate(gateWith(found))
+    assert.equal(found.pins, 1)
+    assert.equal(result.ok, false)
+    assert.match(
+      result.lines.join('\n'),
+      /1 kept originals still use it \(pine-hollow r3 \(engine pin\)\)/u,
+    )
+  })
+
+  it('a usage record measured without the pins fails the deletion', (): void => {
+    const { pins: _unused, ...unpinned } = usage([], 1)
+    assert.match(
+      formatGate(gateWith(unpinned)).lines.join('\n'),
+      /covers no engine shard pins/u,
+    )
   })
 })

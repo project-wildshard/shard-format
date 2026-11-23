@@ -1,6 +1,14 @@
 import { writeFile } from 'node:fs/promises'
 
-import { array, number, parse, record, strictObject, string } from 'valibot'
+import {
+  array,
+  number,
+  optional,
+  parse,
+  record,
+  strictObject,
+  string,
+} from 'valibot'
 
 import type { CorpusRow } from './corpus.ts'
 
@@ -17,6 +25,8 @@ interface Usage {
   readonly originals: number
   readonly deprecations: Readonly<Record<string, readonly string[]>>
   readonly migrations: Readonly<Record<string, readonly string[]>>
+  /** FE13: how many engine-pinned shard files the run covered; absent when it ran without `--pins`. */
+  readonly pins?: number | undefined
 }
 
 const Users = record(string(), array(string()))
@@ -26,9 +36,11 @@ const UsageSchema = strictObject({
   originals: number(),
   deprecations: Users,
   migrations: Users,
+  pins: optional(number()),
 })
 const MIGRATED = 'migrated: '
 const INDENT = 1
+const NO_PINS = 0
 
 function add(
   users: Map<string, string[]>,
@@ -50,6 +62,13 @@ function stepsOf(reason: string | undefined): readonly string[] {
     : []
 }
 
+/** FE13: how many rows engine pins. */
+function pinsOf(rows: readonly Readonly<CorpusRow>[]): number {
+  return rows.filter(
+    (found: Readonly<CorpusRow>): boolean => found.pinned === true,
+  ).length
+}
+
 /** Who uses each deprecated path and each chain step, over the kept originals. */
 function corpusUsage(
   rows: readonly Readonly<CorpusRow>[],
@@ -59,17 +78,19 @@ function corpusUsage(
   const deprecations = new Map<string, string[]>()
   const migrations = new Map<string, string[]>()
   for (const found of rows) {
-    const name = `${found.slug} r${String(found.revision)}`
+    const name = `${found.slug} r${String(found.revision)}${found.pinned === true ? ' (engine pin)' : ''}`
     add(deprecations, found.deprecations, name)
     add(migrations, stepsOf(found.reason), name)
   }
-  return {
+  const usage: Usage = {
     measuredAt: measuredAt.toISOString(),
     validator,
     originals: rows.length,
     deprecations: Object.fromEntries(deprecations),
     migrations: Object.fromEntries(migrations),
   }
+  const pins = pinsOf(rows)
+  return pins === NO_PINS ? usage : { ...usage, pins }
 }
 
 async function writeUsage(file: string, usage: Readonly<Usage>): Promise<void> {

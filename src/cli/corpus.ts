@@ -16,8 +16,10 @@ import {
   string,
 } from 'valibot'
 
-import { deprecationLines, storedDeprecations } from './corpus-deprecations.ts'
+import { storedDeprecations } from './corpus-deprecations.ts'
+import { withPins } from './corpus-pins.ts'
 
+import type { Pin } from './corpus-pins.ts'
 import type { InferOutput } from 'valibot'
 
 // `shard-format corpus` (meta SHARD-COMPAT FE3, J486 Q47 Q52): run this
@@ -61,6 +63,8 @@ interface CorpusRow {
   readonly reason: string | undefined
   readonly cached: boolean
   readonly deprecations: readonly string[]
+  /** FE13: engine pins this original. */
+  readonly pinned?: true
 }
 
 type Judgement = Readonly<{
@@ -75,6 +79,8 @@ interface CorpusOptions {
   readonly cache: string
   readonly validator: string
   readonly fetch?: typeof fetch
+  /** FE13: engine's shard-file pins, judged with the kept originals. */
+  readonly pins?: readonly Pin[]
 }
 
 const NONE = 0
@@ -88,8 +94,6 @@ const DOWNLOAD_TRIES = 3
 const FIRST_TRY = 1
 const OK_LOW = 200
 const OK_HIGH = 300
-const SHORT_HASH = 12
-const VERDICT_WIDTH = 5
 const FIRST = 0
 
 function shortReason(error: unknown): string {
@@ -246,55 +250,42 @@ async function row(
   }
 }
 
-/** Every kept original's verdict, in the API's upload order. */
-async function runCorpus(
+/** The API's public list of kept originals. */
+async function listKept(
   options: Readonly<CorpusOptions>,
-): Promise<CorpusRow[]> {
+): Promise<readonly StoredRecord[]> {
   const listed = await (options.fetch ?? fetch)(
     new URL('/api/shardfiles', options.api),
-    {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    },
+    { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
   )
   if (listed.status < OK_LOW || listed.status >= OK_HIGH) {
     throw new Error(`list: HTTP ${String(listed.status)}`)
   }
-  const { shardfiles } = parse(ListSchema, await listed.json())
-  const rows: CorpusRow[] = []
-  for (const stored of shardfiles) {
-    // oxlint-disable-next-line eslint/no-await-in-loop -- one original at a time keeps memory bounded
-    rows.push(await row(options, stored))
-  }
-  return rows
+  return parse(ListSchema, await listed.json()).shardfiles
 }
 
-function corpusReport(rows: readonly CorpusRow[]): string {
-  const lines = rows.map(
-    (found: Readonly<CorpusRow>): string =>
-      `${found.verdict.padEnd(VERDICT_WIDTH)} ${found.slug} r${String(found.revision)} ${found.hash.slice(FIRST, SHORT_HASH)}${found.reason === undefined ? '' : ` ${found.reason}`}`,
-  )
-  const failed = rows.filter(
-    (found: Readonly<CorpusRow>): boolean => found.verdict === 'fails',
-  ).length
-  const fetched = rows.filter(
-    (found: Readonly<CorpusRow>): boolean => !found.cached,
-  )
-  const bytes = fetched.reduce(
-    (sum: number, found: Readonly<CorpusRow>): number =>
-      sum + found.storedBytes,
-    NONE,
-  )
-  lines.push(
-    `corpus: ${String(rows.length)} kept originals, ${String(rows.length - failed)} valid, ${String(failed)} fail; fetched ${String(fetched.length)} (${String(bytes)} stored bytes), ${String(rows.length - fetched.length)} from cache`,
-    ...deprecationLines(rows),
-  )
-  return lines.join('\n')
+/** Every kept original's verdict, in the API's upload order, then engine's pins the list leaves out (FE13). */
+async function runCorpus(
+  options: Readonly<CorpusOptions>,
+): Promise<CorpusRow[]> {
+  const shardfiles = await listKept(options)
+  const pins = options.pins ?? []
+  const pinned = new Set(pins.map((pin: Readonly<Pin>): string => pin.hash))
+  const rows: CorpusRow[] = []
+  for (const stored of withPins(shardfiles, pins)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- one original at a time keeps memory bounded
+    const found = await row(options, stored)
+    rows.push(pinned.has(stored.hash) ? { ...found, pinned: true } : found)
+  }
+  return rows
 }
 
 export {
   type CorpusOptions,
   type CorpusRow,
-  corpusReport,
+  type StoredRecord,
   isPlainTar,
   runCorpus,
 }
+
+export { corpusReport } from './corpus-report.ts'

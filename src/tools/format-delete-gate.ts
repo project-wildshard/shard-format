@@ -38,6 +38,9 @@ function deletionProblem(
   if (usage === undefined) {
     return `${change.path}: deleting it needs corpus/usage.json (pnpm corpus:usage) showing no kept original uses it`
   }
+  if (usage.pins === undefined) {
+    return `${change.path}: corpus/usage.json covers no engine shard pins: run pnpm corpus:usage (it reads them with --pins)`
+  }
   if (now - Date.parse(usage.measuredAt) > DAY_MS) {
     return `${change.path}: corpus/usage.json is from ${usage.measuredAt}, over 24 hours old: run pnpm corpus:usage`
   }

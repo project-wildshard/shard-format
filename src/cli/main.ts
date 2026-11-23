@@ -32,7 +32,7 @@ Commands:
                        Tar a folder into a shardfile: what its sections
                        measure follows them, and format's validator must
                        pass. Writes <slug>.tar by default
-  corpus [--api <url>] [--cache <dir>] [--usage <file>]
+  corpus [--api <url>] [--cache <dir>] [--usage <file>] [--pins <file|url>]
                        Validate every stored shard file the API keeps,
                        as stored originals; list every failure. Exits 3
                        when any fails. --usage writes who uses each
@@ -59,6 +59,7 @@ interface CliArgs {
   readonly version: boolean
   readonly json: boolean
   readonly usage: string | undefined
+  readonly pins: string | undefined
 }
 
 function parseCliArgs(argv: readonly string[]): CliArgs {
@@ -73,6 +74,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
       version: { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
       usage: { type: 'string' },
+      pins: { type: 'string' },
     },
   })
   const [command, ...operands] = positionals
@@ -86,6 +88,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     version: values.version,
     json: values.json,
     usage: values.usage,
+    pins: values.pins,
   }
 }
 

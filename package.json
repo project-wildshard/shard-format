@@ -463,7 +463,7 @@
     "lock:write": "node src/tools/format-lock.ts --write",
     "check:lock": "node src/tools/format-lock.ts",
     "check:format-gate": "node src/tools/format-gate.ts",
-    "corpus:usage": "node src/cli/main.ts corpus --cache tmp/corpus --usage corpus/usage.json",
+    "corpus:usage": "node src/cli/main.ts corpus --cache tmp/corpus --usage corpus/usage.json --pins https://raw.githubusercontent.com/project-wildshard/engine/main/test/pins/shardfiles.json",
     "check:asks": "node kit/scripts/asks.mjs check",
     "check:agents": "node .githooks/agents-md.mjs lint",
     "check:parity": "node scripts/agent-parity.mjs --strict",

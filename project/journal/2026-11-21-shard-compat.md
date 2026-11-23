@@ -120,3 +120,15 @@ commit between that touched `src/format/lock`, diffs each against the one
 before it, then the ends: the net delta. A part added and removed inside
 the range shows in its steps and not in the net. Refs from before FE1's
 lock (v0.69.1 and older) still need a folder built with `pnpm lock:write`.
+
+## FE13 pins half, FE3 timing (opus-compat-w3, 11-22)
+
+`corpus --pins <file|url>` reads engine's `test/pins/shardfiles.json`;
+a pinned original the public list leaves out joins the run, and usage
+names every pinned user "(engine pin)" and records `pins`. The delete
+gate refuses a usage record without `pins`. `pnpm corpus:usage` reads
+engine main's pins. Run 11-22: 88 kept originals, 26 pins, all already
+kept; 88 valid.
+
+FE3 timing, 11-22 on the MacBook: cold run 240 s (88 originals,
+3,436,128,801 stored bytes fetched); warm run 1 s (88 from cache).
