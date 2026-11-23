@@ -161,6 +161,8 @@
     "./forestPage": "./src/format/forestPage.ts",
     "./forestWeather": "./src/format/forestWeather.ts",
     "./geometryPack": "./src/format/geometryPack.ts",
+    "./creatureRestRig": "./src/format/creature-rest-rig.ts",
+    "./creatureSkinBounds": "./src/format/creature-skin-bounds.ts",
     "./glbBuffers": "./src/format/glbBuffers.ts",
     "./glbCost": "./src/format/glbCost.ts",
     "./glbImages": "./src/format/glbImages.ts",
