@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util'
 
 import { corpusCommand } from './corpus-command.ts'
 import { readLock } from './format-diff-lock.ts'
+import { isRange, rangeOutput } from './format-diff-range.ts'
 import { formatDiffReport } from './format-diff-report.ts'
 import { formatDiff } from './format-diff.ts'
 import { packFolder } from './pack.ts'
@@ -37,6 +38,7 @@ Commands:
                        when any fails. --usage writes who uses each
                        deprecated path and chain step (FE13 reads it)
   format-diff <a> <b> [--json]
+  format-diff <a>..<b> [--json]  (FE6) each lock change in the range, then the net delta
                        Classify every change between two format locks
                        (a git ref or a folder holding src/format/lock):
                        additive, deprecation, breaking or review, with
@@ -142,22 +144,35 @@ async function pack(args: CliArgs): Promise<number> {
   return await packReport(dir, args.out)
 }
 
+/** `format-diff <a> <b>`: the two locks' report, as text or JSON. */
+async function pairOutput(
+  before: string,
+  after: string,
+  json: boolean,
+): Promise<string> {
+  const cwd = process.cwd()
+  const report = formatDiff(
+    await readLock(before, cwd),
+    await readLock(after, cwd),
+  )
+  return json
+    ? JSON.stringify(report, undefined, JSON_INDENT)
+    : formatDiffReport(report)
+}
+
 async function formatDiffCommand(args: CliArgs): Promise<number> {
   const [before, after, ...extra] = args.operands
+  if (before !== undefined && isRange(before) && after === undefined) {
+    process.stdout.write(`${await rangeOutput(before, args.json)}\n`)
+    return EXIT_OK
+  }
   if (before === undefined || after === undefined || extra.length > NONE) {
     process.stderr.write(
       `shard-format: format-diff takes two locks\n\n${USAGE}`,
     )
     return EXIT_USAGE
   }
-  const cwd = process.cwd()
-  const report = formatDiff(
-    await readLock(before, cwd),
-    await readLock(after, cwd),
-  )
-  process.stdout.write(
-    `${args.json ? JSON.stringify(report, undefined, JSON_INDENT) : formatDiffReport(report)}\n`,
-  )
+  process.stdout.write(`${await pairOutput(before, after, args.json)}\n`)
   return EXIT_OK
 }
 

@@ -112,3 +112,11 @@ counts again. Older revisions still count in FE7's kept total until
 CP12's daily prune takes them, so the report gives both counts. A dry
 run on `requires.sdk` lists 33 shards: writers still source it, so the
 apply waits for sharddev to stop writing it (CP8's drop).
+
+## FE6: format-diff range mode (opus-compat-w3, 11-22)
+
+`shard-format format-diff <a>..<b>` locks the range's two ends and every
+commit between that touched `src/format/lock`, diffs each against the one
+before it, then the ends: the net delta. A part added and removed inside
+the range shows in its steps and not in the net. Refs from before FE1's
+lock (v0.69.1 and older) still need a folder built with `pnpm lock:write`.
