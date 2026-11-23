@@ -128,7 +128,7 @@ export interface RegisteredJsonContracts {
   readonly 'world/dressing-phone.json':{readonly schema:typeof SceneDressingSchema;readonly source:'@wildshard/format/sceneDressing#SceneDressingSchema'};
   readonly 'world/building-sites.json':{readonly schema:typeof LivingPageSitesSchema;readonly source:'@wildshard/format/forestPage#LivingPageSitesSchema'};
   readonly 'models/shape-book.json':{readonly schema:typeof FixedDrawRowsSchema;readonly source:'@wildshard/format/fixedDraws#FixedDrawRowsSchema'};
-  readonly 'directors/main.json':{readonly schema:typeof DirectorDocumentSchema;readonly source:'@wildshard/format/directorProduct#DirectorProductSchema'};
+  readonly 'directors/main.json':{readonly schema:typeof DirectorDocumentSchema;readonly source:'@wildshard/format/directorDocument#DirectorDocumentSchema'};
   readonly 'scenes/cascade.json':{readonly schema:typeof WorldSceneSchema;readonly source:'@wildshard/format/clientChannels#WorldSceneSchema'};
   readonly 'scenes/cove.json':{readonly schema:typeof WorldSceneSchema;readonly source:'@wildshard/format/clientChannels#WorldSceneSchema'};
   readonly 'scenes/hibiscus.json':{readonly schema:typeof WorldSceneSchema;readonly source:'@wildshard/format/clientChannels#WorldSceneSchema'};
@@ -250,7 +250,7 @@ export const REGISTERED_JSON:RegisteredJsonContracts = {
   'world/dressing-phone.json':{schema:SceneDressingSchema,source:'@wildshard/format/sceneDressing#SceneDressingSchema'},
   'world/building-sites.json':{schema:LivingPageSitesSchema,source:'@wildshard/format/forestPage#LivingPageSitesSchema'},
   'models/shape-book.json':{schema:FixedDrawRowsSchema,source:'@wildshard/format/fixedDraws#FixedDrawRowsSchema'},
-  'directors/main.json':{schema:DirectorDocumentSchema,source:'@wildshard/format/directorProduct#DirectorProductSchema'},
+  'directors/main.json':{schema:DirectorDocumentSchema,source:'@wildshard/format/directorDocument#DirectorDocumentSchema'},
   'scenes/cascade.json':{schema:WorldSceneSchema,source:'@wildshard/format/clientChannels#WorldSceneSchema'},
   'scenes/cove.json':{schema:WorldSceneSchema,source:'@wildshard/format/clientChannels#WorldSceneSchema'},
   'scenes/hibiscus.json':{schema:WorldSceneSchema,source:'@wildshard/format/clientChannels#WorldSceneSchema'},

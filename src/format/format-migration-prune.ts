@@ -2,6 +2,8 @@
 /** FORMAT-PRUNE's same-version chain steps (J486): each writes the one way a 0.1.0.1 reader already admits, so writers
  * can stop writing the other way with no format bump. Both are repairs: they also run on 0.1.0.1 files that still carry
  * the old shape. Refusing the old shape in new uploads waits until the API and engine read migrated copies (CP2, FE9). */
+import { RETIRED_SCHEMA_SOURCES, retiredSchemaSource } from './schema-source.ts'
+
 import type { FormatMigration, MigratingShard } from './format-migrations.ts'
 
 type JsonRecord = Record<string, unknown>
@@ -10,6 +12,8 @@ const OLD_POINTER = 'gridShardfile'
 const POINTER = 'shardfile'
 const CURRENT = '0.1.0.1'
 const NONE = 0
+/** FP10 runs at format 0.1.0.4, the format that first reads the current id. */
+const SCHEMA_SOURCE_VERSION = '0.1.0.4'
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -103,4 +107,41 @@ const dropRuntimeTrust: FormatMigration = {
   repairs: carriesTrust,
 }
 
-export { dropRuntimeTrust, shardfilePointer }
+/** Each named JSON file's schema block in the index that names a retired id. */
+function staleSchemaBlocks(
+  shard: Readonly<MigratingShard>,
+): readonly JsonRecord[] {
+  const { files } = shard.index
+  if (!Array.isArray(files)) {
+    return []
+  }
+  return files
+    .map((file: unknown): unknown =>
+      isRecord(file) ? file['jsonSchema'] : undefined,
+    )
+    .filter(
+      (block: unknown): block is JsonRecord =>
+        isRecord(block) && retiredSchemaSource(block['$comment']),
+    )
+}
+
+/** FORMAT-PRUNE FP10: a named JSON file's `jsonSchema.$comment` names the current defining module, not a retired
+ * one (`directorProduct` became `directorDocument`). Only the index changes; the file's bytes and hash stay. */
+const schemaSource: FormatMigration = {
+  id: 'fp10-schema-source',
+  to: SCHEMA_SOURCE_VERSION,
+  touches: 'data',
+  affects: [],
+  apply: (shard: MigratingShard): void => {
+    for (const block of staleSchemaBlocks(shard)) {
+      const { $comment: old } = block
+      if (typeof old === 'string') {
+        block['$comment'] = RETIRED_SCHEMA_SOURCES[old]
+      }
+    }
+  },
+  repairs: (shard: Readonly<MigratingShard>): boolean =>
+    staleSchemaBlocks(shard).length > NONE,
+}
+
+export { dropRuntimeTrust, schemaSource, shardfilePointer }

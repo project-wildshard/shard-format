@@ -8,6 +8,7 @@ import { HeldJianDocumentSchema } from './heldJianDocument.ts';
 import { BladeDocumentSchema, PolearmDocumentSchema, HeldSlotsDocumentSchema } from './heldWeaponDocuments.ts';
 import { HeldBowFileSchema, HeldFirearmPageSchema } from './weaponProfiles.ts';
 import { WaterWorldSchema } from './waterWorld.ts';
+import { currentSchemaSource } from './schema-source.ts';
 import { ForestNativeInputsSchema } from './forestNativeInputs.ts';
 import { CaveFileSchema, CaveInteriorSchema } from './caveInterior.ts';
 import { ForestGroundLayoutSchema, ForestPageSchema, LivingPageSitesSchema } from './forestPage.ts';
@@ -224,9 +225,8 @@ export const PLATFORM_FILE_FAMILIES: readonly PlatformFileFamily[] = [
     source: '@wildshard/format/questInteractions#QuestPageInteractionsSchema', reader: 'src/game/quest/pageComposition.ts' },
   { pattern: /^quests\/services\.json$/u, schema: QuestServiceActionsSchema,
     source: '@wildshard/format/questSteps#QuestServiceActionsSchema', reader: 'src/game/quest/effects.ts' },
-  // SA23: the source string is shard file data (each file's `jsonSchema.$comment`), so it keeps the old module name.
   { pattern: /^directors\/main\.json$/u, schema: DirectorDocumentSchema,
-    source: '@wildshard/format/directorProduct#DirectorProductSchema', reader: 'src/game/plugin/director.ts' },
+    source: '@wildshard/format/directorDocument#DirectorDocumentSchema', reader: 'src/game/plugin/director.ts' },
   { pattern: /^quests\/panels\.json$/u, schema: QuestPanelCatalogueSchema,
     source: '@wildshard/format/panelTemplate#QuestPanelCatalogueSchema', reader: 'src/game/ui/dataPanels.ts' },
   { pattern: /^world\/forest-weather\.json$/u, schema: ForestWeatherSchema,
@@ -283,7 +283,7 @@ export const PLATFORM_FILE_FAMILIES: readonly PlatformFileFamily[] = [
 /** Match both logical name and defining schema identity. An unregistered or
  * differently typed named JSON remains custom, even under a shared prefix. */
 export function platformFileFamily(name: string, schemaSource: string | undefined): PlatformFileFamily | undefined {
-  const matches = PLATFORM_FILE_FAMILIES.filter(family => family.source === schemaSource && family.pattern.test(name));
+  const matches = PLATFORM_FILE_FAMILIES.filter(family => family.source === currentSchemaSource(schemaSource) && family.pattern.test(name));
   if (matches.length > 1) throw new Error(`Ambiguous platform file family: ${name}`);
   return matches[0];
 }

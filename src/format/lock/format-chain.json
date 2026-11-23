@@ -1,5 +1,6 @@
 {
   "./format-chain#cp14-format-version": {"affects":[],"to":"0.1.0.2","touches":"data"},
+  "./format-chain#fp10-schema-source": {"affects":[],"to":"0.1.0.4","touches":"data"},
   "./format-chain#fp26-save-revision": {"affects":[],"to":"0.1.0.4","touches":"data"},
   "./format-chain#fp3-drop-runtime-trust": {"affects":[],"to":"0.1.0.1","touches":"data"},
   "./format-chain#fp4-drop-empty-index-fields": {"affects":[],"to":"0.1.0.2","touches":"data"},

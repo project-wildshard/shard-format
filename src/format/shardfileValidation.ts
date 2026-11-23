@@ -30,6 +30,7 @@ import { mountedImageBytes, NO_BYTES } from './boot-memory-cost.ts';
 import { admittedVerdict, policyVerdict, recordVerdict } from './policy-verdict.ts';
 import type { Judged, PolicyVerdict } from './policy-verdict.ts';
 import { deprecationReport } from './deprecations.ts';
+import { currentSchemaSource } from './schema-source.ts';
 import type { DeprecationReport } from './deprecations.ts';
 
 /**
@@ -160,7 +161,7 @@ function inspectBlob(file: OutputFile, bytes: Uint8Array, ports: ShardfileValida
     if (ports.definedJson !== undefined) ports.definedJson(validationSourceBytes(file.jsonSchema), bytes, file.name);
     else if (contract === undefined || file.name === undefined) throw new Error('Unregistered named JSON with a schema needs a JSON Schema checker');
     else {
-      if (file.jsonSchema['$comment'] !== contract.source) throw new Error('Registered JSON requires its exact defining format contract');
+      if (currentSchemaSource(file.jsonSchema['$comment']) !== contract.source) throw new Error('Registered JSON requires its exact defining format contract');
       validateRegisteredJson(file.name, parseNamedJson(bytes));
     }
   }

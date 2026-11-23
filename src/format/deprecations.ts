@@ -4,6 +4,7 @@
  * files using each (`shard-format corpus`). A path with a migration is mended by the chain; one without waits for its
  * users to reach zero before it is deleted. */
 import { SAVE_REVISION_DEPRECATION } from './save-revision.ts'
+import { SCHEMA_SOURCE_DEPRECATION } from './schema-source.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
 
@@ -120,6 +121,7 @@ const RULES: readonly DeprecationRule[] = [
       field(shard.index, 'sdk') !== undefined,
   },
   SAVE_REVISION_DEPRECATION,
+  SCHEMA_SOURCE_DEPRECATION,
   {
     id: 'requires.sdk',
     path: 'shard.json requires.sdk (SHARD-COMPAT CP8): a copy of the format version',

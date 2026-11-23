@@ -6,7 +6,9 @@
   "fp3-drop-runtime-trust": "adf37d61906a64809770ab5f3fd8d3fd9f641004de8aefa2fb1c6f10579f4e39",
   "cp14-format-version": "90cef5c3c61cbddb9832741fc7777823dd77acd0ace10aa0b2f52af3c5272ec6",
   "fp4-drop-empty-index-fields": "64e2d8c8b3af6410ec43dbe8515493a53afc9482c2f7fa42cbcc2e8f657366e0",
-  "pr4-preparation-marker": "a5569cc3913c96e41b0037dbea7e328c850254de76dae340929d729de124e7cb"
+  "pr4-preparation-marker": "a5569cc3913c96e41b0037dbea7e328c850254de76dae340929d729de124e7cb",
+  "fp26-save-revision": "91cfd2e547ffb47e39c168fab600a476b435b7e297a26a66a5fb0d0de9ca67a7",
+  "fp10-schema-source": "91cfd2e547ffb47e39c168fab600a476b435b7e297a26a66a5fb0d0de9ca67a7"
  },
  "0.1.0.0 open-plot-saltwind-lighthouse": {
   "fp6-four-part-version": "7f08ef5aede8db707b5776c02988e5852ac373d450d484131462f32ae6ea11d1",
@@ -15,7 +17,9 @@
   "fp3-drop-runtime-trust": "76dce3a4ee0564d497692a2f747c122fcd9b069d84090d8892f7dad36ea39d2b",
   "cp14-format-version": "1f866f93c6db90d6e31d49ecda4a8adc134e4b199b95d3f53644b7eb46cc75be",
   "fp4-drop-empty-index-fields": "1390f3b4e0d9b25fd3f5c0260d91f9019450cbc59c01c7fe741c609280307e8a",
-  "pr4-preparation-marker": "fa00cbd679e2f9fe37e0f5df18cc9890bfe766656c77d5e2b5911d2a187d9316"
+  "pr4-preparation-marker": "fa00cbd679e2f9fe37e0f5df18cc9890bfe766656c77d5e2b5911d2a187d9316",
+  "fp26-save-revision": "bec02fee42650d24098d423a9c6724fdfb23075090302d8487752068676d046b",
+  "fp10-schema-source": "bec02fee42650d24098d423a9c6724fdfb23075090302d8487752068676d046b"
  },
  "0.1.0.0 pine-hollow": {
   "fp6-four-part-version": "021ae8086891b87e42aa35bab18958849b667442f22f83201a000d86b4910518",
@@ -24,35 +28,51 @@
   "fp3-drop-runtime-trust": "b06223825e806ecfbba94b91ba516b8d015b48ebb72380869276d83abe09efec",
   "cp14-format-version": "8a2d23540e2db545283a5f9e7c01f7fe17697fdb33c81ea385a4e6270765a53b",
   "fp4-drop-empty-index-fields": "06e40e7e994e5635b0e74362cf35e1448c5330c79b26ec3fd953f8e1a79ae3c2",
-  "pr4-preparation-marker": "c6e0e6ddb3b15ebd0e0fd5bbf2328f4ae116a8aaa826ea21a4edeb428edc69cf"
+  "pr4-preparation-marker": "c6e0e6ddb3b15ebd0e0fd5bbf2328f4ae116a8aaa826ea21a4edeb428edc69cf",
+  "fp26-save-revision": "f448ace31af12a77ec955235ac4e803ef8151e0be1480703aaa94e91dc535e13",
+  "fp10-schema-source": "d563269e151fb71e28186a678c401cf0cbb1217759ff7b53dd0280c4173ca194"
  },
  "0.1.0.1 sunscar-dunes": {
   "cp14-format-version": "dd9dc7c0160756f64dd59c471e7345389366a33463d1f696f2a31fbe32c26aa3",
   "fp4-drop-empty-index-fields": "ce66d086999356e33dfee57a4b4cbe7afc887d4e5077d0bb7f07fe635fff4936",
-  "pr4-preparation-marker": "72c288e4a06a7f9fe33f491d5c8c0190111783f25561069209317aca9706466a"
+  "pr4-preparation-marker": "72c288e4a06a7f9fe33f491d5c8c0190111783f25561069209317aca9706466a",
+  "fp26-save-revision": "3fe73f5c39d522668f2480bd86730056b441e41e3f15a71120cbdb21947419a1",
+  "fp10-schema-source": "3fe73f5c39d522668f2480bd86730056b441e41e3f15a71120cbdb21947419a1"
  },
  "0.1.0.1 nalati-grasslands": {
   "fp8-shardfile-pointer": "92bf5f128162b2377c85f5d9c11ac579ea0f185a8f826d717b711e2ea7bf059a",
   "fp3-drop-runtime-trust": "2ffae8aa952cc5224357eee2fc14da7729d339d491382a5611ce81292583144e",
   "cp14-format-version": "3ab27cfd816a2a25d4b5afa570e580599b6ff6ec9376f8a0891df226d090d462",
   "fp4-drop-empty-index-fields": "93165ff60df1cda5ffc24dd71be3f755b5d7ccafb4302f7e374160ba202cf871",
-  "pr4-preparation-marker": "d3c5151888473d54895a4c555cf8a4a904665b813649290ad7cb53a166fca69a"
+  "pr4-preparation-marker": "d3c5151888473d54895a4c555cf8a4a904665b813649290ad7cb53a166fca69a",
+  "fp26-save-revision": "a12c0b8d17c6a512c867805d929e74378651cef43ae8c7f997cf3e0e5d9a090c",
+  "fp10-schema-source": "a12c0b8d17c6a512c867805d929e74378651cef43ae8c7f997cf3e0e5d9a090c"
  },
  "0.1.0.1 pine-hollow": {
   "fp8-shardfile-pointer": "cb42f609bdc2f7dbed09343ecdfa4a6b77d5ba23e33c7debbd905224f1ae639b",
   "fp3-drop-runtime-trust": "99639804199a6d5edb99ab24f0ce9cbba0e25021345fec27d04517b973099056",
   "cp14-format-version": "399ebc392f4d845a11ac76280c8f6278f59190fcde0d251ac589cf9dc0680b2e",
   "fp4-drop-empty-index-fields": "d48cff89805222a92275528cb3c16a5a7324dbfbc914dd63e08162caa333bb6a",
-  "pr4-preparation-marker": "5f7aa9ec5a922652676c19638a980be802d9b7151f39bf6889c24bfb5010c67f"
+  "pr4-preparation-marker": "5f7aa9ec5a922652676c19638a980be802d9b7151f39bf6889c24bfb5010c67f",
+  "fp26-save-revision": "3a0be3da7be5e26b4b962cb48ef9601fbbf17af56c251b0a5e713df93dba9c5e",
+  "fp10-schema-source": "32cf09979a899df664c09ad3473ece5af41b3d3ec63482e1dae337518887bf63"
  },
  "0.1.0.1 driftwood-isle": {
   "fp3-drop-runtime-trust": "33cde1998c2ae42c94384492ad8d638af7d17948051b09a6da31a3fb79dc045e",
   "cp14-format-version": "3e1d4f93819f58f2d439fb5a099ce0b596364ab2267c84857ebfc89787ae66eb",
   "fp4-drop-empty-index-fields": "f932af50a04c1d37b9ace6a574bbe4abb6d04c0e5245cdf6971f4a0e7163b6a5",
-  "pr4-preparation-marker": "e7d8dc0bd5adb43c65334cc361a25d19c0414e2199410367679a0a489c119590"
+  "pr4-preparation-marker": "e7d8dc0bd5adb43c65334cc361a25d19c0414e2199410367679a0a489c119590",
+  "fp26-save-revision": "cd518410191b1849b8a06b3753b4c88f478933eb9d675494fb3ef2d1b0b08601",
+  "fp10-schema-source": "401d20b980485bccb2f6b26eb3208dbc72a2d7be6a1c9fe30483307f1223e28e"
  },
  "0.1.0.2 corpus/exports/brasscap-mesa": {
-  "pr4-preparation-marker": "9dc238556b292338e32809017181be9b60704fb147b6b37caba35c08de81a2a9"
+  "pr4-preparation-marker": "9dc238556b292338e32809017181be9b60704fb147b6b37caba35c08de81a2a9",
+  "fp26-save-revision": "cc103e693cfe932387502309067290bf2c6abfe2c258eacb6ef4a1e7c3241848",
+  "fp10-schema-source": "cc103e693cfe932387502309067290bf2c6abfe2c258eacb6ef4a1e7c3241848"
  },
- "0.1.0.3 corpus/exports/brasscap-mesa": {}
+ "0.1.0.3 corpus/exports/brasscap-mesa": {
+  "fp26-save-revision": "4f6dd2cb82c4e7f82203c32fa8c96136ba38b4b3e0d583208ad36c379a11661b",
+  "fp10-schema-source": "4f6dd2cb82c4e7f82203c32fa8c96136ba38b4b3e0d583208ad36c379a11661b"
+ },
+ "0.1.0.4 corpus/exports/brasscap-mesa": {}
 }

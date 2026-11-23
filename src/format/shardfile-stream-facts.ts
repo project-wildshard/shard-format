@@ -12,6 +12,7 @@ import {
   registeredJsonContract,
   validateRegisteredJson,
 } from './registeredJson.ts'
+import { currentSchemaSource } from './schema-source.ts'
 import { assetCost } from './shardfile-assets.ts'
 import { outputBlobExtension, outputBlobKind } from './shardfileValidation.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
@@ -140,7 +141,7 @@ function inspectRegistered(file: OutputFile, member: FactsMember): void {
       'Unregistered named JSON with a schema needs a JSON Schema checker',
     )
   }
-  if (file.jsonSchema['$comment'] !== contract.source) {
+  if (currentSchemaSource(file.jsonSchema['$comment']) !== contract.source) {
     throw new Error(
       'Registered JSON requires its exact defining format contract',
     )

@@ -92,7 +92,7 @@ import { FlockSchema } from './crowds.ts'
 import { CueDirectorWireSchema } from './cueDirector.ts'
 import { DecisionScriptsSchema } from './decisionScripts.ts'
 import { DirectorSchema } from './director.ts'
-import { DirectorDocumentSchema as DirectorProductSchema } from './directorDocument.ts'
+import { DirectorDocumentSchema } from './directorDocument.ts'
 import { DirectorStagesSchema } from './directorStages.ts'
 import { EdgeProfileSchema, EdgeProfilesSchema } from './edgeProfiles.ts'
 import { EliteFeatureSchema } from './eliteFeature.ts'
@@ -689,7 +689,7 @@ const wireRoots: Readonly<Record<string, GenericSchema>> = {
   'ledger.LedgerFact': LedgerFactSchema,
   'ledger.LedgerRules': LedgerRulesSchema,
   'director.Director': DirectorSchema,
-  'directorProduct.DirectorProduct': DirectorProductSchema,
+  'directorDocument.DirectorDocument': DirectorDocumentSchema,
   'directorStages.DirectorStages': DirectorStagesSchema,
   'migrations.LogicalState': LogicalStateSchema,
   'migrations.Migrations': MigrationsSchema,
