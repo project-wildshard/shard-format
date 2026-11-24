@@ -21,6 +21,9 @@ export const LightEmittersSchema: v.GenericSchema<LightEmittersRowsInput, LightE
     emissive: v.exactOptional(v.strictObject({ collection: id, gain })),
     light: v.exactOptional(v.strictObject({ at: ScenePointRefSchema, part: v.exactOptional(id), colour: finite, gain, distance: positive, decay: gain,
       shared: v.optional(v.boolean(), true), waves: v.optional(waves, []) })),
+    // FORMAT-PRUNE FP49: a lit emitter's light and emissive gains follow a declared host f64 scene scalar (a `weather.fields`
+    // field, clamped to 0..1), so a quest's flags can wake a light step by step instead of only switching it
+    field: v.exactOptional(id),
   })), v.maxLength(128)),
 }), v.check(row => new Set(row.rows.map(entry => entry.id)).size === row.rows.length
   && new Set(row.rows.flatMap(entry => entry.pool === undefined ? [] : [entry.pool.slot])).size === row.rows.filter(entry => entry.pool !== undefined).length
@@ -86,6 +89,7 @@ interface LightEmittersRowsFields {
             collection: v.InferOutput<typeof HandleIdSchema>;
             gain: number;
         };
+        field?: v.InferOutput<typeof HandleIdSchema>;
         light?: {
             at: v.InferOutput<typeof ScenePointRefSchema>;
             part?: v.InferOutput<typeof HandleIdSchema>;
