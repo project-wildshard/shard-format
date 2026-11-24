@@ -35,7 +35,7 @@ test('a pin record outside the export pin is refused', (): void => {
   ])
 })
 
-test('a 0.1 shard folder is refused, a current made-up one passes', (): void => {
+test('a 0.1 shard folder is refused, a made-up one passes at any format', (): void => {
   assert.deepEqual(
     scan({
       'corpus/old/shard.json': JSON.stringify({
@@ -53,6 +53,19 @@ test('a 0.1 shard folder is refused, a current made-up one passes', (): void => 
       }),
     }),
     [],
+  )
+  assert.deepEqual(
+    scan({
+      'src/test/fixtures/old/shard.json': JSON.stringify({
+        version: '0.1',
+        identity: { slug: 'cli-fixture' },
+      }),
+      'src/test/fixtures/zone/shard.json': JSON.stringify({
+        version: '0.1',
+        identity: { slug: 'pine-hollow' },
+      }),
+    }),
+    ['shard-folder src/test/fixtures/zone/shard.json'],
   )
   assert.deepEqual(
     scan({

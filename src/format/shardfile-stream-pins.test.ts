@@ -11,127 +11,79 @@ import { validateShardfileStream } from './shardfile-stream.ts'
 import { validateShardfileFolder } from './shardfileValidation.ts'
 import { readTar } from './tar.ts'
 
-// API-CLOUDFLARE AC6a on the real pins (engine test/pins/shardfiles.json) from the local cache: the 12 MB median, the
-// 53 MB Far Reach pin and the 327 MB pin. Absent on CI, these are local proofs; the corpus tests run everywhere.
+// API-CLOUDFLARE AC6a on the live pins from the local cache. ZONE-SNAPSHOTS ZS6 (J507): the pins are read by slug from
+// engine's pin file (a sibling checkout, or WILDSHARD_ENGINE_PINS), never named here, so a pin bump moves this test
+// with it: the biggest live pin and the median one. Absent on CI, these are local proofs; the corpus tests run everywhere.
 
+interface Pin {
+  readonly slug: string
+  readonly hash: string
+  readonly bytes: number
+}
+
+const ROOT = new URL('../../', import.meta.url).pathname
+const PIN_FILE =
+  process.env['WILDSHARD_ENGINE_PINS'] ??
+  path.join(ROOT, '../engine/test/pins/shardfiles.json')
 const PINS = path.join(homedir(), '.cache/wildshard/pins')
 const CHUNK = 65_536
-const PIN_RUNS: readonly (readonly [name: string, hash: string])[] = [
-  [
-    'median 12 MB',
-    '3b322eccd99e209f98bbe59e16f79de77375b6075bc91f379d67cefff7bcf740',
-  ],
-  // FORMAT-PRUNE FP43: Far Reach r8 replaces the retired 68 MB Far Reach pin (r4), which named population.homes
-  [
-    '53 MB Far Reach',
-    'c559908612b89fcaa9ea9aa5d5ebca8dfbdbc02e4c3982d6392966d1a62865b5',
-  ],
-]
-// OF31e2: the historical Pine archives fail admission at the journal selector.
-// script-side-grandfather.test.ts covers the Pine SS7 side law independently.
-const PINE_OLD_PINS: readonly (readonly [name: string, hash: string])[] = [
-  [
-    '346 MB',
-    'f45e25f2b4f532c75166d567ea58c074a28f6383e0d545ad27c0f8cd0aba2171',
-  ],
-  [
-    '327 MB',
-    '0e246ab03210d777619bf1fb09bbaa9da1bbcaea5093a8adfce913508762f084',
-  ],
-]
+const HALF = 2
 
-function pathKey(item: unknown): unknown {
-  return typeof item === 'object' && item !== null && 'key' in item
-    ? item.key
-    : undefined
-}
-
-function selectorIssue(value: unknown, field: string): boolean {
-  if (typeof value !== 'object' || value === null) {
-    return false
+function livePins(): readonly Pin[] {
+  if (!existsSync(PIN_FILE)) {
+    return []
   }
-  if ('issues' in value && Array.isArray(value.issues)) {
-    return value.issues.some((issue: unknown): boolean =>
-      selectorIssue(issue, field),
-    )
-  }
-  if (!('path' in value) || !Array.isArray(value.path)) {
-    return false
-  }
-  return (
-    pathKey(value.path[0]) === 'icons' && pathKey(value.path.at(-1)) === field
+  const parsed: unknown = JSON.parse(readFileSync(PIN_FILE, 'utf8'))
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- engine's pin file, checked by engine
+  const { shards } = parsed as { shards: Pin[] }
+  return shards.toSorted(
+    (left: Pin, right: Pin): number => left.bytes - right.bytes,
   )
 }
 
-function glyphRefusal(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    error.name === 'ValiError' &&
-    selectorIssue(error, 'icon') &&
-    selectorIssue(error, 'image')
+/** The biggest live pin and the median one, by slug. */
+function pinRuns(): readonly (readonly [name: string, hash: string])[] {
+  const pins = livePins()
+  const biggest = pins.at(-1)
+  const median = pins[Math.floor(pins.length / HALF)]
+  return [biggest, median].flatMap(
+    (pin: Pin | undefined): [string, string][] =>
+      pin === undefined
+        ? []
+        : [[`${pin.slug} (${Math.round(pin.bytes / 1e6)} MB)`, pin.hash]],
   )
 }
-const retiredGlyph = { asymmetricMatch: glyphRefusal }
 
 function sha256(bytes: Readonly<Uint8Array>): string {
   return createHash('sha256').update(bytes).digest('hex')
 }
 
-describe.each(PIN_RUNS)('the %s pin', (_name: string, hash: string): void => {
-  const file = path.join(PINS, `${hash}.tar`)
-  test.skipIf(!existsSync(file))(
-    'streams to the old verdict, complete, holding under 64 MB of members',
-    async (): Promise<void> => {
-      await prepareAssetDecoders()
-      const files = readTar(readFileSync(file))
-      const old = validateShardfileFolder(
-        {
-          read: (name: string): Uint8Array =>
-            files.get(name) ?? new Uint8Array(),
-          paths: (): Iterable<string> => files.keys(),
-        },
-        { hash: sha256, readThrough: true },
-      )
-      const result = await validateShardfileStream(
-        (): AsyncIterable<Uint8Array> =>
-          createReadStream(file, { highWaterMark: CHUNK }),
-        nodeStreamPorts({ brotli: false }),
-      )
-      expect(result.hash).toBe(hash)
-      expect(result.shard).toEqual(old.shard)
-      expect([result.complete, result.pending]).toEqual([true, []])
-      expect(result.heldBytes).toBeLessThan(64_000_000)
-    },
-    300_000,
-  )
-})
-
-describe.each(PINE_OLD_PINS)(
-  'the %s Pine pin (older)',
+describe.each(pinRuns())(
+  'the live %s pin',
   (_name: string, hash: string): void => {
     const file = path.join(PINS, `${hash}.tar`)
     test.skipIf(!existsSync(file))(
-      'is refused by both validators for legacy journal selectors',
+      'streams to the old verdict, complete, holding under 64 MB of members',
       async (): Promise<void> => {
         await prepareAssetDecoders()
         const files = readTar(readFileSync(file))
-        expect((): unknown =>
-          validateShardfileFolder(
-            {
-              read: (name: string): Uint8Array =>
-                files.get(name) ?? new Uint8Array(),
-              paths: (): Iterable<string> => files.keys(),
-            },
-            { hash: sha256, readThrough: true },
-          ),
-        ).toThrow(retiredGlyph)
-        await expect(
-          validateShardfileStream(
-            (): AsyncIterable<Uint8Array> =>
-              createReadStream(file, { highWaterMark: CHUNK }),
-            nodeStreamPorts({ brotli: false }),
-          ),
-        ).rejects.toThrow(retiredGlyph)
+        const old = validateShardfileFolder(
+          {
+            read: (name: string): Uint8Array =>
+              files.get(name) ?? new Uint8Array(),
+            paths: (): Iterable<string> => files.keys(),
+          },
+          { hash: sha256, readThrough: true },
+        )
+        const result = await validateShardfileStream(
+          (): AsyncIterable<Uint8Array> =>
+            createReadStream(file, { highWaterMark: CHUNK }),
+          nodeStreamPorts({ brotli: false }),
+        )
+        expect(result.hash).toBe(hash)
+        expect(result.shard).toEqual(old.shard)
+        expect([result.complete, result.pending]).toEqual([true, []])
+        expect(result.heldBytes).toBeLessThan(64_000_000)
       },
       300_000,
     )

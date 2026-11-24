@@ -29,3 +29,12 @@ tests cover today's content):
 - one-way-inventory: the SS3 copy's stored count of nine repeated manifest words.
 - hostile-shard: the banned-import Wasm case now runs `admitScriptContract`, the admission each Wasm row passes in a
   host's asset check, since the made-up product holds no script; the understated-cost case uses its tile.
+
+## ZS6: live pins by slug
+
+`shardfile-stream-pins.test.ts` streams the biggest and the median live pin, read by slug from engine's
+`test/pins/shardfiles.json` (a sibling checkout, or `WILDSHARD_ENGINE_PINS`), so a pin bump moves it. Deleted by hand:
+`shardfile-pine-live-pin.test.ts` (Pine r7, no longer live) and `script-side-grandfather.test.ts` (Pine's old products;
+`script-sides.test.ts` keeps the side law on made-up rows). The guard now lets a made-up product under
+`src/test/fixtures/` sit at an old format; its baseline holds only Brasscap's export, at 0.1.0.4 until an SDK writes the
+current format and it is re-exported (a re-export at shard-brasscap `ca01208` with SDK 0.4.30 still wrote 0.1.0.4).

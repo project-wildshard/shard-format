@@ -48,6 +48,7 @@ const PIN_TAR = /pins\/[0-9a-f]{64}\.tar/u
 const PIN_CACHE = /wildshard\/pins|\.cache\/wildshard['"`,\s)]+[^\n]{0,40}pins/u
 const HASH = /['"][0-9a-f]{64}['"]/u
 /** The one export a pin file may sit beside. */
+const MADE_UP = 'src/test/fixtures/'
 const EXPORT_PIN = /^corpus\/exports\/[^/]+\.pin\.json$/u
 /** Chain fixtures and goldens may not name a real old file. */
 const CHAIN_FILE = /^corpus\/(?:format-versions\/|format-goldens\.json$)/u
@@ -137,11 +138,11 @@ function shardOffences(
   }
   const json = parse(text)
   const slug = stringField(field(json, 'identity'), 'slug')
-  const named =
-    slug !== undefined &&
-    rules.slugs.has(slug) &&
-    !file.startsWith('corpus/exports/')
-  return olderThan(shardVersion(json), rules.current) || named
+  const zone = slug !== undefined && rules.slugs.has(slug)
+  const named = zone && !file.startsWith('corpus/exports/')
+  // ZS6: a made-up product (no zone slug) under src/test/fixtures/ may sit at an old format: the chain's old original.
+  const madeUp = !zone && file.startsWith(MADE_UP)
+  return (olderThan(shardVersion(json), rules.current) && !madeUp) || named
     ? [`shard-folder ${file}`]
     : []
 }

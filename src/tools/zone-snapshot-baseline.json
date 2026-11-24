@@ -1,10 +1,4 @@
 {
   "about": "ZONE-SNAPSHOTS ZS1: today's zone snapshots; shrink only (node src/tools/zone-snapshot-guard.ts --prune)",
-  "offenders": [
-    "pin-record src/format/script-side-grandfather.test.ts",
-    "pin-record src/format/shardfile-pine-live-pin.test.ts",
-    "pin-record src/format/shardfile-stream-pins.test.ts",
-    "shard-folder corpus/exports/brasscap-mesa/shard.json",
-    "shard-folder src/test/fixtures/cli-fixture/shard.json"
-  ]
+  "offenders": ["shard-folder corpus/exports/brasscap-mesa/shard.json"]
 }
