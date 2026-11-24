@@ -2438,12 +2438,12 @@
   },
   "src/format/nativeAssembly.ts": {
    "eslint(id-length)": 5,
-   "eslint(no-magic-numbers)": 6,
+   "eslint(no-magic-numbers)": 5,
    "import(exports-last)": 8,
    "import(group-exports)": 11,
    "import(no-namespace)": 1,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 18
+   "unicorn(max-nested-calls)": 17
   },
   "src/format/nativeGround.ts": {
    "eslint(curly)": 4,
