@@ -48,6 +48,10 @@
     {
       "path": "./runtime-hosts.json#json",
       "migration": "fp43-homes-to-members"
+    },
+    {
+      "path": "./cookData#CookDataSchema|=2",
+      "deprecation": "cook.legacy-data"
     }
   ]
 }

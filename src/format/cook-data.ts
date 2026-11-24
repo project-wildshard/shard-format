@@ -29,7 +29,10 @@ import type { GenericSchema } from 'valibot'
 // `mounts` are the shard's own files that its sections and boot tables
 // name by a public URL: the bytes travel in the product under `mounts/`
 // and the cook publishes each one at its URL. `packs` and `fence` are
-// optional only on legacy version 1. Version 2 requires J198 preparation.
+// optional only on legacy version 1, which only an unprepared draft writes
+// (`wildshard build` before `wildshard prepare`). Version 2 is gone
+// (FORMAT-PRUNE FP23: no kept original or engine pin used it); version 3
+// on requires J198 preparation.
 
 interface CookMount {
   readonly url: string
@@ -115,22 +118,6 @@ const SpecCookDataSchema = strictObject({
   ...CookSpecPreparationSchema.entries,
   mounts: mountRows,
 })
-const PREVIOUS_COOK_VERSION = 2
-const PreviousCookDataSchema = strictObject({
-  version: literal(PREVIOUS_COOK_VERSION),
-  inputHash: CookPreparationSchema.entries.inputHash,
-  packs: CookPreparationSchema.entries.packs,
-  fence: CookPreparationSchema.entries.fence,
-  programs: CookPreparationSchema.entries.programs,
-  mounts: mountRows,
-})
-interface PreviousCookData extends Omit<
-  CookPreparation,
-  'version' | 'renderer'
-> {
-  readonly version: typeof PREVIOUS_COOK_VERSION
-  readonly mounts: readonly CookMount[]
-}
 interface PreparedCookData extends CookPreparation {
   readonly mounts: readonly CookMount[]
 }
@@ -139,12 +126,10 @@ interface SpecCookData extends CookSpecPreparation {
 }
 type CookData =
   | LegacyCookData
-  | PreviousCookData
   | PreparedCookData
   | SpecCookData
 const CookDataSchema: GenericSchema<unknown, CookData> = variant('version', [
   LegacyCookDataSchema,
-  PreviousCookDataSchema,
   PreparedCookDataSchema,
   SpecCookDataSchema,
 ])
