@@ -5,7 +5,7 @@ import { LEGACY_PREPARATION_SPEC, PREPARED_SDK } from './preparation-spec.ts'
 const ZERO = 0
 const ONE = 1
 
-const SHARDFILE_VERSION = '0.1.0.4'
+const SHARDFILE_VERSION = '0.1.0.5'
 /** Formats whose `shard.json` names its version in `version`, beside the frozen layout marker `formatVersion: 2`.
  * Legacy 0.1 is the byte-preserving spelling of 0.1.0.0. */
 const LEGACY_INDEX_VERSIONS: readonly ['0.1', '0.1.0.0', '0.1.0.1'] = [
@@ -18,8 +18,9 @@ const LEGACY_INDEX_VERSIONS: readonly ['0.1', '0.1.0.0', '0.1.0.1'] = [
 const INDEX_FORMAT_VERSIONS: readonly [
   '0.1.0.2',
   '0.1.0.3',
+  '0.1.0.4',
   typeof SHARDFILE_VERSION,
-] = ['0.1.0.2', '0.1.0.3', SHARDFILE_VERSION] as const
+] = ['0.1.0.2', '0.1.0.3', '0.1.0.4', SHARDFILE_VERSION] as const
 const SHARDFILE_VERSIONS: readonly [
   ...typeof LEGACY_INDEX_VERSIONS,
   ...typeof INDEX_FORMAT_VERSIONS,
@@ -40,6 +41,9 @@ const SHARDFILE_VERSION_PREPARATION = '0.1.0.3'
 /** The first format whose `shard.json` names the save lineage `identity.saveRevision` instead of `identity.revision`
  * (FORMAT-PRUNE FP26, J493): the number keys saves and only ever rises; it is not the API's shard revision. */
 const SHARDFILE_VERSION_SAVE_REVISION = '0.1.0.4'
+/** The first format whose `shard.json` carries no `requires.sdk` (FORMAT-PRUNE FP33, SHARD-COMPAT CP8): it only ever
+ * copied the format version, and nothing reads it. */
+const SHARDFILE_VERSION_NO_REQUIRES_SDK = '0.1.0.5'
 /** A format version's four parts. */
 type FormatVersionParts = readonly [number, number, number, number]
 /** @deprecated SHARD-COMPAT SP10: use `FormatVersionParts`. */
@@ -141,6 +145,13 @@ function writesSaveRevision(version: string): boolean {
   )
 }
 
+/** Whether a format version writes no `requires.sdk` (0.1.0.5 on, FP33). */
+function writesNoRequiresSdk(version: string): boolean {
+  return (
+    compareShardfileVersions(version, SHARDFILE_VERSION_NO_REQUIRES_SDK) >= ZERO
+  )
+}
+
 /** FP26: a copy of an identity row with `revision` spelled `saveRevision`; anything else as it is. */
 function withSaveRevision(identity: unknown): unknown {
   if (
@@ -160,7 +171,8 @@ function withSaveRevision(identity: unknown): unknown {
   return Object.fromEntries(renamed)
 }
 
-/** The rows a version from 0.1.0.3 on changes in place: PR4's preparation marker, then FP26's save lineage. */
+/** The rows a version from 0.1.0.3 on changes in place: PR4's preparation marker, FP26's save lineage, then FP33's
+ * `requires.sdk`. */
 function laterEnvelopeRows(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it changes the writer's envelope in place
   envelope: Record<string, unknown>,
@@ -178,6 +190,10 @@ function laterEnvelopeRows(
   // FORMAT-PRUNE FP26: from 0.1.0.4 the save lineage is `identity.saveRevision`.
   if (writesSaveRevision(version)) {
     envelope['identity'] = withSaveRevision(envelope['identity'])
+  }
+  // FORMAT-PRUNE FP33: from 0.1.0.5 `requires` carries no `sdk`.
+  if (writesNoRequiresSdk(version)) {
+    envelope['requires'] = withoutKeys(envelope['requires'], ['sdk'])
   }
 }
 
@@ -245,8 +261,10 @@ export {
   writesIndexFormatVersion,
   writesPreparationMarker,
   writesSaveRevision,
+  writesNoRequiresSdk,
   SHARDFILE_VERSION_PREPARATION,
   SHARDFILE_VERSION_SAVE_REVISION,
+  SHARDFILE_VERSION_NO_REQUIRES_SDK,
   SHARDFILE_FLOOR,
   type FormatVersion,
   type FormatVersionParts,

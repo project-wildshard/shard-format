@@ -68,34 +68,6 @@
     {
       "path": "./runtime-hosts.json#json",
       "noFileChange": "FP16d/FP21: new optional server/riding, server/boss, server/patrol and server/world sections (a native world's family hosts and settings); every admitted file still admits, none must carry them"
-    },
-    {
-      "path": "./clientNative#ClientPopulationSchema",
-      "noFileChange": "FORMAT-PRUNE FP43 (J486): population.homes leaves the client plan with engine 8848e8930, which already refuses it at runtime. The kept-originals corpus carries none of it, and no current engine pin does either (Dunes r8 and Sky Reach r8 dropped it, FP37 and FP38)."
-    },
-    {
-      "path": "./clientPlan#ClientFeatureSchema|=population_homes",
-      "noFileChange": "FORMAT-PRUNE FP43 (J486): population.homes leaves the client plan with engine 8848e8930, which already refuses it at runtime. The kept-originals corpus carries none of it, and no current engine pin does either (Dunes r8 and Sky Reach r8 dropped it, FP37 and FP38)."
-    },
-    {
-      "path": "./primitives#PRIMITIVES",
-      "noFileChange": "FORMAT-PRUNE FP43 (J486): population.homes leaves the client plan with engine 8848e8930, which already refuses it at runtime. The kept-originals corpus carries none of it, and no current engine pin does either (Dunes r8 and Sky Reach r8 dropped it, FP37 and FP38)."
-    },
-    {
-      "path": "./clientPlan#ClientFeatureSchema|=fx_trail.rows[].group",
-      "noFileChange": "FORMAT-PRUNE FP43 (J486): a trail named a population.homes group or its members; the groups left with that row, so a trail names its members. Every current engine pin's trail (Far Reach r8) names members; the corpus has no trail."
-    },
-    {
-      "path": "./clientPlan#ClientFeatureSchema|=fx_trail.rows[].members",
-      "noFileChange": "FORMAT-PRUNE FP43 (J486): a trail named a population.homes group or its members; the groups left with that row, so a trail names its members. Every current engine pin's trail (Far Reach r8) names members; the corpus has no trail."
-    },
-    {
-      "path": "./clientTrails#ClientTrailsSchema.rows[].group",
-      "noFileChange": "FORMAT-PRUNE FP43 (J486): a trail named a population.homes group or its members; the groups left with that row, so a trail names its members. Every current engine pin's trail (Far Reach r8) names members; the corpus has no trail."
-    },
-    {
-      "path": "./clientTrails#ClientTrailsSchema.rows[].members",
-      "noFileChange": "FORMAT-PRUNE FP43 (J486): a trail named a population.homes group or its members; the groups left with that row, so a trail names its members. Every current engine pin's trail (Far Reach r8) names members; the corpus has no trail."
     }
   ]
 }

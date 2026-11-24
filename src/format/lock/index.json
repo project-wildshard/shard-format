@@ -1,5 +1,5 @@
 {
- "chainId": "45e179331d08d4acc75a25c71b5985567900f50198d9c08080bd1e6d733be475",
+ "chainId": "7cb1fd25267e72d8aa69790828ebf4c2b8467095bae14d5952545936baf073de",
  "excluded": {
   "./aacIndex#indexRecordingAac": "function: behaviour, not a shape (its schema inputs are locked)",
   "./achievementCounters#parseAchievementCounterData": "function: behaviour, not a shape (its schema inputs are locked)",
@@ -695,6 +695,7 @@
   "./version#parseShardfileVersion": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#shardfileFormatOf": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesIndexFormatVersion": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./version#writesNoRequiresSdk": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesPreparationMarker": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesSaveRevision": "function: behaviour, not a shape (its schema inputs are locked)",
   "./viewDraws#viewDraws": "function: behaviour, not a shape (its schema inputs are locked)",

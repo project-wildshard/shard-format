@@ -13,6 +13,7 @@ type JsonRecord = Record<string, unknown>
 const ENVELOPE = '0.1.0.2'
 const PREPARATION_MARKER = '0.1.0.3'
 const SAVE_REVISION = '0.1.0.4'
+const NO_REQUIRES_SDK = '0.1.0.5'
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -74,6 +75,21 @@ const dropRequiresCapabilities: FormatMigration = {
   repairs: carriesCapabilities,
 }
 
+/** FORMAT-PRUNE FP33 (SHARD-COMPAT CP8's last clause): `requires.sdk`, a copy of the format version nothing reads. Data
+ * only; the copy's declared source hash is re-sealed over the new index, as for `requires.capabilities`. */
+const dropRequiresSdk: FormatMigration = {
+  id: 'fp33-drop-requires-sdk',
+  to: NO_REQUIRES_SDK,
+  touches: 'data',
+  affects: [],
+  apply: (shard: MigratingShard): void => {
+    const requires = requiresOf(shard)
+    if (requires !== undefined) {
+      Reflect.deleteProperty(requires, 'sdk')
+    }
+  },
+}
+
 /** SHARD-COMPAT PR4 (J487, FORMAT-PRUNE FP5 folded in): the `sdk` marker becomes `preparation`, the spec version the
  * file was prepared to. `'0.3'` (prepared) is spec 3, the only spec that marker ever meant; `'0.2'` (built, not
  * prepared) leaves no field. Data only: the copy's `cook.json` stays spec 3 and its input hash is re-sealed over the
@@ -133,6 +149,7 @@ export {
   declaredShardfileFormat,
   dropEmptyIndexFields,
   dropRequiresCapabilities,
+  dropRequiresSdk,
   formatVersionField,
   preparationMarker,
   saveRevisionName,

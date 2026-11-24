@@ -17,7 +17,7 @@ import { ClientPlanRuntimeSchema } from './runtime.ts';
 import { RuntimeSpawnsSchema } from './runtimeSpawns.ts';
 import { RowsSchema } from './rows.ts';
 import { ShardHashSchema, ShardNaturalSchema, IdentitySchema, RequiresSchema, FilesSchema, type ShardIdentityInput, type ShardRequiresInput, type ShardReferencesInput, type ShardIdentity, type ShardRequires, type ShardReferences } from './shardSections.ts';
-import { LEGACY_LAYOUT, writesPreparationMarker, writesSaveRevision } from './version.ts';
+import { LEGACY_LAYOUT, writesNoRequiresSdk, writesPreparationMarker, writesSaveRevision } from './version.ts';
 import { IndexFormatVersionSchema, LegacyIndexVersionSchema } from './index-format-version.ts';
 import type { IndexFormatVersion, LegacyIndexVersion } from './version.ts';
 import { isJsonData, isJsonDataWithFileSchemas } from './json.ts';
@@ -132,10 +132,17 @@ function checkSaveRevisionSpelling(input: unknown, index: OutputIndex): void {
   // Only the old spelling in a new format refuses: a parsed index (any version) already reads back as `saveRevision`.
   if (spelled === 'revision' && version !== undefined && writesSaveRevision(version)) { throw new Error(`Format ${version} names the save lineage identity.saveRevision (shard.json)`); }
 }
+/** FP33: 0.1.0.5 on carries no `requires.sdk`; an older file keeps it as written, so its source hash still matches. */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot output, only read
+function checkNoRequiresSdk(index: OutputIndex): void {
+  const version = index.formatVersion === LEGACY_LAYOUT ? undefined : index.formatVersion;
+  if (version !== undefined && writesNoRequiresSdk(version) && index.requires.sdk !== undefined) { throw new Error(`Format ${version} carries no requires.sdk (shard.json; FORMAT-PRUNE FP33)`); }
+}
 function parseOutputIndexRows(input: unknown): OutputIndex {
   const index = v.parse(OutputIndexSchema, input);
   checkIndexEnvelope(index);
   checkSaveRevisionSpelling(input, index);
+  checkNoRequiresSdk(index);
   const prepared = preparationSpecOf(index) !== undefined || unreadPreparationSpec(index) !== undefined;
   if (prepared && index.cook === undefined) { throw new Error(`Missing cook preparation: run wildshard prepare <folder> --base <exact-preview-url> (${index.identity.slug})`); }
   if (prepared && index.cook !== undefined && index.cook.bytes > MAX_COOK_BYTES) { throw new Error('Cook preparation exceeds byte cap'); }

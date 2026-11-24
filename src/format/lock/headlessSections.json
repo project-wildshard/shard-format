@@ -1,3 +1,3 @@
 {
-  "./headlessSections#HEADLESS_CONTEXT_SECTIONS": ["actors/species-programs","view/modules","sim/scripts","actors/spawn-scripts","actors/return-scripts","actors/moves","actors/strikes","world/targets","world/vehicles","sim/runtime-plan","sim/bodies","client/plan"]
+  "./headlessSections#HEADLESS_CONTEXT_SECTIONS": ["actors/species-programs","view/modules","sim/scripts","actors/spawn-scripts","actors/return-scripts","actors/moves","actors/strikes","world/targets","world/vehicles","sim/runtime-plan","sim/bodies","client/plan","server/plan"]
 }

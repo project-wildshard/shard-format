@@ -32,7 +32,7 @@ const CORPUS = new URL(
   '../../corpus/legacy/brasscap-mesa-ss3/',
   import.meta.url,
 ).pathname
-const CURRENT = '0.1.0.4'
+const CURRENT = '0.1.0.5'
 
 function sha256(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')

@@ -40,7 +40,7 @@ const rename: Candidate = {
   migrations: [
     {
       id: 'fe3b-test-tick-divisor',
-      to: '0.1.0.4',
+      to: '0.1.0.5',
       touches: 'data',
       affects: [],
       apply: renameKey({ section: 'sim/client-scripts' }, ['clientScripts'], {

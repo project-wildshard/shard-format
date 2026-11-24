@@ -5,6 +5,7 @@
 import {
   dropEmptyIndexFields,
   dropRequiresCapabilities,
+  dropRequiresSdk,
   formatVersionField,
   preparationMarker,
   saveRevisionName,
@@ -82,6 +83,7 @@ const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
   saveRevisionName,
   schemaSource,
   dropRequiresCapabilities,
+  dropRequiresSdk,
 ]
 
 /** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its

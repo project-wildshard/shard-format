@@ -87,6 +87,13 @@ test('CP14: a writer passes legacy rows through outputIndexEnvelope and gets the
       version: '0.1.0.3',
     }).preparation,
   ).toBe(4)
+  // FP33: from 0.1.0.5 requires carries no sdk.
+  expect(
+    outputIndexEnvelope({ ...legacy, version: '0.1.0.4' }).requires,
+  ).toEqual({ sdk: '0.1.0.2', capabilities: [], commons: [] })
+  expect(
+    outputIndexEnvelope({ ...legacy, version: '0.1.0.5' }).requires,
+  ).toEqual({ capabilities: [], commons: [] })
 })
 
 test('the additive window never reaches a newer or breaking format', (): void => {
@@ -94,7 +101,7 @@ test('the additive window never reaches a newer or breaking format', (): void =>
   expect(compatibleShardfileVersion('0.1.0.1', '0.1.0.2')).toBe(true)
   expect(compatibleShardfileVersion('0.1.0.2', '0.1.0.3')).toBe(true)
   expect(compatibleShardfileVersion('0.1.0.3', '0.1.0.4')).toBe(true)
-  for (const version of ['0.1.0.5', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
+  for (const version of ['0.1.0.6', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
     expect(compatibleShardfileVersion(version)).toBe(false)
     expect((): unknown => parseShardfileField('version', version)).toThrow()
     expect((): unknown =>

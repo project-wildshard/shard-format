@@ -1,0 +1,8 @@
+{
+  "about": "FORMAT-PRUNE FP33 (SHARD-COMPAT CP8's last clause): format 0.1.0.5 carries no requires.sdk (step fp33-drop-requires-sdk). No real upload is written at 0.1.0.5 until the SDK moves, so the fixture is Brasscap's export migrated by the chain; replace it with the first real 0.1.0.5 engine pin.",
+  "fixtures": [
+    {
+      "chainOf": "corpus/legacy/brasscap-mesa-ss3"
+    }
+  ]
+}

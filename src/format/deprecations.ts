@@ -129,8 +129,8 @@ const RULES: readonly DeprecationRule[] = [
     path: 'shard.json requires.sdk (SHARD-COMPAT CP8): a copy of the format version',
     since: ENVELOPE,
     replacement:
-      'nothing: formatVersion names the format; writers stop sourcing it, then it goes at zero users',
-    migration: undefined,
+      'nothing: formatVersion names the format; format 0.1.0.5 refuses it and the chain drops it (FORMAT-PRUNE FP33)',
+    migration: 'fp33-drop-requires-sdk',
     uses: (shard: Readonly<DeprecationInput>): boolean =>
       field(field(shard.index, 'requires'), 'sdk') !== undefined,
   },

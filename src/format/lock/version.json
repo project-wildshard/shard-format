@@ -1,10 +1,11 @@
 {
-  "./version#INDEX_FORMAT_VERSIONS": ["0.1.0.2","0.1.0.3","0.1.0.4"],
+  "./version#INDEX_FORMAT_VERSIONS": ["0.1.0.2","0.1.0.3","0.1.0.4","0.1.0.5"],
   "./version#LEGACY_INDEX_VERSIONS": ["0.1","0.1.0.0","0.1.0.1"],
   "./version#LEGACY_LAYOUT": 2,
   "./version#SHARDFILE_FLOOR": "0.1.0.0",
-  "./version#SHARDFILE_VERSION": "0.1.0.4",
-  "./version#SHARDFILE_VERSIONS": ["0.1","0.1.0.0","0.1.0.1","0.1.0.2","0.1.0.3","0.1.0.4"],
+  "./version#SHARDFILE_VERSION": "0.1.0.5",
+  "./version#SHARDFILE_VERSIONS": ["0.1","0.1.0.0","0.1.0.1","0.1.0.2","0.1.0.3","0.1.0.4","0.1.0.5"],
+  "./version#SHARDFILE_VERSION_NO_REQUIRES_SDK": "0.1.0.5",
   "./version#SHARDFILE_VERSION_PREPARATION": "0.1.0.3",
   "./version#SHARDFILE_VERSION_SAVE_REVISION": "0.1.0.4"
 }
