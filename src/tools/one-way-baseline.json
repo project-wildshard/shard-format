@@ -10,7 +10,7 @@
     }
   ],
   "counts": {
-    "engine.kind-literals": 1,
+    "engine.kind-literals": 3,
     "engine.kit-registrations": 0,
     "engine.look-fallbacks": 0,
     "engine.temperament-guesses": 0,
@@ -28,7 +28,7 @@
     "sdk.retired-vocabulary": 0,
     "products.rows-without-look": 0,
     "products.species-program-sections": 0,
-    "products.repeated-manifest-fields": 7,
+    "products.repeated-manifest-fields": 0,
     "products.single-shard-server-hosts": 16,
     "products.single-shard-page-features": 23,
     "corpus.rows-without-look": 0,
