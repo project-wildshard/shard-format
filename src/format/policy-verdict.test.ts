@@ -24,8 +24,11 @@ import type { MemoryAdmissionRequest } from './memoryAdmission.ts'
 import type { ShardfileFiles } from './shardfileValidation.ts'
 import type { Shardfile } from './shardSchema.ts'
 
-const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
-  .pathname
+// J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
+const CORPUS = new URL(
+  '../../corpus/legacy/brasscap-mesa-ss3/',
+  import.meta.url,
+).pathname
 const ARMED = 'brasscap-mesa'
 
 function sha256(bytes: Uint8Array): string {

@@ -28,8 +28,11 @@ interface Refusal {
   readonly message: string
 }
 
-const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
-  .pathname
+// J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
+const CORPUS = new URL(
+  '../../corpus/legacy/brasscap-mesa-ss3/',
+  import.meta.url,
+).pathname
 const MB = 1_000_000
 const TODAY = '2026-11-13'
 const LATER = '2099-01-01'

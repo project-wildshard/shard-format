@@ -28,7 +28,8 @@ type Json = Record<string, unknown>
 type Files = ReadonlyMap<string, Uint8Array>
 
 const ROOT = new URL('../../', import.meta.url).pathname
-const CORPUS = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+// J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
+const CORPUS = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 const ENGINE_OUT = path.join(ROOT, '../engine/out')
 const STAGE_KINDS = 18
 

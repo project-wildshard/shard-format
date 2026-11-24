@@ -25,8 +25,11 @@ beforeAll(async (): Promise<void> => {
   await prepareAssetDecoders()
 })
 
-const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
-  .pathname
+// J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
+const CORPUS = new URL(
+  '../../corpus/legacy/brasscap-mesa-ss3/',
+  import.meta.url,
+).pathname
 const unmeasured = {
   scripts: { p95Micros: 0, maxMicros: 0, samples: 0 },
   fuel: { p95: 0, max: 0, samples: 0 },
