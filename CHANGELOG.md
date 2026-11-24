@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.77.0 (2026-11-24)
+
+- A far view carries its own look (shading, haze, grade and mood band), so engine reads it from the shard.
+- A held weapon's finish, loadout and boss rows may name the shard's own declared items as weapon slots.
+
 ## v0.76.0 (2026-11-24)
 
 - The level's look (sky, atmosphere, grade, horizon) lives only in the look section; older files migrate it there.
