@@ -38,3 +38,6 @@ tests cover today's content):
 `script-sides.test.ts` keeps the side law on made-up rows). The guard now lets a made-up product under
 `src/test/fixtures/` sit at an old format; its baseline holds only Brasscap's export, at 0.1.0.4 until an SDK writes the
 current format and it is re-exported (a re-export at shard-brasscap `ca01208` with SDK 0.4.30 still wrote 0.1.0.4).
+
+The push gate runs in a bare checkout with no engine beside it, so the pin runs are empty; a skip-when-present test
+names the missing pin file, as vitest refuses a file with no tests.

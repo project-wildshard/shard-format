@@ -58,34 +58,41 @@ function sha256(bytes: Readonly<Uint8Array>): string {
   return createHash('sha256').update(bytes).digest('hex')
 }
 
-describe.each(pinRuns())(
-  'the live %s pin',
-  (_name: string, hash: string): void => {
-    const file = path.join(PINS, `${hash}.tar`)
-    test.skipIf(!existsSync(file))(
-      'streams to the old verdict, complete, holding under 64 MB of members',
-      async (): Promise<void> => {
-        await prepareAssetDecoders()
-        const files = readTar(readFileSync(file))
-        const old = validateShardfileFolder(
-          {
-            read: (name: string): Uint8Array =>
-              files.get(name) ?? new Uint8Array(),
-            paths: (): Iterable<string> => files.keys(),
-          },
-          { hash: sha256, readThrough: true },
-        )
-        const result = await validateShardfileStream(
-          (): AsyncIterable<Uint8Array> =>
-            createReadStream(file, { highWaterMark: CHUNK }),
-          nodeStreamPorts({ brotli: false }),
-        )
-        expect(result.hash).toBe(hash)
-        expect(result.shard).toEqual(old.shard)
-        expect([result.complete, result.pending]).toEqual([true, []])
-        expect(result.heldBytes).toBeLessThan(64_000_000)
-      },
-      300_000,
-    )
+const RUNS = pinRuns()
+
+// The pin file is absent in a bare checkout (CI, the push gate): the runs below then skip, and this names why.
+test.skipIf(RUNS.length > 0)(
+  'needs engine test/pins/shardfiles.json beside this repo',
+  (): void => {
+    expect(existsSync(PIN_FILE)).toBe(false)
   },
 )
+
+describe.each(RUNS)('the live %s pin', (_name: string, hash: string): void => {
+  const file = path.join(PINS, `${hash}.tar`)
+  test.skipIf(!existsSync(file))(
+    'streams to the old verdict, complete, holding under 64 MB of members',
+    async (): Promise<void> => {
+      await prepareAssetDecoders()
+      const files = readTar(readFileSync(file))
+      const old = validateShardfileFolder(
+        {
+          read: (name: string): Uint8Array =>
+            files.get(name) ?? new Uint8Array(),
+          paths: (): Iterable<string> => files.keys(),
+        },
+        { hash: sha256, readThrough: true },
+      )
+      const result = await validateShardfileStream(
+        (): AsyncIterable<Uint8Array> =>
+          createReadStream(file, { highWaterMark: CHUNK }),
+        nodeStreamPorts({ brotli: false }),
+      )
+      expect(result.hash).toBe(hash)
+      expect(result.shard).toEqual(old.shard)
+      expect([result.complete, result.pending]).toEqual([true, []])
+      expect(result.heldBytes).toBeLessThan(64_000_000)
+    },
+    300_000,
+  )
+})
