@@ -199,3 +199,20 @@ test('an open item identity is not a fixed kind vocabulary', (): void => {
     'engine.kind-keyed-tables: 0 -> 1',
   ])
 })
+
+/** A product whose level manifest holds only this minimap. */
+function mapProduct(minimap: unknown): ReturnType<typeof productFacts> {
+  return productFacts('map', [
+    json('sections/ui/level.json', { manifest: { minimap } }),
+  ])
+}
+
+test('FP47: minimap counts as repeated only while it carries its image', (): void => {
+  assert.deepEqual(
+    mapProduct({ openWater: { level: 0, deepDepth: 4 } }).manifestFields,
+    [],
+  )
+  assert.deepEqual(mapProduct({ image: '/assets/map.png' }).manifestFields, [
+    'minimap',
+  ])
+})

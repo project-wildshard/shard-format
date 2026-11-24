@@ -23,7 +23,6 @@ const repeatedFields = new Set([
   'spawns',
   'faunaTuning',
   'audio',
-  'minimap',
 ])
 const excludedPagePrefixes = ['world.', 'view.']
 const excludedPageKinds = new Set(['page.life'])
@@ -93,6 +92,20 @@ function missingLooks(data: Readonly<Record<string, unknown>>): number {
   }).length
 }
 
+/** The level manifest's words another section repeats. FORMAT-PRUNE FP47 (J505 default, opus-pr6 11-24): `minimap` is
+ * the manifest's own required field (its `openWater` and `outside` have no other home, OF6c kept it); only its `image`
+ * repeats `look/map` (OF9b3), so `minimap` counts when it carries one. */
+function repeatedManifestFields(
+  manifest: Readonly<Record<string, unknown>>,
+): readonly string[] {
+  const fields = Object.keys(manifest).filter((name: string): boolean =>
+    repeatedFields.has(name),
+  )
+  return Object.hasOwn(object(manifest['minimap']), 'image')
+    ? [...fields, 'minimap']
+    : fields
+}
+
 function productFacts(
   slug: string,
   files: readonly SourceFile[],
@@ -117,9 +130,9 @@ function productFacts(
     ),
     missingLooks: missingLooks(declared),
     speciesPrograms: Object.keys(programs).length === NONE ? NONE : ONE,
-    manifestFields: Object.keys(
+    manifestFields: repeatedManifestFields(
       object(section(files, 'ui/level')['manifest']),
-    ).filter((name: string): boolean => repeatedFields.has(name)),
+    ),
   }
 }
 
