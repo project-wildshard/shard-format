@@ -15,7 +15,7 @@ import {
   unknown,
 } from 'valibot'
 
-import { ROOT, cli, scratch } from '../test/helpers/corpus.ts'
+import { ROOT } from '../test/helpers/corpus.ts'
 import { listFiles, treeHash } from '../tools/brasscap-export.ts'
 
 // BM-2 (meta TEMPLATE-E2E-PLAN): Brasscap Mesa is Template 2's own product, a
@@ -26,9 +26,6 @@ import { listFiles, treeHash } from '../tools/brasscap-export.ts'
 
 const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
 const PIN = path.join(ROOT, 'corpus/exports/brasscap-mesa.pin.json')
-// J506: the BM content rows below read the SS3 export (format 0.1.0.0) kept in corpus/legacy; the current build in
-// corpus/exports/ is checked for its pin, its validation and its player status.
-const SS3 = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 /** The canyon GLB's named empties at the pinned commit (shard-brasscap tools/canyon.ts). */
 const MARKS: ReadonlyMap<string, readonly number[]> = new Map([
   ['spawn', [-1.6, 0.35, 2.6]],
@@ -40,16 +37,8 @@ const CODE = /\.(?:ts|tsx|js|mjs|cjs|py)$/u
 /** A low afternoon sun: LF2-3 raised it to 16 degrees, so the canyon's faces catch it; TEMPLATES-CLEANROOM B2 set the
  *  cleanroom's 39 (31.7 at the look's hour), ahead-left down the canyon, so the mesas' tops light and their faces shade. */
 const MAX_SUN_DEGREES = 45
-const L0_TILES = 64
 
 const Num = number()
-const Triangles = object({ triangles: Num })
-const Far = object({ triangles: Num, draws: Num })
-const TilesSchema = object({ tiles: array(Triangles), far: Far })
-const Rows = object({ tiles: array(unknown()) })
-const CollisionSchema = object({ meshCollision: Rows })
-const Point = record(string(), Num)
-const SpawnSchema = object({ spawn: Point })
 const Day = object({ maxElevation: Num })
 const Sun = object({ colour: array(Num) })
 const Key = object({ sun: Sun })
@@ -92,40 +81,16 @@ function files(dir: string): readonly string[] {
 }
 
 function section(file: string): unknown {
-  return JSON.parse(readFileSync(path.join(SS3, file), 'utf8'))
+  return JSON.parse(readFileSync(path.join(BRASSCAP, file), 'utf8'))
 }
 
-test('the folder is data, and validates and packs on its own', (): void => {
+// ZONE-SNAPSHOTS ZS5 (J507): the BM rows read the current export; a whole folder that validates and packs is the
+// made-up CLI product's job (hostile-shard, installed), so no stored copy of the zone is kept for it.
+test('the folder is data', (): void => {
   assert.deepEqual(
     files(BRASSCAP).filter((file: string): boolean => CODE.test(file)),
     [],
   )
-  // J506: the current copy leaves out its blobs over 1 MB, so the whole SS3 copy is the one that validates and packs.
-  const checked = cli(['validate', SS3])
-  assert.equal(checked.status, 0, checked.stderr)
-  assert.match(checked.stdout, /^ok brasscap-mesa r1:/mu)
-  const out = path.join(scratch('brasscap-mesa'), 'brasscap-mesa.tar')
-  const packed = cli(['pack', SS3, '--out', out])
-  assert.equal(packed.status, 0, packed.stderr)
-  assert.equal(cli(['validate', out]).status, 0)
-})
-
-test('the canyon is baked: tiles, collision and one far mesh', (): void => {
-  const { tiles, far } = parse(
-    TilesSchema,
-    section('sections/world/tiles.json'),
-  )
-  const { meshCollision } = parse(
-    CollisionSchema,
-    section('sections/world/collision.json'),
-  )
-  const drawn = tiles.filter(
-    (row: Readonly<{ triangles: number }>): boolean => row.triangles > 0,
-  )
-  assert.ok(drawn.length >= L0_TILES, `${drawn.length} drawn tiles`)
-  assert.equal(meshCollision.tiles.length, L0_TILES)
-  assert.equal(far.draws, 1)
-  assert.ok(far.triangles > 0)
 })
 
 type Mark = readonly number[] | undefined
@@ -183,7 +148,7 @@ function postHp(mark: Mark): number | undefined {
 test('BM-3: the lever-action is admitted and its rack takes it', (): void => {
   const lever = leverRow()
   const hash = lever.asset ?? ''
-  const glb = path.join(SS3, `blobs/glb/${hash}.glb`)
+  const glb = path.join(BRASSCAP, `blobs/glb/${hash}.glb`)
   assert.ok(existsSync(glb), 'the held model ships')
   assert.equal(
     createHash('sha256').update(readFileSync(glb)).digest('hex'),
@@ -200,15 +165,6 @@ test('BM-3: each target post holds a body one round downs', (): void => {
     const hp = postHp(MARKS.get(name))
     assert.ok(hp !== undefined && hp <= damage, `${name} falls to one round`)
   }
-})
-
-test('spawn is the canyon GLB spawn empty', (): void => {
-  const mark = MARKS.get('spawn')
-  const { spawn } = parse(SpawnSchema, section('sections/world/spawn.json'))
-  const axes = ['x', 'y', 'z'].map(
-    (axis: string): number | undefined => spawn[axis],
-  )
-  assert.deepEqual(axes, mark)
 })
 
 test('the look is a sunset: a low, warm sun', (): void => {

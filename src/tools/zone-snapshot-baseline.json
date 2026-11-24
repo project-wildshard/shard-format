@@ -5,7 +5,6 @@
     "pin-record src/format/shardfile-pine-live-pin.test.ts",
     "pin-record src/format/shardfile-stream-pins.test.ts",
     "shard-folder corpus/exports/brasscap-mesa/shard.json",
-    "shard-folder corpus/legacy/brasscap-mesa-ss3/shard.json",
     "shard-folder src/test/fixtures/cli-fixture/shard.json"
   ]
 }

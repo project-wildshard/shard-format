@@ -5,7 +5,6 @@ import { test } from 'node:test'
 
 import { parse, record, string, unknown } from 'valibot'
 
-import { readCookData } from '../format/cook-data.ts'
 import { cookPreparationBytes } from '../format/cook-preparation.ts'
 import { parseOutputIndex } from '../format/outputIndex.ts'
 import { validationSourceBytes } from '../format/validationReceipt.ts'
@@ -55,8 +54,8 @@ function prepared(name: string): string {
   const raw = readObject(folder, 'shard.json')
   raw['cook'] = { path: 'cook.json', hash: '0'.repeat(64), bytes: 0 }
   const index = parseOutputIndex(raw)
-  const legacy = readCookData(readObject(folder, 'cook.json'))
-  const mounts = [...legacy.mounts, programFixture(folder, index.identity.slug)]
+  // The made-up product carries no cook.json of its own (ZONE-SNAPSHOTS ZS5): its one mount is the program table.
+  const mounts = [programFixture(folder, index.identity.slug)]
   const bytes = writeJson(folder, 'cook.json', {
     version: 3,
     mounts,

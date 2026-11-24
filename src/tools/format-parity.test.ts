@@ -6,11 +6,11 @@ import { prepareAssetDecoders } from '../format/shardfile-assets.ts'
 import { fixtureFiles, sha256 } from './format-fixtures.ts'
 import { firstDifference, parity, parityLines } from './format-parity.ts'
 
-// SHARD-COMPAT FE11b: migrated-old against rebuilt-new parity. Brasscap's 0.1 export migrated to 0.1.0.2 stands in for
+// SHARD-COMPAT FE11b: migrated-old against rebuilt-new parity. The made-up CLI product (format 0.1) migrated to 0.1.0.2 stands in for
 // the rebuild (no SDK writes 0.1.0.2 yet): the chain's own copy matches member for member, and a rebuild that differs
 // in one field is named by member and JSON path.
-// J506: that 0.1 export is the SS3 copy, kept in corpus/legacy.
-const FOLDER = 'corpus/legacy/brasscap-mesa-ss3'
+// ZONE-SNAPSHOTS ZS5 (J507): a made-up folder, never a stored zone.
+const FOLDER = 'src/test/fixtures/cli-fixture'
 const TO = '0.1.0.2'
 
 before(async (): Promise<void> => {

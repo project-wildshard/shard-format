@@ -52,8 +52,8 @@ function install(): string {
 
 const PACKAGE = install()
 const APP = path.join(dir, 'app')
-// J506: the shipped whole folder is the SS3 copy; corpus/exports/ leaves out its blobs over 1 MB.
-const SHIPPED = path.join(PACKAGE, 'corpus/legacy/brasscap-mesa-ss3')
+// ZONE-SNAPSHOTS ZS5 (J507): the installed bin checks a made-up whole folder from the repo; no stored zone ships.
+const MADE_UP = path.join(ROOT, 'src/test/fixtures/cli-fixture')
 const raw = readFileSync(path.join(PACKAGE, 'package.json'), 'utf8')
 const manifest = parse(ManifestSchema, JSON.parse(raw))
 const BIN = path.join(PACKAGE, manifest.bin['shard-format'] ?? 'no bin')
@@ -75,7 +75,7 @@ function installed(args: readonly string[]): SpawnSyncReturns<string> {
   })
 }
 
-test('the installed bin validates and packs the shipped Template 2', (): void => {
+test('the installed bin validates and packs a made-up product', (): void => {
   assert.equal(
     manifest.bin['shardfile'],
     manifest.bin['shard-format'],
@@ -83,9 +83,9 @@ test('the installed bin validates and packs the shipped Template 2', (): void =>
   )
   const tar = path.join(dir, 'installed.tar')
 
-  const checked = installed(['validate', SHIPPED])
+  const checked = installed(['validate', MADE_UP])
   assert.equal(checked.status, 0, checked.stderr)
-  const packed = installed(['pack', SHIPPED, '--out', tar])
+  const packed = installed(['pack', MADE_UP, '--out', tar])
   assert.equal(packed.status, 0, packed.stderr)
   assert.equal(installed(['validate', tar]).status, 0)
 })

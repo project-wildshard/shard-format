@@ -3,10 +3,6 @@
     {
       "root": "corpus/exports/brasscap-mesa/",
       "sha256": "ed1aeedd61c0723d3dfced4820694c7b76470773de2c550c7d8e014819a03b82"
-    },
-    {
-      "root": "corpus/legacy/brasscap-mesa-ss3/",
-      "sha256": "3de5adcbbadb42d6e5b394965e480c8f1e0202020e81d422bd1490ec4e5ec474"
     }
   ],
   "counts": {

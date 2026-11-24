@@ -11,13 +11,13 @@ import { memoryFiles } from '../../cli/validate.ts'
 import { prepareAssetDecoders } from '../../format/shardfile-assets.ts'
 import { validateShardfileFolder } from '../../format/shardfileValidation.ts'
 
-// The corpus product these tests hold: Brasscap Mesa's export, since meta
-// TEMPLATE-E2E TR-10 (J434) retired the handwritten Template 2. The real
-// folder, the real bin, a temp folder that goes when the file's tests end.
+// The product these tests hold: the made-up CLI product (ZONE-SNAPSHOTS ZS5,
+// J507: no stored zone). The real folder, the real bin, a temp folder that
+// goes when the file's tests end.
 
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url))
-/** J506: the whole SS3 export (format 0.1.0.0); corpus/exports/ leaves out its blobs over 1 MB. */
-const CORPUS = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
+/** A whole made-up folder (format 0.1): one terrain tile, ui strings, empty sections. */
+const CORPUS = path.join(ROOT, 'src/test/fixtures/cli-fixture')
 const BIN = path.join(ROOT, 'src/cli/bin.mjs')
 
 function sha256(bytes: Readonly<Uint8Array>): string {

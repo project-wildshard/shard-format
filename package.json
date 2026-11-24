@@ -31,7 +31,6 @@
     "src/cli/*.mjs",
     "!src/cli/*.test.ts",
     "corpus/exports/**",
-    "corpus/legacy/**",
     "src/format/meshopt-static.mjs",
     "src/format/meshopt-decoder.wasm",
     "src/hook/format-hook.mjs",

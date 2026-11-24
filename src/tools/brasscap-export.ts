@@ -9,7 +9,7 @@
 //   5. replaces corpus/exports/brasscap-mesa/ with the built folder, less every file over the repo's 1 MB blob cap
 //      (.githooks/lib.mjs MAX_BYTES), and writes the pin file beside it.
 // J506: the pin keeps the whole build's file count and tree hash (engine's test/fixtures/corpus copy names the same
-// ones), lists what it left out, and hashes what is kept; tests that need a whole folder read corpus/legacy/.
+// ones), lists what it left out, and hashes what is kept; tests that need a whole folder read the made-up src/test/fixtures/cli-fixture (ZS5, J507).
 // No three.js lands in shard-format: three is installed in the scratch folder only, and goes with it. Nothing
 // runs in CI; the export test checks the committed folder against the pin's tree hash.
 //   node src/tools/brasscap-export.ts [--commit <rev>] [--repo <shard-brasscap checkout>] [--check] [--keep]

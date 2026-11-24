@@ -4,6 +4,7 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 import { parseOutputIndex } from '../format/outputIndex.ts'
+import { admitScriptContract } from '../format/scriptContract.ts'
 import { readTar, writeTar } from '../format/tar.ts'
 import { validationSourceBytes } from '../format/validationReceipt.ts'
 import {
@@ -44,13 +45,13 @@ const TRUNCATED = 0.2
 const ANYWHERE = 0.3
 const EVERY_FOURTH = 4
 
-function template2(): Files {
+function madeUp(): Files {
   const tar = path.join(dir, 'corpus.tar')
   assert.equal(cli(['pack', CORPUS, '--out', tar]).status, 0)
   return readTar(readFileSync(tar))
 }
 
-const product = template2()
+const product = madeUp()
 const indexText = decoder.decode(product.get(INDEX))
 const pristine = parseOutputIndex(JSON.parse(indexText))
 
@@ -94,7 +95,7 @@ function firstRow(kind: string): BlobRow {
   const row = pristine.files.find(
     (item: BlobRow): boolean => item.kind === kind,
   )
-  assert.ok(row !== undefined, `Template 2 has no ${kind}`)
+  assert.ok(row !== undefined, `the made-up product has no ${kind}`)
   return row
 }
 
@@ -133,8 +134,9 @@ test('an index that lies about its source is refused', (): void => {
   assert.equal(validated('source', withIndex({ ...pristine, build })), 3)
 })
 
-test('a model that understates its cost is refused', (): void => {
-  const { hash } = firstRow('glb')
+test('an asset that understates its cost is refused', (): void => {
+  // ZONE-SNAPSHOTS ZS5 (J507): the made-up product's one asset is a terrain tile; the cost check reads every kind.
+  const { hash } = firstRow('tile')
   const files = pristine.files.map((row: BlobRow): unknown =>
     row.hash === hash ? { ...row, gpu: 0, triangles: 0 } : row,
   )
@@ -143,8 +145,11 @@ test('a model that understates its cost is refused', (): void => {
 })
 
 test('a script with an import no script may have is refused', (): void => {
-  const files = swapBlob(firstRow('wasm'), bannedImportModule())
-  assert.equal(validated('banned-import', files), 3)
+  // ZONE-SNAPSHOTS ZS5 (J507): the made-up product holds no script, so this runs the admission each Wasm row passes
+  // in a host's asset check (assetAdmission), on the module alone.
+  assert.throws((): void => {
+    admitScriptContract(bannedImportModule(), { abi: 0 })
+  }, /Import (?:signature )?outside ABI/u)
 })
 
 function lehmer(start: number): () => number {

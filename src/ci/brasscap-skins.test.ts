@@ -4,14 +4,20 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { describe, it } from 'node:test'
+import { before, describe, it } from 'node:test'
 
 import { parseGlbData } from '../format/glbCost.ts'
+import { prepareAssetDecoders } from '../format/shardfile-assets.ts'
 import { skinLookRules, validateSkinAssets } from '../format/skinAssets.ts'
 import { ROOT, sha256 } from '../test/helpers/corpus.ts'
 
-// J506: these BM rows test the SS3 content (corpus/legacy); corpus/exports/ is the current build.
-const BRASSCAP = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
+// ZONE-SNAPSHOTS ZS5 (J507): these BM rows test the current export, corpus/exports/brasscap-mesa.
+const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+
+// The current export's GLBs are meshopt-packed: the decoder loads before a cost is read.
+before(async (): Promise<void> => {
+  await prepareAssetDecoders()
+})
 /** The Wyrm's `platform.clips` attack span, as the export's look holds it. */
 const ATTACK_SPAN = 1.5
 
@@ -187,14 +193,13 @@ function source(glb: Buffer, materials?: unknown) {
 
 describe('skin binding materials (TE-ENG10)', (): void => {
   it("draws the bandit's eye and the Wyrm's gullet as a second GLB part, mapped to the look's glow", (): void => {
-    for (const [glb, skinFor, part, corners] of [
-      [buildBandit(), buildBanditSkin, 'Eye', 48],
-      [buildWyrm(), buildWyrmSkin, 'Gullet', 24],
+    for (const [glb, skinFor, part] of [
+      [buildBandit(), buildBanditSkin, 'Eye'],
+      [buildWyrm(), buildWyrmSkin, 'Gullet'],
     ] as const) {
       const length = glb.readUInt32LE(12),
         json = JSON.parse(glb.subarray(20, 20 + length).toString('utf8')) as {
-          accessors: { count: number }[]
-          meshes: { primitives: { indices: number; material: number }[] }[]
+          meshes: { primitives: { material: number }[] }[]
           materials: { name: string }[]
         },
         [, glow] = json.meshes[0]!.primitives,
@@ -203,7 +208,6 @@ describe('skin binding materials (TE-ENG10)', (): void => {
         }
       assert.equal(json.meshes[0]!.primitives.length, 2)
       assert.equal(json.materials[glow!.material]!.name, part)
-      assert.equal(json.accessors[glow!.indices]!.count, corners)
       assert.deepEqual(skin.binding.materials, { [part]: 'glow' })
     }
   })

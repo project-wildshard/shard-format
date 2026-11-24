@@ -26,11 +26,9 @@ beforeAll(async (): Promise<void> => {
   await prepareAssetDecoders()
 })
 
-// J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
-const CORPUS = new URL(
-  '../../corpus/legacy/brasscap-mesa-ss3/',
-  import.meta.url,
-).pathname
+// ZONE-SNAPSHOTS ZS5 (J507): a whole made-up folder, never a stored zone.
+const CORPUS = new URL('../test/fixtures/cli-fixture/', import.meta.url)
+  .pathname
 /** The catalogue's armed slugs, as admission passes them (FP27b, FP27c). */
 const CATALOGUE: ReadonlySet<string> = new Set(['brasscap-mesa'])
 const judged = (

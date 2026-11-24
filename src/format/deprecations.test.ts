@@ -22,12 +22,10 @@ import type { FormatMigration } from './format-migrations.ts'
 
 type Files = ReadonlyMap<string, Uint8Array>
 
-// J506: the SS3 export (format 0.1.0.0) is the old original this chain
-// carries forward; corpus/exports/ is the current one.
-const CORPUS = new URL(
-  '../../corpus/legacy/brasscap-mesa-ss3/',
-  import.meta.url,
-).pathname
+// ZONE-SNAPSHOTS ZS5 (J507): the made-up CLI product (format 0.1, one terrain
+// tile) is the old original this chain carries forward; no stored zone.
+const CORPUS = new URL('../test/fixtures/cli-fixture/', import.meta.url)
+  .pathname
 
 function sha256(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')
@@ -149,23 +147,10 @@ describe('the deprecation counter (FE7)', (): void => {
       'shard.version',
       'shard.empty-fields',
       'shard.sdk-marker',
-      // FP19: the Brasscap template export is built and never prepared, on cook data version 1.
+      // FP19: the made-up CLI product is built and never prepared.
       'shard.unprepared',
-      'cook.legacy-data',
       'requires.sdk',
       'requires.capabilities',
-      // OF9b5: this original's level manifest predates SDK 0.4.25's moves.
-      'manifest.spawn',
-      'manifest.audio',
-      'manifest.weapon',
-      'manifest.species',
-      'manifest.spawns',
-      // FP47b: and its level look predates OF9b2's look.level.
-      'manifest.sky',
-      'manifest.atmosphere',
-      'manifest.grade',
-      // FP47c: and its map image predates OF9b3's look/map.
-      'manifest.minimap.image',
     ])
     expect(
       validated.warnings.some((line: string): boolean =>
@@ -176,10 +161,7 @@ describe('the deprecation counter (FE7)', (): void => {
     expect(
       validateMigrated(copy.files, { hash: sha256, judged: 'stored' })
         .deprecations,
-    ).toEqual([
-      'cook.legacy-data',
-      // FP4, FP33, FP34 and FP47b: fp4-drop-requires-capabilities, fp33-drop-requires-sdk, fp34-manifest-moved-words
-      // and fp47b-level-look mend them, so the copy counts none.
-    ])
+    ).toEqual([])
+    // FP4 and FP33: fp4-drop-requires-capabilities and fp33-drop-requires-sdk mend them, so the copy counts none.
   })
 })

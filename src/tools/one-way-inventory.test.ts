@@ -74,9 +74,8 @@ test('FP47c: a corpus product the chain cannot admit counts as stored', async ()
 })
 
 test('FP47c: the real corpus counts as the chain serves it', async (): Promise<void> => {
-  // Brasscap SS3 (format 0.1) keeps nine repeated words as stored, none as the chain serves it.
+  // ZONE-SNAPSHOTS ZS5 (J507): the stored SS3 copy (nine repeated words as stored) is gone; the chain serves none.
   const real = await workingFiles(process.cwd())
-  assert.equal(corpusCounts(real)['corpus.repeated-manifest-fields'], 9)
   const served = corpusCounts(await migratedCorpus(process.cwd(), real))
   assert.equal(served['corpus.repeated-manifest-fields'], 0)
 })

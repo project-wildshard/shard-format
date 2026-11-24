@@ -24,11 +24,9 @@ import type { MemoryAdmissionRequest } from './memoryAdmission.ts'
 import type { ShardfileFiles } from './shardfileValidation.ts'
 import type { Shardfile } from './shardSchema.ts'
 
-// J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
-const CORPUS = new URL(
-  '../../corpus/legacy/brasscap-mesa-ss3/',
-  import.meta.url,
-).pathname
+// ZONE-SNAPSHOTS ZS5 (J507): a whole made-up folder, never a stored zone.
+const CORPUS = new URL('../test/fixtures/cli-fixture/', import.meta.url)
+  .pathname
 const ARMED = 'brasscap-mesa'
 
 function sha256(bytes: Uint8Array): string {

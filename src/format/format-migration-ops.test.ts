@@ -21,17 +21,15 @@ import { prepareAssetDecoders } from './shardfile-assets.ts'
 
 import type { FormatMigration, MigratingShard } from './format-migrations.ts'
 
-// SHARD-COMPAT FE8: the chain's ops and its registry check, on Brasscap's export (format `0.1`, unprepared).
+// SHARD-COMPAT FE8: the chain's ops and its registry check, on the made-up CLI product (format `0.1`, unprepared).
 
 type Files = ReadonlyMap<string, Uint8Array>
 type Json = Record<string, unknown>
 
-// J506: the SS3 export (format 0.1.0.0) is the old original this chain
-// carries forward; corpus/exports/ is the current one.
-const CORPUS = new URL(
-  '../../corpus/legacy/brasscap-mesa-ss3/',
-  import.meta.url,
-).pathname
+// ZONE-SNAPSHOTS ZS5 (J507): the made-up CLI product (format 0.1, one terrain
+// tile) is the old original this chain carries forward; no stored zone.
+const CORPUS = new URL('../test/fixtures/cli-fixture/', import.meta.url)
+  .pathname
 const CURRENT = '0.1.0.6'
 
 function sha256(bytes: Uint8Array): string {
@@ -79,20 +77,20 @@ describe('the chain ops (FE8)', (): void => {
   test('renameKind round-trips to the same bytes, and the copy validates', (): void => {
     const plain = migrateShardfile(corpusFiles(), { hash: sha256 })
     const there = step(
-      'test-bear-grizzly',
-      renameKind({ from: 'bear', to: 'grizzly', keys: ['kind'] }),
+      'test-hello-greeting',
+      renameKind({ from: 'Hello', to: 'Greetings', keys: ['hello'] }),
     )
     const back = step(
-      'test-grizzly-bear',
-      renameKind({ from: 'grizzly', to: 'bear', keys: ['kind'] }),
+      'test-greeting-hello',
+      renameKind({ from: 'Greetings', to: 'Hello', keys: ['hello'] }),
     )
     const half = migrateShardfile(corpusFiles(), {
       hash: sha256,
       migrations: [...FORMAT_MIGRATIONS, there],
     })
     expect(
-      new TextDecoder().decode(half.files.get('sections/actors/species.json')),
-    ).toContain('"grizzly"')
+      new TextDecoder().decode(half.files.get('sections/ui/strings.json')),
+    ).toContain('"Greetings"')
     const round = migrateShardfile(corpusFiles(), {
       hash: sha256,
       migrations: [...FORMAT_MIGRATIONS, there, back],

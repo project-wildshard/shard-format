@@ -28,11 +28,9 @@ interface Refusal {
   readonly message: string
 }
 
-// J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
-const CORPUS = new URL(
-  '../../corpus/legacy/brasscap-mesa-ss3/',
-  import.meta.url,
-).pathname
+// ZONE-SNAPSHOTS ZS5 (J507): a whole made-up folder, never a stored zone.
+const CORPUS = new URL('../test/fixtures/cli-fixture/', import.meta.url)
+  .pathname
 const MB = 1_000_000
 const TODAY = '2026-11-13'
 const LATER = '2099-01-01'
@@ -143,9 +141,8 @@ beforeAll(async (): Promise<void> => {
 describe('validator refusals carry the code of the check that refused', (): void => {
   const files = corpusFiles()
   const blob =
-    [...files.keys()].find(
-      (name): boolean => name.startsWith('blobs/') && name.endsWith('.glb'),
-    ) ?? ''
+    [...files.keys()].find((name): boolean => name.startsWith('blobs/tile/')) ??
+    ''
   const section =
     [...files.keys()].find((name): boolean => name.startsWith('sections/')) ??
     ''

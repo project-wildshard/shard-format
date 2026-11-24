@@ -36,8 +36,8 @@ type Json = Record<string, unknown>
 type Files = ReadonlyMap<string, Uint8Array>
 
 const ROOT = new URL('../../', import.meta.url).pathname
-// J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
-const CORPUS = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
+// ZONE-SNAPSHOTS ZS5 (J507): a whole made-up folder, never a stored zone.
+const CORPUS = path.join(ROOT, 'src/test/fixtures/cli-fixture')
 const STAGE_KINDS = 18
 
 function sha256(bytes: Readonly<Uint8Array>): string {

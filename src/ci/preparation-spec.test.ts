@@ -5,7 +5,6 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 
-import { readCookData } from '../format/cook-data.ts'
 import { cookPreparationBytes } from '../format/cook-preparation.ts'
 import {
   assembleOutputShardfile,
@@ -107,8 +106,8 @@ function preparedSpec4(name: string): string {
   const folder = path.join(dir, name)
   cpSync(CORPUS, folder, { recursive: true })
   const index = specIndex(folder)
-  const { mounts: legacy } = readCookData(readJson(folder, 'cook.json'))
-  const mounts = [...legacy, programMount(folder, index.identity.slug)]
+  // The made-up product carries no cook.json of its own (ZONE-SNAPSHOTS ZS5): its one mount is the program table.
+  const mounts = [programMount(folder, index.identity.slug)]
   const inputHash = sha256(cookPreparationBytes(index, mounts))
   writeCook(folder, index, {
     version: 4,

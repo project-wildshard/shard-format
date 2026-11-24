@@ -19,17 +19,15 @@ import { SHARDFILE_VERSION } from './version.ts'
 
 import type { FormatMigration } from './format-migrations.ts'
 
-// SHARD-COMPAT CP1: the chain on Brasscap's export (format `0.1`, unprepared), with FORMAT-PRUNE FP6 as its first step.
+// SHARD-COMPAT CP1: the chain on the made-up CLI product (format `0.1`, unprepared), with FORMAT-PRUNE FP6 as its first step.
 
 type Files = ReadonlyMap<string, Uint8Array>
 type Json = Record<string, unknown>
 
-// J506: the SS3 export (format 0.1.0.0) is the old original this chain
-// carries forward; corpus/exports/ is the current one.
-const CORPUS = new URL(
-  '../../corpus/legacy/brasscap-mesa-ss3/',
-  import.meta.url,
-).pathname
+// ZONE-SNAPSHOTS ZS5 (J507): the made-up CLI product (format 0.1, one terrain
+// tile) is the old original this chain carries forward; no stored zone.
+const CORPUS = new URL('../test/fixtures/cli-fixture/', import.meta.url)
+  .pathname
 
 function sha256(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')
@@ -223,7 +221,7 @@ describe('the migration chain', (): void => {
     const index = json(corpusFiles(), 'shard.json')
     expect(
       parseOutputLineageIndex({ ...index, sdk: '0.3' }).identity.slug,
-    ).toBe('brasscap-mesa')
+    ).toBe('cli-fixture')
   })
 })
 

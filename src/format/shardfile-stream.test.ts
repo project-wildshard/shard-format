@@ -17,17 +17,15 @@ import { validationSourceBytes } from './validationReceipt.ts'
 import type { ShardfileFiles } from './shardfileValidation.ts'
 
 // API-CLOUDFLARE AC6a: the streaming validator gives validateShardfileFolder's verdict, refusal for refusal, on the
-// corpus export (Brasscap Mesa) and its mutations. shardfile-stream-pins.test.ts runs the real pins.
+// made-up CLI product and its mutations. shardfile-stream-pins.test.ts runs the real pins.
 
 type Files = ReadonlyMap<string, Readonly<Uint8Array>>
 type Mutation = readonly [name: string, mutate: () => Files]
 
-// J506: the SS3 export (format 0.1.0.0) is the old original this chain
-// carries forward; corpus/exports/ is the current one.
-const CORPUS = new URL(
-  '../../corpus/legacy/brasscap-mesa-ss3/',
-  import.meta.url,
-).pathname
+// ZONE-SNAPSHOTS ZS5 (J507): the made-up CLI product (format 0.1, one terrain
+// tile) is the old original this chain carries forward; no stored zone.
+const CORPUS = new URL('../test/fixtures/cli-fixture/', import.meta.url)
+  .pathname
 const ODD_CHUNK = 7919
 
 function sha256(bytes: Readonly<Uint8Array>): string {
@@ -249,15 +247,6 @@ function assetMutations(files: Files): readonly Mutation[] {
   return [
     ['a pack out of member order', (): Files => packSwapped(files)],
     [
-      'a prop GLB whose material lost its binding',
-      (): Files =>
-        sectionEdited(files, 'world/props', (value: Json): void => {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads its own corpus
-          const props = value['props'] as { materials: Json }
-          delete props.materials['Mesa']
-        }),
-    ],
-    [
       'a semantic refusal, which waits for the inventory',
       (): Files =>
         sectionEdited(files, 'world/tiles', (value: Json): void => {
@@ -298,11 +287,11 @@ function stalePreparation(files: Files): Files {
 }
 
 function mutations(files: Files): readonly Mutation[] {
-  const glb = first(files, 'blobs/', '.glb')
+  const blob = first(files, 'blobs/tile/', '.wtt')
   const section = first(files, 'sections/', '.json')
   const extra = new Uint8Array([1, 2, 3])
   return [
-    ['a changed blob byte', (): Files => edited(files, glb, flipped(4000))],
+    ['a changed blob byte', (): Files => edited(files, blob, flipped(4000))],
     ['a stale cook preparation', (): Files => stalePreparation(files)],
     [
       'a changed section byte',
@@ -316,7 +305,7 @@ function mutations(files: Files): readonly Mutation[] {
       'an unlisted file',
       (): Files => new Map([...files, ['blobs/extra.bin', extra]]),
     ],
-    ['a missing blob', (): Files => without(files, glb)],
+    ['a missing blob', (): Files => without(files, blob)],
     ['a missing section', (): Files => without(files, section)],
     [
       'non-canonical shard.json',
@@ -331,7 +320,7 @@ function mutations(files: Files): readonly Mutation[] {
     [
       'a truncated blob',
       (): Files =>
-        edited(files, glb, (bytes: Readonly<Uint8Array>): Uint8Array =>
+        edited(files, blob, (bytes: Readonly<Uint8Array>): Uint8Array =>
           bytes.slice(0, -8),
         ),
     ],
@@ -382,10 +371,8 @@ describe('validateShardfileStream on the corpus', (): void => {
     ])
     expect([result.index, result.shard]).toEqual([old.index, old.shard])
     expect([...result.sections.keys()]).toEqual([...old.sections.keys()])
-    // FORMAT-PRUNE FP23's gate: the stream reports cook.json's deprecations as the folder does (this export's cook
-    // data is version 1), so the FE7 corpus count sees cook.legacy-data.
+    // FORMAT-PRUNE FP23's gate: the stream reports the deprecations the folder does.
     expect(result.deprecations).toEqual(old.deprecations)
-    expect(result.deprecations).toContain('cook.legacy-data')
     // The second read runs the asset checks.
     expect([result.complete, result.pending, result.reads]).toEqual([
       true,
@@ -453,7 +440,7 @@ test('validateShardfileStream refuses a stored object that changed between its r
   const files = corpusFiles()
   const tar = writeTar(files)
   const changed = writeTar(
-    edited(files, first(files, 'blobs/', '.glb'), flipped(4000)),
+    edited(files, first(files, 'blobs/tile/', '.wtt'), flipped(4000)),
   )
   let reads = 0
   const verdictOf = await validateShardfileStream(

@@ -13,6 +13,7 @@ import {
   number,
   optional,
   unknown,
+  record,
 } from 'valibot'
 import { expect } from 'vitest'
 
@@ -41,8 +42,8 @@ const speciesArraySchema = array(unknown())
 const speciesRowsSchema = object({ species: speciesArraySchema })
 const speciesSectionSchema = object({ rows: speciesRowsSchema })
 
-// J506: the skin rows and GLBs here are the SS3 export's (corpus/legacy); corpus/exports/ is the current build.
-const root = new URL('../../corpus/legacy/brasscap-mesa-ss3/', import.meta.url)
+// ZONE-SNAPSHOTS ZS5 (J507): the skin rows and GLBs here are the current export's, corpus/exports/brasscap-mesa.
+const root = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
 const bytes = (path: string): Uint8Array =>
   new Uint8Array(readFileSync(new URL(path, root)))
 const json = (value: unknown): Uint8Array =>
@@ -86,6 +87,14 @@ const DECODED_MULTIPLIER = 2
 const VECTOR_WIDTH = 3
 const FLOAT_BYTES = 4
 
+// ZS5 (J507): the current export's wyrmling, whose GLB keeps plain floats (the bandit's is meshopt-packed).
+const SPECIES = 'brasscap.wyrmling'
+const recordSchema = record(string(), unknown())
+
+function isWyrmling(row: unknown): boolean {
+  return parse(recordSchema, row)['id'] === SPECIES
+}
+
 // Keep one real binary fixture construction visible for the admission proof.
 // oxlint-disable-next-line max-statements, complexity, max-lines-per-function
 function fixture(
@@ -110,10 +119,10 @@ function fixture(
     decode(bytes('sections/look/look.json')),
   )
   const original = materialSection.rows.looks.find(
-    (look): boolean => look.species === 'brasscap.bandit',
+    (look): boolean => look.species === SPECIES,
   )
   if (original?.parameters.skin === undefined) {
-    throw new Error('Missing actual bandit look')
+    throw new Error('Missing actual wyrmling look')
   }
   const corpusBytes = bytes(`blobs/json/${original.parameters.skin}.json`)
   const first = parseSkinFile(corpusBytes)
@@ -180,14 +189,14 @@ function fixture(
     looks: [],
     compendiums: [],
     loot: [],
-    species: speciesSection.rows.species,
+    species: speciesSection.rows.species.filter(isWyrmling),
   })
   const species = originalRows.species.find(
-    (row): boolean => row.id === 'brasscap.bandit',
+    (row): boolean => row.id === SPECIES,
   )
   const variant = species?.variants[ZERO]
   if (species === undefined || variant === undefined) {
-    throw new Error('Missing actual bandit species')
+    throw new Error('Missing actual wyrmling species')
   }
   const rows = parseRows({
     strikes: [],
