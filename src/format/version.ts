@@ -171,6 +171,18 @@ function withSaveRevision(identity: unknown): unknown {
   return Object.fromEntries(renamed)
 }
 
+/** A copy of a JSON object without `keys`; anything else as it is. */
+function withoutKeys(value: unknown, keys: readonly string[]): unknown {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return value
+  }
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      ([key]: readonly [string, unknown]): boolean => !keys.includes(key),
+    ),
+  )
+}
+
 /** The rows a version from 0.1.0.3 on changes in place: PR4's preparation marker, FP26's save lineage, then FP33's
  * `requires.sdk`. */
 function laterEnvelopeRows(
@@ -195,18 +207,6 @@ function laterEnvelopeRows(
   if (writesNoRequiresSdk(version)) {
     envelope['requires'] = withoutKeys(envelope['requires'], ['sdk'])
   }
-}
-
-/** A copy of a JSON object without `keys`; anything else as it is. */
-function withoutKeys(value: unknown, keys: readonly string[]): unknown {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return value
-  }
-  return Object.fromEntries(
-    Object.entries(value).filter(
-      ([key]: readonly [string, unknown]): boolean => !keys.includes(key),
-    ),
-  )
 }
 
 /** The rows `outputIndexEnvelope` returns: the writer's own rows, typed so it keeps reading them, with `version` and

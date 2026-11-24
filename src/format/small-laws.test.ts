@@ -61,23 +61,6 @@ describe('small laws match the engine', () => {
       headlessSections(new Map([['client/plan', plan]])).get('client/plan'),
     ).toEqual(plan)
   })
-  it('carries the plan the server reads (HS6): server/plan crosses to the worker with its portal ride', () => {
-    const ride = { kind: 'portal.ride', rows: [{ id: 'gate' }] }
-    const page = { version: 1, features: [{ kind: 'strings.register' }] }
-    const server = { version: 1, features: [ride] }
-    const sent = new Map<string, unknown>([
-      ['client/plan', page],
-      ['server/plan', server],
-    ])
-    expect(HEADLESS_CONTEXT_SECTIONS).toContain('server/plan')
-    expect(headlessSections(sent).get('server/plan')).toEqual(server)
-    expect(
-      productHeadlessSections({
-        has: name => sent.has(name),
-        section: name => sent.get(name),
-      }).get('server/plan'),
-    ).toEqual(server)
-  })
   it('lights the road and the far cliffs the same', () => {
     expect(ROAD_SKY).toEqual(golden.roadSky)
     expect(FAR_CLIFF_FLOOR).toBe(golden.farCliffFloor)
@@ -89,4 +72,22 @@ describe('small laws match the engine', () => {
       ),
     ).toEqual(golden.mover)
   })
+})
+
+it('carries the plan the server reads (HS6): server/plan crosses to the worker with its portal ride', () => {
+  const ride = { kind: 'portal.ride', rows: [{ id: 'gate' }] }
+  const page = { version: 1, features: [{ kind: 'strings.register' }] }
+  const server = { version: 1, features: [ride] }
+  const sent = new Map<string, unknown>([
+    ['client/plan', page],
+    ['server/plan', server],
+  ])
+  expect(HEADLESS_CONTEXT_SECTIONS).toContain('server/plan')
+  expect(headlessSections(sent).get('server/plan')).toEqual(server)
+  expect(
+    productHeadlessSections({
+      has: name => sent.has(name),
+      section: name => sent.get(name),
+    }).get('server/plan'),
+  ).toEqual(server)
 })
