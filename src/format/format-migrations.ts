@@ -10,6 +10,7 @@ import {
   preparationMarker,
   saveRevisionName,
 } from './format-migration-envelope.ts'
+import { homesToMembers } from './format-migration-homes.ts'
 import { journalGlyphImages } from './format-migration-journal.ts'
 import {
   dropRuntimeTrust,
@@ -84,6 +85,7 @@ const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
   schemaSource,
   dropRequiresCapabilities,
   dropRequiresSdk,
+  homesToMembers,
 ]
 
 /** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its
