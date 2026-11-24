@@ -18,6 +18,8 @@ export const HEADLESS_CONTEXT_SECTIONS = [
   'sim/bodies',
   // The offline simulation reads the ordinary portal ride from this plan.
   'client/plan',
+  // SHARD-COMPAT HS6: the server reads its feature rows (the portal ride among them) from its own plan only.
+  'server/plan',
 ] as const
 
 /** Explicit admitted decision/move context crossing the worker boundary; no ABI is inferred from bytes. */
