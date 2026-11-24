@@ -124,6 +124,7 @@
     "./fur-strands": "./src/format/fur-strands.ts",
     "./scene-render": "./src/format/scene-render.ts",
     "./look-level": "./src/format/look-level.ts",
+    "./engine-floor": "./src/format/engine-floor.ts",
     "./level-start": "./src/format/level-start.ts",
     "./level-start-rows": "./src/format/level-start-rows.ts",
     "./look-sky": "./src/format/look-sky.ts",

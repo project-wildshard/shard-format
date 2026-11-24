@@ -276,3 +276,18 @@ describe('the preparation marker (PR4)', (): void => {
     expect(preparationSpecOf({ preparation: 4 })).toBe(4)
   })
 })
+
+describe('requires.engine (FP47b)', (): void => {
+  test('0.1.0.6 admits an engine floor and an older format refuses it', (): void => {
+    const copy = migrateShardfile(corpusFiles(), { hash: sha256 })
+    const index = json(copy.files, 'shard.json')
+    const requires = { ...(index['requires'] as Json), engine: '0.1.83' }
+    expect(index['formatVersion']).toBe(SHARDFILE_VERSION)
+    expect(parseOutputIndex({ ...index, requires }).requires.engine).toBe(
+      '0.1.83',
+    )
+    expect((): unknown =>
+      parseOutputIndex({ ...index, formatVersion: '0.1.0.5', requires }),
+    ).toThrow('Format 0.1.0.5 carries no requires.engine')
+  })
+})

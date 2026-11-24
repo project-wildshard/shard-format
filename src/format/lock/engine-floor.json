@@ -1,0 +1,3 @@
+{
+  "./engine-floor#EngineReleaseSchema": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"max_length","expects":"<=32","requirement":32},{"kind":"validation","type":"regex","expects":"/^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)$/u","requirement":"re:/^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)$/u"}]}
+}

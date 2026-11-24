@@ -11,6 +11,7 @@ import type { FormatVersion } from './version.ts';
 import { RuntimeCostSchema } from './runtimeCost.ts';
 import { CommonsCostsSchema } from './commonsCosts.ts';
 import { ScriptBindingsSchema } from './scripts.ts';
+import { EngineReleaseSchema } from './engine-floor.ts';
 
 const CHUNK_HALF = WIRE_CELL.half, CELL_BELOW = WIRE_CELL.below, CELL_ABOVE = WIRE_CELL.above;
 /** Nonnegative safe wire integer. */
@@ -45,7 +46,7 @@ const IdentityRowSchema = v.strictObject({ slug: name, name: v.pipe(v.string(), 
 function identityWithSaveRevision(row: Readonly<v.InferOutput<typeof IdentityRowSchema>>): ShardIdentity { const { revision: _old, saveRevision: _new, ...rest } = row; return { ...rest, saveRevision: saveRevisionOf(row) }; }
 export const IdentitySchema: v.GenericSchema<ShardIdentityInput, ShardIdentity> = v.pipe(IdentityRowSchema, v.check(oneSaveRevisionSpelling, 'Shard identity needs exactly one of saveRevision or revision'), v.transform(identityWithSaveRevision));
 /** Wire revision, capabilities and exact commons declarations. */
-export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ sdk: v.exactOptional(v.picklist(SHARDFILE_VERSIONS)), capabilities: v.exactOptional(ShardNamesSchema), commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
+export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ sdk: v.exactOptional(v.picklist(SHARDFILE_VERSIONS)), capabilities: v.exactOptional(ShardNamesSchema), engine: v.exactOptional(EngineReleaseSchema), commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
 /** Authored compressed and resident ceilings. */
 export const BudgetsSchema: v.GenericSchema<ShardBudgetsInput, ShardBudgets> = v.strictObject({
   /** Reviewed whole-client floor retained when an opaque runtime becomes declared data. */
@@ -236,6 +237,8 @@ interface ShardRequiresInputFields {
     sdk?: FormatVersion;
     /** FORMAT-PRUNE FP4: deprecated (always empty, never read); the chain drops it and writers stop sourcing it. */
     capabilities?: ShardNamesInput;
+    /** FORMAT-PRUNE FP47b (J505): the lowest engine release that can draw this product (0.1.0.6 on; `engine-floor.ts`). */
+    engine?: string;
     commons: (ShardHashInput)[];
     commonsWire?: Record<string, ShardNaturalInput> | undefined;
     commonsCosts?: v.InferInput<typeof CommonsCostsSchema> | undefined;
@@ -244,6 +247,7 @@ export type ShardRequiresInput = { [Key in keyof ShardRequiresInputFields]: Shar
 interface ShardRequiresFields {
     sdk?: FormatVersion;
     capabilities?: ShardNames;
+    engine?: string;
     commons: (ShardHash)[];
     commonsWire: Record<string, ShardNatural>;
     commonsCosts: v.InferOutput<typeof CommonsCostsSchema>;

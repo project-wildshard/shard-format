@@ -45,6 +45,9 @@ const SHARDFILE_VERSION_SAVE_REVISION = '0.1.0.4'
 /** The first format whose `shard.json` carries no `requires.sdk` (FORMAT-PRUNE FP33, SHARD-COMPAT CP8): it only ever
  * copied the format version, and nothing reads it. */
 const SHARDFILE_VERSION_NO_REQUIRES_SDK = '0.1.0.5'
+/** The first format whose `shard.json` may name the lowest engine release that draws it, `requires.engine` (FORMAT-PRUNE
+ * FP47b, J505): an engine on an older format refuses the word, so the floor holds there too. */
+const SHARDFILE_VERSION_ENGINE_FLOOR = '0.1.0.6'
 /** A format version's four parts. */
 type FormatVersionParts = readonly [number, number, number, number]
 /** @deprecated SHARD-COMPAT SP10: use `FormatVersionParts`. */
@@ -153,6 +156,13 @@ function writesNoRequiresSdk(version: string): boolean {
   )
 }
 
+/** Whether a format version may carry `requires.engine` (0.1.0.6 on, FP47b). */
+function carriesEngineFloor(version: string): boolean {
+  return (
+    compareShardfileVersions(version, SHARDFILE_VERSION_ENGINE_FLOOR) >= ZERO
+  )
+}
+
 /** FP26: a copy of an identity row with `revision` spelled `saveRevision`; anything else as it is. */
 function withSaveRevision(identity: unknown): unknown {
   if (
@@ -184,6 +194,14 @@ function withoutKeys(value: unknown, keys: readonly string[]): unknown {
   )
 }
 
+/** `requires` as `version` writes it: no `sdk` from 0.1.0.5 (FORMAT-PRUNE FP33), no `engine` floor below 0.1.0.6 (FP47b). */
+function requiresAt(requires: unknown, version: string): unknown {
+  return withoutKeys(requires, [
+    ...(writesNoRequiresSdk(version) ? ['sdk'] : []),
+    ...(carriesEngineFloor(version) ? [] : ['engine']),
+  ])
+}
+
 /** The rows a version from 0.1.0.3 on changes in place: PR4's preparation marker, FP26's save lineage, then FP33's
  * `requires.sdk`. */
 function laterEnvelopeRows(
@@ -204,10 +222,7 @@ function laterEnvelopeRows(
   if (writesSaveRevision(version)) {
     envelope['identity'] = withSaveRevision(envelope['identity'])
   }
-  // FORMAT-PRUNE FP33: from 0.1.0.5 `requires` carries no `sdk`.
-  if (writesNoRequiresSdk(version)) {
-    envelope['requires'] = withoutKeys(envelope['requires'], ['sdk'])
-  }
+  envelope['requires'] = requiresAt(envelope['requires'], version)
 }
 
 /** The rows `outputIndexEnvelope` returns: the writer's own rows, typed so it keeps reading them, with `version` and
@@ -263,6 +278,8 @@ export {
   writesPreparationMarker,
   writesSaveRevision,
   writesNoRequiresSdk,
+  carriesEngineFloor,
+  SHARDFILE_VERSION_ENGINE_FLOOR,
   SHARDFILE_VERSION_PREPARATION,
   SHARDFILE_VERSION_SAVE_REVISION,
   SHARDFILE_VERSION_NO_REQUIRES_SDK,
