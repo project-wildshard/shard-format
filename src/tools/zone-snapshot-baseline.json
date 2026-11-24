@@ -1,4 +1,4 @@
 {
   "about": "ZONE-SNAPSHOTS ZS1: today's zone snapshots; shrink only (node src/tools/zone-snapshot-guard.ts --prune)",
-  "offenders": ["shard-folder corpus/exports/brasscap-mesa/shard.json"]
+  "offenders": []
 }
