@@ -37,6 +37,10 @@ const input: SourceInventory = {
       `if (event.${['is', 'Trus', 'ted'].join('')}) armed()`,
     ),
     files('src/client/game/Inventory.ts', 'type ItemId = "boar" | "bear"'),
+    files(
+      'src/server/game/shardfile/hosts.ts',
+      `const row = bake['bear'], other = rows["boar"]`,
+    ),
     files('src/test/fixture.ts', 'gridShardfile; registerSpecies(a); "bear"'),
   ],
   sdk: [

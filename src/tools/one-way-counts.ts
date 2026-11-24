@@ -89,6 +89,12 @@ function words(files: readonly SourceFile[]): number {
   )
 }
 
+/**
+ * A quoted string read as a bracket key (`bake['captain']`, `rows["x"]`): a
+ * product's row key that happens to spell a kind names no creature (FP51).
+ */
+const BRACKET_KEY = /[\w$)\]]\[["'`][^"'`\r\n]+["'`]\]/gu
+
 function kindLabels(
   files: readonly SourceFile[],
   kinds: readonly string[],
@@ -97,7 +103,11 @@ function kindLabels(
   return files.reduce(
     (total: number, file: Readonly<SourceFile>): number =>
       total +
-      [...file.text.matchAll(/["'`](?<label>[^"'`\r\n]+)["'`]/gu)].filter(
+      [
+        ...file.text
+          .replaceAll(BRACKET_KEY, '')
+          .matchAll(/["'`](?<label>[^"'`\r\n]+)["'`]/gu),
+      ].filter(
         (
           match: Readonly<{
             groups?: Readonly<Record<string, string>> | undefined

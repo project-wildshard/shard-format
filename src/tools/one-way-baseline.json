@@ -10,11 +10,11 @@
     }
   ],
   "counts": {
-    "engine.kind-literals": 3,
+    "engine.kind-literals": 0,
     "engine.kit-registrations": 0,
     "engine.look-fallbacks": 0,
     "engine.temperament-guesses": 0,
-    "engine.grid-pointer-references": 1,
+    "engine.grid-pointer-references": 0,
     "sdk.grid-pointer-references": 0,
     "format.grid-pointer-references": 5,
     "engine.access-gate-references": 0,
