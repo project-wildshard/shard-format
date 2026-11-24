@@ -88,8 +88,8 @@ const heldInput = v.strictObject({ attack: key, swap: key, aim: key, pitch: key 
 const arenaInput = v.strictObject({ use: key, skip: key });
 const grant = v.strictObject({ item: key, count: number });
 const grants = v.pipe(v.array(grant), v.maxLength(MAX_GRANTS));
-/** The quest family's four hosts (FORMAT-PRUNE FP16, ONE-FORMAT OF17b3): a plan's rows, and the `quests/server` section's. */
-export type NativeQuestHostRow = Extract<NativeAssemblyFeature, { host: 'quest.composition' | 'quest.chapter' | 'quest.kill-steps' | 'quest.body-scripts' }>;
+/** The quest family's four hosts (FORMAT-PRUNE FP16, ONE-FORMAT OF17b3); `quest-server.ts` admits the same rows for the
+ *  `quests/server` section (`quest-server-section.test.ts` holds the two together), and outlives this plan (FP21). */
 const QUEST_HOST_ROWS = [
   v.strictObject({ host: v.literal('quest.composition'), rows: read, spots: read, counters: read, document: v.exactOptional(read), table: v.exactOptional(read), contracts: v.exactOptional(read), props: v.exactOptional(read),
     readSpots: flag, nativeFeats: flag, barter: flag, director: flag, restoring: flag }),
@@ -99,8 +99,6 @@ const QUEST_HOST_ROWS = [
   v.strictObject({ host: v.literal('quest.kill-steps'), rows: read, counters: read }),
   v.strictObject({ host: v.literal('quest.body-scripts') }),
 ] as const;
-/** One quest host's row, as a plan or the `quests/server` section holds it. */
-export const NativeQuestHostSchema: v.GenericSchema<unknown, NativeQuestHostRow> = v.variant('host', QUEST_HOST_ROWS);
 const feature = v.variant('host', [
   v.strictObject({ host: v.picklist(['decisions', 'commands', 'loadout', 'population.elites-ready', 'population.reactions', 'population.settle', 'riding.elites-ready', 'water.field']) }),
   v.strictObject({ host: v.literal('collision'), skipOnRestore: flag }), v.strictObject({ host: v.literal('collision.pieces'), rows: read }),
