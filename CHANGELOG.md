@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.74.0 (2026-11-23)
+
+- A shard file no longer has a separate species-programs section: each creature's behaviour is written with the creature itself.
+- The old point-of-interest place types are gone from the format; quests name the places they use directly.
+- A shard file no longer has to list the capabilities it requires; older files that list them still load.
+- Older shard revisions that name a retired creature feature still validate, so no kept shard is dropped.
+
 ## v0.73.0 (2026-11-23)
 
 - The 450 MB shardfile upload cap is now one shared number, so the API and the cook can never disagree about how big a shard may be.
