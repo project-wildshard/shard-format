@@ -136,6 +136,8 @@
   "./outputIndex#OutputIndexSchema.requires.commonsWire?{k}": {"ref":"./admissionLate#AdmissionLateSchema[].hash"},
   "./outputIndex#OutputIndexSchema.requires.commonsWire?{v}": {"ref":"./admissionServer#AdmissionServerSchema[].bytes"},
   "./outputIndex#OutputIndexSchema.requires.commons[]": {"ref":"./admissionLate#AdmissionLateSchema[].hash"},
+  "./outputIndex#OutputIndexSchema.requires.engine": {"type":"exact_optional","expects":"string"},
+  "./outputIndex#OutputIndexSchema.requires.engine?": {"ref":"./engine-floor#EngineReleaseSchema"},
   "./outputIndex#OutputIndexSchema.requires.sdk": {"type":"exact_optional","expects":"(\"0.1\" | \"0.1.0.0\" | \"0.1.0.1\" | \"0.1.0.2\" | \"0.1.0.3\" | \"0.1.0.4\" | \"0.1.0.5\" | \"0.1.0.6\")"},
   "./outputIndex#OutputIndexSchema.requires.sdk?": {"type":"picklist","expects":"(\"0.1\" | \"0.1.0.0\" | \"0.1.0.1\" | \"0.1.0.2\" | \"0.1.0.3\" | \"0.1.0.4\" | \"0.1.0.5\" | \"0.1.0.6\")"},
   "./outputIndex#OutputIndexSchema.requires.sdk?|": ["0.1","0.1.0.0","0.1.0.1","0.1.0.2","0.1.0.3","0.1.0.4","0.1.0.5","0.1.0.6"],
