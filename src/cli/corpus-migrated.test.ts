@@ -31,11 +31,10 @@ describe('the corpus judges a refused original through the chain', (): void => {
       new Error('as stored'),
     )
     assert.equal(verdict.applied[0], 'fp6-four-part-version')
-    // Only what no migration mends stays (CP8): both fields are in the build source hash.
-    assert.deepEqual(verdict.deprecations, [
-      'requires.sdk',
-      'requires.capabilities',
-    ])
+    // Only what no migration mends stays (CP8): requires.sdk is in the build source hash. FP4's repair step drops
+    // requires.capabilities, so the copy no longer counts it.
+    assert.deepEqual(verdict.deprecations, ['requires.sdk'])
+    assert.ok(verdict.applied.includes('fp4-drop-requires-capabilities'))
   })
 
   it('keeps the stored refusal when the chain cannot run', async (): Promise<void> => {
