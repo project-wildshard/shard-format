@@ -18,6 +18,7 @@ import { RuntimeSpawnsSchema } from './runtimeSpawns.ts';
 import { RowsSchema } from './rows.ts';
 import { ShardHashSchema, ShardNaturalSchema, IdentitySchema, RequiresSchema, FilesSchema, type ShardIdentityInput, type ShardRequiresInput, type ShardReferencesInput, type ShardIdentity, type ShardRequires, type ShardReferences } from './shardSections.ts';
 import { LEGACY_LAYOUT, writesNoRequiresSdk, writesPreparationMarker, writesSaveRevision } from './version.ts';
+import { checkNoMovedWords } from './manifest-deprecations.ts';
 import { IndexFormatVersionSchema, LegacyIndexVersionSchema } from './index-format-version.ts';
 import type { IndexFormatVersion, LegacyIndexVersion } from './version.ts';
 import { isJsonData, isJsonDataWithFileSchemas } from './json.ts';
@@ -230,7 +231,9 @@ export function assembleOutputFields(index: OutputIndex, sections: ReadonlyMap<s
 }
 /** The default untrusted reader always checks sections and the full host schema. */
 export function assembleOutputShardfile(input: unknown, sections: ReadonlyMap<string, unknown>): Shardfile {
-  const source = parseShardfile(assembleOutputFields(parseOutputIndex(input), sections), sections);
+  const index = parseOutputIndex(input);
+  checkNoMovedWords(index.formatVersion, sections.get('ui/level'));
+  const source = parseShardfile(assembleOutputFields(index, sections), sections);
   const errors = clientOwnershipRules(source, sections); if (errors.length > 0) throw new Error(errors.join('; '));
   return source;
 }

@@ -172,12 +172,8 @@ describe('the deprecation counter (FE7)', (): void => {
         .deprecations,
     ).toEqual([
       'cook.legacy-data',
-      // FP4 and FP33: fp4-drop-requires-capabilities and fp33-drop-requires-sdk mend both, so the copy counts neither.
-      'manifest.spawn',
-      'manifest.audio',
-      'manifest.weapon',
-      'manifest.species',
-      'manifest.spawns',
+      // FP4, FP33 and FP34: fp4-drop-requires-capabilities, fp33-drop-requires-sdk and fp34-manifest-moved-words mend
+      // them, so the copy counts none.
     ])
   })
 })
