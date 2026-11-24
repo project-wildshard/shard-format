@@ -81,8 +81,21 @@ export const FarImpostorSchema: v.GenericSchema<FarImpostorInput, FarImpostor> =
 });
 /** One far impostor row. */
 
-/** Nullable far proxy references, bounds and conservative costs (its impostor's file is one of `files`). */
-export const FarSchema: v.GenericSchema<ShardFarInput, ShardFar> = v.nullable(v.pipe(v.strictObject({ files: ShardReferencesSchema, bounds: CellBoundsSchema, impostor: v.exactOptional(FarImpostorSchema), ...costs }),
+const unit = v.pipe(ShardFiniteSchema, v.minValue(0), v.maxValue(1));
+const rgb = v.tuple([ShardFiniteSchema, ShardFiniteSchema, ShardFiniteSchema]);
+/**
+ * FORMAT-PRUNE FP40: how the far tier draws the proxy (the shard's own far look, as its repo bake wrote `far.json`'s
+ * `look`): its shading `family`, the `haze` it fades into, an optional `grade` on its own pixels and an optional mood
+ * `band` (SF19b: a fog strip rising at its border, `height` metres, seen from the road; `own` its share inside the cell).
+ */
+export const FarLookSchema: v.GenericSchema<FarLookInput, FarLook> = v.strictObject({
+  family: v.picklist(['toon', 'painterly', 'pbr']), haze: v.strictObject({ colour: rgb }),
+  grade: v.exactOptional(v.strictObject({ exposure: ShardFiniteSchema, saturation: ShardFiniteSchema, contrast: ShardFiniteSchema, tint: v.exactOptional(rgb) })),
+  band: v.exactOptional(v.strictObject({ colour: rgb, height: v.pipe(ShardFiniteSchema, v.minValue(0), v.maxValue(CELL_ABOVE)), opacity: unit, own: unit })),
+});
+
+/** Nullable far proxy references, bounds and conservative costs (its impostor's file is one of `files`), and its look. */
+export const FarSchema: v.GenericSchema<ShardFarInput, ShardFar> = v.nullable(v.pipe(v.strictObject({ files: ShardReferencesSchema, bounds: CellBoundsSchema, impostor: v.exactOptional(FarImpostorSchema), look: v.exactOptional(FarLookSchema), ...costs }),
   v.check((far) => far.impostor === undefined || (far.files.includes(far.impostor.file) && far.impostor.bottom < far.impostor.top), 'far impostor file and span')));
 /** Finite local player position and yaw; its default remains in root composition. */
 export const SpawnSchema: v.GenericSchema<ShardSpawnInput, ShardSpawn> = v.strictObject({ x: ShardFiniteSchema, y: ShardFiniteSchema, z: ShardFiniteSchema, yaw: ShardFiniteSchema });
@@ -365,10 +378,20 @@ interface FarImpostorFields {
     range: ShardFinite;
 }
 export type FarImpostor = { [Key in keyof FarImpostorFields]: FarImpostorFields[Key] };
+type FarRgb = [number, number, number];
+/** FP40: a far row's look (`FarLookSchema`); the input and output agree. */
+export interface FarLook {
+    family: 'toon' | 'painterly' | 'pbr';
+    haze: { colour: FarRgb };
+    grade?: { exposure: number; saturation: number; contrast: number; tint?: FarRgb };
+    band?: { colour: FarRgb; height: number; opacity: number; own: number };
+}
+export type FarLookInput = FarLook;
 export type ShardFarInput = (Omit<{
     files: ShardReferencesInput;
     bounds: CellBoundsInput;
     impostor?: FarImpostorInput;
+    look?: FarLookInput;
 }, keyof ({
     compressed: ShardNaturalInput;
     decoded: ShardNaturalInput;
@@ -386,6 +409,7 @@ export type ShardFar = (Omit<{
     files: ShardReferences;
     bounds: CellBounds;
     impostor?: FarImpostor;
+    look?: FarLook;
 }, keyof ({
     compressed: ShardNatural;
     decoded: ShardNatural;
