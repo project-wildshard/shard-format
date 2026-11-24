@@ -3,15 +3,12 @@ import { expect, test } from 'vitest'
 
 import { WeaponSlotSchema } from './weapon-slot.ts'
 
-test('FP22d: a held weapon slot is a closed name or a declared weapon id', (): void => {
-  const good = [
+test('FP22e: a held weapon slot is a declared weapon id, never a closed name', (): void => {
+  const good = ['declared.weapon.lever', 'declared.weapon.driftwood-isle.iron']
+  const bad = [
     'crossbow',
     'rifle',
     'empty',
-    'declared.weapon.lever',
-    'declared.weapon.driftwood-isle.iron',
-  ]
-  const bad = [
     'lever',
     'declared.tool.rope',
     'declared.weapon.',

@@ -115,16 +115,7 @@ describe('the deprecation counter (FE7)', (): void => {
     ).toEqual([])
   })
 
-  test('FP17: legacySlot is deprecated anywhere in a section; save bridges name their reader', (): void => {
-    const shard = {
-      index: { version: '0.1.0.1' },
-      sections: new Map<string, unknown>([
-        ['rows', { items: [{ equipment: { id: 'bow', legacySlot: 'bow' } }] }],
-      ]),
-    }
-    expect(deprecationsUsed(shard).map((row): string => row.id)).toEqual([
-      'items.legacySlot',
-    ])
+  test('FP17: save bridges name their reader', (): void => {
     for (const bridge of SAVE_BRIDGES) {
       expect(bridge.reader, bridge.path).toMatch(/^engine /u)
     }

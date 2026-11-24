@@ -22,6 +22,10 @@
       "noFileChange": "FORMAT-PRUNE FP33: writers never write requires.sdk at any version now (it is deleted from the schema), so the version that first dropped it and its test have no reader; no consumer imports either (engine, sharddev, api-server)"
     },
     {
+      "path": "./items#ItemEquipmentSchema.legacySlot",
+      "noFileChange": "FORMAT-PRUNE FP22e deletes deprecated items.legacySlot at zero users: FE13 (corpus/usage.json) shows no kept original carries it, and every pinned shard names its weapons declared.<equipment id> (FP22d)"
+    },
+    {
       "path": "./version#SHARDFILE_VERSION",
       "migration": "fp47b-level-look"
     },

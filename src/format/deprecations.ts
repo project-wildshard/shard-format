@@ -43,7 +43,6 @@ interface DeprecationRule extends Deprecation {
 }
 
 const LEGACY_SPELLING = '0.1'
-const NONE = 0
 /** Deprecated in the current format with no data change: a shard file of any version may still carry it. */
 const CURRENT = '0.1.0.1'
 /** Format 0.1.0.2's envelope (SHARD-COMPAT CP14, FORMAT-PRUNE FP4 and FP25). */
@@ -62,22 +61,6 @@ function field(value: unknown, key: string): unknown {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? Reflect.get(value, key)
     : undefined
-}
-
-/** Whether `key` names a field anywhere inside `value`. */
-function hasKey(value: unknown, key: string): boolean {
-  const pending: unknown[] = [value]
-  while (pending.length > NONE) {
-    const next = pending.pop()
-    if (typeof next === 'object' && next !== null) {
-      if (!Array.isArray(next) && Object.hasOwn(next, key)) {
-        return true
-      }
-      const children: readonly unknown[] = Object.values(next)
-      pending.push(...children)
-    }
-  }
-  return false
 }
 
 const RULES: readonly DeprecationRule[] = [
@@ -152,18 +135,6 @@ const RULES: readonly DeprecationRule[] = [
   },
   ...SPECIES_SECTION_DEPRECATIONS,
   {
-    id: 'items.legacySlot',
-    path: 'an item equipment row legacySlot: a closed list of engine-native weapon names (FORMAT-PRUNE FP17)',
-    since: CURRENT,
-    replacement:
-      'none yet: it goes with engine native weapon slots, so a new item names no slot',
-    migration: undefined,
-    uses: (shard: Readonly<DeprecationInput>): boolean =>
-      [...shard.sections.values()].some((section: unknown): boolean =>
-        hasKey(section, 'legacySlot'),
-      ),
-  },
-  {
     id: 'admission.server',
     path: 'shard.json admission.server (native assembly, FORMAT-PRUNE FP16)',
     since: CURRENT,
@@ -183,7 +154,7 @@ interface SaveBridge {
   readonly reader: string
 }
 
-/** FP17's sort of the `legacy*` fields. `items.legacySlot` is shard data only, so it is a deprecation above; the
+/** FP17's sort of the `legacy*` fields. the closed item slot field was shard data only and is deleted (FP22e); the
  * species book's `piercing.legacy` goes with the species-program family (FP15); none can be migrated by data alone. */
 const SAVE_BRIDGES: readonly SaveBridge[] = [
   {
