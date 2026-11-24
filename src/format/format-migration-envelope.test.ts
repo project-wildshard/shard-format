@@ -1,3 +1,4 @@
+// oxlint-disable typescript/prefer-readonly-parameter-types -- a test hands the step a shard it edits in place
 import { describe, expect, test } from 'vitest'
 
 import { deprecationsUsed } from './deprecations.ts'
