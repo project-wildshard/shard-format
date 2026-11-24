@@ -47,7 +47,7 @@ function staleRuntimeIssues(
   identity?: Readonly<{
     slug: string
     saveRevision: number
-    /** FP27b: the API catalogue's armed state; absent, the format's own list decides. */
+    /** FP27b: the API catalogue's armed state; absent, the shard is not armed (FP27c). */
     armed?: boolean | ReadonlySet<string> | undefined
   }>,
 ): StaleRuntimeIssue[] {

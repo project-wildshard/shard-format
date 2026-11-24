@@ -13,7 +13,7 @@ import type { ZoneRef } from './memory-armed.ts'
 type Judged = 'upload' | 'stored'
 
 /** How admission judges a shard: CP10's `judged`, and FP27b's `armed`, the API catalogue's armed state for it (absent,
- *  the format's own list decides until FP27c removes it). */
+ *  the shard is not armed: since FP27c the format keeps no list). */
 interface JudgedPorts {
   readonly judged?: Judged | undefined
   readonly armed?: boolean | ReadonlySet<string> | undefined

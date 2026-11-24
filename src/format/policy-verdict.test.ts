@@ -78,8 +78,12 @@ beforeAll(async (): Promise<void> => {
 })
 
 test('CP10: an upload carries its verdict and rule version; a stored check says it was not re-judged', (): void => {
-  expect(zoneArmed(ARMED)).toBe(true)
-  const upload = validateShardfileFolder(corpus(), { hash: sha256 })
+  // FP27c: the catalogue's armed word, which admission passes; a bare slug is not armed.
+  expect(zoneArmed(ARMED)).toBe(false)
+  const upload = validateShardfileFolder(corpus(), {
+    hash: sha256,
+    armed: true,
+  })
   expect(upload.policy).toMatchObject({
     judged: 'upload',
     epoch: MEMORY_EPOCH,
@@ -93,13 +97,17 @@ test('CP10: an upload carries its verdict and rule version; a stored check says 
   const stored = validateShardfileFolder(corpus(), {
     hash: sha256,
     judged: 'stored',
+    armed: true,
   })
   expect(stored.policy).toMatchObject({ judged: 'stored', armed: true })
   expect(stored.index).toEqual(upload.index)
 })
 
 test('CP10: a stored shard file over an armed line is admitted with the issue reported, an upload is refused', (): void => {
-  const { shard } = validateShardfileFolder(corpus(), { hash: sha256 })
+  const { shard } = validateShardfileFolder(corpus(), {
+    hash: sha256,
+    armed: true,
+  })
   // A reading from memory epoch 1 is stale (MG5): an armed zone's upload refuses it.
   const staleShard = {
     ...shard,
@@ -116,12 +124,12 @@ test('CP10: a stored shard file over an armed line is admitted with the issue re
       },
     },
   } as unknown as Shardfile
-  expect((): unknown => assertShardfileTargets(staleShard, 'warn')).toThrow(
-    /REFUSAL/u,
-  )
+  const armed = { sections: new Map(), mountedImages: 0, armed: true }
+  expect((): unknown =>
+    assertShardfileTargets(staleShard, 'warn', armed),
+  ).toThrow(/REFUSAL/u)
   const verdict = assertShardfileTargets(staleShard, 'warn', {
-    sections: new Map(),
-    mountedImages: 0,
+    ...armed,
     judged: 'stored',
   })
   expect(verdict.judged).toBe('stored')
@@ -132,10 +140,12 @@ test('CP10: a stored shard file over an armed line is admitted with the issue re
 
 test('CP10: offline admission never refuses a stored shard file over the hard line', (): void => {
   const over = MEMORY_HARD_BYTES + 1
-  expect(offlineMemoryAdmission('refuse').accept(request(over))).toBe(false)
-  expect(offlineMemoryAdmission('refuse', 'stored').accept(request(over))).toBe(
-    true,
-  )
+  expect(
+    offlineMemoryAdmission('refuse', 'upload', true).accept(request(over)),
+  ).toBe(false)
+  expect(
+    offlineMemoryAdmission('refuse', 'stored', true).accept(request(over)),
+  ).toBe(true)
 })
 
 test('CP10: a stored original: its file facts only warn in the cook; measured script costs still refuse', (): void => {

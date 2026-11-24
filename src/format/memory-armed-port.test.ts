@@ -1,9 +1,9 @@
-// FORMAT-PRUNE FP27b: admission passes the API catalogue's armed state to the memory gate. With it, the format's own
-// `zones` list is never read: a slug the list does not hold refuses when the catalogue arms it, and a listed slug
-// only warns when the catalogue does not.
+// FORMAT-PRUNE FP27b: admission passes the API catalogue's armed state to the memory gate. FP27c: the format keeps no
+// armed list, so the catalogue's word is the only one; a bare slug (no word) reports only (J424).
 import { expect, test } from 'vitest'
 
-import { ARMED_ZONES, armedZone, zoneArmed } from './memory-armed.ts'
+import policy from './memory-armed.json' with { type: 'json' }
+import { armedZone, zoneArmed } from './memory-armed.ts'
 import { OLDEST_CURRENT_EPOCH, staleRuntimeIssues } from './memory-epoch.ts'
 import { hardLineIssue, MEMORY_HARD_BYTES } from './memory-line.ts'
 import { policyVerdict } from './policy-verdict.ts'
@@ -28,15 +28,16 @@ function accepts(
   })
 }
 
-test('the fixture slugs sit on either side of the format list', (): void => {
-  expect(Object.hasOwn(ARMED_ZONES, LISTED)).toBe(true)
-  expect(Object.hasOwn(ARMED_ZONES, UNLISTED)).toBe(false)
+test('FP27c: the format keeps the lines and no armed list', (): void => {
+  expect(Object.keys(policy)).toEqual(['$doc', 'lines'])
+  expect(zoneArmed(LISTED)).toBe(false)
+  expect(zoneArmed(armedZone(LISTED))).toBe(false)
 })
 
 test("the catalogue's armed state decides, not the format's list", (): void => {
   expect(zoneArmed(armedZone(UNLISTED, true))).toBe(true)
   expect(zoneArmed(armedZone(LISTED, false))).toBe(false)
-  expect(zoneArmed(armedZone(LISTED))).toBe(true)
+  expect(zoneArmed(armedZone(LISTED, true))).toBe(true)
   expect(
     hardLineIssue('loading', OVER, armedZone(UNLISTED, true)).severity,
   ).toBe('refusal')
@@ -48,7 +49,8 @@ test("the catalogue's armed state decides, not the format's list", (): void => {
 test('offline admission and the stored verdict take the armed port', (): void => {
   expect(accepts(UNLISTED, true)).toBe(false)
   expect(accepts(LISTED, false)).toBe(true)
-  expect(accepts(LISTED)).toBe(false)
+  expect(accepts(LISTED)).toBe(true)
+  expect(accepts(LISTED, true)).toBe(false)
   expect(policyVerdict(armedZone(UNLISTED, true), 'upload', []).armed).toBe(
     true,
   )

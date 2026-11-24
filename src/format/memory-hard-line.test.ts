@@ -1,7 +1,8 @@
 // oxlint-disable typescript/prefer-readonly-parameter-types -- test fixtures edit their own copies
 // MEMORY-GATES MG4 (J408, Jake 2026-11-17): a worst playing estimate over 1.5 GB refuses in every offline gate,
 // whatever the policy or memoryGates.json's report-only switch. Under the line nothing changes. J424 / J426
-// (2026-11-18): it refuses only an armed zone (`memory-armed.json`); every other zone reports.
+// (2026-11-18): it refuses only an armed zone; every other zone reports. FORMAT-PRUNE FP27c: the armed word is the API
+// catalogue's, passed here as the host passes it (`armed`, the catalogue's slugs).
 import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
@@ -30,6 +31,15 @@ const CORPUS = new URL(
   '../../corpus/legacy/brasscap-mesa-ss3/',
   import.meta.url,
 ).pathname
+/** The catalogue's armed slugs, as admission passes them (FP27b, FP27c). */
+const CATALOGUE: ReadonlySet<string> = new Set(['brasscap-mesa'])
+const judged = (
+  policy: 'warn' | 'refuse',
+): {
+  policy: 'warn' | 'refuse'
+  sections: Map<string, unknown>
+  armed: ReadonlySet<string>
+} => ({ policy, sections: new Map<string, unknown>(), armed: CATALOGUE })
 const unmeasured = {
   scripts: { p95Micros: 0, maxMicros: 0, samples: 0 },
   fuel: { p95: 0, max: 0, samples: 0 },
@@ -101,7 +111,11 @@ test('MG4: the hard line is engine MEMORY_AMBER, 1.5 GB', (): void => {
 test.each(['warn', 'refuse'] as const)(
   'J445: playing over target reports under %s and only armed loading refuses',
   (policy): void => {
-    const over = performanceReport(heavy(corpus(), 1.7e9), unmeasured, policy)
+    const over = performanceReport(
+      heavy(corpus(), 1.7e9),
+      unmeasured,
+      judged(policy),
+    )
     expect(over.memory.worst.playing).toBeGreaterThan(MEMORY_HARD_BYTES)
     expect(
       over.issues.find(
@@ -115,7 +129,7 @@ test.each(['warn', 'refuse'] as const)(
     const unarmed = performanceReport(
       heavy(corpus(), 1.7e9, 'template'),
       unmeasured,
-      policy,
+      judged(policy),
     )
     expect(
       unarmed.issues.find(
@@ -145,7 +159,7 @@ test.each(['warn', 'refuse'] as const)(
     const report = performanceReport(
       heavy(corpus(), 1.47e9),
       unmeasured,
-      policy,
+      judged(policy),
     )
     expect(report.memory.worst.playing).toBeLessThan(MEMORY_HARD_BYTES)
     expect(report.memory.worst.loading).toBeGreaterThan(MEMORY_HARD_BYTES)
@@ -157,7 +171,7 @@ test.each(['warn', 'refuse'] as const)(
       }),
     )
     expect(
-      offlineMemoryAdmission(policy).accept({
+      offlineMemoryAdmission(policy, 'upload', CATALOGUE).accept({
         ...request(report.memory.worst.playing),
         loadingBytes: report.memory.worst.loading,
       }),
@@ -166,7 +180,8 @@ test.each(['warn', 'refuse'] as const)(
 )
 
 test('MG4: the offline admission accepts over the 1.2 GB cap but refuses an armed zone over the hard line, Developer or not', (): void => {
-  const offline = offlineMemoryAdmission('warn')
+  const offline = offlineMemoryAdmission('warn', 'upload', CATALOGUE)
+  expect(offlineMemoryAdmission('warn').accept(request(1.6e9))).toBe(true)
   expect(offline.accept(request(1.3e9))).toBe(true)
   expect(offline.accept(request(1.6e9))).toBe(false)
   expect(offline.accept(request(1.6e9, 'template'))).toBe(true)

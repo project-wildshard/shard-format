@@ -33,7 +33,9 @@ function overHardLine(bytes: number): string {
 function hardLineIssue(
   kind: 'playing' | 'loading',
   bytes: number,
-  zone?: ZoneRef | Readonly<{ slug: string; line: number }>,
+  zone?:
+    | ZoneRef
+    | Readonly<{ slug?: string | undefined; armed?: boolean; line: number }>,
 ): {
   readonly code: 'perf-playing-memory' | 'perf-loading-memory'
   readonly metric: string
@@ -41,9 +43,16 @@ function hardLineIssue(
   readonly limit: number
   readonly severity: 'refusal' | 'warning'
 } {
+  // FP27c: a zone with its own line carries the catalogue's armed word beside its slug, as a ZoneRef does.
   const { slug, line } =
     typeof zone === 'object' && 'line' in zone
-      ? zone
+      ? {
+          slug:
+            zone.armed === undefined
+              ? zone.slug
+              : { slug: zone.slug, armed: zone.armed },
+          line: zone.line,
+        }
       : { slug: zone, line: ARMED_LINES[kind] }
   const severity = ratchetSeverity(slug, kind, { line, actual: bytes })
   const over =
@@ -95,7 +104,7 @@ type MemoryContext =
       mountedImages: number
       index?: TierIndex
       judged?: 'upload' | 'stored'
-      /** FP27b: the API catalogue's armed state for this shard; absent, the format's own list decides. */
+      /** FP27b: the API catalogue's armed state for this shard; absent, the shard is not armed (FP27c). */
       armed?: boolean | ReadonlySet<string> | undefined
     }>
 

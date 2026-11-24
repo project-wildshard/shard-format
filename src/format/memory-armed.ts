@@ -1,20 +1,9 @@
 import armed from './memory-armed.json' with { type: 'json' }
 
-/** The armed-zone readings are shared with the engine. J445 uses the common
- * loading ceiling for offline refusal and the playing line for reporting. */
-interface ArmedZone {
-  readonly armed: string
-  readonly by: string
-  readonly epoch: number
-  readonly playingBytes: number
-  readonly loadingBytes: number
-  readonly evidence: string
-}
-
 type ArmedKind = 'playing' | 'loading'
 
 /** FORMAT-PRUNE FP27b: the zone a memory gate judges. Admission passes the API catalogue's `armed` beside the slug
- *  (`{ slug, armed }`); a bare slug still reads the format's own `zones` list until FP27c removes it. */
+ *  (`{ slug, armed }`); since FP27c the format keeps no list, so a bare slug is not armed and reports only (J424). */
 type ZoneRef =
   | string
   | undefined
@@ -45,18 +34,10 @@ const ARMED_LINES: Readonly<Record<ArmedKind, number>> = Object.freeze({
   loading: armed.lines.loadingBytes,
 })
 
-const ARMED_ZONES: Readonly<Record<string, ArmedZone>> = Object.freeze(
-  armed.zones,
-)
-
-/** J424 (QA 11-18 row 29): a zone armed once but held out of `ARMED_ZONES` while engine pins an older product of it
- *  that reads over its line. It reports only; it moves back to `zones` (re-armed) when its engine re-pin lands. */
-/** True when the zone is armed (J426): the catalogue's word when admission passed it, else the format's list. */
+/** True when the zone is armed (J426): the API catalogue's word, which admission passes (FP27b). A bare slug carries no
+ *  word: since FP27c the format keeps no armed list, so it reports only (J424). */
 function zoneArmed(zone?: ZoneRef): boolean {
-  if (typeof zone === 'object') {
-    return zone.armed
-  }
-  return zone !== undefined && Object.hasOwn(ARMED_ZONES, zone)
+  return typeof zone === 'object' && zone.armed
 }
 
 /** The common lines for an armed zone. A revision's own reading is evidence,
@@ -103,9 +84,7 @@ function staleReadingAdmitted(zone: ZoneRef): boolean {
 
 export {
   ARMED_LINES,
-  ARMED_ZONES,
   type ArmedKind,
-  type ArmedZone,
   type ZoneRef,
   armedLine,
   armedZone,

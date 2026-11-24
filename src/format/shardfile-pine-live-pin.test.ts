@@ -35,14 +35,15 @@ test.skipIf(!existsSync(FILE))(
             files.get(name) ?? new Uint8Array(),
           paths: (): Iterable<string> => files.keys(),
         },
-        { hash: sha256, readThrough: true },
+        { hash: sha256, readThrough: true, armed: true },
       )
     const stream = validateShardfileStream(
       (): AsyncIterable<Uint8Array> =>
         createReadStream(FILE, { highWaterMark: CHUNK }),
-      nodeStreamPorts({ brotli: false }),
+      { ...nodeStreamPorts({ brotli: false }), armed: true },
     )
-    expect(zoneArmed('pine-hollow')).toBe(true)
+    // FP27c: the catalogue arms Pine; the format's word alone (a bare slug) does not.
+    expect(zoneArmed('pine-hollow')).toBe(false)
     expect(folder).not.toThrow()
     await expect(stream).resolves.toMatchObject({ hash: PINE_LIVE_PIN })
   },
