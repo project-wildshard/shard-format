@@ -5,15 +5,14 @@ import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
 import { migrateShardfile } from '../format/format-migrate.ts'
-import { pinnedFiles } from './one-way-pins.ts'
 
 type Files = ReadonlyMap<string, Uint8Array>
-/** One fixture: a folder, an engine pin, or the chain's copy of a folder. */
+/** One fixture (ZONE-SNAPSHOTS ZS4, J507: made-up files only, never a stored zone): a folder at the version, or a
+ * made-up folder carried up to the version by the chain. */
 interface Fixture {
   readonly folder?: string
-  readonly pin?: Readonly<{ slug: string; hash: string; bytes: number }>
-  /** A folder's migrated copy, for a format no real upload is written at yet: the chain's own output at that format. */
-  readonly chainOf?: string
+  /** A made-up folder's migrated copy at this version: the chain's own output there. */
+  readonly madeUp?: string
 }
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
@@ -48,16 +47,13 @@ async function fixtureFiles(
   if (fixture.folder !== undefined) {
     return await folderFiles(fixture.folder)
   }
-  if (fixture.chainOf !== undefined) {
-    return migrateShardfile(await folderFiles(fixture.chainOf), {
-      hash: sha256,
-      to: version,
-    }).files
+  if (fixture.madeUp === undefined) {
+    throw new Error('A fixture names a folder or a made-up folder')
   }
-  if (fixture.pin === undefined) {
-    throw new Error('A fixture names a folder or a pin')
-  }
-  return await pinnedFiles(fixture.pin)
+  return migrateShardfile(await folderFiles(fixture.madeUp), {
+    hash: sha256,
+    to: version,
+  }).files
 }
 
 async function fixtures(version: string): Promise<readonly Fixture[]> {

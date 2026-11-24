@@ -1,8 +1,8 @@
 {
-  "about": "SHARD-COMPAT PR4 (J487): format 0.1.0.3 drops the sdk marker and records preparation, the preparation spec version (step pr4-preparation-marker). No real upload is written at 0.1.0.3 until the SDK moves (Track F), so the fixture is Brasscap's export migrated by the chain; replace it with the first real 0.1.0.3 engine pin.",
-  "fixtures": [
-    {
-      "chainOf": "corpus/legacy/brasscap-mesa-ss3"
-    }
-  ]
+ "about": "ZONE-SNAPSHOTS ZS4 (J507): format 0.1.0.3 on the made-up CLI product, carried up to 0.1.0.3 by the chain; no stored zone. Each step's own rewrite is proved on corpus/format-steps.",
+ "fixtures": [
+  {
+   "madeUp": "src/test/fixtures/cli-fixture"
+  }
+ ]
 }

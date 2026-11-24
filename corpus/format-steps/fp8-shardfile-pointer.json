@@ -1,0 +1,42 @@
+{
+ "before": {
+  "index": {},
+  "sections": {
+   "ui/level": {
+    "manifest": {
+     "gridShardfile": "/shardfiles/sample-isle/shard.json",
+     "bindings": {}
+    }
+   }
+  },
+  "mounts": {
+   "mounts/shardfiles/sample-isle/discovery.json": {
+    "version": 1,
+    "data": {
+     "gridShardfile": "/shardfiles/sample-isle/shard.json",
+     "title": "Sample"
+    }
+   }
+  }
+ },
+ "after": {
+  "index": {},
+  "sections": {
+   "ui/level": {
+    "manifest": {
+     "shardfile": "/shardfiles/sample-isle/shard.json",
+     "bindings": {}
+    }
+   }
+  },
+  "mounts": {
+   "mounts/shardfiles/sample-isle/discovery.json": {
+    "version": 1,
+    "data": {
+     "shardfile": "/shardfiles/sample-isle/shard.json",
+     "title": "Sample"
+    }
+   }
+  }
+ }
+}

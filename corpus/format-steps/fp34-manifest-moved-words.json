@@ -1,0 +1,114 @@
+{
+ "before": {
+  "index": {},
+  "sections": {
+   "ui/level": {
+    "manifest": {
+     "slug": "sample-isle",
+     "spawn": {
+      "x": 12,
+      "z": -4,
+      "yaw": 1.5
+     },
+     "loadout": {
+      "weapons": [
+       "bow"
+      ],
+      "tools": [],
+      "start": [
+       "bow"
+      ]
+     },
+     "weapon": "crossbow",
+     "audio": {
+      "ambience": "forest",
+      "score": "calm"
+     },
+     "species": [
+      "crab"
+     ],
+     "spawns": [
+      {
+       "kind": "crab",
+       "count": 3,
+       "canopy": false,
+       "trailBand": [
+        0,
+        1
+       ]
+      }
+     ],
+     "faunaTuning": {
+      "crab": {
+       "sightRange": 9
+      }
+     }
+    }
+   },
+   "world/spawn": {
+    "spawn": {
+     "x": 0,
+     "y": 2,
+     "z": 0,
+     "yaw": 0
+    }
+   },
+   "combat/items": {
+    "items": {
+     "rows": [],
+     "loadout": {}
+    }
+   },
+   "audio/audio": {
+    "audio": {
+     "loops": []
+    }
+   }
+  },
+  "mounts": {}
+ },
+ "after": {
+  "index": {},
+  "sections": {
+   "ui/level": {
+    "manifest": {
+     "slug": "sample-isle"
+    }
+   },
+   "world/spawn": {
+    "spawn": {
+     "x": 12,
+     "y": 2,
+     "z": -4,
+     "yaw": 1.5
+    }
+   },
+   "combat/items": {
+    "items": {
+     "rows": [],
+     "loadout": {
+      "level": {
+       "weapons": [
+        "bow"
+       ],
+       "tools": [],
+       "start": [
+        "bow"
+       ]
+      }
+     }
+    }
+   },
+   "audio/audio": {
+    "audio": {
+     "loops": [],
+     "level": {
+      "ambience": "forest",
+      "score": "calm"
+     }
+    }
+   }
+  },
+  "mounts": {}
+ }
+}

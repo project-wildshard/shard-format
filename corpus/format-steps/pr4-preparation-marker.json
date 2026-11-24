@@ -1,0 +1,16 @@
+{
+ "before": {
+  "index": {
+   "sdk": "0.3"
+  },
+  "sections": {},
+  "mounts": {}
+ },
+ "after": {
+  "index": {
+   "preparation": 3
+  },
+  "sections": {},
+  "mounts": {}
+ }
+}

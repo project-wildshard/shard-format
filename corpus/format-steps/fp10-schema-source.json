@@ -1,0 +1,34 @@
+{
+ "before": {
+  "index": {
+   "files": [
+    {
+     "kind": "json",
+     "name": "directors/main.json",
+     "jsonSchema": {
+      "$comment": "@wildshard/format/directorProduct#DirectorProductSchema",
+      "type": "object"
+     }
+    }
+   ]
+  },
+  "sections": {},
+  "mounts": {}
+ },
+ "after": {
+  "index": {
+   "files": [
+    {
+     "kind": "json",
+     "name": "directors/main.json",
+     "jsonSchema": {
+      "$comment": "@wildshard/format/directorDocument#DirectorDocumentSchema",
+      "type": "object"
+     }
+    }
+   ]
+  },
+  "sections": {},
+  "mounts": {}
+ }
+}

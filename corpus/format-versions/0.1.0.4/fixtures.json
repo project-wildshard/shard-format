@@ -1,8 +1,8 @@
 {
-  "about": "FORMAT-PRUNE FP26 (J493): format 0.1.0.4 names the save lineage identity.saveRevision in place of identity.revision (step fp26-save-revision). No real upload is written at 0.1.0.4 until the SDK moves, so the fixture is Brasscap's export migrated by the chain; replace it with the first real 0.1.0.4 engine pin.",
-  "fixtures": [
-    {
-      "chainOf": "corpus/legacy/brasscap-mesa-ss3"
-    }
-  ]
+ "about": "ZONE-SNAPSHOTS ZS4 (J507): format 0.1.0.4 on the made-up CLI product, carried up to 0.1.0.4 by the chain; no stored zone. Each step's own rewrite is proved on corpus/format-steps.",
+ "fixtures": [
+  {
+   "madeUp": "src/test/fixtures/cli-fixture"
+  }
+ ]
 }

@@ -1,0 +1,23 @@
+{
+ "before": {
+  "index": {
+   "schemas": [],
+   "runtime": {
+    "kind": "client-plan",
+    "files": [],
+    "lines": []
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ },
+ "after": {
+  "index": {
+   "runtime": {
+    "kind": "client-plan"
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ }
+}

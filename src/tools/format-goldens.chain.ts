@@ -29,7 +29,7 @@ const ARGS = 2
 const INDENT = 1
 
 function labelOf(version: string, fixture: Readonly<Fixture>): string {
-  return `${version} ${fixture.folder ?? fixture.chainOf ?? fixture.pin?.slug ?? '?'}`
+  return `${version} ${fixture.folder ?? fixture.madeUp ?? '?'}`
 }
 
 /** A map's entries, by key. */

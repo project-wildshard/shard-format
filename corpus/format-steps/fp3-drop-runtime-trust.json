@@ -1,0 +1,21 @@
+{
+ "before": {
+  "index": {
+   "runtime": {
+    "kind": "client-plan",
+    "trust": "first-party"
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ },
+ "after": {
+  "index": {
+   "runtime": {
+    "kind": "client-plan"
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ }
+}

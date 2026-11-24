@@ -1,0 +1,99 @@
+{
+ "before": {
+  "index": {},
+  "sections": {
+   "ui/level": {
+    "manifest": {
+     "slug": "sample-isle"
+    }
+   },
+   "world/spawn": {
+    "spawn": {
+     "x": 0,
+     "y": 2,
+     "z": 0,
+     "yaw": 0
+    }
+   },
+   "combat/items": {
+    "items": {
+     "rows": [],
+     "loadout": {}
+    }
+   },
+   "audio/audio": {
+    "audio": {
+     "loops": []
+    }
+   }
+  },
+  "mounts": {
+   "mounts/shardfiles/sample-isle/discovery.json": {
+    "version": 1,
+    "slug": "sample-isle",
+    "data": {
+     "slug": "sample-isle",
+     "spawn": {
+      "x": 3,
+      "y": 4,
+      "z": 5,
+      "yaw": 0
+     },
+     "weapon": "sword",
+     "audio": {
+      "ambience": "forest",
+      "score": "calm"
+     },
+     "sky": {
+      "day": 1
+     }
+    }
+   }
+  }
+ },
+ "after": {
+  "index": {},
+  "sections": {
+   "ui/level": {
+    "manifest": {
+     "slug": "sample-isle"
+    }
+   },
+   "world/spawn": {
+    "spawn": {
+     "x": 3,
+     "y": 4,
+     "z": 5,
+     "yaw": 0
+    }
+   },
+   "combat/items": {
+    "items": {
+     "rows": [],
+     "loadout": {}
+    }
+   },
+   "audio/audio": {
+    "audio": {
+     "loops": [],
+     "level": {
+      "ambience": "forest",
+      "score": "calm"
+     }
+    }
+   }
+  },
+  "mounts": {
+   "mounts/shardfiles/sample-isle/discovery.json": {
+    "version": 1,
+    "slug": "sample-isle",
+    "data": {
+     "slug": "sample-isle",
+     "sky": {
+      "day": 1
+     }
+    }
+   }
+  }
+ }
+}

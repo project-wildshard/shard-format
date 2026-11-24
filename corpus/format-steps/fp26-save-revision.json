@@ -1,0 +1,22 @@
+{
+ "before": {
+  "index": {
+   "identity": {
+    "slug": "sample-isle",
+    "revision": 3
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ },
+ "after": {
+  "index": {
+   "identity": {
+    "slug": "sample-isle",
+    "saveRevision": 3
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "before": {
+  "index": {
+   "requires": {
+    "sdk": "0.1"
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ },
+ "after": {
+  "index": {
+   "requires": {
+    "sdk": "0.1.0.0"
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ }
+}

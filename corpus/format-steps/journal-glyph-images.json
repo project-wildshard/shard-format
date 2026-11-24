@@ -1,0 +1,70 @@
+{
+ "before": {
+  "index": {
+   "admission": {
+    "budgets": {
+     "library": {
+      "resident": 1000
+     }
+    }
+   }
+  },
+  "sections": {
+   "ui/compendium": {
+    "rows": {
+     "compendiums": [
+      {
+       "kind": "journal",
+       "icons": [
+        {
+         "entryKind": "boss",
+         "icon": "antlers"
+        },
+        {
+         "icon": "deer",
+         "matchKind": "deer"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  "mounts": {}
+ },
+ "after": {
+  "index": {
+   "admission": {
+    "budgets": {
+     "library": {
+      "resident": 66536
+     }
+    }
+   }
+  },
+  "sections": {
+   "ui/compendium": {
+    "rows": {
+     "compendiums": [
+      {
+       "kind": "journal",
+       "icons": [
+        {
+         "entryKind": "boss",
+         "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22currentColor%22%20stroke%3D%22none%22%3E%3Cpath%20d%3D%22M32%2058%20L32%2030%20M32%2030%20C22%2028%2014%2020%2012%208%20M32%2030%20C42%2028%2050%2020%2052%208%20M22%2026%20L16%2018%20M42%2026%20L48%2018%20M18%2016%20L10%2014%20M46%2016%20L54%2014%20M27%2029%20L24%2036%20M37%2029%20L40%2036%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%223.5%22%2F%3E%3C%2Fsvg%3E",
+         "tint": "currentColor"
+        },
+        {
+         "matchKind": "deer",
+         "image": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22currentColor%22%20stroke%3D%22none%22%3E%3Cellipse%20cx%3D%2237%22%20cy%3D%2235%22%20rx%3D%2216%22%20ry%3D%228.5%22%2F%3E%20%3Cpath%20d%3D%22M25%2031%20L20%2016%20L27%2015%20L31%2030%20Z%22%2F%3E%20%3Cellipse%20cx%3D%2220%22%20cy%3D%2215%22%20rx%3D%226.5%22%20ry%3D%224%22%2F%3E%20%3Cpath%20d%3D%22M15%2013%20L12%206%20L17%2011%20Z%22%2F%3E%20%3Cpath%20d%3D%22M25%2012%20L27%207%20L29%2012%20Z%22%2F%3E%20%3Cpath%20d%3D%22M20%2012%20L17%203%20M20%2012%20L23%202%20M17%203%20L14%204%20M18.5%207%20L15%206%20M23%202%20L26%201%20M21.5%206%20L25%205%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.8%22%2F%3E%20%3Cpath%20d%3D%22M52%2030%20L56%2026%20L55%2031%20Z%22%2F%3E%20%3Crect%20x%3D%2224%22%20y%3D%2240%22%20width%3D%223.2%22%20height%3D%2217%22%20rx%3D%221%22%2F%3E%3Crect%20x%3D%2230%22%20y%3D%2240%22%20width%3D%223.2%22%20height%3D%2217%22%20rx%3D%221%22%2F%3E%3Crect%20x%3D%2243%22%20y%3D%2240%22%20width%3D%223.2%22%20height%3D%2217%22%20rx%3D%221%22%2F%3E%3Crect%20x%3D%2249%22%20y%3D%2240%22%20width%3D%223.2%22%20height%3D%2217%22%20rx%3D%221%22%2F%3E%3C%2Fsvg%3E",
+         "tint": "currentColor"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  "mounts": {}
+ }
+}

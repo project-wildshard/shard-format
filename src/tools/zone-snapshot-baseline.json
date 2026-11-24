@@ -1,16 +1,6 @@
 {
   "about": "ZONE-SNAPSHOTS ZS1: today's zone snapshots; shrink only (node src/tools/zone-snapshot-guard.ts --prune)",
   "offenders": [
-    "chain-snapshot corpus/format-goldens.json",
-    "chain-snapshot corpus/format-versions/0.1.0.0/fixtures.json",
-    "chain-snapshot corpus/format-versions/0.1.0.1/fixtures.json",
-    "chain-snapshot corpus/format-versions/0.1.0.2/fixtures.json",
-    "chain-snapshot corpus/format-versions/0.1.0.3/fixtures.json",
-    "chain-snapshot corpus/format-versions/0.1.0.4/fixtures.json",
-    "chain-snapshot corpus/format-versions/0.1.0.5/fixtures.json",
-    "chain-snapshot corpus/format-versions/0.1.0.6/fixtures.json",
-    "pin-record corpus/format-versions/0.1.0.0/fixtures.json",
-    "pin-record corpus/format-versions/0.1.0.1/fixtures.json",
     "pin-record src/format/script-side-grandfather.test.ts",
     "pin-record src/format/shardfile-pine-live-pin.test.ts",
     "pin-record src/format/shardfile-stream-pins.test.ts",

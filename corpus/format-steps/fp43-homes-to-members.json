@@ -1,0 +1,63 @@
+{
+ "before": {
+  "index": {},
+  "sections": {
+   "client/plan": {
+    "version": 1,
+    "features": [
+     {
+      "kind": "strings.register"
+     },
+     {
+      "kind": "population.homes",
+      "system": "sample.creatures",
+      "groups": {
+       "rays": [
+        "sample.ray.0"
+       ]
+      }
+     },
+     {
+      "kind": "fx.trail",
+      "rows": [
+       {
+        "every": 0.07,
+        "group": "rays",
+        "id": "sample.rayWake",
+        "points": 56
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "mounts": {}
+ },
+ "after": {
+  "index": {},
+  "sections": {
+   "client/plan": {
+    "version": 1,
+    "features": [
+     {
+      "kind": "strings.register"
+     },
+     {
+      "kind": "fx.trail",
+      "rows": [
+       {
+        "every": 0.07,
+        "members": [
+         "sample.ray.0"
+        ],
+        "id": "sample.rayWake",
+        "points": 56
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "mounts": {}
+ }
+}

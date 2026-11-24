@@ -1,0 +1,101 @@
+{
+ "before": {
+  "index": {},
+  "sections": {
+   "ui/level": {
+    "manifest": {
+     "slug": "sample-isle",
+     "sky": {
+      "sunColor": [
+       1,
+       0.97,
+       0.9
+      ],
+      "sunIntensity": 2.7
+     },
+     "atmosphere": {
+      "fogHeight": -20
+     },
+     "grade": {
+      "contrast": 0.2
+     },
+     "horizon": {
+      "rings": []
+     }
+    }
+   },
+   "look/look": {
+    "look": {
+     "families": []
+    }
+   }
+  },
+  "mounts": {
+   "mounts/shardfiles/sample-isle/discovery.json": {
+    "version": 1,
+    "data": {
+     "slug": "sample-isle",
+     "sky": {
+      "sunColor": [
+       1,
+       0.97,
+       0.9
+      ],
+      "sunIntensity": 2.7
+     },
+     "atmosphere": {
+      "fogHeight": -20
+     },
+     "grade": {
+      "contrast": 0.2
+     },
+     "horizon": {
+      "rings": []
+     }
+    }
+   }
+  }
+ },
+ "after": {
+  "index": {},
+  "sections": {
+   "ui/level": {
+    "manifest": {
+     "slug": "sample-isle"
+    }
+   },
+   "look/look": {
+    "look": {
+     "families": [],
+     "level": {
+      "sky": {
+       "sunColor": [
+        1,
+        0.97,
+        0.9
+       ],
+       "sunIntensity": 2.7
+      },
+      "atmosphere": {
+       "fogHeight": -20
+      },
+      "grade": {
+       "contrast": 0.2
+      },
+      "horizon": {
+       "rings": []
+      }
+     }
+    }
+   }
+  },
+  "mounts": {
+   "mounts/shardfiles/sample-isle/discovery.json": {
+    "version": 1,
+    "data": {
+     "slug": "sample-isle"
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,23 @@
+{
+ "before": {
+  "index": {
+   "requires": {
+    "capabilities": [
+     "sim"
+    ],
+    "engine": "0.1.80"
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ },
+ "after": {
+  "index": {
+   "requires": {
+    "engine": "0.1.80"
+   }
+  },
+  "sections": {},
+  "mounts": {}
+ }
+}

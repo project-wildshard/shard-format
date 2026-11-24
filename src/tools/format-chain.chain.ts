@@ -49,7 +49,7 @@ async function checkFixture(
   assert.equal(
     compareShardfileVersions(declared, version),
     NONE,
-    `${fixture.folder ?? fixture.chainOf ?? fixture.pin?.slug} is at ${declared}`,
+    `${fixture.folder ?? fixture.madeUp} is at ${declared}`,
   )
   const once = migrateShardfile(files, { hash: sha256 })
   const twice = migrateShardfile(once.files, { hash: sha256 })
