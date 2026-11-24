@@ -1,5 +1,10 @@
 import { createHash } from 'node:crypto'
+import type { Dirent } from 'node:fs'
+import { readdir, readFile } from 'node:fs/promises'
+import path from 'node:path'
 
+import { migrateShardfile } from '../format/format-migrate.ts'
+import { prepareAssetDecoders } from '../format/shardfile-assets.ts'
 import { sourceCounts } from './one-way-counts.ts'
 import { enginePins, pinnedProducts } from './one-way-pins.ts'
 import { productCounts, productFacts } from './one-way-products.ts'
@@ -73,6 +78,65 @@ function corpusProducts(files: readonly SourceFile[]): readonly ProductFacts[] {
     productFacts(root, corpusFiles(files, root)),
   )
 }
+function sha256(bytes: Readonly<Uint8Array>): string {
+  return createHash('sha256').update(bytes).digest('hex')
+}
+/** Every file of one corpus product on disk, by its path inside the product. */
+async function productBytes(root: string): Promise<Map<string, Uint8Array>> {
+  const entries = await readdir(root, { recursive: true, withFileTypes: true })
+  const rows = await Promise.all(
+    entries
+      .filter((entry: Readonly<Dirent>): boolean => entry.isFile())
+      .map(
+        async (
+          entry: Readonly<Dirent>,
+        ): Promise<readonly [string, Uint8Array]> => {
+          const absolute = path.join(entry.parentPath, entry.name)
+          return [
+            path.relative(root, absolute).split(path.sep).join('/'),
+            new Uint8Array(await readFile(absolute)),
+          ]
+        },
+      ),
+  )
+  return new Map(rows)
+}
+/**
+ * FORMAT-PRUNE FP47c (J505 default): the corpus as the chain serves it. Each corpus product is migrated to the reader's
+ * format (the copy the API and cook serve), so a word a chain step mends stops counting; a product the chain cannot
+ * admit from the working tree (its blobs are not all committed) counts as stored. The JSON files come back as
+ * `SourceFile`s under the product's own root, as `workingFiles` reads them.
+ */
+async function migratedCorpus(
+  formatRoot: string,
+  files: readonly SourceFile[],
+): Promise<readonly SourceFile[]> {
+  await prepareAssetDecoders()
+  const groups = await Promise.all(
+    corpusRoots(files).map(
+      async (root: string): Promise<readonly SourceFile[]> => {
+        const stored = files.filter((file: Readonly<SourceFile>): boolean =>
+          file.path.startsWith(root),
+        )
+        try {
+          const copy = migrateShardfile(
+            await productBytes(path.join(formatRoot, root)),
+            { hash: sha256 },
+          )
+          return [...copy.files.keys()]
+            .filter((name: string): boolean => name.endsWith('.json'))
+            .map((name: string): SourceFile => ({
+              path: `${root}${name}`,
+              text: new TextDecoder().decode(copy.files.get(name)),
+            }))
+        } catch {
+          return stored
+        }
+      },
+    ),
+  )
+  return groups.flat()
+}
 function corpusCounts(
   files: readonly SourceFile[],
 ): Readonly<Record<string, number>> {
@@ -124,10 +188,10 @@ async function collectInventory(
         ],
       }),
       ...productCounts(products),
-      ...corpusCounts(format),
+      ...corpusCounts(await migratedCorpus(input.formatRoot, format)),
     },
   }
 }
 
-export { collectInventory, corpusCounts, corpusIdentities }
+export { collectInventory, corpusCounts, corpusIdentities, migratedCorpus }
 export type { Inventory, InventoryInputs }

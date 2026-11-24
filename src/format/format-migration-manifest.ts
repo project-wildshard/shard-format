@@ -111,6 +111,11 @@ const manifestMovedWords: FormatMigration = {
       return
     }
     liftAndDrop(shard, manifest)
+    // FORMAT-PRUNE FP47c: the map image leaves too, as `liftLevelStart` drops it at the door (look/map draws the map)
+    const map = manifest['minimap']
+    if (isRecord(map)) {
+      Reflect.deleteProperty(map, 'image')
+    }
   },
 }
 

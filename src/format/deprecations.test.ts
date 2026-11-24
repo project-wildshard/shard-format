@@ -164,6 +164,8 @@ describe('the deprecation counter (FE7)', (): void => {
       'manifest.sky',
       'manifest.atmosphere',
       'manifest.grade',
+      // FP47c: and its map image predates OF9b3's look/map.
+      'manifest.minimap.image',
     ])
     expect(
       validated.warnings.some((line: string): boolean =>

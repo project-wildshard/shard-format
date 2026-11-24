@@ -6,6 +6,7 @@ import { COOK_DEPRECATIONS } from './cook-deprecations.ts'
 import {
   LEVEL_DEPRECATIONS,
   MANIFEST_MOVED_DEPRECATIONS,
+  MAP_IMAGE_DEPRECATION,
 } from './manifest-deprecations.ts'
 import { SAVE_REVISION_DEPRECATION } from './save-revision.ts'
 import { SCHEMA_SOURCE_DEPRECATION } from './schema-source.ts'
@@ -161,6 +162,7 @@ const RULES: readonly DeprecationRule[] = [
   },
   ...MANIFEST_MOVED_DEPRECATIONS,
   ...LEVEL_DEPRECATIONS,
+  MAP_IMAGE_DEPRECATION,
   {
     id: 'runtime.trust',
     path: 'shard.json runtime.trust',

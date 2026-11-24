@@ -57,6 +57,17 @@ const MANIFEST_MOVED_DEPRECATIONS: readonly ManifestDeprecation[] = MOVED.map(
   }),
 )
 
+/** FORMAT-PRUNE FP47c: the level manifest's map image (OF9b3 moved the map to `look/map`); FP34's step drops it. */
+const MAP_IMAGE_DEPRECATION: ManifestDeprecation = {
+  id: 'manifest.minimap.image',
+  path: 'sections/ui/level manifest.minimap.image (ONE-FORMAT OF9b3)',
+  since: '0.1.0.4',
+  replacement: 'look/map (OF9b3)',
+  migration: 'fp34-manifest-moved-words',
+  uses: (
+    shard: Readonly<{ sections: ReadonlyMap<string, unknown> }>,
+  ): boolean => keptMapImage(manifestOf(shard.sections)).length > NONE,
+}
 /** FORMAT-PRUNE FP47b: each level look word the manifest carried before OF9b2, and the chain step that lifts it. */
 const LEVEL_DEPRECATIONS: readonly ManifestDeprecation[] = [
   'sky',
@@ -121,6 +132,16 @@ function keptWords(version: string, manifest: unknown): readonly string[] {
   return gone.filter((word: string): boolean => Object.hasOwn(manifest, word))
 }
 
+/** FORMAT-PRUNE FP47c: a level manifest's map image, which `look/map` replaced (OF9b3); gone with the moved words. */
+function keptMapImage(manifest: unknown): readonly string[] {
+  const map: unknown =
+    typeof manifest === 'object' && manifest !== null
+      ? Reflect.get(manifest, 'minimap')
+      : undefined
+  return typeof map === 'object' && map !== null && Object.hasOwn(map, 'image')
+    ? ['minimap.image']
+    : []
+}
 /** The row that refuses the kept words: FP47b when they are all the level look's, else the moved words' row. */
 function prune(kept: readonly string[], moved = 'FP36'): string {
   return kept.every((word: string): boolean => LEVEL_WORDS.includes(word))
@@ -181,7 +202,8 @@ function checkNoMovedWords(version: unknown, level: unknown): void {
   if (!gated(version)) {
     return
   }
-  const kept = keptWords(version, manifestOf(new Map([['ui/level', level]])))
+  const manifest = manifestOf(new Map([['ui/level', level]]))
+  const kept = [...keptWords(version, manifest), ...keptMapImage(manifest)]
   if (kept.length > NONE) {
     throw new Error(
       `Format ${version} carries no ${kept.map((word: string): string => `manifest.${word}`).join(', ')} (sections/ui/level; FORMAT-PRUNE ${prune(kept, 'FP34')})`,
@@ -194,6 +216,7 @@ export {
   LEVEL_DEPRECATIONS,
   LEVEL_WORDS,
   MANIFEST_MOVED_DEPRECATIONS,
+  MAP_IMAGE_DEPRECATION,
   NO_LEVEL_WORDS,
   NO_MOVED_WORDS,
   checkDiscoveryMount,

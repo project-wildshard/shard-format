@@ -56,6 +56,10 @@
     {
       "path": "./memory-armed.json#json",
       "noFileChange": "FP27c: the armed-zone list leaves the format; the API catalogue's armed word (FP27, admission passes it since FP27b) decides which shards are armed, and the format keeps the J410 lines only; a list of slugs the memory gates read, no shard file field changes"
+    },
+    {
+      "path": "./deprecations#manifest.minimap.image",
+      "migration": "fp34-manifest-moved-words"
     }
   ]
 }

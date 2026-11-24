@@ -282,3 +282,22 @@ test('FP47b: format 0.1.0.6 refuses the level look in ui/level and the discovery
     checkNoMovedWords('0.1.0.6', shard.sections.get('ui/level'))
   }).not.toThrow()
 })
+
+test('FP47c: the level manifest map image leaves with the moved words; 0.1.0.6 refuses it, 0.1.0.5 keeps it', (): void => {
+  const shard = older()
+  const level = shard.sections.get('ui/level') as { manifest: Record<string, unknown> }
+  level.manifest['minimap'] = { image: 'data:image/svg+xml,x', openWater: { level: 0 } }
+  expect((): void => {
+    checkNoMovedWords('0.1.0.6', { manifest: { slug: 'x', minimap: { image: 'y' } } })
+  }).toThrow('Format 0.1.0.6 carries no manifest.minimap.image (sections/ui/level; FORMAT-PRUNE FP34)')
+  expect((): void => {
+    checkNoMovedWords('0.1.0.5', { manifest: { slug: 'x', minimap: { image: 'y' } } })
+  }).not.toThrow()
+  manifestMovedWords.apply(shard)
+  expect(shard.sections.get('ui/level')).toEqual({
+    manifest: { slug: 'driftwood-isle', minimap: { openWater: { level: 0 } } },
+  })
+  expect((): void => {
+    checkNoMovedWords('0.1.0.6', shard.sections.get('ui/level'))
+  }).not.toThrow()
+})
