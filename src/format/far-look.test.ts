@@ -1,4 +1,4 @@
-// FORMAT-PRUNE FP40: a far row may carry its own look, so the grid draws a first-party neighbour's far proxy from its
+// FORMAT-PRUNE FP40: a far row may carry its own look, so the grid draws a built-in neighbour's far proxy from its
 // product with its family, haze, grade and border band instead of from engine's `public/assets/baked/<slug>/far.json`.
 import { is, parse } from 'valibot'
 import { expect, test } from 'vitest'
