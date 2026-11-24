@@ -4,6 +4,14 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.76.0 (2026-11-24)
+
+- The level's look (sky, atmosphere, grade, horizon) lives only in the look section; older files migrate it there.
+- The discovery document no longer carries a copy of the look or the start words.
+- Start words the level manifest repeated (spawn, loadout, audio, weapon, creatures) move to their own sections.
+- Which zones are armed for memory checks comes from the API catalogue, not a list in the format.
+- The map image leaves the level manifest; the map lives in look/map.
+
 ## v0.75.0 (2026-11-24)
 
 - New shard files no longer need a required SDK version in their manifest.
