@@ -52,34 +52,6 @@
     {
       "path": "./cookData#CookDataSchema|=2",
       "deprecation": "cook.legacy-data"
-    },
-    {
-      "path": "./deprecations#manifest.spawn",
-      "migration": "fp34-manifest-moved-words"
-    },
-    {
-      "path": "./deprecations#manifest.loadout",
-      "migration": "fp34-manifest-moved-words"
-    },
-    {
-      "path": "./deprecations#manifest.audio",
-      "migration": "fp34-manifest-moved-words"
-    },
-    {
-      "path": "./deprecations#manifest.weapon",
-      "migration": "fp34-manifest-moved-words"
-    },
-    {
-      "path": "./deprecations#manifest.species",
-      "migration": "fp34-manifest-moved-words"
-    },
-    {
-      "path": "./deprecations#manifest.spawns",
-      "migration": "fp34-manifest-moved-words"
-    },
-    {
-      "path": "./deprecations#manifest.faunaTuning",
-      "migration": "fp34-manifest-moved-words"
     }
   ]
 }

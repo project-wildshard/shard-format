@@ -1,7 +1,7 @@
 /** ONE-FORMAT OF9b5 under J486: the level manifest's moved words. SDK 0.4.25 builds write none of them (OF9b3b moved
  * the page-start words to their sections, OF9b4 the herd fields to declared rows), but every product built before it
  * still carries some in `ui/level`. FE7 counts each one's kept users. FORMAT-PRUNE FP34 deletes them from
- * `ManifestMetadataSchema` at format 0.1.0.5, and its chain step (`fp34-manifest-moved-words`) lifts the start words into
+ * `ManifestMetadataSchema` at format 0.1.0.6, and its chain step (`fp34-manifest-moved-words`) lifts the start words into
  * their sections and drops the rest: the herd fields became declared rows in the build, which a copy can't redo. */
 
 import { OLD_POINTER } from './format-migration-prune.ts'
@@ -83,7 +83,8 @@ const LEVEL_DEPRECATIONS: readonly ManifestDeprecation[] = [
   }),
 )
 /** FORMAT-PRUNE FP34: the first format whose level manifest carries none of the moved words, nor the old pointer. */
-const NO_MOVED_WORDS = '0.1.0.5'
+// 0.75.0 shipped format 0.1.0.5 without FP34 and FP36, so they ride 0.1.0.6 with FP47b.
+const NO_MOVED_WORDS = '0.1.0.6'
 const NONE = 0
 // The old pointer's spelling is FP8's chain step's (format's one-way `format.grid-pointer-references` counts each one).
 const GONE_WORDS: readonly string[] = [
@@ -107,7 +108,7 @@ function gated(version: unknown): version is string {
   )
 }
 
-/** The gone words a manifest-shaped object still carries at `version`: the moved words from 0.1.0.5, the level look's
+/** The gone words a manifest-shaped object still carries at `version`: the moved words and the level look's
  * from 0.1.0.6 (FP47b). */
 function keptWords(version: string, manifest: unknown): readonly string[] {
   if (typeof manifest !== 'object' || manifest === null) {
@@ -148,7 +149,7 @@ function unheldMount(path: string): boolean {
   )
 }
 
-/** FORMAT-PRUNE FP36 (the FP33 pattern): format 0.1.0.5 on refuses a discovery mount whose `data` carries a moved word or
+/** FORMAT-PRUNE FP36 (the FP33 pattern): format 0.1.0.6 on refuses a discovery mount whose `data` carries a moved word or
  * the old pointer; an older file keeps them as written, and the chain step (`fp36-discovery-moved-words`) lifts them.
  * Bytes that are no JSON object are another check's refusal. Answers the bytes it checked. */
 function checkDiscoveryMount(
@@ -173,7 +174,7 @@ function checkDiscoveryMount(
   return bytes
 }
 
-/** FORMAT-PRUNE FP34 (the FP33 pattern): format 0.1.0.5 on refuses a level manifest carrying a moved word or the old
+/** FORMAT-PRUNE FP34 (the FP33 pattern): format 0.1.0.6 on refuses a level manifest carrying a moved word or the old
  * pointer; an older file keeps them as written, so its source hash still matches, and the chain step
  * (`fp34-manifest-moved-words`) lifts them. */
 function checkNoMovedWords(version: unknown, level: unknown): void {

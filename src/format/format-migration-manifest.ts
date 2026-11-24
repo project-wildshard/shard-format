@@ -1,5 +1,5 @@
 // oxlint-disable typescript/prefer-readonly-parameter-types -- a step edits the shard it is handed, in place
-/** FORMAT-PRUNE FP34 (J486; ONE-FORMAT OF9b5a): format 0.1.0.5 takes the moved words out of the level manifest. The
+/** FORMAT-PRUNE FP34 (J486; ONE-FORMAT OF9b5a): format 0.1.0.6 takes the moved words out of the level manifest. The
  * page-start words move into their sections as `liftLevelStart` moves them at the door (a section's own value wins):
  * `spawn` into `world/spawn` when the shard never set one, `loadout` into `combat/items`' `loadout.level`, `audio` into
  * `audio/audio`'s `level`. `weapon` has no reader (`combat/items` arms the player) and leaves. The herd fields
@@ -16,7 +16,7 @@ import type { FormatMigration, MigratingShard } from './format-migrations.ts'
 
 type JsonRecord = Record<string, unknown>
 
-const MANIFEST_WORDS_GONE = '0.1.0.5'
+const MANIFEST_WORDS_GONE = '0.1.0.6'
 const MOVED_WORDS: readonly string[] = [
   'spawn',
   'loadout',

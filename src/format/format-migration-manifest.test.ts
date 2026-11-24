@@ -67,7 +67,7 @@ test('FP34: the start words move into their sections and every moved word leaves
   expect(shard.sections.get('audio/audio')).toEqual({
     audio: { loops: [], level: AUDIO },
   })
-  expect(manifestMovedWords.to).toBe('0.1.0.5')
+  expect(manifestMovedWords.to).toBe('0.1.0.6')
   expect(FORMAT_MIGRATIONS.at(-3)).toBe(manifestMovedWords)
 })
 
@@ -104,33 +104,33 @@ test('FP34: a file with no level manifest, or none of the words, is unchanged', 
   })
 })
 
-test('FP34: format 0.1.0.5 refuses a moved word or the old pointer; an older file keeps them as written', (): void => {
+test('FP34: format 0.1.0.6 refuses a moved word or the old pointer; an older file keeps them as written', (): void => {
   expect(GONE_WORDS).toEqual(['gridShardfile', ...MOVED_WORDS])
   const level = {
     manifest: { slug: 'driftwood-isle', audio: {}, gridShardfile: 'x' },
   }
   expect((): void => {
-    checkNoMovedWords('0.1.0.5', level)
+    checkNoMovedWords('0.1.0.6', level)
   }).toThrow(
-    'Format 0.1.0.5 carries no manifest.gridShardfile, manifest.audio (sections/ui/level; FORMAT-PRUNE FP34)',
+    'Format 0.1.0.6 carries no manifest.gridShardfile, manifest.audio (sections/ui/level; FORMAT-PRUNE FP34)',
   )
   expect((): void => {
-    checkNoMovedWords('0.1.0.4', level)
+    checkNoMovedWords('0.1.0.5', level)
   }).not.toThrow()
   expect((): void => {
     checkNoMovedWords(2, level)
   }).not.toThrow()
   expect((): void => {
-    checkNoMovedWords('0.1.0.5', { manifest: { slug: 'sky-reach' } })
+    checkNoMovedWords('0.1.0.6', { manifest: { slug: 'sky-reach' } })
   }).not.toThrow()
   expect((): void => {
-    checkNoMovedWords('0.1.0.5', new Map<string, unknown>().get('ui/level'))
+    checkNoMovedWords('0.1.0.6', new Map<string, unknown>().get('ui/level'))
   }).not.toThrow()
   // The chain's copy of an older file passes the gate.
   const shard = older()
   manifestMovedWords.apply(shard)
   expect((): void => {
-    checkNoMovedWords('0.1.0.5', shard.sections.get('ui/level'))
+    checkNoMovedWords('0.1.0.6', shard.sections.get('ui/level'))
   }).not.toThrow()
 })
 
@@ -176,7 +176,7 @@ test('FP36: the discovery data lifts its start words too and drops every moved w
   expect(FORMAT_MIGRATIONS.at(-2)).toBe(discoveryMovedWords)
 })
 
-test('FP36: format 0.1.0.5 refuses a discovery mount carrying a moved word; older files and other mounts pass', (): void => {
+test('FP36: format 0.1.0.6 refuses a discovery mount carrying a moved word; older files and other mounts pass', (): void => {
   const bytes = new TextEncoder().encode(
     JSON.stringify({
       version: 1,
@@ -184,23 +184,23 @@ test('FP36: format 0.1.0.5 refuses a discovery mount carrying a moved word; olde
     }),
   )
   expect((): void => {
-    checkDiscoveryMount('0.1.0.5', DISCOVERY, bytes)
+    checkDiscoveryMount('0.1.0.6', DISCOVERY, bytes)
   }).toThrow(
-    `Format 0.1.0.5 carries no data.audio, data.weapon (${DISCOVERY}; FORMAT-PRUNE FP36)`,
+    `Format 0.1.0.6 carries no data.audio, data.weapon (${DISCOVERY}; FORMAT-PRUNE FP36)`,
   )
   expect((): void => {
-    checkDiscoveryMount('0.1.0.4', DISCOVERY, bytes)
+    checkDiscoveryMount('0.1.0.5', DISCOVERY, bytes)
   }).not.toThrow()
   expect((): void => {
     checkDiscoveryMount(
-      '0.1.0.5',
+      '0.1.0.6',
       'mounts/shardfiles/driftwood-isle/other.json',
       bytes,
     )
   }).not.toThrow()
   expect((): void => {
     checkDiscoveryMount(
-      '0.1.0.5',
+      '0.1.0.6',
       DISCOVERY,
       new TextEncoder().encode('{"version":1,"data":{"slug":"x"}}'),
     )

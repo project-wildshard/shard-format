@@ -14,3 +14,6 @@ winning, then drops the words. Older files read and hash as written; the four de
 0.75.0 ships format 0.1.0.5 without FP34 and FP36, so this branch's 0.1.0.6 is where they ride too (the retarget is its
 own commit on this branch). SDK half before the cut: sharddev lifts a no-`ui/level` product's look into `look.level` and
 stops writing the four words into discovery.
+
+Retarget (same branch): 0.75.0 (release/v0.75.0 `a455578`) ships format 0.1.0.5 without FP34 and FP36, so their
+refusals, chain steps and break entries move to 0.1.0.6 beside FP47b; a published 0.1.0.5 file keeps reading as written.

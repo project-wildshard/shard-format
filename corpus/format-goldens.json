@@ -12,8 +12,8 @@
   "fp4-drop-requires-capabilities": "597cdfca873d46681aafd83e4684e2aad4ca439931510aaa02edfad2c0f5baf6",
   "fp33-drop-requires-sdk": "7748d88994a4cfe7af01f41b324f6cb881a5d85ac05199289ee1cb4242d24810",
   "fp43-homes-to-members": "7748d88994a4cfe7af01f41b324f6cb881a5d85ac05199289ee1cb4242d24810",
-  "fp34-manifest-moved-words": "07ca70e7f663ef15956cd0dcfabe0a8f7b0acf16fea0ce82c90f4e733cc5f23a",
-  "fp36-discovery-moved-words": "8e01053bf0a7c3d992b3455df4e002e6e7e957eba1eed3961ad30bc858af56b9",
+  "fp34-manifest-moved-words": "76816a3898860388933de779d46fc9cfd72dbe1310c2bf5011e2233873941962",
+  "fp36-discovery-moved-words": "6f756d9e4c37323b8828ebe3392d0c250cf0e5cf8beadf0d5f6268a0cb8c7260",
   "fp47b-level-look": "0ce5462bf7ef07ef567eeadf3ca7a9871e07b245b67f01811214319a92ad55ce"
  },
  "0.1.0.0 open-plot-saltwind-lighthouse": {
@@ -29,8 +29,8 @@
   "fp4-drop-requires-capabilities": "cf1604845abd7c1b78b7a75cab9bec71b3bd7d7720b0e95aa11815a346c70402",
   "fp33-drop-requires-sdk": "9169e7d501ab54795d96672a18df352e6df0fc5a35249f1482d638ebe615b3f3",
   "fp43-homes-to-members": "9169e7d501ab54795d96672a18df352e6df0fc5a35249f1482d638ebe615b3f3",
-  "fp34-manifest-moved-words": "9169e7d501ab54795d96672a18df352e6df0fc5a35249f1482d638ebe615b3f3",
-  "fp36-discovery-moved-words": "8df61c7d25d2ac24cb27579546f62be32afd3472f73a8fcf1ffcb24499800f43",
+  "fp34-manifest-moved-words": "a9097d37985eced574b853ae720b7783674529fcc351956ade3ee84b56a7bad9",
+  "fp36-discovery-moved-words": "4a17b30bb7a9867c09091b5b0254633b3ff7fb0f7326ed09b2c439b922debdf1",
   "fp47b-level-look": "dbb02d292d1436a4d21fc15bbc9f70b999fbf0a616875dfe481540eb7a2a3dc6"
  },
  "0.1.0.0 pine-hollow": {
@@ -46,8 +46,8 @@
   "fp4-drop-requires-capabilities": "b06c13005cb524c048eff0bd0c41a7d68ad9ac477fb339d177f1ba623e9f379e",
   "fp33-drop-requires-sdk": "a5333cc0dfcaa4587ff4c2c630b8bad4ff7c1f17a814c0e931d0f8d292c7d39d",
   "fp43-homes-to-members": "a5333cc0dfcaa4587ff4c2c630b8bad4ff7c1f17a814c0e931d0f8d292c7d39d",
-  "fp34-manifest-moved-words": "1acc0f36ff8e4c70c6795869e170532bc48667721413630b2a7344bf3910c51e",
-  "fp36-discovery-moved-words": "3bc3c27002dea8d5d504a0caa924f4faaf7cc520378abf280e08e14342e8345f",
+  "fp34-manifest-moved-words": "40d22cb4de0118613e753701555c2c74ad4b2e17651d0bfb732ea0f6fc8bd8d6",
+  "fp36-discovery-moved-words": "d333e4266d51ffd76d64c5ea009598007a29f0e5a747218c60c39b43a16a7c2c",
   "fp47b-level-look": "77d60a92236d5ee375ec25de4ef816462b1e4c3e9dc9bacf913b50d681450920"
  },
  "0.1.0.1 sunscar-dunes": {
@@ -59,8 +59,8 @@
   "fp4-drop-requires-capabilities": "88cc41b0919f54a90ad2b90c1337e2391fd222a5a9cf26eca37c23c6cc262b39",
   "fp33-drop-requires-sdk": "b8a0de34438cdfbdd10a1d75c7a28a9ebd4adf8368054186a9359d545d5e97c1",
   "fp43-homes-to-members": "1c81e7edee3ee19d93ec6d526a6364868ab5b20701f893a3aa49ffca4b3972ae",
-  "fp34-manifest-moved-words": "70b02572467baa87eda580f807f05a3f3705ecf4efde1e1d303742a0d25fa959",
-  "fp36-discovery-moved-words": "973f76b61b6a7d9af0b1ff7506028155d0a2e6f96eec4665a09ed5766cef9c24",
+  "fp34-manifest-moved-words": "8d3deef004315bb8deaba4dcb115fce4d5fcfcd9869ce4b14396a1ec3b17566e",
+  "fp36-discovery-moved-words": "2f5be929ea8ac41bd8fb4f295e9ffa6f21a9b9c19b9981e7ff522f766fd4ab87",
   "fp47b-level-look": "eeca98a4f2cfcf96c7324cc4b8b56682832c274208d43d28cbdc84371ceba176"
  },
  "0.1.0.1 nalati-grasslands": {
@@ -74,8 +74,8 @@
   "fp4-drop-requires-capabilities": "5943758753589a0e307eb38d2f2b4256c75af3749f24e734dc548772fd87b120",
   "fp33-drop-requires-sdk": "014b9154977d446791b0977292d3ffbe3cf8ab04e74c8523b26bff828e9b5e5e",
   "fp43-homes-to-members": "014b9154977d446791b0977292d3ffbe3cf8ab04e74c8523b26bff828e9b5e5e",
-  "fp34-manifest-moved-words": "a206de59889b9f6e75c394a6ff700a86ef5360555de771447b64ad0fcad73d76",
-  "fp36-discovery-moved-words": "100a33a5655d96857cb05d6a722b8b0a183d162291d2633b66d8c48e693d43e9",
+  "fp34-manifest-moved-words": "6acb42e58835d3a53af8b45e21c8075d2122c40943589efde67009ea9661ecec",
+  "fp36-discovery-moved-words": "f3f374131e7c0b87491f075e288218424272771c39c90dfde2a27ff0ebba2566",
   "fp47b-level-look": "0117e2754c3a8bee1fee9edbb0c862be2eca2bd4c863957c5d3de4ae4b876964"
  },
  "0.1.0.1 pine-hollow": {
@@ -89,8 +89,8 @@
   "fp4-drop-requires-capabilities": "a2625362bb53e1f019680dcfd44d6992570bcbf950ae8785c7c6121d11b95a7b",
   "fp33-drop-requires-sdk": "684a8eac8f34fb56e0abbf156df7c900d7d2dcd1897a6235fa6e4e823461896e",
   "fp43-homes-to-members": "684a8eac8f34fb56e0abbf156df7c900d7d2dcd1897a6235fa6e4e823461896e",
-  "fp34-manifest-moved-words": "fe5ec58c5b23d28bd2bbbfe4132fafeef9492495e8b6cd369cb0cdb13bba34e9",
-  "fp36-discovery-moved-words": "cb74bb603fb63dd6a0455c14c66f38184a124b9b80f1475cc50e601a64b8bf77",
+  "fp34-manifest-moved-words": "2f6e6dbbb298183f3a6a02a4e9f92eaa627497f179f7116d2268b546dd2c6a57",
+  "fp36-discovery-moved-words": "313390784233c35ec132b91f28d027c646c5e5b03164860d1db89bdc2fc63720",
   "fp47b-level-look": "37efeddc69bf9656794bc3a9f0a95843551156dfc7b676f571f5d8b3758deb66"
  },
  "0.1.0.1 driftwood-isle": {
@@ -103,8 +103,8 @@
   "fp4-drop-requires-capabilities": "addbaa9e44d8d1fa5d7db06f8ee419491150d06ea43e361455fd1d64b2f8b5cb",
   "fp33-drop-requires-sdk": "329069dda07752c1b8bd4ab557e46e410cec541df56c7e1540066d587ac81814",
   "fp43-homes-to-members": "329069dda07752c1b8bd4ab557e46e410cec541df56c7e1540066d587ac81814",
-  "fp34-manifest-moved-words": "4b198f376853c9e46d31e2ad427b8cfb02cce6774562375583fcca387f8ffeee",
-  "fp36-discovery-moved-words": "1499b243d89254369bee41de8854f574ad5772916967c9399e39e7f8f133adbf",
+  "fp34-manifest-moved-words": "40b7bc6521abf07e3677490e8c81cb91cd8e257e52730a49a88d7c850c875c9a",
+  "fp36-discovery-moved-words": "5e81a3fe2b87d5bcfdd50d5d019109af159a89525f931d3a1c50848c1f89a371",
   "fp47b-level-look": "7c239aa8583014690a48a816130d783ea8b0f7db283f70438e8a5d85e57909e3"
  },
  "0.1.0.2 corpus/legacy/brasscap-mesa-ss3": {
@@ -114,8 +114,8 @@
   "fp4-drop-requires-capabilities": "c1d9ac9e4865ccc630c1cb4e447f7cabe45b40bf4d0fb61562386934acc976a1",
   "fp33-drop-requires-sdk": "5b5245d84980a45da77c9fe7f2c70546116302cd48d2d3d48894dc23f5efd166",
   "fp43-homes-to-members": "5b5245d84980a45da77c9fe7f2c70546116302cd48d2d3d48894dc23f5efd166",
-  "fp34-manifest-moved-words": "dc85e0d44b85bba7bae12508aae07e28bd27c1b14394a406b1c63f94efd46139",
-  "fp36-discovery-moved-words": "94a6c48b5ffc493b7a9087f7376a83b0b22563d8ab07e42dee340bd0f7e136a9",
+  "fp34-manifest-moved-words": "e344818523675e63a506b78e66ce3bf5029ae3311921511419ee087ed6b0b2b9",
+  "fp36-discovery-moved-words": "12da318f467800792f984eb532124e94901b85cf5a026bfbdaeb6e892ef91edc",
   "fp47b-level-look": "c0d84c20a12015bbf5b15af2fc94bb6c72aec0dc3cf1426eebc1243b31334f10"
  },
  "0.1.0.3 corpus/legacy/brasscap-mesa-ss3": {
@@ -124,19 +124,21 @@
   "fp4-drop-requires-capabilities": "e8d9b7a50e4c4ba97ebcc545b245fd2be44468393dffb23e156ac49f01882dc6",
   "fp33-drop-requires-sdk": "43435c1c9ea5a42a04ceb0156768bd34f1cdd8501ec25c4633c7660bba14c52a",
   "fp43-homes-to-members": "43435c1c9ea5a42a04ceb0156768bd34f1cdd8501ec25c4633c7660bba14c52a",
-  "fp34-manifest-moved-words": "b829bb2b21ced714d13f9523ad6e7e7cc483a97cb2faa3f6db125032096b0f88",
-  "fp36-discovery-moved-words": "7780712d883f6fa69a576d48d5c719a09c36e3a696ced0a29db268c18ac61bd1",
+  "fp34-manifest-moved-words": "3890bbad2dcbe23de7de0f8c8796ac7f93e2b3fcacc347bb8e00d64c09722c7e",
+  "fp36-discovery-moved-words": "a8a94b8c7ea6b18ffb55ad9a7b537ee506b57c286b69e0b4fdb0540c921d5b9d",
   "fp47b-level-look": "2d070b679955a3add02c29fdb937b1896afe9dd03938d2565c3f5d1efaf2c31f"
  },
  "0.1.0.4 corpus/legacy/brasscap-mesa-ss3": {
   "fp33-drop-requires-sdk": "4a2076a3369bda45d4eddb4f138027f82d1474593cea9fad4cff07bf528fedfa",
   "fp43-homes-to-members": "4a2076a3369bda45d4eddb4f138027f82d1474593cea9fad4cff07bf528fedfa",
-  "fp34-manifest-moved-words": "240d4ca0447f0f6d512800af6dadbcad1c292b293765a796062dac70c6dc96e4",
-  "fp36-discovery-moved-words": "ebbcc2c8f69180483cb9c8d92c2053d67534d15096bc3b1891fa574dbba0caf8",
+  "fp34-manifest-moved-words": "101dbbb4557f6d4c401486d5ee3da40aeed498c7e7cdea54234fa60b296371f6",
+  "fp36-discovery-moved-words": "b4cd27e1d57db564a3527cedd81954e518bc0ecf96345d489a9a4c23206601b8",
   "fp47b-level-look": "cd0b91b0c6d51c58df2fc504eb286435d617a935b0219329393e6905c22824f6"
  },
  "0.1.0.5 corpus/legacy/brasscap-mesa-ss3": {
-  "fp47b-level-look": "bf70d2fa06a71a1be970bb8137c5cee397a491b3138afa20cb9f8df062594ffe"
+  "fp34-manifest-moved-words": "2bcc05e591c01b815f43d8d16b020ee7129f955c496252e7153e19dc72af972b",
+  "fp36-discovery-moved-words": "953f1f7e2cc252e35256c54e2a87cd1626128c1996d7e03c8118836613047701",
+  "fp47b-level-look": "9a99f2119484ba3709898e8a813ac92f97ef3387ceabe03e557c71dc588e3c11"
  },
  "0.1.0.6 corpus/legacy/brasscap-mesa-ss3": {}
 }
