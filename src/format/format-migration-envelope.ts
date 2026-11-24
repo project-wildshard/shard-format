@@ -29,8 +29,8 @@ const formatVersionField: FormatMigration = {
   },
 }
 
-/** FORMAT-PRUNE FP4: `schemas`, `runtime.files` and `runtime.lines`, always empty, never read. `requires.capabilities` stays:
- * it is part of the assembled source the build's source hash covers, so it goes only with the writers that stop sourcing it. */
+/** FORMAT-PRUNE FP4: `schemas`, `runtime.files` and `runtime.lines`, always empty, never read. `requires.capabilities` went
+ * later (`fp4-drop-requires-capabilities`), once the schema made it optional for writers whose source still carries it. */
 const dropEmptyIndexFields: FormatMigration = {
   id: 'fp4-drop-empty-index-fields',
   to: ENVELOPE,
@@ -45,6 +45,33 @@ const dropEmptyIndexFields: FormatMigration = {
       Reflect.deleteProperty(runtime, 'lines')
     }
   },
+}
+
+function requiresOf(shard: Readonly<MigratingShard>): JsonRecord | undefined {
+  const { requires } = shard.index
+  return isRecord(requires) ? requires : undefined
+}
+
+function carriesCapabilities(shard: Readonly<MigratingShard>): boolean {
+  const requires = requiresOf(shard)
+  return requires !== undefined && Object.hasOwn(requires, 'capabilities')
+}
+
+/** FORMAT-PRUNE FP4's last field (J505 build-ahead): `requires.capabilities`, empty in every pin and never read. A repair
+ * step, so a current file that still carries it (a writer whose source has `capabilities: []`) loses it too; the copy's
+ * declared source hash is re-sealed over the new index (`format-migrate-rebuild.ts`). */
+const dropRequiresCapabilities: FormatMigration = {
+  id: 'fp4-drop-requires-capabilities',
+  to: SAVE_REVISION,
+  touches: 'data',
+  affects: [],
+  apply: (shard: MigratingShard): void => {
+    const requires = requiresOf(shard)
+    if (requires !== undefined) {
+      Reflect.deleteProperty(requires, 'capabilities')
+    }
+  },
+  repairs: carriesCapabilities,
 }
 
 /** SHARD-COMPAT PR4 (J487, FORMAT-PRUNE FP5 folded in): the `sdk` marker becomes `preparation`, the spec version the
@@ -105,6 +132,7 @@ function writeShardfileFormat(index: JsonRecord, version: string): void {
 export {
   declaredShardfileFormat,
   dropEmptyIndexFields,
+  dropRequiresCapabilities,
   formatVersionField,
   preparationMarker,
   saveRevisionName,

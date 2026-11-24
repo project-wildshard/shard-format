@@ -139,8 +139,8 @@ const RULES: readonly DeprecationRule[] = [
     path: 'shard.json requires.capabilities (FORMAT-PRUNE FP4): always empty, never read',
     since: ENVELOPE,
     replacement:
-      'nothing: the build source hash covers it, so writers stop sourcing it, then it goes at zero users',
-    migration: undefined,
+      'nothing: the chain drops it (optional since 0.1.0.4) and writers stop sourcing it',
+    migration: 'fp4-drop-requires-capabilities',
     uses: (shard: Readonly<DeprecationInput>): boolean =>
       field(field(shard.index, 'requires'), 'capabilities') !== undefined,
   },

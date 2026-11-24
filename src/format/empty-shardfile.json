@@ -1,7 +1,6 @@
 {
   "accent": "sand",
   "requires": {
-    "capabilities": [],
     "commons": [],
     "commonsWire": {},
     "commonsCosts": {}

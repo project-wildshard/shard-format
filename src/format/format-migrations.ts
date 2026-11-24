@@ -4,6 +4,7 @@
  * schema change (api-server). The change's author adds its migration here in the same release (J486, Q49). */
 import {
   dropEmptyIndexFields,
+  dropRequiresCapabilities,
   formatVersionField,
   preparationMarker,
   saveRevisionName,
@@ -80,6 +81,7 @@ const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
   preparationMarker,
   saveRevisionName,
   schemaSource,
+  dropRequiresCapabilities,
 ]
 
 /** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its

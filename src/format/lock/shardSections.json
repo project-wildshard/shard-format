@@ -48,7 +48,7 @@
   "./shardSections#ServerBudgetSchema": {"ref":"./outputIndex#OutputIndexSchema.admission.serverBudget"},
   "./shardSections#ShardFiniteSchema": {"ref":"./shardSections#CellBoundsSchema.max[0]"},
   "./shardSections#ShardHashSchema": {"ref":"./admissionLate#AdmissionLateSchema[].hash"},
-  "./shardSections#ShardNamesSchema": {"ref":"./outputIndex#OutputIndexSchema.requires.capabilities"},
+  "./shardSections#ShardNamesSchema": {"ref":"./outputIndex#OutputIndexSchema.requires.capabilities?"},
   "./shardSections#ShardNaturalSchema": {"ref":"./admissionServer#AdmissionServerSchema[].bytes"},
   "./shardSections#ShardReferenceSchema": {"ref":"./outputIndex#OutputIndexSchema.admission.critical[]"},
   "./shardSections#ShardReferencesSchema": {"ref":"./outputIndex#OutputIndexSchema.admission.critical"},
