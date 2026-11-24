@@ -168,6 +168,25 @@ test('product inventory reads addressed plans, explicit looks and manifest dupli
   assert.equal(counts['products.single-shard-page-features'], 2)
 })
 
+test('FP48: server section hosts count as hosts, as native assemblies did', (): void => {
+  const sectioned = productFacts('three', [
+    json('sections/server/riding.json', {
+      hosts: [{ host: 'riding.roster' }, { host: 'commands' }],
+    }),
+  ])
+  const counts = productCounts([
+    productFacts('two', [
+      json('server/json/b.json', {
+        kind: 'native-assembly',
+        features: [{ host: 'commands' }],
+      }),
+    ]),
+    sectioned,
+  ])
+  assert.deepEqual(sectioned.hosts, ['riding.roster', 'commands'])
+  assert.equal(counts['products.single-shard-server-hosts'], 1)
+})
+
 test('duplicate appearances in one shard never masquerade as two users', (): void => {
   const counts = productCounts([
     productFacts('one', product),

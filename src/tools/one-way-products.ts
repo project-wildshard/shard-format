@@ -55,13 +55,23 @@ function section(
   )
   return file === undefined ? {} : read(file)
 }
+/** The engine hosts a product runs: a native assembly's features (the old home), or since FORMAT-PRUNE FP16 and FP21
+ * the `hosts` rows of its server sections (`sections/server/<family>.json`). FP48 (opus-fp49, 11-24): reading only the
+ * old home left the counter blind at 0 once every pin moved, so both homes count. */
 function nativeHosts(files: readonly SourceFile[]): readonly string[] {
   return files.flatMap((file: Readonly<SourceFile>): readonly string[] => {
     const data = read(file)
-    return data['kind'] === 'native-assembly'
+    if (data['kind'] === 'native-assembly') {
+      return strings(
+        rows(data['features']).map(
+          (feature: unknown): unknown => object(feature)['host'],
+        ),
+      )
+    }
+    return file.path.startsWith('sections/server/')
       ? strings(
-          rows(data['features']).map(
-            (feature: unknown): unknown => object(feature)['host'],
+          rows(data['hosts']).map(
+            (host: unknown): unknown => object(host)['host'],
           ),
         )
       : []
