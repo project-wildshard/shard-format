@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.75.0 (2026-11-24)
+
+- New shard files no longer need a required SDK version in their manifest.
+- Older shard files migrate population homes to the current member lists.
+- Headless tools can read a shard's server plan directly.
+- The validator no longer accepts cook data version 2. Current cooked exports already use the supported version.
+
 ## v0.74.1 (2026-11-23)
 
 - Quests get their own server section (quests/server), so a shard can declare its quest family without the client reading it.
