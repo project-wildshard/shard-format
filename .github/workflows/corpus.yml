@@ -3,15 +3,16 @@
 # original once by hash, and validates it as stored (`judged: 'stored'`); one the format refuses is judged again
 # through the migration chain (J486, src/cli/corpus-migrated.ts). It exits 3 naming every shard that still fails.
 # The release job (npm-publish.yml) runs it on the tagged commit before `npm publish`; it also runs nightly on main.
-# A failure blocks unless corpus/known-failures.json lists its hash with the row that owns its repair; a listed
-# shard that passes again is named stale. Never in the pre-push gate. The downloads are public: no R2 token is needed. Downloads and verdicts are cached by
+# ZONE-SNAPSHOTS ZS3 (J507): it judges only the live set (engine's production and staging pins); any failure blocks
+# (no known-failures list), and a listed original that is neither live, a rollback copy nor a channel's pointer is
+# store drift and blocks too. It runs at 10:17 UTC, after the API's 09:17 prune. Never in the pre-push gate. The downloads are public: no R2 token is needed. Downloads and verdicts are cached by
 # shard hash, and a verdict is re-checked whenever the validator changes.
 name: corpus
 
 on:
   workflow_call:
   schedule:
-    - cron: '17 9 * * *'
+    - cron: '17 10 * * *'
   workflow_dispatch:
 
 permissions:

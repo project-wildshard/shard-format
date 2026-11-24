@@ -33,10 +33,14 @@ Commands:
                        measure follows them, and format's validator must
                        pass. Writes <slug>.tar by default
   corpus [--api <url>] [--cache <dir>] [--usage <file>] [--pins <file|url>]
+         [--strict-store]
          [--candidate <module>] [--only <slug,...>]
-                       Validate every stored shard file the API keeps,
-                       as stored originals; list every failure. Exits 3
-                       when any fails. --usage writes who uses each
+                       Validate every live shard file (engine's
+                       production and staging pins by default, ZS3) as
+                       stored; list every failure and any API original
+                       that is neither live, a rollback copy nor a
+                       channel's pointer (store drift). Exits 3 when any
+                       fails, and on drift with --strict-store. --usage writes who uses each
                        deprecated path and chain step (FE13 reads it)
                        --candidate <module> judges each original again
                        under a candidate chain and validator (FE3b):
@@ -68,6 +72,7 @@ interface CliArgs {
   readonly pins: string | undefined
   readonly candidate: string | undefined
   readonly only: string | undefined
+  readonly strictStore: boolean
 }
 
 function parseCliArgs(argv: readonly string[]): CliArgs {
@@ -85,6 +90,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
       pins: { type: 'string' },
       candidate: { type: 'string' },
       only: { type: 'string' },
+      'strict-store': { type: 'boolean', default: false },
     },
   })
   const [command, ...operands] = positionals
@@ -101,6 +107,7 @@ function parseCliArgs(argv: readonly string[]): CliArgs {
     pins: values.pins,
     candidate: values.candidate,
     only: values.only,
+    strictStore: values['strict-store'],
   }
 }
 

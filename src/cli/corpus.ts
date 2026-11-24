@@ -91,6 +91,9 @@ interface CorpusOptions {
   readonly candidate?: Candidate
   /** Only these shards' originals (`slug`, or one revision as `slug@r5`): a candidate run over the shards it targets. */
   readonly only?: readonly string[]
+  /** ZS3 (J507): judge only these hashes and the pins, what players load; the API's other originals are rollback
+   * copies and never count as users. */
+  readonly live?: ReadonlySet<string>
 }
 
 const NONE = 0
@@ -262,11 +265,15 @@ async function runCorpus(
   options: Readonly<CorpusOptions>,
 ): Promise<CorpusRow[]> {
   const kept = await listKept(options)
-  const shardfiles = kept.filter((stored: StoredRecord): boolean =>
-    onlyNamed(options.only, stored.revisions),
-  )
   const pins = options.pins ?? []
   const pinned = new Set(pins.map((pin: Readonly<Pin>): string => pin.hash))
+  const shardfiles = kept.filter(
+    (stored: StoredRecord): boolean =>
+      onlyNamed(options.only, stored.revisions) &&
+      (options.live === undefined ||
+        options.live.has(stored.hash) ||
+        pinned.has(stored.hash)),
+  )
   const rows: CorpusRow[] = []
   for (const stored of withPins(shardfiles, pins)) {
     // oxlint-disable-next-line eslint/no-await-in-loop -- one original at a time keeps memory bounded
@@ -276,7 +283,13 @@ async function runCorpus(
   return rows
 }
 
-export { type CorpusOptions, type CorpusRow, type StoredRecord, runCorpus }
+export {
+  type CorpusOptions,
+  type CorpusRow,
+  type StoredRecord,
+  listKept,
+  runCorpus,
+}
 
 export { corpusReport } from './corpus-report.ts'
 export { isPlainTar } from './corpus-tar.ts'

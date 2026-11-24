@@ -42,14 +42,25 @@ async function pinsText(source: string, get: typeof fetch): Promise<string> {
   return await answer.text()
 }
 
-/** Engine's shard-file pins, from a file or a URL. */
+/** Engine's shard-file pins, from files or URLs, comma-separated (ZS3: production's and staging's), one per hash. */
 async function readPins(
   source: string,
   get: typeof fetch = fetch,
 ): Promise<readonly Pin[]> {
-  const text = await pinsText(source, get)
-  const parsed = parse(PinsSchema, JSON.parse(text))
-  return parsed.shards
+  const lists = await Promise.all(
+    source
+      .split(',')
+      .filter(Boolean)
+      .map(async (one: string): Promise<readonly Pin[]> => {
+        const text = await pinsText(one, get)
+        return parse(PinsSchema, JSON.parse(text)).shards
+      }),
+  )
+  const byHash = new Map<string, Pin>()
+  for (const pin of lists.flat()) {
+    byHash.set(pin.hash, pin)
+  }
+  return [...byHash.values()]
 }
 
 /** The listed originals, then each pinned one the list leaves out. */
