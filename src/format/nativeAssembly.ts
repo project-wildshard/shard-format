@@ -12,7 +12,8 @@ export const NATIVE_ASSEMBLY_DATA_SCHEMA = '@wildshard/format/nativeAssembly#Nat
 export type NativeAssemblyRead = { file: string; path?: string[] } | { section: string; path?: string[] } | { value: unknown };
 /** One host's rows: what it reads and its data-only settings, in the install order the plan lists. */
 export type NativeAssemblyFeature =
-  | { host: 'decisions' | 'commands' | 'loadout' | 'quest.body-scripts' | 'population.elites-ready' | 'population.reactions' | 'population.settle' | 'riding.elites-ready' | 'water.field' }
+  | { host: 'quest.body-scripts' }
+  | { host: 'decisions' | 'commands' | 'loadout' | 'population.elites-ready' | 'population.reactions' | 'population.settle' | 'riding.elites-ready' | 'water.field' }
   | { host: 'collision'; skipOnRestore?: boolean } | { host: 'collision.pieces'; rows: NativeAssemblyRead }
   | { host: 'day.keyed-sky' } | { host: 'day.toon'; start: number; cycle: number; phases: Record<string, string> } | { host: 'day.declared'; clock: NativeAssemblyRead }
   | { host: 'water.sea'; id: string } | { host: 'combat.motion'; speed: number }
@@ -87,19 +88,27 @@ const heldInput = v.strictObject({ attack: key, swap: key, aim: key, pitch: key 
 const arenaInput = v.strictObject({ use: key, skip: key });
 const grant = v.strictObject({ item: key, count: number });
 const grants = v.pipe(v.array(grant), v.maxLength(MAX_GRANTS));
-const feature = v.variant('host', [
-  v.strictObject({ host: v.picklist(['decisions', 'commands', 'loadout', 'quest.body-scripts', 'population.elites-ready', 'population.reactions', 'population.settle', 'riding.elites-ready', 'water.field']) }),
-  v.strictObject({ host: v.literal('collision'), skipOnRestore: flag }), v.strictObject({ host: v.literal('collision.pieces'), rows: read }),
-  v.strictObject({ host: v.literal('day.keyed-sky') }), v.strictObject({ host: v.literal('day.toon'), start: number, cycle: number, phases: v.record(key, key) }), v.strictObject({ host: v.literal('day.declared'), clock: read }),
-  v.strictObject({ host: v.literal('water.sea'), id: key }), v.strictObject({ host: v.literal('combat.motion'), speed: number }),
-  v.strictObject({ host: v.literal('item.ranged'), kind: v.picklist(['bolt', 'cycle', 'bow']), weapon: key }), v.strictObject({ host: v.literal('item.swept'), policy: read }),
-  v.strictObject({ host: v.literal('ammunition'), step: key, refill: key }), v.strictObject({ host: v.literal('boss.ground'), encounter: read, binding: v.unknown() }),
+/** The quest family's four hosts (FORMAT-PRUNE FP16, ONE-FORMAT OF17b3): a plan's rows, and the `quests/server` section's. */
+export type NativeQuestHostRow = Extract<NativeAssemblyFeature, { host: 'quest.composition' | 'quest.chapter' | 'quest.kill-steps' | 'quest.body-scripts' }>;
+const QUEST_HOST_ROWS = [
   v.strictObject({ host: v.literal('quest.composition'), rows: read, spots: read, counters: read, document: v.exactOptional(read), table: v.exactOptional(read), contracts: v.exactOptional(read), props: v.exactOptional(read),
     readSpots: flag, nativeFeats: flag, barter: flag, director: flag, restoring: flag }),
   // ONE-FORMAT OF22c3: a chapter's wake names a declared boss fight; `population` named the retired mixed population and
   // stays optional only for writers that still send it
   v.strictObject({ host: v.literal('quest.chapter'), id: key, rows: read, wake: read, reward: v.unknown(), population: v.exactOptional(key) }),
   v.strictObject({ host: v.literal('quest.kill-steps'), rows: read, counters: read }),
+  v.strictObject({ host: v.literal('quest.body-scripts') }),
+] as const;
+/** One quest host's row, as a plan or the `quests/server` section holds it. */
+export const NativeQuestHostSchema: v.GenericSchema<unknown, NativeQuestHostRow> = v.variant('host', QUEST_HOST_ROWS);
+const feature = v.variant('host', [
+  v.strictObject({ host: v.picklist(['decisions', 'commands', 'loadout', 'population.elites-ready', 'population.reactions', 'population.settle', 'riding.elites-ready', 'water.field']) }),
+  v.strictObject({ host: v.literal('collision'), skipOnRestore: flag }), v.strictObject({ host: v.literal('collision.pieces'), rows: read }),
+  v.strictObject({ host: v.literal('day.keyed-sky') }), v.strictObject({ host: v.literal('day.toon'), start: number, cycle: number, phases: v.record(key, key) }), v.strictObject({ host: v.literal('day.declared'), clock: read }),
+  v.strictObject({ host: v.literal('water.sea'), id: key }), v.strictObject({ host: v.literal('combat.motion'), speed: number }),
+  v.strictObject({ host: v.literal('item.ranged'), kind: v.picklist(['bolt', 'cycle', 'bow']), weapon: key }), v.strictObject({ host: v.literal('item.swept'), policy: read }),
+  v.strictObject({ host: v.literal('ammunition'), step: key, refill: key }), v.strictObject({ host: v.literal('boss.ground'), encounter: read, binding: v.unknown() }),
+  ...QUEST_HOST_ROWS,
   v.strictObject({ host: v.literal('weather.program'), program: read }), v.strictObject({ host: v.literal('weather.native'), program: read, shelters: read, rows: read }),
   v.strictObject({ host: v.picklist(['population.environment', 'population.shelter', 'population.roster', 'riding.groups']), rows: read }),
   v.strictObject({ host: v.literal('population.elites'), file: key }),

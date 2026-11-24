@@ -60,6 +60,10 @@
     {
       "path": "./featureSides#SIDE_TABLES",
       "noFileChange": "ONE-FORMAT OF30 cut B: population.product-creatures leaves the client plan with engine cut B, which already refuses it at runtime. The kept-originals corpus is the contract (FE3/FE5) and carries none of it; no current engine pin does either. 15 unpinned Driftwood r2 builds in the pin cache carry it (J486 prune candidates, not kept originals); one of them, 329f37d67d676ad001e2b39fad443ce84f9708cb14e062e67a5fede2ba34a3fb, validates on 0.71.0 and is refused after this. Coordinator's call 2026-11-23: no version bump"
+    },
+    {
+      "path": "./primitives#OUT_OF_SCOPE_HOSTS",
+      "noFileChange": "FP16 (OF17b3): the four quest hosts join the new quest family (a new optional quests/server section); the list of hosts no family owns shrinks, every admitted file still admits, none must carry the section"
     }
   ]
 }

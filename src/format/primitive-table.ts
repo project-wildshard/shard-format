@@ -204,6 +204,17 @@ const TABLE: readonly Primitive[] = [
     hosts: ['water.field'],
   },
   {
+    name: 'quest',
+    row: 'FP16',
+    on: { section: 'quests/server', path: ['hosts'] },
+    hosts: [
+      'quest.chapter',
+      'quest.kill-steps',
+      'quest.body-scripts',
+      'quest.composition',
+    ],
+  },
+  {
     name: 'grapple',
     row: 'OF41',
     on: { section: 'state/modes', path: ['modes', 'grapple'] },

@@ -23,14 +23,9 @@ interface DerivedPrimitive {
   readonly version: number
 }
 
-/** Hosts HOSTS.md leaves out of the primitives: quest (Q-S5), opened as it is; Nalati's stealth entry (Q-S4). */
-const OUT_OF_SCOPE_HOSTS: readonly string[] = Object.freeze([
-  'quest.body-scripts',
-  'quest.composition',
-  'quest.chapter',
-  'quest.kill-steps',
-  'stealth.entry',
-])
+/** Hosts HOSTS.md leaves out of the primitives: Nalati's stealth entry (Q-S4). The quest hosts (Q-S5) joined the `quest`
+ * family when FORMAT-PRUNE FP16 gave them a home (`quests/server`, ONE-FORMAT OF17b3). */
+const OUT_OF_SCOPE_HOSTS: readonly string[] = Object.freeze(['stealth.entry'])
 
 const HOST_FAMILY: ReadonlyMap<string, string> = new Map(
   PRIMITIVES.flatMap((row): (readonly [string, string])[] =>

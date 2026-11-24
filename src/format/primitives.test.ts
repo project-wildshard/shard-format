@@ -138,7 +138,7 @@ test('OF17a: every native-assembly server host belongs to one family or is out o
   )
   expect(orphans).toEqual([])
   expect(primitiveOfHost('weather.native')).toBe('weather')
-  expect(primitiveOfHost('quest.chapter')).toBeUndefined()
+  expect(primitiveOfHost('quest.chapter')).toBe('quest') // FORMAT-PRUNE FP16: the quest family's home is quests/server
 })
 
 /** Families an otherwise empty product derives from one section, beyond the always-on ones. */

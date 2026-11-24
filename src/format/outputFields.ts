@@ -61,6 +61,7 @@ const DATA_SECTION_NAMES: Readonly<Record<keyof PlatformDataSections, true>> = {
   "look/keyed-sky": true,
   "client/plan": true,
   "server/plan": true,
+  "quests/server": true,
   "view/modules": true,
   "held/arms": true,
   "held/gear": true,
