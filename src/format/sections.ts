@@ -12,6 +12,7 @@ import type { SpawnScriptRows } from './spawnScripts.ts';
 import type { ClientPlan } from './clientPlan.ts';
 import type { ServerPlan } from './server-plan.ts';
 import type { QuestServer } from './quest-server.ts';
+import type { ServerHosts } from './server-hosts.ts';
 import type { NativeSweptPolicyRows } from './items.ts';
 import type { ReturnModuleRow, ViewModuleRow } from './scriptContract.ts';
 import type { WorldScenesSection } from './worldScenes.ts';
@@ -67,7 +68,11 @@ export interface PlatformSections {
   /** SHARD-COMPAT HS6b: the feature rows the server reads, written beside `client/plan` so the page's plan is the page's. */
   'server/plan': ServerPlan;
   /** FORMAT-PRUNE FP16: the quest family's server hosts, read by a native world whose plan names none. */
-  'quests/server': QuestServer;
+  'server/quest': QuestServer;
+  /** FORMAT-PRUNE FP16d: the riding, boss and patrol families' server hosts, read by a native world whose plan names none. */
+  'server/riding': ServerHosts;
+  'server/boss': ServerHosts;
+  'server/patrol': ServerHosts;
   'held/arms': HeldArmsRows;
   'held/gear': HeldGearRows;
   'held/finishes': HeldFinishesRows;

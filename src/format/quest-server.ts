@@ -1,4 +1,4 @@
-/** FORMAT-PRUNE FP16 (meta; carries ONE-FORMAT OF17b3): `quests/server`, the home of the quest family's server hosts
+/** FORMAT-PRUNE FP16 (meta; carries ONE-FORMAT OF17b3): `server/quest`, the home of the quest family's server hosts
  * (`quest.chapter`, `quest.kill-steps`, `quest.body-scripts`, `quest.composition`). Its rows are the native plan's own
  * quest rows, in install order (`nativeAssembly.ts` admits the same rows); the engine stands them where a plan names no
  * quest host, so `server/native-assembly.json` no longer lists them. The rows name files and flags only; the

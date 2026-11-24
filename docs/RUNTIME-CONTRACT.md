@@ -98,8 +98,11 @@ and nothing else. A **plain value** section holds its own schema's value, define
 | `quests/directors` | `wildshard:quests/directors@1` | root `directors` | `DirectorStageLane` (both) |
 | `quests/host` | `wildshard:quests/host@1` | root `questHost` | `installDeclaredQuestHost` (server) |
 | `quests/quests` | `wildshard:quests/quests@1` | root `quests` | `DeclaredQuests` (both) |
-| `quests/server` | `wildshard:quests/server@1` | plain value | `prepareNativeAssembly` (server) |
+| `server/boss` | `wildshard:server/boss@1` | plain value | `prepareNativeAssembly` (server) |
+| `server/patrol` | `wildshard:server/patrol@1` | plain value | `prepareNativeAssembly` (server) |
 | `server/plan` | `wildshard:server/plan@1` | plain value | `serverPlan` (server) |
+| `server/quest` | `wildshard:server/quest@1` | plain value | `prepareNativeAssembly` (server) |
+| `server/riding` | `wildshard:server/riding@1` | plain value | `prepareNativeAssembly` (server) |
 | `sim/bodies` | `wildshard:sim/bodies@1` | plain value | `DeclaredBodyOps` (server), `DeclaredBodyOpsSchema` (shard-format) |
 | `sim/client-channels` | `wildshard:sim/client-channels@1` | root `clientChannels` | `ClientScriptViews` (page) |
 | `sim/client-scripts` | `wildshard:sim/client-scripts@1` | root `clientScripts` | `createShardfileClientScripts` (page) |

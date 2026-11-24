@@ -44,7 +44,19 @@
       "hosts": ["server serverPlan"],
       "note": "SHARD-COMPAT HS6b: the server's copy of the feature rows; engine's seam (`src/server/game/shardfile/serverPlan.ts`) reads it, falling back to `client/plan` for a file without one until the roll."
     },
-    "quests/server": {
+    "server/riding": {
+      "hosts": ["server prepareNativeAssembly"],
+      "note": "FORMAT-PRUNE FP16d: the riding family's server hosts, the native plan's own rows; engine's native world stands them where its plan names none."
+    },
+    "server/boss": {
+      "hosts": ["server prepareNativeAssembly"],
+      "note": "FORMAT-PRUNE FP16d: the boss family's server hosts, the native plan's own rows; engine's native world stands them where its plan names none."
+    },
+    "server/patrol": {
+      "hosts": ["server prepareNativeAssembly"],
+      "note": "FORMAT-PRUNE FP16d: the patrol family's server hosts, the native plan's own rows; engine's native world stands them where its plan names none."
+    },
+    "server/quest": {
       "hosts": ["server prepareNativeAssembly"],
       "note": "FORMAT-PRUNE FP16: the quest family's server hosts (`quest.chapter`, `quest.kill-steps`, `quest.body-scripts`, `quest.composition`); engine's native world stands them where its plan names no quest host."
     },

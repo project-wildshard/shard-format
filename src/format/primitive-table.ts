@@ -206,7 +206,7 @@ const TABLE: readonly Primitive[] = [
   {
     name: 'quest',
     row: 'FP16',
-    on: { section: 'quests/server', path: ['hosts'] },
+    on: { section: 'server/quest', path: ['hosts'] },
     hosts: [
       'quest.chapter',
       'quest.kill-steps',

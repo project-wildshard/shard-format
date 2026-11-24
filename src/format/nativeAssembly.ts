@@ -89,7 +89,7 @@ const arenaInput = v.strictObject({ use: key, skip: key });
 const grant = v.strictObject({ item: key, count: number });
 const grants = v.pipe(v.array(grant), v.maxLength(MAX_GRANTS));
 /** The quest family's four hosts (FORMAT-PRUNE FP16, ONE-FORMAT OF17b3); `quest-server.ts` admits the same rows for the
- *  `quests/server` section (`quest-server-section.test.ts` holds the two together), and outlives this plan (FP21). */
+ *  `server/quest` section (`quest-server-section.test.ts` holds the two together), and outlives this plan (FP21). */
 const QUEST_HOST_ROWS = [
   v.strictObject({ host: v.literal('quest.composition'), rows: read, spots: read, counters: read, document: v.exactOptional(read), table: v.exactOptional(read), contracts: v.exactOptional(read), props: v.exactOptional(read),
     readSpots: flag, nativeFeats: flag, barter: flag, director: flag, restoring: flag }),
@@ -142,7 +142,8 @@ export const NativeAssemblySchema: v.GenericSchema<unknown, NativeAssemblyPlan> 
   collision: v.exactOptional(collisionSchema),
   entries: entriesSchema,
   boot: v.exactOptional(read), field: v.exactOptional(v.strictObject({ rows: read, pond: key })),
-  features: v.pipe(v.array(feature), v.minLength(1), v.maxLength(64)),
+  // FORMAT-PRUNE FP16: a plan may name no host; each family stands from its `server/*` section
+  features: v.pipe(v.array(feature), v.maxLength(64)),
 }));
 /** A server JSON file's rows: plain bounded data, admitted by the host that reads them. */
 export const NativeAssemblyDataSchema: v.GenericSchema<unknown, unknown> = v.pipe(v.unknown(), v.check(isJsonData, 'Native assembly data must be plain bounded JSON'));

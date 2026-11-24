@@ -10,3 +10,7 @@ projects to JSON Schema (FP9); the engine refuses a repeated host.
 
 Ratchet fix: the section owns its four rows in `quest-server.ts`; `nativeAssembly.ts` keeps its own copy un-exported
 (exports-last, isolated declarations), and the section test holds both admitting the same rows until FP21.
+
+FP16d: `quests/server` renamed `server/quest` (unreleased, so no file carries the old name) to sit with `server/riding`,
+`server/boss` and `server/patrol`, each a family's host rows (projectable `{ host }` rows; the engine admits them with the
+plan's row schemas, as HS6b's `server/plan`). A native plan may now name no host.

@@ -63,7 +63,7 @@
     },
     {
       "path": "./primitives#OUT_OF_SCOPE_HOSTS",
-      "noFileChange": "FP16 (OF17b3): the four quest hosts join the new quest family (a new optional quests/server section); the list of hosts no family owns shrinks, every admitted file still admits, none must carry the section"
+      "noFileChange": "FP16 (OF17b3): the four quest hosts join the new quest family (a new optional server/quest section); the list of hosts no family owns shrinks, every admitted file still admits, none must carry the section"
     }
   ]
 }

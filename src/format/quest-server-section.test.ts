@@ -5,7 +5,7 @@ import { parsePlatformDataSection } from './platformDataSections.ts'
 import { derivePrimitives, primitiveOfHost } from './primitives.ts'
 import { ACCEPTED_SECTION_VERSIONS } from './section-versions.ts'
 
-// FORMAT-PRUNE FP16 (meta; carries ONE-FORMAT OF17b3): `quests/server` is the quest family's home. It holds the native
+// FORMAT-PRUNE FP16 (meta; carries ONE-FORMAT OF17b3): `server/quest` is the quest family's home. It holds the native
 // plan's own quest rows, so a row a plan admits the section admits, and the family switches on from the section.
 const chapter = {
   host: 'quest.chapter',
@@ -41,8 +41,8 @@ const QUEST_HOSTS = [
   'quest.composition',
 ]
 
-test('quests/server holds the quest rows a native plan holds, at version 1', (): void => {
-  expect(parsePlatformDataSection('quests/server', section)).toEqual(section)
+test('server/quest holds the quest rows a native plan holds, at version 1', (): void => {
+  expect(parsePlatformDataSection('server/quest', section)).toEqual(section)
   const plan = parseNativeAssembly({
     kind: 'native-assembly',
     level: { speed: 5, ground: { size: 500, height: 0 } },
@@ -52,10 +52,10 @@ test('quests/server holds the quest rows a native plan holds, at version 1', ():
     features: section.hosts,
   })
   expect(plan.features).toEqual(section.hosts)
-  expect(ACCEPTED_SECTION_VERSIONS['quests/server']).toEqual([1])
+  expect(ACCEPTED_SECTION_VERSIONS['server/quest']).toEqual([1])
 })
 
-test('quests/server refuses another host, too many hosts, no hosts and a wrong version', (): void => {
+test('server/quest refuses another host, too many hosts, no hosts and a wrong version', (): void => {
   for (const bad of [
     { version: 1, hosts: [{ host: 'commands' }] },
     { version: 1, hosts: [kills, kills, kills, kills, kills] },
@@ -63,15 +63,15 @@ test('quests/server refuses another host, too many hosts, no hosts and a wrong v
     { version: 2, hosts: [kills] },
   ]) {
     expect((): unknown =>
-      parsePlatformDataSection('quests/server', bad),
+      parsePlatformDataSection('server/quest', bad),
     ).toThrow()
   }
 })
 
-test('the quest family switches on from quests/server and owns the four quest hosts', (): void => {
+test('the quest family switches on from server/quest and owns the four quest hosts', (): void => {
   for (const host of QUEST_HOSTS) {
     expect(primitiveOfHost(host)).toBe('quest')
   }
-  expect(on(new Map([['quests/server', section]]))).toContain('quest')
+  expect(on(new Map([['server/quest', section]]))).toContain('quest')
   expect(on(new Map())).not.toContain('quest')
 })

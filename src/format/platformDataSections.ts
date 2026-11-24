@@ -13,6 +13,8 @@ import { ClientPlanSchema, type ClientPlan } from './clientPlan.ts';
 import { ServerPlanSchema } from './server-plan.ts';
 import { QuestServerSchema } from './quest-server.ts';
 import type { QuestServer } from './quest-server.ts';
+import { ServerHostsSchema } from './server-hosts.ts';
+import type { ServerHosts } from './server-hosts.ts';
 import type { ServerPlan } from './server-plan.ts';
 import { SpawnScriptsSchema, type SpawnScriptRows } from './spawnScripts.ts';
 import { WorldScenesSchema, type WorldScenesSection } from './worldScenes.ts';
@@ -59,7 +61,10 @@ export interface PlatformDataSections {
   'client/plan': ClientPlan;
   /** SHARD-COMPAT HS6b: the server's own copy of the feature rows, so `client/plan` stays the page's. */
   'server/plan': ServerPlan;
-  'quests/server': QuestServer;
+  'server/quest': QuestServer;
+  'server/riding': ServerHosts;
+  'server/boss': ServerHosts;
+  'server/patrol': ServerHosts;
   'view/modules': ViewModuleRow[];
   'held/arms': HeldArmsRows;
   'held/gear': HeldGearRows;
@@ -102,7 +107,10 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'look/keyed-sky': { schema: KEYED_SKY },
   'client/plan': { schema: ClientPlanSchema },
   'server/plan': { schema: ServerPlanSchema },
-  'quests/server': { schema: QuestServerSchema },
+  'server/quest': { schema: QuestServerSchema },
+  'server/riding': { schema: ServerHostsSchema },
+  'server/boss': { schema: ServerHostsSchema },
+  'server/patrol': { schema: ServerHostsSchema },
   'view/modules': { schema: ViewModulesSchema },
   'held/arms': { schema: HeldArmsSchema },
   'held/gear': { schema: HeldGearSchema },
