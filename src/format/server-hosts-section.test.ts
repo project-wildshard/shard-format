@@ -47,3 +47,19 @@ test('a native plan may name no host', (): void => {
   })
   expect(plan.features).toEqual([])
 })
+
+test('server/world holds a native plan without its kind and hosts, at version 1', (): void => {
+  const world = {
+    version: 1,
+    level: { speed: 5, ground: { size: 500, height: 0 } },
+    terrain: { kind: 'bake-ground' },
+    navigation: 'shard',
+    entries: { walk: { lanes: 23 } },
+    collision: { resolution: 256 },
+  }
+  expect(parsePlatformDataSection('server/world', world)).toEqual(world)
+  expect(ACCEPTED_SECTION_VERSIONS['server/world']).toEqual([1])
+  expect((): unknown =>
+    parsePlatformDataSection('server/world', { ...world, features: [] }),
+  ).toThrow()
+})

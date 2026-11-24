@@ -65,6 +65,7 @@ const DATA_SECTION_NAMES: Readonly<Record<keyof PlatformDataSections, true>> = {
   "server/riding": true,
   "server/boss": true,
   "server/patrol": true,
+  "server/world": true,
   "view/modules": true,
   "held/arms": true,
   "held/gear": true,

@@ -14,3 +14,6 @@ Ratchet fix: the section owns its four rows in `quest-server.ts`; `nativeAssembl
 FP16d: `quests/server` renamed `server/quest` (unreleased, so no file carries the old name) to sit with `server/riding`,
 `server/boss` and `server/patrol`, each a family's host rows (projectable `{ host }` rows; the engine admits them with the
 plan's row schemas, as HS6b's `server/plan`). A native plan may now name no host.
+
+FP21: `server/world` holds the native world's non-host settings (level, terrain, navigation, bake, collision, entries,
+boot, field); with the family sections it replaces the plan file. Server-class files stay server class (coordinator default).

@@ -44,6 +44,10 @@
       "hosts": ["server serverPlan"],
       "note": "SHARD-COMPAT HS6b: the server's copy of the feature rows; engine's seam (`src/server/game/shardfile/serverPlan.ts`) reads it, falling back to `client/plan` for a file without one until the roll."
     },
+    "server/world": {
+      "hosts": ["server prepareNativeAssembly"],
+      "note": "FORMAT-PRUNE FP21: a native world's level, terrain, navigation, bake, collision, entry walks, boot and field; with the family sections it replaces server/native-assembly.json."
+    },
     "server/riding": {
       "hosts": ["server prepareNativeAssembly"],
       "note": "FORMAT-PRUNE FP16d: the riding family's server hosts, the native plan's own rows; engine's native world stands them where its plan names none."

@@ -13,6 +13,7 @@ import type { ClientPlan } from './clientPlan.ts';
 import type { ServerPlan } from './server-plan.ts';
 import type { QuestServer } from './quest-server.ts';
 import type { ServerHosts } from './server-hosts.ts';
+import type { ServerWorld } from './server-world.ts';
 import type { NativeSweptPolicyRows } from './items.ts';
 import type { ReturnModuleRow, ViewModuleRow } from './scriptContract.ts';
 import type { WorldScenesSection } from './worldScenes.ts';
@@ -73,6 +74,8 @@ export interface PlatformSections {
   'server/riding': ServerHosts;
   'server/boss': ServerHosts;
   'server/patrol': ServerHosts;
+  /** FORMAT-PRUNE FP21: a native world's own settings, beside its family sections; it ships no plan file. */
+  'server/world': ServerWorld;
   'held/arms': HeldArmsRows;
   'held/gear': HeldGearRows;
   'held/finishes': HeldFinishesRows;

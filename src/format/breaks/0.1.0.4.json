@@ -64,6 +64,10 @@
     {
       "path": "./primitives#OUT_OF_SCOPE_HOSTS",
       "noFileChange": "FP16 (OF17b3): the four quest hosts join the new quest family (a new optional server/quest section); the list of hosts no family owns shrinks, every admitted file still admits, none must carry the section"
+    },
+    {
+      "path": "./runtime-hosts.json#json",
+      "noFileChange": "FP16d/FP21: new optional server/riding, server/boss, server/patrol and server/world sections (a native world's family hosts and settings); every admitted file still admits, none must carry them"
     }
   ]
 }

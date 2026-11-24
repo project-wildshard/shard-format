@@ -103,6 +103,7 @@ and nothing else. A **plain value** section holds its own schema's value, define
 | `server/plan` | `wildshard:server/plan@1` | plain value | `serverPlan` (server) |
 | `server/quest` | `wildshard:server/quest@1` | plain value | `prepareNativeAssembly` (server) |
 | `server/riding` | `wildshard:server/riding@1` | plain value | `prepareNativeAssembly` (server) |
+| `server/world` | `wildshard:server/world@1` | plain value | `prepareNativeAssembly` (server) |
 | `sim/bodies` | `wildshard:sim/bodies@1` | plain value | `DeclaredBodyOps` (server), `DeclaredBodyOpsSchema` (shard-format) |
 | `sim/client-channels` | `wildshard:sim/client-channels@1` | root `clientChannels` | `ClientScriptViews` (page) |
 | `sim/client-scripts` | `wildshard:sim/client-scripts@1` | root `clientScripts` | `createShardfileClientScripts` (page) |

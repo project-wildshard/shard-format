@@ -15,6 +15,8 @@ import { QuestServerSchema } from './quest-server.ts';
 import type { QuestServer } from './quest-server.ts';
 import { ServerHostsSchema } from './server-hosts.ts';
 import type { ServerHosts } from './server-hosts.ts';
+import { ServerWorldSchema } from './server-world.ts';
+import type { ServerWorld } from './server-world.ts';
 import type { ServerPlan } from './server-plan.ts';
 import { SpawnScriptsSchema, type SpawnScriptRows } from './spawnScripts.ts';
 import { WorldScenesSchema, type WorldScenesSection } from './worldScenes.ts';
@@ -65,6 +67,7 @@ export interface PlatformDataSections {
   'server/riding': ServerHosts;
   'server/boss': ServerHosts;
   'server/patrol': ServerHosts;
+  'server/world': ServerWorld;
   'view/modules': ViewModuleRow[];
   'held/arms': HeldArmsRows;
   'held/gear': HeldGearRows;
@@ -111,6 +114,7 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'server/riding': { schema: ServerHostsSchema },
   'server/boss': { schema: ServerHostsSchema },
   'server/patrol': { schema: ServerHostsSchema },
+  'server/world': { schema: ServerWorldSchema },
   'view/modules': { schema: ViewModulesSchema },
   'held/arms': { schema: HeldArmsSchema },
   'held/gear': { schema: HeldGearSchema },
