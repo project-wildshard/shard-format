@@ -60,6 +60,22 @@
     {
       "path": "./deprecations#manifest.minimap.image",
       "migration": "fp34-manifest-moved-words"
+    },
+    {
+      "path": "./heldFinishes#HeldFinishesSchema.rows{v}.weapon",
+      "noFileChange": "FP22d: a held weapon slot also accepts declared.weapon.<id> beside the closed names (a widening); every file that validated still validates, no shard file field changes"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.bow.slot",
+      "noFileChange": "FP22d: a held weapon slot also accepts declared.weapon.<id> beside the closed names (a widening); every file that validated still validates, no shard file field changes"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.firearm.slot",
+      "noFileChange": "FP22d: a held weapon slot also accepts declared.weapon.<id> beside the closed names (a widening); every file that validated still validates, no shard file field changes"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.launcher.slot",
+      "noFileChange": "FP22d: a held weapon slot also accepts declared.weapon.<id> beside the closed names (a widening); every file that validated still validates, no shard file field changes"
     }
   ]
 }
