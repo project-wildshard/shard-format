@@ -93,6 +93,23 @@ const tryGit=(cwd,args,env=process.env)=>spawnSync('git',args,{cwd,env,encoding:
 /** A ref lock another git process holds or just moved: worktrees share refs, so two lands fetching main at once race
  * for refs/remotes/origin/main ("cannot lock ref ...: is at X but expected Y", engine run 43332891983), and any git
  * may hold packed-refs.lock for a moment. Only these are retried; every other git failure stops as before. */
+/** A refused main push's reason for its STOP receipt (J505, meta QA-11-23-b): the hook's `X`, RED, STUCK or remote
+ * rejection line (with the line after it, or the last thrown error, when it ends in a colon), else the last error,
+ * else the last line. Never empty: a bare "refused:" sent the coordinator to read the log.
+ * @param {string} stdout @param {string} stderr @param {number|null} status @returns {string} */
+export function pushStopCause(stdout,stderr,status){
+ const lines=`${stderr}\n${stdout}`.split('\n')
+  // oxlint-disable-next-line no-control-regex -- strips terminal colour codes.
+  .map(line=>line.replaceAll(/\u001B\[[0-9;]*m/gu,'').trim())
+  .filter(line=>line!==''&&!/^(?:To |hint: |error: failed to push some refs)/u.test(line));
+ const thrown=lines.findLast(line=>/^(?:[A-Z]\w*)?Error: /u.test(line));
+ const at=lines.findIndex(line=>/^X |(?:^|\s)RED(?:\s|$)|STUCK|\[(?:remote )?rejected\]/u.test(line));
+ const head=at===-1?undefined:lines[at];
+ const pick=head===undefined?thrown??lines.at(-1)
+  :head.endsWith(':')?`${head} ${thrown??lines[at+1]??''}`.trim():head;
+ return (pick===undefined||pick===''?`git push exited ${String(status)} with no output`:pick).slice(0,300);
+}
+
 export const REF_LOCK=/cannot lock ref|Unable to create '[^']*\.lock': File exists/u;
 const LOCK_WAITS_MS=[200,400,800,1600];
 /** tryGit, tried again after a short backoff while git's only complaint is a ref lock (REF_LOCK). Only for git
@@ -676,13 +693,16 @@ class Landing{
   // LS3 (J258): the pre-push knows this is land's main push and of which kind (.githooks/run-checks.mjs).
   const env={...this.env,WS_LAND_MAIN_PUSH:`${carried?'carried':'exact'}:${head}`};
   if(push)Reflect.deleteProperty(env,'WS_LAND_MAIN_PUSH');
-  const result=spawnSync('git',args,{cwd:this.root,env,encoding:'utf8',stdio:['ignore','pipe','inherit']});
+  // The hook writes to stderr: keep it for the STOP receipt's cause, and still show it in the land log.
+  const result=spawnSync('git',args,{cwd:this.root,env,encoding:'utf8',stdio:['ignore','pipe','pipe'],maxBuffer:64<<20});
+  process.stderr.write(result.stderr??'');
   if(result.status===0)return 'landed';
   // A lost race is main having moved; anything else (a red pre-push) stops.
   const now=this.fetchMain();
   if(now!==main&&!isAncestor(this.root,now,head))return 'moved';
-  this.receipt(`STOP main push of ${short(head)} refused: ${result.stdout.trim().split('\n').slice(-2).join(' ')}`);
-  throw new StopError(`main push of ${short(head)} failed and main did not move: ${result.stdout.trim()}\nA red pre-push names its failing check above; fix forward and run land again.`);
+  const cause=pushStopCause(result.stdout??'',result.stderr??'',result.status);
+  this.receipt(`STOP main push of ${short(head)} refused: ${cause}`);
+  throw new StopError(`main push of ${short(head)} failed and main did not move: ${cause}\nA red pre-push names its failing check above; fix forward and run land again.`);
  }
 
  async run(){

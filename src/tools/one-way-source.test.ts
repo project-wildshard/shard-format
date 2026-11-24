@@ -14,9 +14,14 @@ import type { SourceFile } from './one-way-source.ts'
 // eslint-disable-next-line typescript/strict-void-return -- Node execFile returns a child while its callback supplies the result.
 const execute = promisify(execFile)
 const lane = process.env['WS_LANE_NAME'] ?? 'one-format-tests'
-const scratch = scratchDir(lane, 'Pinned inventory test fixtures', {
-  env: { ...process.env, WS_LANE_NAME: lane },
-})
+// Its own folder, never the lane's: a lane's tmp/<lane> (land logs) has no .owner and refused the push (J505).
+const scratch = scratchDir(
+  `${lane}-one-way-source`,
+  'Pinned inventory test fixtures',
+  {
+    env: { ...process.env, WS_LANE_NAME: lane },
+  },
+)
 const owned: string[] = []
 
 afterEach(async (): Promise<void> => {
