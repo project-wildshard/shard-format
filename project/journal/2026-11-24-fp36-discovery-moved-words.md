@@ -18,3 +18,5 @@ Mossgate) the build puts its audio and loadout nowhere else. The writer must lif
 stop writing them; otherwise every 0.1.0.5 build of such a shard is refused.
 
 Tests: `format-migration-manifest.test.ts`; `src/format` 1,215 green, lock, gate, lint ratchet.
+
+Rebased on FP34 at e8b3f7b (11-24): its chain step has FE11 goldens now; the sharddev writer is sharddev `02a85369`.
