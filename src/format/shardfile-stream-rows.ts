@@ -8,6 +8,7 @@
 
 import { cookMountPath, readCookData } from './cook-data.ts'
 import { requireCookPreparation } from './cook-preparation.ts'
+import { deprecationReport } from './deprecations.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { validatePlatformFile } from './platformFileFamilies.ts'
 import { decisionModuleContracts } from './scriptContract.ts'
@@ -16,6 +17,7 @@ import { inspectFacts, ktx2Text } from './shardfile-stream-facts.ts'
 import { outputBlobKind, readCanonicalJson } from './shardfileValidation.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
+import type { DeprecationReport } from './deprecations.ts'
 import type { OutputIndex } from './outputIndex.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
 import type { FactsMember } from './shardfile-stream-facts.ts'
@@ -232,5 +234,29 @@ function replayPacksToInventory(
   replayInventory(replay, index)
 }
 
+/** The deprecation report, with `cook.json` as the folder validator passes it (FORMAT-PRUNE FP23's gate: without it
+ * the FE7 corpus count never saw `cook.legacy-data`). `cookSteps` already checked the cook. */
+function streamedDeprecations(
+  replay: Readonly<Replay>,
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
+  shard: Readonly<{
+    index: OutputIndex
+    sections: ReadonlyMap<string, unknown>
+  }>,
+  warnings: readonly string[],
+): DeprecationReport {
+  const listed = shard.index.cook
+  const cook =
+    listed === undefined
+      ? undefined
+      : readCanonicalJson(listedBytes(replay, listed))
+  return deprecationReport({ ...shard, cook }, warnings)
+}
+
 export type { KeptMember, Replay }
-export { listedBytes, replayBeforePacks, replayPacksToInventory }
+export {
+  listedBytes,
+  replayBeforePacks,
+  replayPacksToInventory,
+  streamedDeprecations,
+}

@@ -14,7 +14,6 @@
 // packs (shardfile-stream-packs.ts). Hence `open`: a host passes a function that opens the stored object afresh.
 
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
-import { deprecationReport } from './deprecations.ts'
 import { assertSectionSides } from './feature-sides.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
@@ -33,6 +32,7 @@ import {
   listedBytes,
   replayBeforePacks,
   replayPacksToInventory,
+  streamedDeprecations,
 } from './shardfile-stream-rows.ts'
 import { walkTar } from './shardfile-stream-tar.ts'
 import { readCanonicalJson } from './shardfileValidation.ts'
@@ -197,18 +197,6 @@ async function walkStored(
   }
 }
 
-/** `cook.json`'s parsed JSON for the deprecation report, as the folder validator passes it (FORMAT-PRUNE FP23's
- * gate: without it the FE7 corpus count never saw `cook.legacy-data`). `cookSteps` already checked it. */
-function streamedCook(
-  replay: Readonly<Replay>,
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
-  index: OutputIndex,
-): unknown {
-  return index.cook === undefined
-    ? undefined
-    : readCanonicalJson(listedBytes(replay, index.cook))
-}
-
 /** `shard.json`, read as `validateShardfileFolder` reads it: bounded, canonical, then parsed. */
 function readIndex(replay: Readonly<Replay>): OutputIndex {
   const shardJson = replay.members.get('shard.json')
@@ -297,10 +285,7 @@ async function validateShardfileStream(
     shard,
     sections,
     scripts,
-    ...deprecationReport(
-      { index, sections, cook: streamedCook(replay, index) },
-      warnings,
-    ),
+    ...streamedDeprecations(replay, { index, sections }, warnings),
     policy: admittedVerdict(shard),
     complete: true,
     pending: [],
