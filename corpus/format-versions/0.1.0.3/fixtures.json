@@ -2,7 +2,7 @@
   "about": "SHARD-COMPAT PR4 (J487): format 0.1.0.3 drops the sdk marker and records preparation, the preparation spec version (step pr4-preparation-marker). No real upload is written at 0.1.0.3 until the SDK moves (Track F), so the fixture is Brasscap's export migrated by the chain; replace it with the first real 0.1.0.3 engine pin.",
   "fixtures": [
     {
-      "chainOf": "corpus/exports/brasscap-mesa"
+      "chainOf": "corpus/legacy/brasscap-mesa-ss3"
     }
   ]
 }

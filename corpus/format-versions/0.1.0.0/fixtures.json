@@ -2,7 +2,7 @@
   "about": "SHARD-COMPAT CP1: real shard files at format 0.1.0.0 (spelled 0.1). Brasscap's export is unprepared (sdk 0.2); the open plot is a prepared engine pin (sdk 0.3, cook version 3), read from ~/.cache/wildshard/pins or engine's pins release. Pine Hollow r5 (production's pointer, 2026-11-21) carries the journal glyph icons shard-format 036b383 retired without a migration; the journal-glyph-images step mends it.",
   "fixtures": [
     {
-      "folder": "corpus/exports/brasscap-mesa"
+      "folder": "corpus/legacy/brasscap-mesa-ss3"
     },
     {
       "pin": {

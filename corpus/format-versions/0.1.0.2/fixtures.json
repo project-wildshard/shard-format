@@ -2,7 +2,7 @@
   "about": "SHARD-COMPAT CP14: format 0.1.0.2 names itself in formatVersion (no version, no layout marker) and drops the four always-empty index fields (FORMAT-PRUNE FP4, FP25). No real upload is written at 0.1.0.2 until the SDK moves (Track F), so the fixture is Brasscap's export migrated by the chain; replace it with the first real 0.1.0.2 engine pin.",
   "fixtures": [
     {
-      "chainOf": "corpus/exports/brasscap-mesa"
+      "chainOf": "corpus/legacy/brasscap-mesa-ss3"
     }
   ]
 }
