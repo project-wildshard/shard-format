@@ -2,6 +2,10 @@
   "version": "0.1.0.4",
   "entries": [
     {
+      "path": "./deprecations#requires.capabilities",
+      "noFileChange": "FP4: requires.capabilities becomes optional (widening; every admitted file still admits) and its deprecation names the in-version repair step fp4-drop-requires-capabilities, as FP3 and FP8 repair inside 0.1.0.1; no file must change"
+    },
+    {
       "path": "./version#SHARDFILE_VERSION",
       "migration": "fp26-save-revision"
     },
