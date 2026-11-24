@@ -17,7 +17,7 @@ for(const name of ['clientNative','questHost','questInteractions','heldMelee','h
 test('native variants, defaults, module revisions and readonly look contracts stay precise',()=>{
  const consumer=resolve('src/format/t4-native-module-consumer.ts');
  let source=`import * as v from 'valibot';
-import {ClientPlayerEnterSchema,ClientHeldMeleeSchema,ClientSpeciesProgramSchema,ClientQuestPageSchema,ClientPopulationSchema,ClientBossTelegraphSchema,ClientHeldBossSchema,ClientSpawnedBossSchema,type ClientHeldMeleeRowsInput,type ClientHeldMeleeRows} from './clientNative';
+import {ClientPlayerEnterSchema,ClientHeldMeleeSchema,ClientSpeciesProgramSchema,ClientQuestPageSchema,ClientBossTelegraphSchema,ClientHeldBossSchema,ClientSpawnedBossSchema,type ClientHeldMeleeRowsInput,type ClientHeldMeleeRows} from './clientNative';
 import {ToonArmsLookSchema,HeldArmsSchema} from './heldArms';
 import {ScriptV2ContractSchema,ViewModuleSchema,type ScriptV2ContractRows} from './scriptContract';
 import {SCRIPT_V2_REVISIONS} from './scriptAdmissionV2';
@@ -27,7 +27,7 @@ import type {QuestHostRow} from './questHost';
 import {PlumbingSchema} from './plumbing';
 import {TOON_DAY_PRESET,type ToonDayRow} from './toonLook';
 import type {HullSpeciesRows} from './speciesLooks';
-export const variants=v.variant('kind',[ClientPlayerEnterSchema,ClientHeldMeleeSchema,ClientSpeciesProgramSchema,ClientQuestPageSchema,ClientPopulationSchema,ClientBossTelegraphSchema,ClientHeldBossSchema,ClientSpawnedBossSchema]);
+export const variants=v.variant('kind',[ClientPlayerEnterSchema,ClientHeldMeleeSchema,ClientSpeciesProgramSchema,ClientQuestPageSchema,ClientBossTelegraphSchema,ClientHeldBossSchema,ClientSpawnedBossSchema]);
 export const authored:ClientHeldMeleeRowsInput={kind:'held.melee',item:'sword',stage:'kit',targets:'scan'};
 export const admitted:ClientHeldMeleeRows=v.parse(ClientHeldMeleeSchema,authored);
 export const composed:boolean=admitted.composed;

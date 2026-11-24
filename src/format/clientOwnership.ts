@@ -9,8 +9,8 @@ import { pageDrawsDeclaredLooks, rigLookRules } from './rig-looks.ts';
 export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<string, unknown>): readonly string[] {
   const raw = sections.get('client/plan'), rigs = rigLookRules(source.rows.looks, sections);
   const features = raw === undefined ? [] : parseClientPlan(raw).features;
-  const page = hasDeclaredClientPage(source), native = features.some(row => row.kind === 'population.homes');
-  if (!page && !native) return rigs;
+  const page = hasDeclaredClientPage(source);
+  if (!page) return rigs;
   // OF19d1: a page drawing its declared bodies from their looks needs no species program
   const errors: string[] = [...rigs], program = !pageDrawsDeclaredLooks(source, sections.get('sim/runtime-plan'), features);
   if (!page || source.runtime !== null) errors.push('Native client features require their typed data page owner');

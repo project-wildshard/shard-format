@@ -4,8 +4,6 @@ import { MarkedBossPresentationSchema } from './bossProfiles.ts';
 
 const finite = v.pipe(v.number(), v.finite());
 const id = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
-const count = v.pipe(finite, v.integer(), v.minValue(0), v.maxValue(4096));
-const ids = v.pipe(v.array(id), v.maxLength(1024), v.check(rows => new Set(rows).size === rows.length, 'Unique owner ids'));
 const home = v.strictObject({ x: finite, y: finite, z: finite, r: v.pipe(finite, v.minValue(Number.MIN_VALUE)) });
 const capture = v.union([
   v.strictObject({ flag: id }), v.strictObject({ action: id }),
@@ -40,17 +38,6 @@ export const ClientQuestPageSchema: v.StrictObjectSchema<{ readonly kind: v.Gene
   promptOrder: v.picklist(['page-npc', 'npc-page']),
   endpoints: v.optional(v.pipe(v.array(v.strictObject({ mover: id, stage: id, toast: v.exactOptional(v.pipe(v.string(), v.maxLength(4096))) })), v.maxLength(64)), []),
   capture: v.optional(v.pipe(v.record(id, v.pipe(v.array(capture), v.maxLength(64))), v.maxEntries(64)), {}),
-});
-/** Native body allocation/refill policy; placement rows retain their original
- * identities in sim/runtime-plan rather than introducing a second roster. */
-export const ClientPopulationSchema: v.StrictObjectSchema<{ readonly kind: v.GenericSchema<ClientPopulationRowsInput['kind'], ClientPopulationRows['kind']>; readonly system: v.GenericSchema<ClientPopulationRowsInput['system'], ClientPopulationRows['system']>; readonly held: v.ExactOptionalSchema<v.GenericSchema<Exclude<ClientPopulationRowsInput['held'], undefined>, Exclude<ClientPopulationRows['held'], undefined>>, undefined>; readonly bodyHomes: v.OptionalSchema<v.GenericSchema<Exclude<ClientPopulationRowsInput['bodyHomes'], undefined>, Exclude<ClientPopulationRows['bodyHomes'], undefined>>, readonly []>; readonly holds: v.ExactOptionalSchema<v.GenericSchema<Exclude<ClientPopulationRowsInput['holds'], undefined>, Exclude<ClientPopulationRows['holds'], undefined>>, undefined>; readonly groups: v.OptionalSchema<v.GenericSchema<Exclude<ClientPopulationRowsInput['groups'], undefined>, Exclude<ClientPopulationRows['groups'], undefined>>, Record<never, never>>; readonly witness: v.GenericSchema<ClientPopulationRowsInput['witness'], ClientPopulationRows['witness']>; }, undefined> = v.strictObject({ kind: v.literal('population.homes'), system: id,
-  held: v.exactOptional(v.strictObject({ order: ids, settle: id,
-    placements: v.optional(v.pipe(v.array(v.strictObject({ id, fromY: finite, y: finite })), v.maxLength(1024)), []),
-  })),
-  bodyHomes: v.optional(v.pipe(v.array(v.strictObject({ id, home })), v.maxLength(1024)), []),
-  holds: v.exactOptional(v.strictObject({ system: id, rows: v.pipe(v.array(v.strictObject({ home: count, field: id, until: id })), v.maxLength(1024)) })),
-  groups: v.optional(v.pipe(v.record(id, ids), v.maxEntries(64)), {}),
-  witness: v.union([v.strictObject({ groups: ids }), v.strictObject({ kinds: ids })]),
 });
 /** Browser presentation borrows the actual encounter definition, profile,
  * director and victory policy already admitted by sim/runtime-plan. */
@@ -200,80 +187,6 @@ interface ClientQuestPageRowsFields {
     }))[]>;
 }
 export type ClientQuestPageRows = { [Key in keyof ClientQuestPageRowsFields]: ClientQuestPageRowsFields[Key] };
-interface ClientPopulationRowsInputFields {
-    kind: 'population.homes';
-    system: string;
-    held?: {
-        order: (string)[];
-        settle: string;
-        placements?: ({
-            id: string;
-            fromY: number;
-            y: number;
-        })[] | undefined;
-    };
-    bodyHomes?: ({
-        id: string;
-        home: {
-            x: number;
-            y: number;
-            z: number;
-            r: number;
-        };
-    })[] | undefined;
-    holds?: {
-        system: string;
-        rows: ({
-            home: number;
-            field: string;
-            until: string;
-        })[];
-    };
-    groups?: Record<string, (string)[]> | undefined;
-    witness: ({
-        groups: (string)[];
-    }) | ({
-        kinds: (string)[];
-    });
-}
-export type ClientPopulationRowsInput = { [Key in keyof ClientPopulationRowsInputFields]: ClientPopulationRowsInputFields[Key] };
-interface ClientPopulationRowsFields {
-    kind: 'population.homes';
-    system: string;
-    held?: {
-        order: (string)[];
-        settle: string;
-        placements: ({
-            id: string;
-            fromY: number;
-            y: number;
-        })[];
-    };
-    bodyHomes: ({
-        id: string;
-        home: {
-            x: number;
-            y: number;
-            z: number;
-            r: number;
-        };
-    })[];
-    holds?: {
-        system: string;
-        rows: ({
-            home: number;
-            field: string;
-            until: string;
-        })[];
-    };
-    groups: Record<string, (string)[]>;
-    witness: ({
-        groups: (string)[];
-    }) | ({
-        kinds: (string)[];
-    });
-}
-export type ClientPopulationRows = { [Key in keyof ClientPopulationRowsFields]: ClientPopulationRowsFields[Key] };
 interface ClientBossTelegraphRowsInputFields {
     kind: 'boss.telegraph';
     actor: string;

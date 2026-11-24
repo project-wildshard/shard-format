@@ -6,9 +6,10 @@ const id = v.pipe(v.string(), v.minLength(1), v.maxLength(128))
 const real = v.pipe(v.number(), v.minValue(0), v.maxValue(10000))
 const FEWEST_MEMBERS = 1
 const MOST_MEMBERS = 256
-const group = v.exactOptional(id)
-const members = v.exactOptional(
-  v.pipe(v.array(id), v.minLength(FEWEST_MEMBERS), v.maxLength(MOST_MEMBERS)),
+const members = v.pipe(
+  v.array(id),
+  v.minLength(FEWEST_MEMBERS),
+  v.maxLength(MOST_MEMBERS),
 )
 /** Whether no two trail rows share a system id. */
 function uniqueIds(rows: readonly Readonly<{ id: string }>[]): boolean {
@@ -17,21 +18,10 @@ function uniqueIds(rows: readonly Readonly<{ id: string }>[]): boolean {
       .size === rows.length
   )
 }
-/** Whether every trail row names exactly one of its group and its members. */
-function oneSource(
-  rows: readonly Partial<Readonly<Record<'group' | 'members', unknown>>>[],
-): boolean {
-  for (const row of rows) {
-    if ((row.group === undefined) === (row.members === undefined)) {
-      return false
-    }
-  }
-  return true
-}
-/** Client-only trails follow actual native population groups in their local
- * world frame. Looks and timing are data; there are no owner callbacks. A row
- * names a page population's group, or (ONE-FORMAT OF29e7a) the declared spawns
- * it follows as `members`; exactly one. */
+/** Client-only trails follow actual native bodies in their local world frame.
+ * Looks and timing are data; there are no owner callbacks. A row names the
+ * declared spawns it follows as `members` (ONE-FORMAT OF29e7a); the page
+ * population group went with `population.homes` (FORMAT-PRUNE FP43). */
 export const ClientTrailsSchema: v.StrictObjectSchema<
   {
     readonly kind: v.GenericSchema<
@@ -50,7 +40,6 @@ export const ClientTrailsSchema: v.StrictObjectSchema<
     v.array(
       v.strictObject({
         id,
-        group,
         members,
         library: id,
         look: id,
@@ -71,10 +60,6 @@ export const ClientTrailsSchema: v.StrictObjectSchema<
     v.check<ClientTrailsRows['rows'], string>(
       uniqueIds,
       'Unique trail systems',
-    ),
-    v.check<ClientTrailsRows['rows'], string>(
-      oneSource,
-      'A trail names its group or its members',
     ),
   ),
 })
@@ -102,8 +87,7 @@ interface ClientTrailsRowsFields {
   kind: 'fx.trail'
   rows: {
     id: string
-    group?: string
-    members?: string[]
+    members: string[]
     library: string
     look: string
     name: string

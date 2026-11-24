@@ -232,7 +232,6 @@ a `source`, and `content.catalogue` without finishes need none; `species.program
 | `motion.channels` | view | — | `installSceneMotion` | `world/scenes` |
 | `page.life` | view | — | `installClientPageLife` | — |
 | `player.enter` | both | `fallFloor` | `enterClientPlayer`, `installClientPlayerEnter` | — |
-| `population.homes` | view | — | `installClientPopulation` | `sim/runtime-plan`, `sim/scripts` |
 | `population.hull-book` | view | — | `prepareDeclaredHullBookKit` | `actors/species-programs`, `explore/catalogue` |
 | `population.product-creatures` | view | — | — | — |
 | `population.wildlife` | view | — | `clientWildlife`, `installClientWildlife` | — |

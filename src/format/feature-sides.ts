@@ -57,7 +57,6 @@ const CLIENT_FEATURE_SIDES: Readonly<Record<ClientFeatureKind, SideEntry>> =
     'motion.channels': VIEW,
     'page.life': VIEW,
     'player.enter': both('fallFloor'),
-    'population.homes': VIEW,
     'population.hull-book': VIEW,
     'population.product-creatures': VIEW,
     'population.wildlife': VIEW,

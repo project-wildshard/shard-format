@@ -369,10 +369,6 @@
       "page": ["enterClientPlayer", "installClientPlayerEnter"],
       "reads": []
     },
-    "population.homes": {
-      "page": ["installClientPopulation"],
-      "reads": ["sim/runtime-plan", "sim/scripts"]
-    },
     "population.hull-book": {
       "page": ["prepareDeclaredHullBookKit"],
       "reads": ["actors/species-programs", "explore/catalogue"]

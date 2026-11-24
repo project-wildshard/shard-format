@@ -1,5 +1,5 @@
 // ONE-FORMAT OF29e7a: a trail row names the declared spawns it follows (`members`) in place of a page population's group,
-// so Sky Reach's ray wake needs no `population.homes` row to say which bodies are the rays. Exactly one of the two.
+// so Sky Reach's ray wake needs no `population.homes` row. FORMAT-PRUNE FP43 retired that row and its groups: members only.
 import { safeParse } from 'valibot'
 import { expect, test } from 'vitest'
 
@@ -24,10 +24,10 @@ function admits(fields: Readonly<Record<string, unknown>>): boolean {
   }).success
 }
 
-test('a trail names its group or its members, exactly one', (): void => {
-  expect(admits({ group: 'rays' })).toBe(true)
+test('a trail names its members; the page population group is retired (FP43)', (): void => {
   expect(admits({ members: ['far.ray.0', 'far.ray.1'] })).toBe(true)
   expect(admits({})).toBe(false)
+  expect(admits({ group: 'rays' })).toBe(false)
   expect(admits({ group: 'rays', members: ['far.ray.0'] })).toBe(false)
   expect(admits({ members: [] })).toBe(false)
 })

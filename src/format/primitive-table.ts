@@ -58,7 +58,6 @@ const TABLE: readonly Primitive[] = [
       'population.poses',
       'population.reactions',
       'population.settle',
-      'population.homes',
       'population.wildlife',
     ],
   },

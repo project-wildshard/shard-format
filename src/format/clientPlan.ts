@@ -17,7 +17,7 @@ import { isJsonData } from './json.ts';
 import { LightEmittersSchema } from './lightEmitters.ts';
 import { EasedFieldsSchema } from './easedFields.ts';
 import { SceneMotionSchema } from './sceneMotion.ts';
-import { ClientHeldMeleeSchema, ClientSpeciesProgramSchema, ClientQuestPageSchema, ClientPopulationSchema, ClientHeldBossSchema, ClientSpawnedBossSchema, ClientPlayerEnterSchema, ClientBossTelegraphSchema } from './clientNative.ts';
+import { ClientHeldMeleeSchema, ClientSpeciesProgramSchema, ClientQuestPageSchema, ClientHeldBossSchema, ClientSpawnedBossSchema, ClientPlayerEnterSchema, ClientBossTelegraphSchema } from './clientNative.ts';
 
 const finite=v.pipe(v.number(),v.finite()),rgb=v.tuple([finite,finite,finite]);
 const label=v.pipe(v.string(),v.minLength(1),v.maxLength(512));
@@ -135,7 +135,7 @@ export const ClientFeatureSchema: v.GenericSchema<ClientFeatureInput, ClientFeat
   v.strictObject({ kind: v.literal('world.scenes') }),
   v.strictObject({ kind: v.literal('world.baked'), rows: v.pipe(v.array(BakedTilesSchema), v.minLength(1), v.maxLength(4), v.check(rows => new Set(rows.map(row => row.id)).size === rows.length, 'unique baked tile ids')) }),
   v.strictObject({ kind: v.literal('motion.channels'), rows: SceneMotionSchema }),
-  ClientHeldMeleeSchema, ClientSpeciesProgramSchema, ClientQuestPageSchema, ClientPopulationSchema, ClientTrailsSchema, ClientCuesSchema,
+  ClientHeldMeleeSchema, ClientSpeciesProgramSchema, ClientQuestPageSchema, ClientTrailsSchema, ClientCuesSchema,
   ClientHeldBossSchema, ClientSpawnedBossSchema, ClientPlayerEnterSchema, ClientBossTelegraphSchema,
   v.strictObject({ kind: v.literal('light.emitters'), rows: LightEmittersSchema }),
   v.strictObject({ kind: v.literal('weather.fields'), rows: EasedFieldsSchema, quest: id }),
@@ -207,7 +207,7 @@ export type ClientFeatureInput = { kind: 'strings.register'; } | { kind: 'conten
   | { kind: 'world.scenes'; } | { kind: 'world.baked'; rows: (v.InferInput<typeof BakedTilesSchema>)[]; } | {
   kind: 'motion.channels'; rows: v.InferInput<typeof SceneMotionSchema>; } | v.InferInput<typeof
   ClientHeldMeleeSchema> | v.InferInput<typeof ClientSpeciesProgramSchema> | v.InferInput<typeof
-  ClientQuestPageSchema> | v.InferInput<typeof ClientPopulationSchema> | v.InferInput<typeof ClientTrailsSchema>
+  ClientQuestPageSchema> | v.InferInput<typeof ClientTrailsSchema>
   | v.InferInput<typeof ClientCuesSchema> | v.InferInput<typeof ClientHeldBossSchema> | v.InferInput<typeof
   ClientSpawnedBossSchema> | v.InferInput<typeof ClientPlayerEnterSchema> | v.InferInput<typeof
   ClientBossTelegraphSchema> | { kind: 'light.emitters'; rows: v.InferInput<typeof LightEmittersSchema>; } | {
@@ -271,7 +271,7 @@ export type ClientFeatureRow = { kind: 'strings.register'; } | { kind: 'content.
   boolean; }; })[]; } | { kind: 'world.scenes'; } | { kind: 'world.baked'; rows: (v.InferOutput<typeof
   BakedTilesSchema>)[]; } | { kind: 'motion.channels'; rows: v.InferOutput<typeof SceneMotionSchema>; } |
   v.InferOutput<typeof ClientHeldMeleeSchema> | v.InferOutput<typeof ClientSpeciesProgramSchema> |
-  v.InferOutput<typeof ClientQuestPageSchema> | v.InferOutput<typeof ClientPopulationSchema> |
+  v.InferOutput<typeof ClientQuestPageSchema> |
   v.InferOutput<typeof ClientTrailsSchema> | v.InferOutput<typeof ClientCuesSchema> | v.InferOutput<typeof
   ClientHeldBossSchema> | v.InferOutput<typeof ClientSpawnedBossSchema> | v.InferOutput<typeof
   ClientPlayerEnterSchema> | v.InferOutput<typeof ClientBossTelegraphSchema> | { kind: 'light.emitters'; rows:
