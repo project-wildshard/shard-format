@@ -124,10 +124,7 @@ interface PreparedCookData extends CookPreparation {
 interface SpecCookData extends CookSpecPreparation {
   readonly mounts: readonly CookMount[]
 }
-type CookData =
-  | LegacyCookData
-  | PreparedCookData
-  | SpecCookData
+type CookData = LegacyCookData | PreparedCookData | SpecCookData
 const CookDataSchema: GenericSchema<unknown, CookData> = variant('version', [
   LegacyCookDataSchema,
   PreparedCookDataSchema,

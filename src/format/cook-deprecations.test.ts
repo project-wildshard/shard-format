@@ -27,6 +27,15 @@ test('FP19: cook.json versions 1 and 2 are old cook data', (): void => {
 })
 
 test('FP23: cook.json version 2 is gone; version 1 stays for an unprepared draft until the SDK writes no draft cook', (): void => {
-  expect(() => readCookData({ version: 2, inputHash: '0'.repeat(64), packs: 'whole', fence: [], programs: {}, mounts: [] })).toThrow()
+  expect((): unknown =>
+    readCookData({
+      version: 2,
+      inputHash: '0'.repeat(64),
+      packs: 'whole',
+      fence: [],
+      programs: {},
+      mounts: [],
+    }),
+  ).toThrow()
   expect(readCookData({ version: 1, mounts: [] }).version).toBe(1)
 })
