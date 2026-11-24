@@ -4,6 +4,7 @@
  * `ManifestMetadataSchema` at format 0.1.0.5, and its chain step (`fp34-manifest-moved-words`) lifts the start words into
  * their sections and drops the rest: the herd fields became declared rows in the build, which a copy can't redo. */
 
+import { OLD_POINTER } from './format-migration-prune.ts'
 import { compareShardfileVersions } from './version.ts'
 
 /** The registry's row shape (`deprecations.ts`). */
@@ -59,8 +60,9 @@ const MANIFEST_MOVED_DEPRECATIONS: readonly ManifestDeprecation[] = MOVED.map(
 /** FORMAT-PRUNE FP34: the first format whose level manifest carries none of the moved words, nor the old pointer. */
 const NO_MOVED_WORDS = '0.1.0.5'
 const NONE = 0
+// The old pointer's spelling is FP8's chain step's (format's one-way `format.grid-pointer-references` counts each one).
 const GONE_WORDS: readonly string[] = [
-  'gridShardfile',
+  OLD_POINTER,
   ...MOVED.map(([word]: readonly [string, string]): string => word),
 ]
 

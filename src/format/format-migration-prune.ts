@@ -144,4 +144,4 @@ const schemaSource: FormatMigration = {
     staleSchemaBlocks(shard).length > NONE,
 }
 
-export { dropRuntimeTrust, schemaSource, shardfilePointer }
+export { OLD_POINTER, dropRuntimeTrust, schemaSource, shardfilePointer }
