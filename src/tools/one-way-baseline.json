@@ -10,7 +10,7 @@
     }
   ],
   "counts": {
-    "engine.kind-literals": 10,
+    "engine.kind-literals": 1,
     "engine.kit-registrations": 0,
     "engine.look-fallbacks": 0,
     "engine.temperament-guesses": 0,
