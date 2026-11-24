@@ -11,7 +11,8 @@
   "fp10-schema-source": "91cfd2e547ffb47e39c168fab600a476b435b7e297a26a66a5fb0d0de9ca67a7",
   "fp4-drop-requires-capabilities": "597cdfca873d46681aafd83e4684e2aad4ca439931510aaa02edfad2c0f5baf6",
   "fp33-drop-requires-sdk": "7748d88994a4cfe7af01f41b324f6cb881a5d85ac05199289ee1cb4242d24810",
-  "fp43-homes-to-members": "7748d88994a4cfe7af01f41b324f6cb881a5d85ac05199289ee1cb4242d24810"
+  "fp43-homes-to-members": "7748d88994a4cfe7af01f41b324f6cb881a5d85ac05199289ee1cb4242d24810",
+  "fp34-manifest-moved-words": "07ca70e7f663ef15956cd0dcfabe0a8f7b0acf16fea0ce82c90f4e733cc5f23a"
  },
  "0.1.0.0 open-plot-saltwind-lighthouse": {
   "fp6-four-part-version": "7f08ef5aede8db707b5776c02988e5852ac373d450d484131462f32ae6ea11d1",
@@ -25,7 +26,8 @@
   "fp10-schema-source": "bec02fee42650d24098d423a9c6724fdfb23075090302d8487752068676d046b",
   "fp4-drop-requires-capabilities": "cf1604845abd7c1b78b7a75cab9bec71b3bd7d7720b0e95aa11815a346c70402",
   "fp33-drop-requires-sdk": "9169e7d501ab54795d96672a18df352e6df0fc5a35249f1482d638ebe615b3f3",
-  "fp43-homes-to-members": "9169e7d501ab54795d96672a18df352e6df0fc5a35249f1482d638ebe615b3f3"
+  "fp43-homes-to-members": "9169e7d501ab54795d96672a18df352e6df0fc5a35249f1482d638ebe615b3f3",
+  "fp34-manifest-moved-words": "9169e7d501ab54795d96672a18df352e6df0fc5a35249f1482d638ebe615b3f3"
  },
  "0.1.0.0 pine-hollow": {
   "fp6-four-part-version": "021ae8086891b87e42aa35bab18958849b667442f22f83201a000d86b4910518",
@@ -39,7 +41,8 @@
   "fp10-schema-source": "d563269e151fb71e28186a678c401cf0cbb1217759ff7b53dd0280c4173ca194",
   "fp4-drop-requires-capabilities": "b06c13005cb524c048eff0bd0c41a7d68ad9ac477fb339d177f1ba623e9f379e",
   "fp33-drop-requires-sdk": "a5333cc0dfcaa4587ff4c2c630b8bad4ff7c1f17a814c0e931d0f8d292c7d39d",
-  "fp43-homes-to-members": "a5333cc0dfcaa4587ff4c2c630b8bad4ff7c1f17a814c0e931d0f8d292c7d39d"
+  "fp43-homes-to-members": "a5333cc0dfcaa4587ff4c2c630b8bad4ff7c1f17a814c0e931d0f8d292c7d39d",
+  "fp34-manifest-moved-words": "1acc0f36ff8e4c70c6795869e170532bc48667721413630b2a7344bf3910c51e"
  },
  "0.1.0.1 sunscar-dunes": {
   "cp14-format-version": "dd9dc7c0160756f64dd59c471e7345389366a33463d1f696f2a31fbe32c26aa3",
@@ -49,7 +52,8 @@
   "fp10-schema-source": "3fe73f5c39d522668f2480bd86730056b441e41e3f15a71120cbdb21947419a1",
   "fp4-drop-requires-capabilities": "88cc41b0919f54a90ad2b90c1337e2391fd222a5a9cf26eca37c23c6cc262b39",
   "fp33-drop-requires-sdk": "b8a0de34438cdfbdd10a1d75c7a28a9ebd4adf8368054186a9359d545d5e97c1",
-  "fp43-homes-to-members": "1c81e7edee3ee19d93ec6d526a6364868ab5b20701f893a3aa49ffca4b3972ae"
+  "fp43-homes-to-members": "1c81e7edee3ee19d93ec6d526a6364868ab5b20701f893a3aa49ffca4b3972ae",
+  "fp34-manifest-moved-words": "70b02572467baa87eda580f807f05a3f3705ecf4efde1e1d303742a0d25fa959"
  },
  "0.1.0.1 nalati-grasslands": {
   "fp8-shardfile-pointer": "92bf5f128162b2377c85f5d9c11ac579ea0f185a8f826d717b711e2ea7bf059a",
@@ -61,7 +65,8 @@
   "fp10-schema-source": "a12c0b8d17c6a512c867805d929e74378651cef43ae8c7f997cf3e0e5d9a090c",
   "fp4-drop-requires-capabilities": "5943758753589a0e307eb38d2f2b4256c75af3749f24e734dc548772fd87b120",
   "fp33-drop-requires-sdk": "014b9154977d446791b0977292d3ffbe3cf8ab04e74c8523b26bff828e9b5e5e",
-  "fp43-homes-to-members": "014b9154977d446791b0977292d3ffbe3cf8ab04e74c8523b26bff828e9b5e5e"
+  "fp43-homes-to-members": "014b9154977d446791b0977292d3ffbe3cf8ab04e74c8523b26bff828e9b5e5e",
+  "fp34-manifest-moved-words": "a206de59889b9f6e75c394a6ff700a86ef5360555de771447b64ad0fcad73d76"
  },
  "0.1.0.1 pine-hollow": {
   "fp8-shardfile-pointer": "cb42f609bdc2f7dbed09343ecdfa4a6b77d5ba23e33c7debbd905224f1ae639b",
@@ -73,7 +78,8 @@
   "fp10-schema-source": "32cf09979a899df664c09ad3473ece5af41b3d3ec63482e1dae337518887bf63",
   "fp4-drop-requires-capabilities": "a2625362bb53e1f019680dcfd44d6992570bcbf950ae8785c7c6121d11b95a7b",
   "fp33-drop-requires-sdk": "684a8eac8f34fb56e0abbf156df7c900d7d2dcd1897a6235fa6e4e823461896e",
-  "fp43-homes-to-members": "684a8eac8f34fb56e0abbf156df7c900d7d2dcd1897a6235fa6e4e823461896e"
+  "fp43-homes-to-members": "684a8eac8f34fb56e0abbf156df7c900d7d2dcd1897a6235fa6e4e823461896e",
+  "fp34-manifest-moved-words": "fe5ec58c5b23d28bd2bbbfe4132fafeef9492495e8b6cd369cb0cdb13bba34e9"
  },
  "0.1.0.1 driftwood-isle": {
   "fp3-drop-runtime-trust": "33cde1998c2ae42c94384492ad8d638af7d17948051b09a6da31a3fb79dc045e",
@@ -84,7 +90,8 @@
   "fp10-schema-source": "401d20b980485bccb2f6b26eb3208dbc72a2d7be6a1c9fe30483307f1223e28e",
   "fp4-drop-requires-capabilities": "addbaa9e44d8d1fa5d7db06f8ee419491150d06ea43e361455fd1d64b2f8b5cb",
   "fp33-drop-requires-sdk": "329069dda07752c1b8bd4ab557e46e410cec541df56c7e1540066d587ac81814",
-  "fp43-homes-to-members": "329069dda07752c1b8bd4ab557e46e410cec541df56c7e1540066d587ac81814"
+  "fp43-homes-to-members": "329069dda07752c1b8bd4ab557e46e410cec541df56c7e1540066d587ac81814",
+  "fp34-manifest-moved-words": "4b198f376853c9e46d31e2ad427b8cfb02cce6774562375583fcca387f8ffeee"
  },
  "0.1.0.2 corpus/legacy/brasscap-mesa-ss3": {
   "pr4-preparation-marker": "9dc238556b292338e32809017181be9b60704fb147b6b37caba35c08de81a2a9",
@@ -92,18 +99,21 @@
   "fp10-schema-source": "cc103e693cfe932387502309067290bf2c6abfe2c258eacb6ef4a1e7c3241848",
   "fp4-drop-requires-capabilities": "c1d9ac9e4865ccc630c1cb4e447f7cabe45b40bf4d0fb61562386934acc976a1",
   "fp33-drop-requires-sdk": "5b5245d84980a45da77c9fe7f2c70546116302cd48d2d3d48894dc23f5efd166",
-  "fp43-homes-to-members": "5b5245d84980a45da77c9fe7f2c70546116302cd48d2d3d48894dc23f5efd166"
+  "fp43-homes-to-members": "5b5245d84980a45da77c9fe7f2c70546116302cd48d2d3d48894dc23f5efd166",
+  "fp34-manifest-moved-words": "dc85e0d44b85bba7bae12508aae07e28bd27c1b14394a406b1c63f94efd46139"
  },
  "0.1.0.3 corpus/legacy/brasscap-mesa-ss3": {
   "fp26-save-revision": "4f6dd2cb82c4e7f82203c32fa8c96136ba38b4b3e0d583208ad36c379a11661b",
   "fp10-schema-source": "4f6dd2cb82c4e7f82203c32fa8c96136ba38b4b3e0d583208ad36c379a11661b",
   "fp4-drop-requires-capabilities": "e8d9b7a50e4c4ba97ebcc545b245fd2be44468393dffb23e156ac49f01882dc6",
   "fp33-drop-requires-sdk": "43435c1c9ea5a42a04ceb0156768bd34f1cdd8501ec25c4633c7660bba14c52a",
-  "fp43-homes-to-members": "43435c1c9ea5a42a04ceb0156768bd34f1cdd8501ec25c4633c7660bba14c52a"
+  "fp43-homes-to-members": "43435c1c9ea5a42a04ceb0156768bd34f1cdd8501ec25c4633c7660bba14c52a",
+  "fp34-manifest-moved-words": "b829bb2b21ced714d13f9523ad6e7e7cc483a97cb2faa3f6db125032096b0f88"
  },
  "0.1.0.4 corpus/legacy/brasscap-mesa-ss3": {
   "fp33-drop-requires-sdk": "4a2076a3369bda45d4eddb4f138027f82d1474593cea9fad4cff07bf528fedfa",
-  "fp43-homes-to-members": "4a2076a3369bda45d4eddb4f138027f82d1474593cea9fad4cff07bf528fedfa"
+  "fp43-homes-to-members": "4a2076a3369bda45d4eddb4f138027f82d1474593cea9fad4cff07bf528fedfa",
+  "fp34-manifest-moved-words": "240d4ca0447f0f6d512800af6dadbcad1c292b293765a796062dac70c6dc96e4"
  },
  "0.1.0.5 corpus/legacy/brasscap-mesa-ss3": {}
 }

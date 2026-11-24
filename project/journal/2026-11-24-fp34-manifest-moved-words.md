@@ -18,3 +18,5 @@ than by a plain schema delete:
 
 The schema entries themselves stay until no kept file carries them (FE13), with the discovery mount's copy (FP36).
 Tests: `format-migration-manifest.test.ts`, `deprecations.test.ts`; `src/format` 1,212 green, lock and gate green.
+
+Rebased on 97ca4ec (11-24): its chain step has FE11 goldens now (`format-goldens.chain.ts --write`); every push checks each step has one.
