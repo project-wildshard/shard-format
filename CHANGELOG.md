@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.74.1 (2026-11-23)
+
+- Quests get their own server section (quests/server), so a shard can declare its quest family without the client reading it.
+- Server-only host sections (server/world and the server/* family) carry native world settings the page never reads.
+
 ## v0.74.0 (2026-11-23)
 
 - A shard file no longer has a separate species-programs section: each creature's behaviour is written with the creature itself.
