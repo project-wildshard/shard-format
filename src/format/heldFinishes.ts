@@ -1,11 +1,13 @@
 import * as v from 'valibot';
+import { WeaponSlotSchema } from './weapon-slot.ts';
+import type { WeaponSlot } from './weapon-slot.ts';
 import { CatalogueIconSchema } from './items.ts';
 import { PackedGeometryRowsSchema } from './geometryPack.ts';
 
 const text = v.pipe(v.string(), v.minLength(1), v.maxLength(512));
 const finite = v.pipe(v.number(), v.finite());
 const natural = v.pipe(finite, v.integer(), v.minValue(0));
-const weapon = v.picklist(['crossbow', 'sword', 'rifle', 'sword-iron', 'bow', 'sabre', 'spear', 'empty']);
+const weapon = WeaponSlotSchema;
 const override = v.strictObject({ color: v.exactOptional(finite), emissive: v.exactOptional(finite), emissiveIntensity: v.exactOptional(finite),
   roughness: v.exactOptional(finite), metalness: v.exactOptional(finite), envMapIntensity: v.exactOptional(finite), plain: v.exactOptional(v.boolean()) });
 /** Pre-admission locker and Explorer card identities, in the authored order. */
@@ -354,7 +356,7 @@ interface HeldFinishesRowsInputFields {
     order: (string)[];
     rows: Record<string, {
         id: string;
-        weapon: 'crossbow' | 'sword' | 'rifle' | 'sword-iron' | 'bow' | 'sabre' | 'spear' | 'empty';
+        weapon: WeaponSlot;
         name: string;
         blurb: string;
         dropsFrom?: {
@@ -388,7 +390,7 @@ interface HeldFinishesRowsFields {
     order: (string)[];
     rows: Record<string, {
         id: string;
-        weapon: 'crossbow' | 'sword' | 'rifle' | 'sword-iron' | 'bow' | 'sabre' | 'spear' | 'empty';
+        weapon: WeaponSlot;
         name: string;
         blurb: string;
         dropsFrom?: {

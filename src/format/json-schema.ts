@@ -357,6 +357,11 @@ import { uniformIdentityTransforms } from './uniformRows.ts'
 import { WaterSchema } from './water.ts'
 import { WaterWorldSchema } from './waterWorld.ts'
 import {
+  DECLARED_LIMIT,
+  DECLARED_PATTERN,
+  DeclaredWeaponSchema,
+} from './weapon-slot.ts'
+import {
   WeaponProfileSchema,
   MeleeWeaponProfileSchema,
   BowWeaponProfileSchema,
@@ -402,6 +407,10 @@ const input = plumbing.entries.input.pipe[0].item
 const debug = plumbing.entries.debug.pipe[0].item
 // These identities are the defining schemas, not message-based permissions for arbitrary author code.
 const customSchemas = new Map<object, FormatJsonSchema>([
+  [
+    DeclaredWeaponSchema,
+    { type: 'string', maxLength: DECLARED_LIMIT, pattern: DECLARED_PATTERN },
+  ],
   [
     WeatherHitTagSchema,
     { type: 'string', pattern: '^[a-z][a-zA-Z0-9.-]*\\.[a-zA-Z0-9.*-]+$' },

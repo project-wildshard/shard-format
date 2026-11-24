@@ -1,11 +1,13 @@
 import { isJsonData } from './json.ts';
 import * as v from 'valibot';
+import { WeaponSlotSchema } from './weapon-slot.ts';
+import type { WeaponSlot } from './weapon-slot.ts';
 
 const text = v.pipe(v.string(), v.minLength(1), v.maxLength(1024));
 const finite = v.pipe(v.number(), v.finite());
 const natural = v.pipe(finite, v.integer(), v.minValue(0));
 const names = v.pipe(v.array(text), v.minLength(1), v.maxLength(64), v.check(rows => new Set(rows).size === rows.length));
-const slot = v.picklist(['crossbow', 'sword', 'rifle', 'sword-iron', 'bow', 'sabre', 'spear', 'empty']);
+const slot = WeaponSlotSchema;
 const action = v.custom<`${string}.${string}`>(value => typeof value === 'string' && /^[^.]+\..+$/.test(value));
 const cue = v.custom<`cue.${string}`>(value => typeof value === 'string' && value.startsWith('cue.') && value.length > 4);
 /** A held loadout's ammunition, ownership, save ABI, input and cues. Native weapon clocks remain in combat/items. */
@@ -58,15 +60,15 @@ interface LoadoutRowsFields {
     };
     launcher: {
         item: string;
-        slot: 'crossbow' | 'sword' | 'rifle' | 'sword-iron' | 'bow' | 'sabre' | 'spear' | 'empty';
+        slot: WeaponSlot;
     };
     firearm: {
-        slot: 'crossbow' | 'sword' | 'rifle' | 'sword-iron' | 'bow' | 'sabre' | 'spear' | 'empty';
+        slot: WeaponSlot;
         owned: string;
         ammo: string;
     };
     bow: {
-        slot: 'crossbow' | 'sword' | 'rifle' | 'sword-iron' | 'bow' | 'sabre' | 'spear' | 'empty';
+        slot: WeaponSlot;
         owned: string;
         legacyItem: string;
         ammo: string;
@@ -140,7 +142,7 @@ interface MountedLoadoutRowsFields {
             item: `weapon.${string}`;
             muzzleLight: boolean;
         };
-        order: ('crossbow' | 'sword' | 'rifle' | 'sword-iron' | 'bow' | 'sabre' | 'spear' | 'empty')[];
+        order: WeaponSlot[];
     };
     variants: {
         bow: {

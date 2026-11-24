@@ -181,7 +181,7 @@ export function itemRules(items: ShardItems, modules?: readonly string[]): strin
   const ids = items.rows.map((r) => r.id), weapons = items.rows.filter((r) => r.kind === 'weapon');
   const runtimeContexts = items.runtimeContexts ?? [];
   if (items.loadout.effects?.weapons.some(binding => new Set(binding.items).size !== binding.items.length
-    || binding.items.some(id => !weapons.some(entry => entry.id === id && entry.equipment?.legacySlot !== undefined))) === true)
+    || binding.items.some(id => !weapons.some(entry => entry.id === id && entry.equipment !== undefined))) === true)
     errors.push('item effect targets need unique native equipment ids');
   if (weapons.some(row => row.profile !== undefined && !row.family.includes('.') && row.family !== row.profile.family && !(row.family === 'swept' && row.profile.family === 'melee'))) errors.push('weapon profile matches declared family');
   if (weapons.some(row => row.profile?.family === 'cone' && (row.light.range !== row.heavy.range
