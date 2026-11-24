@@ -12,7 +12,7 @@ import { validateShardfileFolder } from './shardfileValidation.ts'
 import { readTar } from './tar.ts'
 
 // API-CLOUDFLARE AC6a on the real pins (engine test/pins/shardfiles.json) from the local cache: the 12 MB median, the
-// 68 MB pin and the 327 MB pin. Absent on CI, these are local proofs; the corpus tests run everywhere.
+// 53 MB Far Reach pin and the 327 MB pin. Absent on CI, these are local proofs; the corpus tests run everywhere.
 
 const PINS = path.join(homedir(), '.cache/wildshard/pins')
 const CHUNK = 65_536
@@ -21,7 +21,11 @@ const PIN_RUNS: readonly (readonly [name: string, hash: string])[] = [
     'median 12 MB',
     '3b322eccd99e209f98bbe59e16f79de77375b6075bc91f379d67cefff7bcf740',
   ],
-  ['68 MB', 'ab7b1d4e1d2ddd29771d6964e470244f3b0ffe6af108bb6196b5071ba18a4e9d'],
+  // FORMAT-PRUNE FP43: Far Reach r8 replaces the retired 68 MB Far Reach pin (r4), which named population.homes
+  [
+    '53 MB Far Reach',
+    'c559908612b89fcaa9ea9aa5d5ebca8dfbdbc02e4c3982d6392966d1a62865b5',
+  ],
 ]
 // OF31e2: the historical Pine archives fail admission at the journal selector.
 // script-side-grandfather.test.ts covers the Pine SS7 side law independently.
