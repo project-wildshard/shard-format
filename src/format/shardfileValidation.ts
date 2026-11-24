@@ -1,4 +1,5 @@
 import { cookMountPath, readCookData } from './cook-data.ts';
+import { checkDiscoveryMount } from './manifest-deprecations.ts';
 import { requireCookPreparation } from './cook-preparation.ts';
 import { parseOutputIndex, validateOutputSection, assembleOutputShardfile, type OutputFile, type OutputIndex } from './outputIndex.ts';
 import { asWrittenIdentity } from './save-revision.ts';
@@ -218,7 +219,7 @@ function readCook(index: OutputIndex, read: ReadListed, ports: Pick<ShardfileVal
       if (!mountSharesBlob(mount, index.files)) {
         if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
         // MG6 epoch 3: the engine images a shard mounts decode at boot like its own (Far Reach's sky and textures).
-        mountedImages += mountedImageBytes(mount.path, read(mount));
+        mountedImages += mountedImageBytes(mount.path, checkDiscoveryMount(index.formatVersion, mount.path, read(mount)));
       }
     }
     return { cook, mountedImages };

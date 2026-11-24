@@ -1,9 +1,18 @@
 /* oxlint-disable eslint/id-length -- a spawn's coordinates are x, y and z, as world/spawn names them */
 import { expect, test } from 'vitest'
 
-import { MOVED_WORDS, manifestMovedWords } from './format-migration-manifest.ts'
+import {
+  MOVED_WORDS,
+  discoveryMovedWords,
+  manifestMovedWords,
+} from './format-migration-manifest.ts'
 import { FORMAT_MIGRATIONS } from './format-migrations.ts'
-import { GONE_WORDS, checkNoMovedWords } from './manifest-deprecations.ts'
+import {
+  GONE_WORDS,
+  checkDiscoveryMount,
+  checkNoMovedWords,
+  isDiscoveryMount,
+} from './manifest-deprecations.ts'
 
 import type { MigratingShard } from './format-migrations.ts'
 
@@ -57,7 +66,7 @@ test('FP34: the start words move into their sections and every moved word leaves
     audio: { loops: [], level: AUDIO },
   })
   expect(manifestMovedWords.to).toBe('0.1.0.5')
-  expect(FORMAT_MIGRATIONS.at(-1)).toBe(manifestMovedWords)
+  expect(FORMAT_MIGRATIONS.at(-2)).toBe(manifestMovedWords)
 })
 
 test('FP34: a section own value wins over the manifest, as at the door', (): void => {
@@ -121,4 +130,82 @@ test('FP34: format 0.1.0.5 refuses a moved word or the old pointer; an older fil
   expect((): void => {
     checkNoMovedWords('0.1.0.5', shard.sections.get('ui/level'))
   }).not.toThrow()
+})
+
+const DISCOVERY = 'mounts/shardfiles/driftwood-isle/discovery.json'
+
+/** An older file whose level manifest is clean and whose discovery data still carries the start words, migrated. */
+function discoveryShard(): MigratingShard {
+  const shard = older()
+  shard.sections.set('ui/level', { manifest: { slug: 'driftwood-isle' } })
+  shard.mounts.set(DISCOVERY, {
+    version: 1,
+    slug: 'driftwood-isle',
+    data: {
+      slug: 'driftwood-isle',
+      spawn: { x: 3, y: 4, z: 5, yaw: 0 },
+      weapon: 'sword',
+      audio: AUDIO,
+      sky: { day: 1 },
+    },
+  })
+  shard.mounts.set('mounts/sky/day.json', { spawn: 'not discovery' })
+  manifestMovedWords.apply(shard)
+  discoveryMovedWords.apply(shard)
+  return shard
+}
+
+test('FP36: the discovery data lifts its start words too and drops every moved word', (): void => {
+  const shard = discoveryShard()
+  expect(shard.mounts.get(DISCOVERY)).toEqual({
+    version: 1,
+    slug: 'driftwood-isle',
+    data: { slug: 'driftwood-isle', sky: { day: 1 } },
+  })
+  expect(shard.mounts.get('mounts/sky/day.json')).toEqual({
+    spawn: 'not discovery',
+  })
+  expect(shard.sections.get('world/spawn')).toEqual({
+    spawn: { x: 3, y: 4, z: 5, yaw: 0 },
+  })
+  expect(shard.sections.get('audio/audio')).toEqual({
+    audio: { loops: [], level: AUDIO },
+  })
+  expect(FORMAT_MIGRATIONS.at(-1)).toBe(discoveryMovedWords)
+})
+
+test('FP36: format 0.1.0.5 refuses a discovery mount carrying a moved word; older files and other mounts pass', (): void => {
+  const bytes = new TextEncoder().encode(
+    JSON.stringify({
+      version: 1,
+      data: { slug: 'x', audio: AUDIO, weapon: 'sword' },
+    }),
+  )
+  expect((): void => {
+    checkDiscoveryMount('0.1.0.5', DISCOVERY, bytes)
+  }).toThrow(
+    `Format 0.1.0.5 carries no data.audio, data.weapon (${DISCOVERY}; FORMAT-PRUNE FP36)`,
+  )
+  expect((): void => {
+    checkDiscoveryMount('0.1.0.4', DISCOVERY, bytes)
+  }).not.toThrow()
+  expect((): void => {
+    checkDiscoveryMount(
+      '0.1.0.5',
+      'mounts/shardfiles/driftwood-isle/other.json',
+      bytes,
+    )
+  }).not.toThrow()
+  expect((): void => {
+    checkDiscoveryMount(
+      '0.1.0.5',
+      DISCOVERY,
+      new TextEncoder().encode('{"version":1,"data":{"slug":"x"}}'),
+    )
+  }).not.toThrow()
+})
+
+test('FP36: only a shard discovery path is the discovery mount', (): void => {
+  expect(isDiscoveryMount(DISCOVERY)).toBe(true)
+  expect(isDiscoveryMount('mounts/shardfiles/../discovery.json')).toBe(false)
 })

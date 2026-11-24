@@ -10,6 +10,10 @@ import { cookMountPath, readCookData } from './cook-data.ts'
 import { requireCookPreparation } from './cook-preparation.ts'
 import { deprecationReport } from './deprecations.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
+import {
+  checkDiscoveryMount,
+  isDiscoveryMount,
+} from './manifest-deprecations.ts'
 import { validatePlatformFile } from './platformFileFamilies.ts'
 import { decisionModuleContracts } from './scriptContract.ts'
 import { mountSharesBlob } from './shardfile-reads.ts'
@@ -174,7 +178,15 @@ function cookSteps(replay: Readonly<Replay>, index: OutputIndex): void {
       if (mount.path !== cookMountPath(mount.url)) {
         throw new Error(`Mount path differs from its URL: ${mount.url}`)
       }
-      readListed(replay, mount)
+      if (isDiscoveryMount(mount.path)) {
+        checkDiscoveryMount(
+          index.formatVersion,
+          mount.path,
+          listedBytes(replay, mount),
+        )
+      } else {
+        readListed(replay, mount)
+      }
     }
   }
 }

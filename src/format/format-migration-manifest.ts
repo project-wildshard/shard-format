@@ -6,6 +6,7 @@
  * (`species`, `spawns`, `faunaTuning`) became declared rows in the build (OF9b4), which a copy of the file can't redo, so
  * they leave too: a file that still needs them is rebuilt on SDK 0.4.25 or later. */
 import { DEFAULT_SPAWN } from './level-start.ts'
+import { isDiscoveryMount } from './manifest-deprecations.ts'
 
 import type { FormatMigration, MigratingShard } from './format-migrations.ts'
 
@@ -85,6 +86,15 @@ function liftLevels(
   }
 }
 
+/** Lift a manifest-shaped object's start words into their sections, then drop every moved word and the old pointer. */
+function liftAndDrop(shard: MigratingShard, manifest: JsonRecord): void {
+  liftSpawn(shard, manifest)
+  liftLevels(shard, manifest)
+  for (const word of [...MOVED_WORDS, 'gridShardfile']) {
+    Reflect.deleteProperty(manifest, word)
+  }
+}
+
 /** FORMAT-PRUNE FP34: the level manifest carries none of the moved words. */
 const manifestMovedWords: FormatMigration = {
   id: 'fp34-manifest-moved-words',
@@ -96,12 +106,25 @@ const manifestMovedWords: FormatMigration = {
     if (manifest === undefined) {
       return
     }
-    liftSpawn(shard, manifest)
-    liftLevels(shard, manifest)
-    for (const word of MOVED_WORDS) {
-      Reflect.deleteProperty(manifest, word)
+    liftAndDrop(shard, manifest)
+  },
+}
+
+/** FORMAT-PRUNE FP36: the discovery mount's `data` repeats the level manifest; it carries none of the moved words either.
+ * Runs after FP34's step, so a section the level manifest already filled keeps its value. */
+const discoveryMovedWords: FormatMigration = {
+  id: 'fp36-discovery-moved-words',
+  to: MANIFEST_WORDS_GONE,
+  touches: 'data',
+  affects: [],
+  apply: (shard: MigratingShard): void => {
+    for (const [path, mount] of shard.mounts) {
+      const data = isRecord(mount) ? mount['data'] : undefined
+      if (isDiscoveryMount(path) && isRecord(data)) {
+        liftAndDrop(shard, data)
+      }
     }
   },
 }
 
-export { MOVED_WORDS, manifestMovedWords }
+export { MOVED_WORDS, discoveryMovedWords, manifestMovedWords }

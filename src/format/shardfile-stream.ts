@@ -16,6 +16,7 @@
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
 import { assertSectionSides } from './feature-sides.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
+import { unheldMount } from './manifest-deprecations.ts'
 import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
 import { admittedVerdict } from './policy-verdict.ts'
 import { assertScriptSides } from './script-sides.ts'
@@ -102,9 +103,9 @@ const STREAM_KEPT_CAP = 48_000_000
 const NONE = 0
 const NEXT = 1
 
-/** Whether a member is held whole after its check: everything but blobs, mounts and packs, and JSON and Wasm blobs. */
+/** Whether a member is held whole after its check: everything but blobs, `unheldMount`s, and JSON and Wasm blobs. */
 function keptPath(path: string): boolean {
-  if (path.startsWith('mounts/') || path.startsWith('packs/')) {
+  if (unheldMount(path)) {
     return false
   }
   const extension = path.slice(path.lastIndexOf('.') + NEXT)

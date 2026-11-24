@@ -66,23 +66,83 @@ const GONE_WORDS: readonly string[] = [
   ...MOVED.map(([word]: readonly [string, string]): string => word),
 ]
 
+/** FORMAT-PRUNE FP36: the discovery mount, which repeats the level manifest as its `data`. */
+const DISCOVERY_MOUNT =
+  /^mounts\/shardfiles\/(?:_[a-z]+|[a-z][a-z0-9-]*)\/discovery\.json$/u
+
+/** Whether a format version is one that carries none of the gone words. */
+function gated(version: unknown): version is string {
+  return (
+    typeof version === 'string' &&
+    compareShardfileVersions(version, NO_MOVED_WORDS) >= NONE
+  )
+}
+
+/** The gone words a manifest-shaped object still carries. */
+function keptWords(manifest: unknown): readonly string[] {
+  if (typeof manifest !== 'object' || manifest === null) {
+    return []
+  }
+  return GONE_WORDS.filter((word: string): boolean =>
+    Object.hasOwn(manifest, word),
+  )
+}
+
+/** Parsed JSON, or nothing for bytes that are none (another check's refusal). */
+function jsonOf(bytes: Readonly<Uint8Array>): unknown {
+  try {
+    return JSON.parse(new TextDecoder().decode(bytes))
+  } catch {
+    return undefined
+  }
+}
+
+/** Whether a product path is a shard's discovery mount. */
+function isDiscoveryMount(path: string): boolean {
+  return DISCOVERY_MOUNT.test(path)
+}
+
+/** A mount or pack the stream validator checks as it passes and does not hold; the discovery mount it holds (FP36). */
+function unheldMount(path: string): boolean {
+  return (
+    path.startsWith('packs/') ||
+    (path.startsWith('mounts/') && !isDiscoveryMount(path))
+  )
+}
+
+/** FORMAT-PRUNE FP36 (the FP33 pattern): format 0.1.0.5 on refuses a discovery mount whose `data` carries a moved word or
+ * the old pointer; an older file keeps them as written, and the chain step (`fp36-discovery-moved-words`) lifts them.
+ * Bytes that are no JSON object are another check's refusal. Answers the bytes it checked. */
+function checkDiscoveryMount(
+  version: unknown,
+  path: string,
+  bytes: Readonly<Uint8Array>,
+): Readonly<Uint8Array> {
+  if (!isDiscoveryMount(path) || !gated(version)) {
+    return bytes
+  }
+  const parsed = jsonOf(bytes)
+  const data: unknown =
+    typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+      ? Reflect.get(parsed, 'data')
+      : undefined
+  const kept = keptWords(data)
+  if (kept.length > NONE) {
+    throw new Error(
+      `Format ${version} carries no ${kept.map((word: string): string => `data.${word}`).join(', ')} (${path}; FORMAT-PRUNE FP36)`,
+    )
+  }
+  return bytes
+}
+
 /** FORMAT-PRUNE FP34 (the FP33 pattern): format 0.1.0.5 on refuses a level manifest carrying a moved word or the old
  * pointer; an older file keeps them as written, so its source hash still matches, and the chain step
  * (`fp34-manifest-moved-words`) lifts them. */
 function checkNoMovedWords(version: unknown, level: unknown): void {
-  if (
-    typeof version !== 'string' ||
-    compareShardfileVersions(version, NO_MOVED_WORDS) < NONE
-  ) {
+  if (!gated(version)) {
     return
   }
-  const manifest = manifestOf(new Map([['ui/level', level]]))
-  if (typeof manifest !== 'object' || manifest === null) {
-    return
-  }
-  const kept = GONE_WORDS.filter((word: string): boolean =>
-    Object.hasOwn(manifest, word),
-  )
+  const kept = keptWords(manifestOf(new Map([['ui/level', level]])))
   if (kept.length > NONE) {
     throw new Error(
       `Format ${version} carries no ${kept.map((word: string): string => `manifest.${word}`).join(', ')} (sections/ui/level; FORMAT-PRUNE FP34)`,
@@ -94,5 +154,8 @@ export {
   GONE_WORDS,
   MANIFEST_MOVED_DEPRECATIONS,
   NO_MOVED_WORDS,
+  checkDiscoveryMount,
   checkNoMovedWords,
+  isDiscoveryMount,
+  unheldMount,
 }
