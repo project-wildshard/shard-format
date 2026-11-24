@@ -1,65 +1,69 @@
 # One way: M1 inventory and ceilings
 
 > Written by: Codex
-> State: pinned baseline and CI ratchet built, 2026-11-15; M1 land pending.
+> State: the ratchet reads today's mains and every engine pin, 2026-11-24
+> (FORMAT-PRUNE FP42; the frozen M1 snapshot let a rise on main pass).
 
-There is one shard format. `src/tools/one-way-baseline.json` records exact
-source revisions, product archive hashes and byte counts, corpus JSON digests,
-and ceilings. A drop is allowed; a rise or a new counter needs a fix.
+There is one shard format. `src/tools/one-way-baseline.json` records the
+ceilings and the corpus JSON digests. A drop is allowed; a rise or a new
+counter needs a fix, never a raised ceiling.
 
 ## Sources and identity
 
-- Engine: `df1554054fa58d16072d4173e6b5036cd574505e` (v0.1.23).
-- SDK: `537b9f15f7c20432aa334146946a6983ab6b9a6c`.
+- Engine and SDK: each sibling's fetched `origin/main` (its checked-out head
+  when there is none); CI checks out both mains. M1 recorded engine
+  `df1554054fa5` (v0.1.23) and SDK `537b9f15f7c2`.
 - Format: the current checkout's sources, docs, root Markdown and workspace
   package sources/docs; corpus JSON is inventoried separately.
 - Git inputs come from immutable objects, excluding loose edits. Every blob
   is checked against its Git object hash before decoding.
-- Product tarballs come from that engine revision's pin catalogue, narrowed
-  to the slugs the baseline's `pins` records (no slug list in code).
+- Product tarballs are every pin in that engine revision's catalogue (no
+  slug list in code); the kinds the literal counter knows come from them.
   Each must match its SHA-256 and exact byte length. Cached pins are read
   without writing a cache; public mirrors provide a fallback.
-- Sky Reach is named `far-reach` in the engine catalogue. Other names:
-  blender-template, template, sunscar-dunes, nine-dragon-stack,
-  driftwood-isle, pine-hollow and nalati-grasslands.
 - Corpus identities hash each shard's path-sorted JSON path/text list.
   Binary assets and validation reports are excluded from this text digest;
   product archive hashes separately cover the complete products.
 
 ## Counts and removal rows
 
+Ceilings as of 2026-11-24, M1's in brackets. Removal rows are meta's
+FORMAT-PRUNE rows.
+
 | Counter | Ceiling | Removal row |
 |---|---:|---|
-| engine.kind-literals | 24 | OF5b, OF31 |
-| engine.kit-registrations | 2 | OF5b |
-| engine.look-fallbacks | 1 | OF5b |
-| engine.temperament-guesses | 1 | CC4 |
-| engine.grid-pointer-references | 21 | OF8 |
-| sdk.grid-pointer-references | 0 | OF8 |
-| format.grid-pointer-references | 5 | OF8 |
-| engine.access-gate-references | 80 | OF10a to OF10c |
-| engine.dangerous-gates | 4 | OF10c1 to OF10c4 |
-| sdk.engine-kit-imports | 4 | OF5a / SDK-SPLIT SP3 |
-| sdk.old-kind-source-rows | 6 | CC4, OF4 |
-| engine.kind-keyed-tables | 2 | OF31 |
-| format.kind-keyed-tables | 1 | OF31 |
-| engine.retired-vocabulary | 908 | OF15 |
-| format.retired-vocabulary | 198 | OF15 |
-| sdk.retired-vocabulary | 84 | OF15 |
-| products.rows-without-look | 0 | OF4, OF5b |
-| products.species-program-sections | 4 | OF13, OF21 to OF24 |
-| products.repeated-manifest-fields | 12 | OF6 to OF9b |
-| products.single-shard-server-hosts | 41 | OF16, OF17, M8 |
-| products.single-shard-page-features | 30 | OF16, M8 |
-| corpus.rows-without-look | 0 | OF4, OF5b |
-| corpus.species-program-sections | 0 | OF13 |
-| corpus.repeated-manifest-fields | 11 | OF6 to OF9b |
+| engine.kind-literals | 10 (24) | FP42; the rest are kit species and non-creature names |
+| engine.kit-registrations | 0 (2) | done |
+| engine.look-fallbacks | 0 (1) | done |
+| engine.temperament-guesses | 0 (1) | done |
+| engine.grid-pointer-references | 1 (21) | FP44 |
+| sdk.grid-pointer-references | 0 (0) | done |
+| format.grid-pointer-references | 5 (5) | FP44 |
+| engine.access-gate-references | 0 (80) | done |
+| engine.dangerous-gates | 0 (4) | done |
+| sdk.engine-kit-imports | 0 (4) | done |
+| sdk.old-kind-source-rows | 0 (6) | done (FP45) |
+| engine.kind-keyed-tables | 0 (2) | done |
+| format.kind-keyed-tables | 0 (1) | done |
+| engine.retired-vocabulary | 0 (908) | done (FP46) |
+| format.retired-vocabulary | 0 (198) | done (FP46) |
+| sdk.retired-vocabulary | 0 (84) | done (FP46) |
+| products.rows-without-look | 0 (0) | done |
+| products.species-program-sections | 0 (4) | done |
+| products.repeated-manifest-fields | 7 (12) | FP47 |
+| products.single-shard-server-hosts | 16 (41) | FP48 |
+| products.single-shard-page-features | 23 (30) | FP49 |
+| corpus.rows-without-look | 0 (0) | done |
+| corpus.species-program-sections | 0 (0) | done |
+| corpus.repeated-manifest-fields | 9 (11) | FP47 |
 
 ## Scope and exclusions
 
 Mechanism counters include runtime src and workspace package src. Tests,
 specs and directories named test, __tests__ or e2e are excluded from these
-counters. Vocabulary counters include source tests, docs and root Markdown;
+counters. Vocabulary counters include source tests, docs and root Markdown,
+except a format migration step, the deprecations and their tests, which
+name the old shape they rewrite;
 camelCase boundaries are split before matching. Corpus payloads do not count
 as authored wording. Dependencies, build output, binaries, caches, journals
 and Git metadata are excluded.
@@ -92,17 +96,14 @@ including the Template boar; its historical omission cannot raise a ceiling.
 
 ## Updating the inventory
 
-Keep source ids and product identities reviewable. On a source-pin change,
-collect that exact revision and compare it against the existing ceilings.
-Lower a ceiling after its removal row passes; never increase it to pass.
+Lower a ceiling after its removal row lands; never increase it to pass.
 Update corpus JSON identities alongside the corpus source change.
-The normal Node test discovery includes one-way.test.ts. CI reads these
-source ids and checks out both snapshots into lane scratch before the check.
-Local worktrees find sibling checkouts through Git's common directory.
+The normal Node test discovery includes one-way.test.ts. CI checks out the
+engine and SDK mains into lane scratch before the check, so a rise on either
+main turns this repo's CI red: fix it on that main. Local worktrees find
+sibling checkouts through Git's common directory and read their fetched main.
 WS_ONE_WAY_ENGINE_ROOT and WS_ONE_WAY_SDK_ROOT override their locations;
 WS_ONE_WAY_ENGINE_REVISION and WS_ONE_WAY_SDK_REVISION select branch proofs.
-The comparison rejects any rise, unrecorded product pin or corpus identity.
-Both fault drills use committed temporary Git snapshots, and each planted
-change fails only its own counter. Advance the source ids to completed M1
-branch commits before landing; the audit input is deliberately frozen until
-that reviewed update.
+The comparison rejects any rise or unrecorded corpus identity. The fault
+drills use committed temporary Git snapshots, and each planted change fails
+only its own counter; one plants a kind literal on a fixture's newest main.

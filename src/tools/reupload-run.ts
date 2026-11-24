@@ -5,7 +5,7 @@ import type { Deprecation } from '../format/deprecations.ts'
 import type { ReuploadStep, Users } from './reupload-plan.ts'
 
 // SHARD-COMPAT CP17 (J486, Q31): the re-upload run. It plans (FE7's count
-// over the kept originals), dispatches every first-party re-publish at
+// over the kept originals), dispatches every shard repo re-publish at
 // once, waits for each shard's new revision, then counts again. Its I/O is
 // injected: `reupload.ts` wires the API, `gh` and the corpus; tests wire
 // doubles.
@@ -53,7 +53,7 @@ interface ReuploadRun {
   readonly apply: boolean
 }
 
-/** Plan, and with `apply`, re-publish the first-party users and count again. */
+/** Plan, and with `apply`, re-publish the users that have a shard repo and count again. */
 async function reupload(
   options: Readonly<ReuploadRun>,
 ): Promise<ReuploadResult> {

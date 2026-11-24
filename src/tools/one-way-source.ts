@@ -194,6 +194,28 @@ async function workingFiles(root: string): Promise<readonly SourceFile[]> {
   )
 }
 
+/** The ratchet audits today's tree (FORMAT-PRUNE FP42): a sibling's fetched main, else its checked-out head (CI checks
+ * out main itself). A frozen revision let a rise on main pass. */
+async function mainRevision(root: string): Promise<string> {
+  for (const ref of ['refs/remotes/origin/main', 'HEAD']) {
+    try {
+      // eslint-disable-next-line no-await-in-loop -- The fallback runs only when the fetched main is absent.
+      const result = await git('git', [
+        '-C',
+        root,
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        `${ref}^{commit}`,
+      ])
+      return result.stdout.trim()
+    } catch {
+      // The next ref is the fallback.
+    }
+  }
+  throw new Error(`${root} has no main to audit`)
+}
+
 /** Locate a sibling checkout through Git's common directory, including worktrees. */
 async function siblingRoot(
   root: string,
@@ -203,5 +225,5 @@ async function siblingRoot(
   return path.resolve(root, result.stdout.trim(), '..', '..', sibling)
 }
 
-export { revisionFiles, siblingRoot, workingFiles }
+export { mainRevision, revisionFiles, siblingRoot, workingFiles }
 export type { SourceFile }

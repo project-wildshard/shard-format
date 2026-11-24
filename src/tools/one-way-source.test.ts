@@ -7,7 +7,7 @@ import { promisify } from 'node:util'
 
 import { scratchDir } from '../../scripts/scratch-dir.mjs'
 import { countRises, sourceCounts } from './one-way-counts.ts'
-import { revisionFiles, workingFiles } from './one-way-source.ts'
+import { mainRevision, revisionFiles, workingFiles } from './one-way-source.ts'
 
 import type { SourceFile } from './one-way-source.ts'
 
@@ -183,4 +183,41 @@ test('temporary Git snapshots refuse each planted pointer and doc wording indepe
   )
   const wording = await engineCounts(root, wordingRevision)
   refusesGrowth(pointer, wording, 'engine.retired-vocabulary: 0 -> 1')
+})
+
+async function kindCounts(
+  root: string,
+  revision: string,
+): Promise<Readonly<Record<string, number>>> {
+  return sourceCounts({
+    engine: await revisionFiles(root, revision),
+    format: [],
+    sdk: [],
+    kinds: ['horse'],
+  })
+}
+
+test("the ratchet audits a sibling's newest main and refuses a planted kind literal there", async (): Promise<void> => {
+  const root = await fixture()
+  const pinned = await pin(root)
+  assert.equal(await mainRevision(root), pinned)
+  const planted = await commitNew(
+    root,
+    'src/kind.ts',
+    'export const tamed = "horse"\n',
+  )
+  await execute('git', [
+    '-C',
+    root,
+    'update-ref',
+    'refs/remotes/origin/main',
+    planted,
+  ])
+  await execute('git', ['-C', root, 'reset', '--quiet', '--hard', pinned])
+  assert.equal(await mainRevision(root), planted)
+  refusesGrowth(
+    await kindCounts(root, pinned),
+    await kindCounts(root, await mainRevision(root)),
+    'engine.kind-literals: 0 -> 1',
+  )
 })

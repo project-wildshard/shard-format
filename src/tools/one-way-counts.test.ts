@@ -117,6 +117,19 @@ test('a migration chain step names the old pointer it rewrites without counting'
   assert.equal(sourceCounts(input)['format.grid-pointer-references'], 1)
 })
 
+test('a chain step test names the old trust words it rewrites without counting; other format tests count', (): void => {
+  const old = `trust: '${['first', 'party'].join('-')}'`
+  const counts = sourceCounts({
+    ...input,
+    format: [
+      files('src/format/format-migration-prune.test.ts', old),
+      files('src/format/deprecations.test.ts', old),
+      files('src/tools/reupload.test.ts', old),
+    ],
+  })
+  assert.equal(counts['format.retired-vocabulary'], 1)
+})
+
 test('each planted pointer or vocabulary growth fails only its own counter', (): void => {
   const baseline = sourceCounts(input)
   const pointer = sourceCounts({

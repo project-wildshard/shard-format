@@ -59,7 +59,7 @@ function world(
   }
 }
 
-test('a seeded deprecation with two first-party users ends with zero users and two new revisions, no hand step', async (): Promise<void> => {
+test('a seeded deprecation with two shard-repo users ends with zero users and two new revisions, no hand step', async (): Promise<void> => {
   const io = world([
     row('alpha', 1, true),
     row('beta', 2, true),

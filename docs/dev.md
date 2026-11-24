@@ -94,7 +94,7 @@ spelling: they are strings other repos match on, not import paths.
    `--merge-back` from main. Main stays open to other lanes throughout.
    A patch on an older line (0.43.2 after 0.44.0) must never publish as
    npm's `latest`: `npm-publish.yml` gives a version below the current
-   latest the dist-tag `line-X.Y`. Trusted publishing can't run
+   latest the dist-tag `line-X.Y`. npm OIDC publishing can't run
    `npm dist-tag`, so a wrong latest stays until the next highest
    release. Its merge-back conflicts on `CHANGELOG.md` and
    `package.json`: keep main's version and both changelog entries.

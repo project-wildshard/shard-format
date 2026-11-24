@@ -13,13 +13,13 @@ import { reupload, reuploadReport } from './reupload-run.ts'
 // SHARD-COMPAT CP17 (J486, Q31): `pnpm reupload <deprecation id> [--apply
 // --preparation <engine release>] [--api <url>]`. Without --apply it
 // prints the plan: per shard whose newest kept revision uses the part,
-// whether the API migrates it, which first-party repo re-publishes it
-// (`corpus/first-party.json`), or the needs-author note. With --apply it
-// dispatches each first-party repo's publish.yml, waits for the new
+// whether the API migrates it, which shard repo re-publishes it
+// (`corpus/shard-repos.json`), or the needs-author note. With --apply it
+// dispatches each shard repo's publish.yml, waits for the new
 // revisions and counts again.
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
-const REPOS_FILE = path.join(ROOT, 'corpus/first-party.json')
+const REPOS_FILE = path.join(ROOT, 'corpus/shard-repos.json')
 const EXIT_OK = 0
 const EXIT_FAIL = 1
 const Repos = record(string(), string())
@@ -36,7 +36,7 @@ const { values, positionals } = parseArgs({
   },
 })
 
-/** `corpus/first-party.json`: each first-party slug's repo. */
+/** `corpus/shard-repos.json`: each slug's own shard repo. */
 async function readRepos(): Promise<Readonly<Record<string, string>>> {
   const text = await readFile(REPOS_FILE, 'utf8')
   return parse(Repos, JSON.parse(text))

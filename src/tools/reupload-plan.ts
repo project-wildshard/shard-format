@@ -5,7 +5,7 @@ import type { Deprecation } from '../format/deprecations.ts'
 // deprecated part, shard by shard. A shard counts when its newest kept
 // revision still uses the part (older revisions leave the corpus with
 // CP12's prune). A chain step that mends it means the API migrates the
-// shard; a first-party shard (its repo in `corpus/first-party.json`) is
+// shard; a shard with its own repo (in `corpus/shard-repos.json`) is
 // re-published from that repo's `publish.yml`; any other shard gets a
 // needs-author note naming the replacement.
 
@@ -15,7 +15,7 @@ interface ReuploadStep {
   readonly slug: string
   readonly revision: number
   readonly action: Action
-  /** The first-party repo that re-publishes it. */
+  /** The shard repo that re-publishes it. */
   readonly repo: string | undefined
   readonly detail: string
 }

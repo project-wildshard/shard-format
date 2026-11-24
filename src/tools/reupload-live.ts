@@ -10,7 +10,7 @@ import type { CorpusRow } from '../cli/corpus.ts'
 import type { ReuploadIo } from './reupload-run.ts'
 
 // SHARD-COMPAT CP17: the re-upload tool's live I/O. The corpus is FE3's,
-// a dispatch is `gh workflow run publish.yml` on the first-party repo
+// a dispatch is `gh workflow run publish.yml` on the shard's own repo
 // (staging, version auto, the given preparation), and settling polls the
 // API's listing for the shard's next revision.
 
