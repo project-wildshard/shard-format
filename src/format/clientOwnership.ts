@@ -13,7 +13,7 @@ export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<st
   if (!page) return rigs;
   // OF19d1: a page drawing its declared bodies from their looks needs no species program
   const errors: string[] = [...rigs], program = !pageDrawsDeclaredLooks(source, sections.get('sim/runtime-plan'), features);
-  if (!page || source.runtime !== null) errors.push('Native client features require their typed data page owner');
+  if (source.runtime !== null) errors.push('Native client features require their typed data page owner');
   for (const kind of ['world.scenes', 'motion.channels', ...program ? ['species.program'] as const : [], 'held.melee', 'quest.page'] as const)
     if (!features.some(row => row.kind === kind)) errors.push(`Data page requires ${kind}`);
   const quest = features.find(row => row.kind === 'quest.page'), held = features.find(row => row.kind === 'held.melee');

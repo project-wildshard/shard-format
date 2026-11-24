@@ -173,5 +173,5 @@ function productCounts(
   }
 }
 
-export { productCounts, productFacts }
+export { productCounts, productFacts, section }
 export type { ProductFacts }

@@ -11,3 +11,7 @@ now names its `members`. The format lock moves with it.
 `feature-sides.test.ts` used to read the sibling engine checkout's `out/`, which can hold revisions main no longer
 pins (the canonical checkout's had the old Far Reach and Dunes, both still naming the row). It now reads engine
 main's pin catalogue and the verified local pin cache, so it judges exactly what main pins.
+
+The first push was refused by the pre-push lint ratchet: the new pin reader in the test was a hand-rolled copy of
+`src/tools/one-way-pins.ts`. The test now reuses that reader (and `section` from `one-way-products.ts`), and the
+ownership check drops a `!page` the early return already settled. The ratchet lowers 12 rows.

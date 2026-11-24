@@ -1,12 +1,17 @@
 // oxlint-disable import/max-dependencies, typescript/prefer-readonly-parameter-types -- both validators and their corpus; mutations edit their own copies
-import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import os from 'node:os'
+import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
 import { beforeAll, describe, expect, test } from 'vitest'
 
+import { enginePins, jsonFiles, pinnedFiles } from '../tools/one-way-pins.ts'
+import { section } from '../tools/one-way-products.ts'
+import {
+  mainRevision,
+  revisionFiles,
+  siblingRoot,
+} from '../tools/one-way-source.ts'
 import {
   CLIENT_FEATURE_SIDES,
   SIDE_TABLES,
@@ -18,9 +23,10 @@ import { prepareAssetDecoders } from './shardfile-assets.ts'
 import { nodeStreamPorts } from './shardfile-stream-node.ts'
 import { validateShardfileStream } from './shardfile-stream.ts'
 import { validateShardfileFolder } from './shardfileValidation.ts'
-import { readTar, writeTar } from './tar.ts'
+import { writeTar } from './tar.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
+import type { SourceFile } from '../tools/one-way-source.ts'
 import type { ShardfileFiles } from './shardfileValidation.ts'
 
 // SERVER-PARITY SS2: every client/plan feature kind and world.assembly stage kind has a side, and both validators
@@ -32,9 +38,6 @@ type Files = ReadonlyMap<string, Uint8Array>
 const ROOT = new URL('../../', import.meta.url).pathname
 // J506: a whole folder; corpus/exports/ leaves out its blobs over 1 MB.
 const CORPUS = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
-const ENGINE =
-  process.env['WS_ONE_WAY_ENGINE_ROOT'] ?? path.join(ROOT, '../engine')
-const PIN_CACHE = path.join(os.homedir(), '.cache/wildshard/pins')
 const STAGE_KINDS = 18
 
 function sha256(bytes: Readonly<Uint8Array>): string {
@@ -139,44 +142,23 @@ async function streamVerdict(files: Files): Promise<string> {
   }
 }
 
-/** FORMAT-PRUNE FP43: every product engine main pins, read from the verified local pin cache (none in shardfile's
- * own CI). A checkout's out/ can hold products main no longer pins, which made this test judge stale revisions. */
-function pinnedPlans(): [string, string | undefined][] {
-  let pins: unknown
-  try {
-    pins = JSON.parse(
-      execFileSync(
-        'git',
-        ['-C', ENGINE, 'show', 'origin/main:test/pins/shardfiles.json'],
-        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-      ),
-    )
-  } catch {
-    return []
-  }
-  const products: [string, string | undefined][] = []
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the engine's own pin catalogue
-  for (const pin of (pins as { shards: { slug: string; hash: string }[] })
-    .shards) {
-    const file = path.join(PIN_CACHE, `${pin.hash}.tar`)
-    if (existsSync(file)) {
-      const bytes = readFileSync(file)
-      expect(sha256(bytes), pin.slug).toBe(pin.hash)
-      const members = readTar(bytes)
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a test reads a built product
-      const entry = (
-        parsed(members.get('shard.json'))['sections'] as Json[]
-      ).find((row: Json): boolean => row['name'] === 'client/plan')
-      const plan =
-        entry === undefined ? undefined : members.get(String(entry['path']))
-      products.push([
-        pin.slug,
-        plan === undefined ? undefined : new TextDecoder().decode(plan),
-      ])
-    }
-  }
-  return products
+async function engineFiles(): Promise<readonly SourceFile[]> {
+  const root = await siblingRoot(ROOT, 'engine')
+  return await revisionFiles(root, await mainRevision(root))
 }
+/** FORMAT-PRUNE FP43: every product engine main pins, verified (none in shardfile's own CI, which has no engine).
+ * A checkout's out/ can hold products main no longer pins, which made this test judge stale revisions. */
+async function pinnedPlans(): Promise<[string, unknown][]> {
+  const engine = await engineFiles().catch((): undefined => undefined)
+  const plans: [string, unknown][] = []
+  for (const pin of engine === undefined ? [] : enginePins(engine)) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- one large archive alive at a time
+    const files = jsonFiles(await pinnedFiles(pin))
+    plans.push([pin.slug, section(files, 'client/plan')])
+  }
+  return plans
+}
+const PINNED = await pinnedPlans()
 
 beforeAll(async (): Promise<void> => {
   await prepareAssetDecoders()
@@ -287,21 +269,15 @@ describe('both validators', (): void => {
 
 // Full validation of each pinned product is `shardfile validate`'s job; this reads only their client/plan.
 describe('pinned products on engine main', (): void => {
-  const products = pinnedPlans()
-  // CI has no pin cache, and a suite of zero tests is an error in vitest:
+  // CI has no engine, and a suite of zero tests is an error in vitest:
   // this one says why the per-product checks below don't run.
-  test.skipIf(products.length > 0)(
-    'no cached engine pins to check',
-    (): void => {
-      expect(products).toEqual([])
-    },
-  )
-  test.skipIf(products.length === 0).each(products)(
+  test.skipIf(PINNED.length > 0)('no engine pins to check', (): void => {
+    expect(PINNED).toEqual([])
+  })
+  test.skipIf(PINNED.length === 0).each(PINNED)(
     '%s declares a side for every kind',
-    (_name: string, plan: string | undefined): void => {
-      if (plan !== undefined) {
-        expect(unsidedKinds(parsed(plan))).toEqual([])
-      }
+    (_name: string, plan: unknown): void => {
+      expect(unsidedKinds(plan)).toEqual([])
     },
   )
 })
