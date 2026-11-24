@@ -57,6 +57,31 @@ const MANIFEST_MOVED_DEPRECATIONS: readonly ManifestDeprecation[] = MOVED.map(
   }),
 )
 
+/** FORMAT-PRUNE FP47b: each level look word the manifest carried before OF9b2, and the chain step that lifts it. */
+const LEVEL_DEPRECATIONS: readonly ManifestDeprecation[] = [
+  'sky',
+  'atmosphere',
+  'grade',
+  'horizon',
+].map(
+  (word: string): ManifestDeprecation => ({
+    id: `manifest.${word}`,
+    path: `sections/ui/level manifest.${word} (and the discovery mount; ONE-FORMAT OF9b2)`,
+    since: '0.1.0.4',
+    replacement: `look/look's level.${word} (OF9b2)`,
+    migration: 'fp47b-level-look',
+    uses: (
+      shard: Readonly<{ sections: ReadonlyMap<string, unknown> }>,
+    ): boolean => {
+      const manifest = manifestOf(shard.sections)
+      return (
+        typeof manifest === 'object' &&
+        manifest !== null &&
+        Object.hasOwn(manifest, word)
+      )
+    },
+  }),
+)
 /** FORMAT-PRUNE FP34: the first format whose level manifest carries none of the moved words, nor the old pointer. */
 const NO_MOVED_WORDS = '0.1.0.5'
 const NONE = 0
@@ -66,6 +91,10 @@ const GONE_WORDS: readonly string[] = [
   ...MOVED.map(([word]: readonly [string, string]): string => word),
 ]
 
+/** FORMAT-PRUNE FP47b: the first format whose level manifest and discovery data carry no level look (OF9b2 moved it
+ * to `look/look`'s `level`), and the four words. */
+const NO_LEVEL_WORDS = '0.1.0.6'
+const LEVEL_WORDS: readonly string[] = ['sky', 'atmosphere', 'grade', 'horizon']
 /** FORMAT-PRUNE FP36: the discovery mount, which repeats the level manifest as its `data`. */
 const DISCOVERY_MOUNT =
   /^mounts\/shardfiles\/(?:_[a-z]+|[a-z][a-z0-9-]*)\/discovery\.json$/u
@@ -78,16 +107,25 @@ function gated(version: unknown): version is string {
   )
 }
 
-/** The gone words a manifest-shaped object still carries. */
-function keptWords(manifest: unknown): readonly string[] {
+/** The gone words a manifest-shaped object still carries at `version`: the moved words from 0.1.0.5, the level look's
+ * from 0.1.0.6 (FP47b). */
+function keptWords(version: string, manifest: unknown): readonly string[] {
   if (typeof manifest !== 'object' || manifest === null) {
     return []
   }
-  return GONE_WORDS.filter((word: string): boolean =>
-    Object.hasOwn(manifest, word),
-  )
+  const gone =
+    compareShardfileVersions(version, NO_LEVEL_WORDS) >= NONE
+      ? [...GONE_WORDS, ...LEVEL_WORDS]
+      : GONE_WORDS
+  return gone.filter((word: string): boolean => Object.hasOwn(manifest, word))
 }
 
+/** The row that refuses the kept words: FP47b when they are all the level look's, else the moved words' row. */
+function prune(kept: readonly string[], moved = 'FP36'): string {
+  return kept.every((word: string): boolean => LEVEL_WORDS.includes(word))
+    ? 'FP47b'
+    : moved
+}
 /** Parsed JSON, or nothing for bytes that are none (another check's refusal). */
 function jsonOf(bytes: Readonly<Uint8Array>): unknown {
   try {
@@ -126,10 +164,10 @@ function checkDiscoveryMount(
     typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
       ? Reflect.get(parsed, 'data')
       : undefined
-  const kept = keptWords(data)
+  const kept = keptWords(version, data)
   if (kept.length > NONE) {
     throw new Error(
-      `Format ${version} carries no ${kept.map((word: string): string => `data.${word}`).join(', ')} (${path}; FORMAT-PRUNE FP36)`,
+      `Format ${version} carries no ${kept.map((word: string): string => `data.${word}`).join(', ')} (${path}; FORMAT-PRUNE ${prune(kept)})`,
     )
   }
   return bytes
@@ -142,17 +180,20 @@ function checkNoMovedWords(version: unknown, level: unknown): void {
   if (!gated(version)) {
     return
   }
-  const kept = keptWords(manifestOf(new Map([['ui/level', level]])))
+  const kept = keptWords(version, manifestOf(new Map([['ui/level', level]])))
   if (kept.length > NONE) {
     throw new Error(
-      `Format ${version} carries no ${kept.map((word: string): string => `manifest.${word}`).join(', ')} (sections/ui/level; FORMAT-PRUNE FP34)`,
+      `Format ${version} carries no ${kept.map((word: string): string => `manifest.${word}`).join(', ')} (sections/ui/level; FORMAT-PRUNE ${prune(kept, 'FP34')})`,
     )
   }
 }
 
 export {
   GONE_WORDS,
+  LEVEL_DEPRECATIONS,
+  LEVEL_WORDS,
   MANIFEST_MOVED_DEPRECATIONS,
+  NO_LEVEL_WORDS,
   NO_MOVED_WORDS,
   checkDiscoveryMount,
   checkNoMovedWords,

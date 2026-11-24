@@ -1,0 +1,8 @@
+{
+  "about": "FORMAT-PRUNE FP47b: format 0.1.0.6 carries no level look in the level manifest or the discovery mount (step fp47b-level-look lifts it into look/look's level). No real upload is written at 0.1.0.6 until the SDK moves, so the fixture is Brasscap's SS3 chained forward.",
+  "fixtures": [
+    {
+      "chainOf": "corpus/legacy/brasscap-mesa-ss3"
+    }
+  ]
+}

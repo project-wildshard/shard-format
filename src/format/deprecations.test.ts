@@ -160,6 +160,10 @@ describe('the deprecation counter (FE7)', (): void => {
       'manifest.weapon',
       'manifest.species',
       'manifest.spawns',
+      // FP47b: and its level look predates OF9b2's look.level.
+      'manifest.sky',
+      'manifest.atmosphere',
+      'manifest.grade',
     ])
     expect(
       validated.warnings.some((line: string): boolean =>
@@ -172,8 +176,8 @@ describe('the deprecation counter (FE7)', (): void => {
         .deprecations,
     ).toEqual([
       'cook.legacy-data',
-      // FP4, FP33 and FP34: fp4-drop-requires-capabilities, fp33-drop-requires-sdk and fp34-manifest-moved-words mend
-      // them, so the copy counts none.
+      // FP4, FP33, FP34 and FP47b: fp4-drop-requires-capabilities, fp33-drop-requires-sdk, fp34-manifest-moved-words
+      // and fp47b-level-look mend them, so the copy counts none.
     ])
   })
 })

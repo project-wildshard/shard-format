@@ -6,7 +6,11 @@
  * (`species`, `spawns`, `faunaTuning`) became declared rows in the build (OF9b4), which a copy of the file can't redo, so
  * they leave too: a file that still needs them is rebuilt on SDK 0.4.25 or later. */
 import { DEFAULT_SPAWN } from './level-start.ts'
-import { isDiscoveryMount } from './manifest-deprecations.ts'
+import {
+  LEVEL_WORDS,
+  NO_LEVEL_WORDS,
+  isDiscoveryMount,
+} from './manifest-deprecations.ts'
 
 import type { FormatMigration, MigratingShard } from './format-migrations.ts'
 
@@ -127,4 +131,48 @@ const discoveryMovedWords: FormatMigration = {
   },
 }
 
-export { MOVED_WORDS, discoveryMovedWords, manifestMovedWords }
+/** FORMAT-PRUNE FP47b: a manifest-shaped object's level look (sky, atmosphere and grade, and a horizon when it paints
+ * one) fills `look/look`'s empty `level`, as `liftLevelLook` does at the door; the look's own wins. Then the four words
+ * leave the object. A partial look (no sky, atmosphere or grade) has no level to give and only leaves. */
+function liftLevelWords(shard: MigratingShard, manifest: JsonRecord): void {
+  const look = sectionField(shard, 'look/look', 'look')
+  const { sky, atmosphere, grade, horizon } = manifest
+  if (
+    look !== undefined &&
+    look['level'] === undefined &&
+    sky !== undefined &&
+    atmosphere !== undefined &&
+    grade !== undefined
+  ) {
+    look['level'] =
+      horizon === undefined
+        ? { sky, atmosphere, grade }
+        : { sky, atmosphere, grade, horizon }
+  }
+  for (const word of LEVEL_WORDS) {
+    Reflect.deleteProperty(manifest, word)
+  }
+}
+
+/** FORMAT-PRUNE FP47b: format 0.1.0.6 takes the level look out of the level manifest and the discovery mount; it lives
+ * in `look/look`'s `level` (ONE-FORMAT OF9b2). The level manifest gives first, then each discovery mount. */
+const levelLook: FormatMigration = {
+  id: 'fp47b-level-look',
+  to: NO_LEVEL_WORDS,
+  touches: 'data',
+  affects: [],
+  apply: (shard: MigratingShard): void => {
+    const manifest = sectionField(shard, 'ui/level', 'manifest')
+    if (manifest !== undefined) {
+      liftLevelWords(shard, manifest)
+    }
+    for (const [path, mount] of shard.mounts) {
+      const data = isRecord(mount) ? mount['data'] : undefined
+      if (isDiscoveryMount(path) && isRecord(data)) {
+        liftLevelWords(shard, data)
+      }
+    }
+  },
+}
+
+export { MOVED_WORDS, discoveryMovedWords, levelLook, manifestMovedWords }

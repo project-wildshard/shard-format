@@ -14,6 +14,7 @@ import { homesToMembers } from './format-migration-homes.ts'
 import { journalGlyphImages } from './format-migration-journal.ts'
 import {
   discoveryMovedWords,
+  levelLook,
   manifestMovedWords,
 } from './format-migration-manifest.ts'
 import {
@@ -92,6 +93,7 @@ const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
   homesToMembers,
   manifestMovedWords,
   discoveryMovedWords,
+  levelLook,
 ]
 
 /** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its

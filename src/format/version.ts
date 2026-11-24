@@ -5,7 +5,7 @@ import { LEGACY_PREPARATION_SPEC, PREPARED_SDK } from './preparation-spec.ts'
 const ZERO = 0
 const ONE = 1
 
-const SHARDFILE_VERSION = '0.1.0.5'
+const SHARDFILE_VERSION = '0.1.0.6'
 /** Formats whose `shard.json` names its version in `version`, beside the frozen layout marker `formatVersion: 2`.
  * Legacy 0.1 is the byte-preserving spelling of 0.1.0.0. */
 const LEGACY_INDEX_VERSIONS: readonly ['0.1', '0.1.0.0', '0.1.0.1'] = [
@@ -19,8 +19,9 @@ const INDEX_FORMAT_VERSIONS: readonly [
   '0.1.0.2',
   '0.1.0.3',
   '0.1.0.4',
+  '0.1.0.5',
   typeof SHARDFILE_VERSION,
-] = ['0.1.0.2', '0.1.0.3', '0.1.0.4', SHARDFILE_VERSION] as const
+] = ['0.1.0.2', '0.1.0.3', '0.1.0.4', '0.1.0.5', SHARDFILE_VERSION] as const
 const SHARDFILE_VERSIONS: readonly [
   ...typeof LEGACY_INDEX_VERSIONS,
   ...typeof INDEX_FORMAT_VERSIONS,

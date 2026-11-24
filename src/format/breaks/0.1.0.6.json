@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0.6",
+  "entries": [
+    {
+      "path": "./version#SHARDFILE_VERSION",
+      "migration": "fp47b-level-look"
+    },
+    {
+      "path": "./deprecations#manifest.sky",
+      "migration": "fp47b-level-look"
+    },
+    {
+      "path": "./deprecations#manifest.atmosphere",
+      "migration": "fp47b-level-look"
+    },
+    {
+      "path": "./deprecations#manifest.grade",
+      "migration": "fp47b-level-look"
+    },
+    {
+      "path": "./deprecations#manifest.horizon",
+      "migration": "fp47b-level-look"
+    }
+  ]
+}

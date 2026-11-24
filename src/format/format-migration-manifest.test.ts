@@ -4,11 +4,13 @@ import { expect, test } from 'vitest'
 import {
   MOVED_WORDS,
   discoveryMovedWords,
+  levelLook,
   manifestMovedWords,
 } from './format-migration-manifest.ts'
 import { FORMAT_MIGRATIONS } from './format-migrations.ts'
 import {
   GONE_WORDS,
+  LEVEL_WORDS,
   checkDiscoveryMount,
   checkNoMovedWords,
   isDiscoveryMount,
@@ -66,7 +68,7 @@ test('FP34: the start words move into their sections and every moved word leaves
     audio: { loops: [], level: AUDIO },
   })
   expect(manifestMovedWords.to).toBe('0.1.0.5')
-  expect(FORMAT_MIGRATIONS.at(-2)).toBe(manifestMovedWords)
+  expect(FORMAT_MIGRATIONS.at(-3)).toBe(manifestMovedWords)
 })
 
 test('FP34: a section own value wins over the manifest, as at the door', (): void => {
@@ -171,7 +173,7 @@ test('FP36: the discovery data lifts its start words too and drops every moved w
   expect(shard.sections.get('audio/audio')).toEqual({
     audio: { loops: [], level: AUDIO },
   })
-  expect(FORMAT_MIGRATIONS.at(-1)).toBe(discoveryMovedWords)
+  expect(FORMAT_MIGRATIONS.at(-2)).toBe(discoveryMovedWords)
 })
 
 test('FP36: format 0.1.0.5 refuses a discovery mount carrying a moved word; older files and other mounts pass', (): void => {
@@ -208,4 +210,75 @@ test('FP36: format 0.1.0.5 refuses a discovery mount carrying a moved word; olde
 test('FP36: only a shard discovery path is the discovery mount', (): void => {
   expect(isDiscoveryMount(DISCOVERY)).toBe(true)
   expect(isDiscoveryMount('mounts/shardfiles/../discovery.json')).toBe(false)
+})
+
+const SKY = { sunColor: [1, 0.97, 0.9], sunIntensity: 2.7 }
+const ATMOSPHERE = { fogHeight: -20 }
+const GRADE = { contrast: 0.2 }
+const HORIZON = { rings: [] }
+
+/** A file whose level look sits in its manifest and its discovery copy, with `look/look` carrying `look`. */
+function lookShard(manifest: Record<string, unknown>, data: Record<string, unknown>, level?: unknown): MigratingShard {
+  return {
+    index: {},
+    sections: new Map<string, unknown>([
+      ['ui/level', { manifest: { slug: 'driftwood-isle', ...manifest } }],
+      ['look/look', { look: { families: [], ...(level === undefined ? {} : { level }) } }],
+    ]),
+    mounts: new Map<string, unknown>([[DISCOVERY, { version: 1, data: { slug: 'driftwood-isle', ...data } }]]),
+  }
+}
+
+test('FP47b: the level look moves from the manifest into look.level and leaves the discovery copy', (): void => {
+  expect(FORMAT_MIGRATIONS.at(-1)).toBe(levelLook)
+  expect(levelLook.to).toBe('0.1.0.6')
+  const words = { sky: SKY, atmosphere: ATMOSPHERE, grade: GRADE, horizon: HORIZON }
+  const shard = lookShard(words, words)
+  levelLook.apply(shard)
+  expect(shard.sections.get('ui/level')).toEqual({ manifest: { slug: 'driftwood-isle' } })
+  expect(shard.sections.get('look/look')).toEqual({ look: { families: [], level: words } })
+  expect(shard.mounts.get(DISCOVERY)).toEqual({ version: 1, data: { slug: 'driftwood-isle' } })
+})
+
+test('FP47b: a product with no ui/level look gives its discovery copy; look.level of its own wins', (): void => {
+  const words = { sky: SKY, atmosphere: ATMOSPHERE, grade: GRADE }
+  // an open plot: the look only in discovery
+  const plot = lookShard({}, words)
+  levelLook.apply(plot)
+  expect(plot.sections.get('look/look')).toEqual({ look: { families: [], level: words } })
+  expect(plot.mounts.get(DISCOVERY)).toEqual({ version: 1, data: { slug: 'driftwood-isle' } })
+  // built since OF9b2: look.level stands and the discovery copy only leaves
+  const own = { sky: { sunIntensity: 3 }, atmosphere: ATMOSPHERE, grade: GRADE }
+  const built = lookShard({}, words, own)
+  levelLook.apply(built)
+  expect(built.sections.get('look/look')).toEqual({ look: { families: [], level: own } })
+  // a partial look has no level to give, and only leaves
+  const partial = lookShard({}, { sky: SKY })
+  levelLook.apply(partial)
+  expect(partial.sections.get('look/look')).toEqual({ look: { families: [] } })
+  expect(partial.mounts.get(DISCOVERY)).toEqual({ version: 1, data: { slug: 'driftwood-isle' } })
+})
+
+test('FP47b: format 0.1.0.6 refuses the level look in ui/level and the discovery mount; 0.1.0.5 keeps it', (): void => {
+  expect(LEVEL_WORDS).toEqual(['sky', 'atmosphere', 'grade', 'horizon'])
+  const level = { manifest: { slug: 'driftwood-isle', sky: SKY, grade: GRADE } }
+  expect((): void => {
+    checkNoMovedWords('0.1.0.6', level)
+  }).toThrow('Format 0.1.0.6 carries no manifest.sky, manifest.grade (sections/ui/level; FORMAT-PRUNE FP47b)')
+  expect((): void => {
+    checkNoMovedWords('0.1.0.5', level)
+  }).not.toThrow()
+  const bytes = new TextEncoder().encode(JSON.stringify({ version: 1, data: { slug: 'x', atmosphere: ATMOSPHERE } }))
+  expect((): void => {
+    checkDiscoveryMount('0.1.0.6', DISCOVERY, bytes)
+  }).toThrow(`Format 0.1.0.6 carries no data.atmosphere (${DISCOVERY}; FORMAT-PRUNE FP47b)`)
+  expect((): void => {
+    checkDiscoveryMount('0.1.0.5', DISCOVERY, bytes)
+  }).not.toThrow()
+  // the chain's copy passes the gate
+  const shard = lookShard({ sky: SKY, atmosphere: ATMOSPHERE, grade: GRADE }, { sky: SKY })
+  levelLook.apply(shard)
+  expect((): void => {
+    checkNoMovedWords('0.1.0.6', shard.sections.get('ui/level'))
+  }).not.toThrow()
 })
