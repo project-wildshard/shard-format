@@ -382,6 +382,10 @@ describe('validateShardfileStream on the corpus', (): void => {
     ])
     expect([result.index, result.shard]).toEqual([old.index, old.shard])
     expect([...result.sections.keys()]).toEqual([...old.sections.keys()])
+    // FORMAT-PRUNE FP23's gate: the stream reports cook.json's deprecations as the folder does (this export's cook
+    // data is version 1), so the FE7 corpus count sees cook.legacy-data.
+    expect(result.deprecations).toEqual(old.deprecations)
+    expect(result.deprecations).toContain('cook.legacy-data')
     // The second read runs the asset checks.
     expect([result.complete, result.pending, result.reads]).toEqual([
       true,

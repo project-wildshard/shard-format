@@ -197,6 +197,18 @@ async function walkStored(
   }
 }
 
+/** `cook.json`'s parsed JSON for the deprecation report, as the folder validator passes it (FORMAT-PRUNE FP23's
+ * gate: without it the FE7 corpus count never saw `cook.legacy-data`). `cookSteps` already checked it. */
+function streamedCook(
+  replay: Readonly<Replay>,
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
+  index: OutputIndex,
+): unknown {
+  return index.cook === undefined
+    ? undefined
+    : readCanonicalJson(listedBytes(replay, index.cook))
+}
+
 /** `shard.json`, read as `validateShardfileFolder` reads it: bounded, canonical, then parsed. */
 function readIndex(replay: Readonly<Replay>): OutputIndex {
   const shardJson = replay.members.get('shard.json')
@@ -285,7 +297,10 @@ async function validateShardfileStream(
     shard,
     sections,
     scripts,
-    ...deprecationReport({ index, sections }, warnings),
+    ...deprecationReport(
+      { index, sections, cook: streamedCook(replay, index) },
+      warnings,
+    ),
     policy: admittedVerdict(shard),
     complete: true,
     pending: [],
