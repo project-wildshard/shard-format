@@ -98,6 +98,9 @@ export const ClientFeatureSchema: v.GenericSchema<ClientFeatureInput, ClientFeat
   v.strictObject({ kind: v.literal('practice.course'), course: v.picklist(['horse', 'grapple']),
     title: label, blurb: label, icon: v.pipe(v.string(), v.minLength(1), v.maxLength(4096)), art: label, file: label }),
   v.strictObject({ kind: v.literal('held.claims.prepare'), id, source: v.exactOptional(v.strictObject({ slots: label, library: label })) }),
+  // OF30: retired (no pinned product names it since OF22; the engine runs nothing for it), still admitted so retained
+  // originals (Driftwood r4 to r6) keep validating; species-deprecations counts it until the J486 delete.
+  v.strictObject({ kind: v.literal('population.product-creatures') }),
   v.strictObject({ kind: v.literal('population.hull-book') }),
   v.strictObject({ kind: v.literal('held.claims.install'), claims: id, preparation: v.exactOptional(v.picklist(['kit','world'])) }),
   v.strictObject({ kind: v.literal('held.claims.enter'), claims: id,
@@ -174,7 +177,7 @@ export type ClientFeatureInput = { kind: 'strings.register'; } | { kind: 'conten
   species: string; guest: string; weather: string; sites?: string; figures: { rider: string; captain: string;
   storm: 'rider' | 'captain'; }; } | { kind: 'practice.course'; course: 'horse' | 'grapple'; title: string;
   blurb: string; icon: string; art: string; file: string; } | { kind: 'held.claims.prepare'; id: string;
-  source?: { slots: string; library: string; }; } | { kind:
+  source?: { slots: string; library: string; }; } | { kind: 'population.product-creatures'; } | { kind:
   'population.hull-book'; } | { kind: 'held.claims.install'; claims: string; preparation?: 'kit' | 'world'; } |
   { kind: 'held.claims.enter'; claims: string; grapple: { item: string; profile: v.InferInput<typeof GrappleProfileSchema>; hooks: v.InferOutput<typeof GrappleHooksSchema>; presentation: string; };
   } | { kind: 'portal.ride'; rows: v.InferInput<typeof DeclaredPortalRideSchema>; } | { kind: 'held.cosmetics'; } | { kind: 'held.ranged-feel'; } | {
@@ -238,7 +241,7 @@ export type ClientFeatureRow = { kind: 'strings.register'; } | { kind: 'content.
   species: string; guest: string; weather: string; sites?: string; figures: { rider: string; captain: string;
   storm: 'rider' | 'captain'; }; } | { kind: 'practice.course'; course: 'horse' | 'grapple'; title: string;
   blurb: string; icon: string; art: string; file: string; } | { kind: 'held.claims.prepare'; id: string;
-  source?: { slots: string; library: string; }; } | { kind:
+  source?: { slots: string; library: string; }; } | { kind: 'population.product-creatures'; } | { kind:
   'population.hull-book'; } | { kind: 'held.claims.install'; claims: string; preparation?: 'kit' | 'world'; } |
   { kind: 'held.claims.enter'; claims: string; grapple: { item: string; profile: v.InferOutput<typeof GrappleProfileSchema>; hooks: v.InferOutput<typeof GrappleHooksSchema>; presentation: string; };
   } | { kind: 'portal.ride'; rows: v.InferOutput<typeof DeclaredPortalRideSchema>; } | { kind: 'held.cosmetics'; } | { kind: 'held.ranged-feel'; } | {

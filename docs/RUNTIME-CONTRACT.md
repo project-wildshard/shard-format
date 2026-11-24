@@ -229,6 +229,7 @@ a `source`, and `content.catalogue` without finishes need none; `species.program
 | `player.enter` | both | `fallFloor` | `enterClientPlayer`, `installClientPlayerEnter` | — |
 | `population.homes` | view | — | `installClientPopulation` | `sim/runtime-plan`, `sim/scripts` |
 | `population.hull-book` | view | — | `prepareDeclaredHullBookKit` | `actors/species-programs`, `explore/catalogue` |
+| `population.product-creatures` | view | — | — | — |
 | `population.wildlife` | view | — | `clientWildlife`, `installClientWildlife` | — |
 | `portal.ride` | both | `portalRide` | `installDeclaredPortalRide` | — |
 | `practice.course` | view | — | `installPracticeCourse` | — |

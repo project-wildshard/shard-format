@@ -357,6 +357,10 @@
       "page": ["prepareDeclaredHullBookKit"],
       "reads": ["actors/species-programs", "explore/catalogue"]
     },
+    "population.product-creatures": {
+      "page": [],
+      "reads": []
+    },
     "population.wildlife": {
       "page": ["clientWildlife", "installClientWildlife"],
       "reads": []
