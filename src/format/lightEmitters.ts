@@ -12,6 +12,8 @@ const xyz = v.tuple([finite, finite, finite]);
 export const LightPoolRowSchema: v.GenericSchema<LightPoolRowInput, LightPoolRow> = v.strictObject({ id, at: xyz, colour: xyz, gain, radius: positive, cut: positive, initially: v.optional(v.boolean(), true) });
 
 const waves = v.pipe(v.array(xyz), v.maxLength(8));
+/** FORMAT-PRUNE FP49: the scene scalar an emitter's gains follow */
+const followed = v.exactOptional(id);
 /** Client-only emitters use published scene parts, compiled looks and GPU motion; no shard callbacks. */
 export const LightEmittersSchema: v.GenericSchema<LightEmittersRowsInput, LightEmittersRows> = v.pipe(v.unknown(), v.check(isJsonData, 'Emitters require plain JSON'), v.strictObject({
   version: v.literal(1), input: id, clock: id,
@@ -23,7 +25,7 @@ export const LightEmittersSchema: v.GenericSchema<LightEmittersRowsInput, LightE
       shared: v.optional(v.boolean(), true), waves: v.optional(waves, []) })),
     // FORMAT-PRUNE FP49: a lit emitter's light and emissive gains follow a declared host f64 scene scalar (a `weather.fields`
     // field, clamped to 0..1), so a quest's flags can wake a light step by step instead of only switching it
-    field: v.exactOptional(id),
+    field: followed,
   })), v.maxLength(128)),
 }), v.check(row => new Set(row.rows.map(entry => entry.id)).size === row.rows.length
   && new Set(row.rows.flatMap(entry => entry.pool === undefined ? [] : [entry.pool.slot])).size === row.rows.filter(entry => entry.pool !== undefined).length
