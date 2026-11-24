@@ -24,7 +24,8 @@ import { ROOT } from '../test/helpers/corpus.ts'
 // `brasscap.mesa` ledger fact, which a ledger rule turns into an
 // achievement. The gate keeps BM-4's hook as its own untracked quest.
 
-const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+// J506: these BM rows test the SS3 content (corpus/legacy); corpus/exports/ is the current build.
+const BRASSCAP = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 const MESA = 'brasscap.mesa'
 const GATE_FLAG = 'brasscap.gate.open'
 const WYRM = 'dead:dust-wyrm'

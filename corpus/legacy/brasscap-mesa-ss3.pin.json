@@ -1,0 +1,8 @@
+{
+  "about": "J506: corpus/legacy/brasscap-mesa-ss3/ is the SS4 export of shard-brasscap's SS3 commit (format 0.1.0.0, status hidden), kept as the old original the migration-chain tests (format-migrate, format-migration-ops, deprecations, shardfile-stream) carry forward. It does not ship (package files: corpus/exports/**). corpus/exports/brasscap-mesa/ is the current export. Do not edit it.",
+  "repo": "https://github.com/project-wildshard/shard-brasscap",
+  "commit": "34751535e1c70f107b2352d911ac900cc08feb55",
+  "folder": "corpus/legacy/brasscap-mesa-ss3",
+  "files": 200,
+  "tree": "59741f8cc496cf38aa6d6aaebd9363651ba1d41da2fe9b1e8bc3f7b0722e5589"
+}

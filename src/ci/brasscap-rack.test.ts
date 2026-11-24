@@ -12,7 +12,8 @@ import { ROOT } from '../test/helpers/corpus.ts'
 // following the player's bool field that the lever's `taken` projects, so
 // each player sees the rack as their own take left it.
 
-const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+// J506: these BM rows test the SS3 content (corpus/legacy); corpus/exports/ is the current build.
+const BRASSCAP = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 const RIFLE_PANEL = 'brasscap.rack.rifle'
 
 const Num = number()

@@ -1,8 +1,22 @@
 {
-  "about": "SS4 (J342): corpus/exports/brasscap-mesa/ is `wildshard build` of this shard-brasscap commit, written by node src/tools/brasscap-export.ts. Do not edit it by hand: change shard-brasscap, then re-export.",
+  "about": "SS4 (J342, J506): corpus/exports/brasscap-mesa/ is `wildshard build` of this shard-brasscap commit less the files over the 1 MB blob cap (omitted; files and tree are the whole build, kept is the copy), written by node src/tools/brasscap-export.ts. Do not edit it by hand: change shard-brasscap, then re-export.",
   "repo": "https://github.com/project-wildshard/shard-brasscap",
-  "commit": "34751535e1c70f107b2352d911ac900cc08feb55",
+  "commit": "4a6ff4ee9cc3081c7d5c3c71f9b5c65f1698427d",
   "folder": "corpus/exports/brasscap-mesa",
-  "files": 200,
-  "tree": "59741f8cc496cf38aa6d6aaebd9363651ba1d41da2fe9b1e8bc3f7b0722e5589"
+  "files": 223,
+  "tree": "fbbd1acf79e10ac4791b93eb78bc7474f6238dfc062d1bb4432e4ad0fe4103da",
+  "omitted": {
+    "maxBytes": 1048576,
+    "files": [
+      "blobs/glb/00bc05c8751192b1a34f6f465a9313a025593ad8b05faf93e0de79be5100481f.glb",
+      "blobs/glb/4005011ccc42625eba1c8f17b11b72d28fef472a60cf76ff02df2d01698e8201.glb",
+      "blobs/glb/5549852922b45fd3bd21ea288fd98077971b5aad8bb7bdf21aa84b399dde6e0f.glb",
+      "blobs/glb/b2caa6133167c68a09809fe2e0aa29f7f734f40dc5dcca88aa2e3c6c1b97a0a6.glb",
+      "blobs/glb/d48b8f46f616652d3143fdd594d889c57c0ef356b933b4d0bedfafc75de973f8.glb"
+    ]
+  },
+  "kept": {
+    "files": 218,
+    "tree": "8d53fe67f51e43a63d75e9e67c9ceb1c43ed79bfc5e39b0b251f6adb5681e5cc"
+  }
 }

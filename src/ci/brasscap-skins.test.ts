@@ -10,7 +10,8 @@ import { parseGlbData } from '../format/glbCost.ts'
 import { skinLookRules, validateSkinAssets } from '../format/skinAssets.ts'
 import { ROOT, sha256 } from '../test/helpers/corpus.ts'
 
-const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+// J506: these BM rows test the SS3 content (corpus/legacy); corpus/exports/ is the current build.
+const BRASSCAP = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 /** The Wyrm's `platform.clips` attack span, as the export's look holds it. */
 const ATTACK_SPAN = 1.5
 

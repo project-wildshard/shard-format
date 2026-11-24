@@ -52,7 +52,8 @@ function install(): string {
 
 const PACKAGE = install()
 const APP = path.join(dir, 'app')
-const SHIPPED = path.join(PACKAGE, 'corpus/exports/brasscap-mesa')
+// J506: the shipped whole folder is the SS3 copy; corpus/exports/ leaves out its blobs over 1 MB.
+const SHIPPED = path.join(PACKAGE, 'corpus/legacy/brasscap-mesa-ss3')
 const raw = readFileSync(path.join(PACKAGE, 'package.json'), 'utf8')
 const manifest = parse(ManifestSchema, JSON.parse(raw))
 const BIN = path.join(PACKAGE, manifest.bin['shard-format'] ?? 'no bin')

@@ -22,8 +22,12 @@ import type { FormatMigration } from './format-migrations.ts'
 
 type Files = ReadonlyMap<string, Uint8Array>
 
-const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
-  .pathname
+// J506: the SS3 export (format 0.1.0.0) is the old original this chain
+// carries forward; corpus/exports/ is the current one.
+const CORPUS = new URL(
+  '../../corpus/legacy/brasscap-mesa-ss3/',
+  import.meta.url,
+).pathname
 
 function sha256(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex')
@@ -169,7 +173,7 @@ describe('the deprecation counter (FE7)', (): void => {
     ).toEqual([
       'cook.legacy-data',
       'requires.sdk',
-      'requires.capabilities',
+      // FP4: fp4-drop-requires-capabilities mends it, so the copy no longer counts it.
       'manifest.spawn',
       'manifest.audio',
       'manifest.weapon',

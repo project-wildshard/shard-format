@@ -26,6 +26,9 @@ import { listFiles, treeHash } from '../tools/brasscap-export.ts'
 
 const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
 const PIN = path.join(ROOT, 'corpus/exports/brasscap-mesa.pin.json')
+// J506: the BM content rows below read the SS3 export (format 0.1.0.0) kept in corpus/legacy; the current build in
+// corpus/exports/ is checked for its pin, its validation and its player status.
+const SS3 = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 /** The canyon GLB's named empties at the pinned commit (shard-brasscap tools/canyon.ts). */
 const MARKS: ReadonlyMap<string, readonly number[]> = new Map([
   ['spawn', [-1.6, 0.35, 2.6]],
@@ -89,7 +92,7 @@ function files(dir: string): readonly string[] {
 }
 
 function section(file: string): unknown {
-  return JSON.parse(readFileSync(path.join(BRASSCAP, file), 'utf8'))
+  return JSON.parse(readFileSync(path.join(SS3, file), 'utf8'))
 }
 
 test('the folder is data, and validates and packs on its own', (): void => {
@@ -97,11 +100,12 @@ test('the folder is data, and validates and packs on its own', (): void => {
     files(BRASSCAP).filter((file: string): boolean => CODE.test(file)),
     [],
   )
-  const checked = cli(['validate', BRASSCAP])
+  // J506: the current copy leaves out its blobs over 1 MB, so the whole SS3 copy is the one that validates and packs.
+  const checked = cli(['validate', SS3])
   assert.equal(checked.status, 0, checked.stderr)
   assert.match(checked.stdout, /^ok brasscap-mesa r1:/mu)
   const out = path.join(scratch('brasscap-mesa'), 'brasscap-mesa.tar')
-  const packed = cli(['pack', BRASSCAP, '--out', out])
+  const packed = cli(['pack', SS3, '--out', out])
   assert.equal(packed.status, 0, packed.stderr)
   assert.equal(cli(['validate', out]).status, 0)
 })
@@ -179,7 +183,7 @@ function postHp(mark: Mark): number | undefined {
 test('BM-3: the lever-action is admitted and its rack takes it', (): void => {
   const lever = leverRow()
   const hash = lever.asset ?? ''
-  const glb = path.join(BRASSCAP, `blobs/glb/${hash}.glb`)
+  const glb = path.join(SS3, `blobs/glb/${hash}.glb`)
   assert.ok(existsSync(glb), 'the held model ships')
   assert.equal(
     createHash('sha256').update(readFileSync(glb)).digest('hex'),
@@ -215,17 +219,37 @@ test('the look is a sunset: a low, warm sun', (): void => {
 })
 
 test('SS4: the folder is the pinned export, byte for byte', (): void => {
-  const pin = parse(
-    object({ commit: string(), files: Num, tree: string() }),
-    JSON.parse(readFileSync(PIN, 'utf8')),
-  )
+  const Omitted = object({ maxBytes: Num, files: array(string()) })
+  const Kept = object({ files: Num, tree: string() })
+  const Pin = object({
+    commit: string(),
+    files: Num,
+    tree: string(),
+    omitted: Omitted,
+    kept: Kept,
+  })
+  const pin = parse(Pin, JSON.parse(readFileSync(PIN, 'utf8')))
   assert.match(pin.commit, /^[\da-f]{40}$/u)
-  assert.equal(listFiles(BRASSCAP).length, pin.files)
+  const copy = listFiles(BRASSCAP)
+  assert.equal(copy.length + pin.omitted.files.length, pin.files)
+  assert.ok(
+    pin.omitted.files.every((file: string): boolean => !copy.includes(file)),
+  )
+  assert.equal(copy.length, pin.kept.files)
   assert.equal(
     treeHash(BRASSCAP),
-    pin.tree,
+    pin.kept.tree,
     'corpus/exports/brasscap-mesa was edited by hand: re-run node src/tools/brasscap-export.ts',
   )
+})
+
+// QA-FEEDBACK-2026-11-23-b row 3 (Jake: "brasscap is not developer only"): the current export is a player zone.
+test('J506: the current export is a player zone, never hidden', (): void => {
+  const file = path.join(BRASSCAP, 'sections/ui/level.json')
+  const raw: unknown = JSON.parse(readFileSync(file, 'utf8'))
+  const Level = object({ manifest: object({ status: string() }) })
+  const level = parse(Level, raw)
+  assert.equal(level.manifest.status, 'earlyAccess')
 })
 
 const DEPENDENCY_FIELDS = [

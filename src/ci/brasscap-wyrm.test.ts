@@ -11,7 +11,8 @@ import { ROOT } from '../test/helpers/corpus.ts'
 // tell field with a sand-ring burst, then opens the gullet field and lets rounds land (guard 3) for a window; outside
 // it the guard is 1 and nothing lands. The decision and the particle script are compiled once and ship raw.
 
-const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+// J506: these BM rows test the SS3 content (corpus/legacy); corpus/exports/ is the current build.
+const BRASSCAP = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 /** The canyon GLB's `wyrm` empty at the pinned commit (shard-brasscap tools/canyon.ts). */
 const PIT: Vec = [2, 0, -100]
 /** The `attack` clip's span in the Wyrm's generator (shard-brasscap tools/wyrm.ts). */

@@ -143,9 +143,11 @@ function plainShard(
   grapple: readonly GrappleMode[],
   looked: boolean,
 ): Shardfile {
-  // Brasscap's `metal` seeds the claw's looks (the retired Template 2 used its `door`).
+  // Brasscap's `metal` seeds the claw's looks (the retired Template 2 used its `door`); a later Brasscap export
+  // without it seeds from its first material (J506), since any declared material makes the looks resolve.
   const base = outputFixture('corpus')
-  const { metal } = base.look.materials
+  const metal =
+    base.look.materials['metal'] ?? Object.values(base.look.materials)[0]
   if (metal === undefined) {
     throw new Error('Missing seed material')
   }

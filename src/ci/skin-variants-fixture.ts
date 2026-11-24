@@ -41,7 +41,8 @@ const speciesArraySchema = array(unknown())
 const speciesRowsSchema = object({ species: speciesArraySchema })
 const speciesSectionSchema = object({ rows: speciesRowsSchema })
 
-const root = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
+// J506: the skin rows and GLBs here are the SS3 export's (corpus/legacy); corpus/exports/ is the current build.
+const root = new URL('../../corpus/legacy/brasscap-mesa-ss3/', import.meta.url)
 const bytes = (path: string): Uint8Array =>
   new Uint8Array(readFileSync(new URL(path, root)))
 const json = (value: unknown): Uint8Array =>

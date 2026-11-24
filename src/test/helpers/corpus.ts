@@ -16,7 +16,8 @@ import { validateShardfileFolder } from '../../format/shardfileValidation.ts'
 // folder, the real bin, a temp folder that goes when the file's tests end.
 
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url))
-const CORPUS = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+/** J506: the whole SS3 export (format 0.1.0.0); corpus/exports/ leaves out its blobs over 1 MB. */
+const CORPUS = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 const BIN = path.join(ROOT, 'src/cli/bin.mjs')
 
 function sha256(bytes: Readonly<Uint8Array>): string {

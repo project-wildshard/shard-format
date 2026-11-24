@@ -6,7 +6,10 @@
 //   2. extracts that commit with `git archive` into tmp/brasscap-export/ (never the checkout's working tree);
 //   3. installs its own lockfile there (`pnpm install --frozen-lockfile --ignore-scripts`);
 //   4. runs `wildshard build .` there, from the sdk that commit pins;
-//   5. replaces corpus/exports/brasscap-mesa/ with the built folder and writes the pin file beside it.
+//   5. replaces corpus/exports/brasscap-mesa/ with the built folder, less every file over the repo's 1 MB blob cap
+//      (.githooks/lib.mjs MAX_BYTES), and writes the pin file beside it.
+// J506: the pin keeps the whole build's file count and tree hash (engine's test/fixtures/corpus copy names the same
+// ones), lists what it left out, and hashes what is kept; tests that need a whole folder read corpus/legacy/.
 // No three.js lands in shard-format: three is installed in the scratch folder only, and goes with it. Nothing
 // runs in CI; the export test checks the committed folder against the pin's tree hash.
 //   node src/tools/brasscap-export.ts [--commit <rev>] [--repo <shard-brasscap checkout>] [--check] [--keep]
@@ -21,6 +24,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs'
 import path from 'node:path'
@@ -32,6 +36,8 @@ const PIN = path.join(ROOT, 'corpus/exports', `${SLUG}.pin.json`)
 const REPO_URL = 'https://github.com/project-wildshard/shard-brasscap'
 /** The first shard-brasscap commit that holds Brasscap's source (SS3); an export bakes it or a later one. */
 const FLOOR = '34751535e1c70f107b2352d911ac900cc08feb55'
+/** The repo's blob cap (.githooks/lib.mjs MAX_BYTES): a larger built file stays out of the copy. */
+const MAX_BYTES = 1024 * 1024
 
 interface Pin {
   readonly about: string
@@ -40,6 +46,11 @@ interface Pin {
   readonly folder: string
   readonly files: number
   readonly tree: string
+  readonly omitted: {
+    readonly maxBytes: number
+    readonly files: readonly string[]
+  }
+  readonly kept: { readonly files: number; readonly tree: string }
 }
 
 /** Every regular file under `folder`, as sorted `/`-joined relative paths. */
@@ -55,16 +66,50 @@ function listFiles(folder: string): readonly string[] {
     .toSorted()
 }
 
-/** One hash for a whole folder: sha256 over each file's `path NUL sha256 LF`, in path order. */
-function treeHash(folder: string): string {
+/** One hash for a whole folder (or the listed files of it): sha256 over each file's `path NUL sha256 LF`, in path order. */
+function treeHash(
+  folder: string,
+  files: readonly string[] = listFiles(folder),
+): string {
   const tree = createHash('sha256')
-  for (const file of listFiles(folder)) {
+  for (const file of files) {
     const bytes = readFileSync(path.join(folder, file))
     tree.update(
       `${file}\0${createHash('sha256').update(bytes).digest('hex')}\n`,
     )
   }
   return tree.digest('hex')
+}
+
+/** The build's files, those over the blob cap, and the rest (the copy). */
+function split(built: string): {
+  all: readonly string[]
+  big: readonly string[]
+  kept: readonly string[]
+} {
+  const all = listFiles(built)
+  const big = all.filter(
+    (file: string): boolean =>
+      statSync(path.join(built, file)).size > MAX_BYTES,
+  )
+  const kept = all.filter((file: string): boolean => !big.includes(file))
+  return { all, big, kept }
+}
+
+/** --check: is the committed copy what this commit builds? */
+function checkExport(pin: Pin, pinned: Pin | undefined): boolean {
+  const short = pin.commit.slice(0, 7)
+  const same =
+    existsSync(EXPORT) &&
+    treeHash(EXPORT) === pin.kept.tree &&
+    pinned?.tree === pin.tree &&
+    pinned.commit === pin.commit
+  process.stdout.write(
+    same
+      ? `ok: corpus/exports/${SLUG} is shard-brasscap ${short} (${pin.files} files, tree ${pin.tree})\n`
+      : `stale: shard-brasscap ${short} builds tree ${pin.tree}; committed is ${pinned?.tree ?? 'none'} at ${pinned?.commit.slice(0, 7) ?? 'none'}\n`,
+  )
+  return same
 }
 
 function readPin(): Pin | undefined {
@@ -131,35 +176,32 @@ function main(): void {
     ) as { identity?: { slug?: string } }
     if (index.identity?.slug !== SLUG)
       throw new Error(`the build at ${commit} is not ${SLUG}`)
+    const { all, big, kept } = split(built)
     const pin: Pin = {
       about:
-        'SS4 (J342): corpus/exports/brasscap-mesa/ is `wildshard build` of this shard-brasscap commit, written by node src/tools/brasscap-export.ts. Do not edit it by hand: change shard-brasscap, then re-export.',
+        'SS4 (J342, J506): corpus/exports/brasscap-mesa/ is `wildshard build` of this shard-brasscap commit less the files over the 1 MB blob cap (omitted; files and tree are the whole build, kept is the copy), written by node src/tools/brasscap-export.ts. Do not edit it by hand: change shard-brasscap, then re-export.',
       repo: REPO_URL,
       commit,
       folder: `corpus/exports/${SLUG}`,
-      files: listFiles(built).length,
-      tree: treeHash(built),
+      files: all.length,
+      tree: treeHash(built, all),
+      omitted: { maxBytes: MAX_BYTES, files: big },
+      kept: { files: kept.length, tree: treeHash(built, kept) },
     }
     const short = commit.slice(0, 7)
     if (check) {
-      const same =
-        existsSync(EXPORT) &&
-        treeHash(EXPORT) === pin.tree &&
-        pinned?.commit === commit
-      process.stdout.write(
-        same
-          ? `ok: corpus/exports/${SLUG} is shard-brasscap ${short} (${pin.files} files, tree ${pin.tree})\n`
-          : `stale: shard-brasscap ${short} builds tree ${pin.tree}; committed is ${pinned?.tree ?? 'none'} at ${pinned?.commit.slice(0, 7) ?? 'none'}\n`,
-      )
-      if (!same) process.exitCode = 1
+      if (!checkExport(pin, pinned)) process.exitCode = 1
       return
     }
     rmSync(EXPORT, { recursive: true, force: true })
     mkdirSync(path.dirname(EXPORT), { recursive: true })
-    cpSync(built, EXPORT, { recursive: true })
+    for (const file of kept) {
+      mkdirSync(path.dirname(path.join(EXPORT, file)), { recursive: true })
+      cpSync(path.join(built, file), path.join(EXPORT, file))
+    }
     writeFileSync(PIN, `${JSON.stringify(pin, undefined, 2)}\n`)
     process.stdout.write(
-      `exported shard-brasscap ${short} to corpus/exports/${SLUG}: ${pin.files} files, tree ${pin.tree}\n`,
+      `exported shard-brasscap ${short} to corpus/exports/${SLUG}: ${pin.kept.files} of ${pin.files} files (less ${big.length} over ${MAX_BYTES} bytes), tree ${pin.tree}\n`,
     )
   } finally {
     if (!keep) rmSync(work, { recursive: true, force: true })

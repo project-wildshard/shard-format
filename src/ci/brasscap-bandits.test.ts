@@ -22,7 +22,8 @@ import { ROOT } from '../test/helpers/corpus.ts'
 // untracked quest: clearing all three camps completes it, its hook scene
 // sets the gate's shared field, and the gate panel's collider drops on it.
 
-const BRASSCAP = path.join(ROOT, 'corpus/exports/brasscap-mesa')
+// J506: these BM rows test the SS3 content (corpus/legacy); corpus/exports/ is the current build.
+const BRASSCAP = path.join(ROOT, 'corpus/legacy/brasscap-mesa-ss3')
 /** The canyon GLB's camp empties at the pinned commit (shard-brasscap tools/canyon.ts). */
 const CAMPS: readonly (readonly [string, readonly [number, number, number]])[] =
   [

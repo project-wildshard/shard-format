@@ -26,8 +26,12 @@ import type { FormatMigration, MigratingShard } from './format-migrations.ts'
 type Files = ReadonlyMap<string, Uint8Array>
 type Json = Record<string, unknown>
 
-const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
-  .pathname
+// J506: the SS3 export (format 0.1.0.0) is the old original this chain
+// carries forward; corpus/exports/ is the current one.
+const CORPUS = new URL(
+  '../../corpus/legacy/brasscap-mesa-ss3/',
+  import.meta.url,
+).pathname
 const CURRENT = '0.1.0.4'
 
 function sha256(bytes: Uint8Array): string {

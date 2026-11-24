@@ -22,8 +22,12 @@ import type { ShardfileFiles } from './shardfileValidation.ts'
 type Files = ReadonlyMap<string, Readonly<Uint8Array>>
 type Mutation = readonly [name: string, mutate: () => Files]
 
-const CORPUS = new URL('../../corpus/exports/brasscap-mesa/', import.meta.url)
-  .pathname
+// J506: the SS3 export (format 0.1.0.0) is the old original this chain
+// carries forward; corpus/exports/ is the current one.
+const CORPUS = new URL(
+  '../../corpus/legacy/brasscap-mesa-ss3/',
+  import.meta.url,
+).pathname
 const ODD_CHUNK = 7919
 
 function sha256(bytes: Readonly<Uint8Array>): string {
