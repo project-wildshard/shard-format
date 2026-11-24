@@ -57,42 +57,29 @@ const MANIFEST_MOVED_DEPRECATIONS: readonly ManifestDeprecation[] = MOVED.map(
   }),
 )
 
-/** FORMAT-PRUNE FP47c: the level manifest's map image (OF9b3 moved the map to `look/map`); FP34's step drops it. */
-const MAP_IMAGE_DEPRECATION: ManifestDeprecation = {
-  id: 'manifest.minimap.image',
-  path: 'sections/ui/level manifest.minimap.image (ONE-FORMAT OF9b3)',
-  since: '0.1.0.4',
-  replacement: 'look/map (OF9b3)',
-  migration: 'fp34-manifest-moved-words',
-  uses: (
-    shard: Readonly<{ sections: ReadonlyMap<string, unknown> }>,
-  ): boolean => keptMapImage(manifestOf(shard.sections)).length > NONE,
-}
 /** FORMAT-PRUNE FP47b: each level look word the manifest carried before OF9b2, and the chain step that lifts it. */
 const LEVEL_DEPRECATIONS: readonly ManifestDeprecation[] = [
   'sky',
   'atmosphere',
   'grade',
   'horizon',
-].map(
-  (word: string): ManifestDeprecation => ({
-    id: `manifest.${word}`,
-    path: `sections/ui/level manifest.${word} (and the discovery mount; ONE-FORMAT OF9b2)`,
-    since: '0.1.0.4',
-    replacement: `look/look's level.${word} (OF9b2)`,
-    migration: 'fp47b-level-look',
-    uses: (
-      shard: Readonly<{ sections: ReadonlyMap<string, unknown> }>,
-    ): boolean => {
-      const manifest = manifestOf(shard.sections)
-      return (
-        typeof manifest === 'object' &&
-        manifest !== null &&
-        Object.hasOwn(manifest, word)
-      )
-    },
-  }),
-)
+].map((word: string): ManifestDeprecation => ({
+  id: `manifest.${word}`,
+  path: `sections/ui/level manifest.${word} (and the discovery mount; ONE-FORMAT OF9b2)`,
+  since: '0.1.0.4',
+  replacement: `look/look's level.${word} (OF9b2)`,
+  migration: 'fp47b-level-look',
+  uses: (
+    shard: Readonly<{ sections: ReadonlyMap<string, unknown> }>,
+  ): boolean => {
+    const manifest = manifestOf(shard.sections)
+    return (
+      typeof manifest === 'object' &&
+      manifest !== null &&
+      Object.hasOwn(manifest, word)
+    )
+  },
+}))
 /** FORMAT-PRUNE FP34: the first format whose level manifest carries none of the moved words, nor the old pointer. */
 // 0.75.0 shipped format 0.1.0.5 without FP34 and FP36, so they ride 0.1.0.6 with FP47b.
 const NO_MOVED_WORDS = '0.1.0.6'
@@ -141,6 +128,18 @@ function keptMapImage(manifest: unknown): readonly string[] {
   return typeof map === 'object' && map !== null && Object.hasOwn(map, 'image')
     ? ['minimap.image']
     : []
+}
+
+/** FORMAT-PRUNE FP47c: the level manifest's map image (OF9b3 moved the map to `look/map`); FP34's step drops it. */
+const MAP_IMAGE_DEPRECATION: ManifestDeprecation = {
+  id: 'manifest.minimap.image',
+  path: 'sections/ui/level manifest.minimap.image (ONE-FORMAT OF9b3)',
+  since: '0.1.0.4',
+  replacement: 'look/map (OF9b3)',
+  migration: 'fp34-manifest-moved-words',
+  uses: (
+    shard: Readonly<{ sections: ReadonlyMap<string, unknown> }>,
+  ): boolean => keptMapImage(manifestOf(shard.sections)).length > NONE,
 }
 /** The row that refuses the kept words: FP47b when they are all the level look's, else the moved words' row. */
 function prune(kept: readonly string[], moved = 'FP36'): string {
