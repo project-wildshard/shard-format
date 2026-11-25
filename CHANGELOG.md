@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.79.0 (2026-11-25)
+
+- Grass card clumps are optional: a shard may ship all of them or none.
+- Texture cost counts KTX2 files at their real size.
+- Old unused file fields are gone (format prune); files at an older version are mended on load.
+
 ## v0.78.0 (2026-11-24)
 
 - A light emitter may follow a scene field, so a quest can wake a light step by step instead of only switching it.
