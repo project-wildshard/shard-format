@@ -5,7 +5,7 @@
 //   1. resolves the commit in a local shard-brasscap checkout (3475153 or later, the first commit with the source);
 //   2. extracts that commit with `git archive` into tmp/brasscap-export/ (never the checkout's working tree);
 //   3. installs its own lockfile there (`pnpm install --frozen-lockfile --ignore-scripts`);
-//   4. runs `wildshard build .` there, from the sdk that commit pins;
+//   4. runs `wildshard build . <work>/out/brasscap-mesa` there, from the sdk that commit pins;
 //   5. replaces corpus/exports/brasscap-mesa/ with the built folder, less every file over the repo's 1 MB blob cap
 //      (.githooks/lib.mjs MAX_BYTES), and writes the pin file beside it.
 // J506: the pin keeps the whole build's file count and tree hash (engine's test/fixtures/corpus copy names the same
@@ -169,8 +169,9 @@ function main(): void {
       ['install', '--frozen-lockfile', '--prefer-offline', '--ignore-scripts'],
       source,
     )
-    run('pnpm', ['exec', 'wildshard', 'build', '.'], source)
-    const built = path.join(source, 'public/shardfiles', SLUG)
+    // The folder is named, not left to the sdk's default (public/shardfiles/<slug> before 0.5.0, out/<slug> after).
+    const built = path.join(source, 'out', SLUG)
+    run('pnpm', ['exec', 'wildshard', 'build', '.', built], source)
     const index = JSON.parse(
       readFileSync(path.join(built, 'shard.json'), 'utf8'),
     ) as { identity?: { slug?: string } }
