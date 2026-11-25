@@ -65,7 +65,10 @@ function preflightDeclaredCosts(source: Shardfile, memory?: MemoryAdmission): { 
     if (cost.resident > tile.decoded + tile.gpu || cost.compressed > tile.compressed || cost.triangles > tile.triangles || cost.draws > tile.draws) throw new Error('declared tile or far cost exceeds budget');
   }
   const resident = Object.values(commons).reduce((total, cost) => total + cost.decoded + cost.gpu, 0);
-  const worst = worstContentCost(source, resident);
+  // QA 11-25 row 45: a KTX2 file's decoded bytes never stay resident beside its upload, so the declared ceiling charges it
+  // its GPU bytes alone, as the measured stage does (RGBA fallback kept: no device transcode is assumed). Nine Dragon's
+  // sign atlases were charged twice and refused it at 1,500.79 MB, where its phone estimate is 1,410.59 MB.
+  const worst = worstContentCost(textureLibrarySource(source, new Map()), resident);
   if (!acceptsShardfileCost(memory, source, 'declared', worst)) throw new Error(`declared worst-location total exceeds envelope: play ${worst.playing}, load ${worst.loading}${overHardLine(Math.max(worst.playing, worst.loading))}`);
   return { commons, worst };
 }
