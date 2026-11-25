@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.79.1 (2026-11-25)
+
+- The format release no longer waits on unrelated store uploads.
+- Grass card clumps are optional: a shard may ship all of them or none.
+- Texture cost counts KTX2 files at their real size.
+- Old unused file fields are gone (format prune); files at an older version are mended on load.
+
 ## v0.79.0 (2026-11-25)
 
 - Grass card clumps are optional: a shard may ship all of them or none.
