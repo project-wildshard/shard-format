@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.79.2 (2026-11-25)
+
+- Uploads from @wildshard/upload 0.4.22 and 0.4.25 pass again: 0.79.1 refused their requires.sdk.
+- An upload's deleted fields are mended before the strict check; its hashes are checked as sent.
+- A wrong source or preparation hash is still refused.
+- A test runs those clients' files through both checks on main and every release branch.
+
 ## v0.79.1 (2026-11-25)
 
 - The format release no longer waits on unrelated store uploads.
