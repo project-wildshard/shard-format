@@ -46,3 +46,5 @@ checkout, like CI or the push gate:
   live.
 - The pine-hollow case in `shardfile-stream-pins.test.ts` reads
   engine's live pins, which the 0.5.1 roll is changing.
+
+Step 3: `agent-sync --from` re-points the kit skills at `src/scripts/.kit/`.
