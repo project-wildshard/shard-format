@@ -9,7 +9,8 @@ import { after, test } from 'node:test';
 import { cleanEnv, engineTypecheck, main } from '../../scripts/engine-typecheck.mjs';
 
 const repo = resolve(import.meta.dirname, '../..');
-const tsc = join(repo, 'node_modules/.bin/tsc');
+// The lockfile's TypeScript 6 (a devDependency), so a gate copy's fresh install carries it too.
+const tsc = join(repo, 'node_modules/@typescript/typescript6/bin/tsc6');
 mkdirSync(join(repo, 'tmp'), { recursive: true });
 const base = mkdtempSync(join(repo, 'tmp/engine-typecheck-test-'));
 after(() => rmSync(base, { recursive: true, force: true }));
@@ -42,7 +43,7 @@ mkdirSync(engine);
 git(base, ['init', '--quiet', '--bare', origin]);
 git(engine, ['init', '--quiet', '-b', 'main']);
 write(engine, {
-  'package.json': JSON.stringify({ name: 'engine', private: true, scripts: { typecheck: `test ! -e public && ${JSON.stringify(tsc)} -p tsconfig.json` } }),
+  'package.json': JSON.stringify({ name: 'engine', private: true, scripts: { typecheck: `test ! -e public && node ${JSON.stringify(tsc)} -p tsconfig.json` } }),
   'pnpm-lock.yaml': "lockfileVersion: '9.0'\n\nsettings:\n  autoInstallPeers: true\n  excludeLinksFromLockfile: false\n\nimporters:\n\n  .: {}\n",
   'pnpm-workspace.yaml': 'packages: []\n',
   'tsconfig.json': JSON.stringify({ compilerOptions: { strict: true, noEmit: true, module: 'esnext', moduleResolution: 'bundler', allowImportingTsExtensions: true, target: 'es2022', types: [] }, include: ['src'] }),
