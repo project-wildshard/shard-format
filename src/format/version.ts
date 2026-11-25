@@ -83,7 +83,10 @@ const SHARDFILE_FLOOR = '0.1.0.1'
 /** Whether a reader at `reader` reads `input`: a known format from the floor up to the reader's own (J486). FORMAT-PRUNE
  * FP24 deleted WR11's N-1 test (`compatibleShardfileVersion`): every known format shares one breaking format, so the
  * window is the known list cut at the reader. */
-function readsFormat(input: unknown, reader: string = SHARDFILE_VERSION): boolean {
+function readsFormat(
+  input: unknown,
+  reader: string = SHARDFILE_VERSION,
+): boolean {
   return (
     SHARDFILE_VERSIONS.some((version: string): boolean => version === input) &&
     compareShardfileVersions(input, reader) <= ZERO

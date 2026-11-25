@@ -194,7 +194,10 @@ describe('the registry check (FE8)', (): void => {
       [[step('a', noop), step('a', noop)], 'registered twice'],
       [[step('a', noop, { to: '0.9.0.0' })], 'no format version'],
       [
-        [step('a', noop, { to: '0.1.0.2' }), step('b', noop, { to: '0.1.0.1' })],
+        [
+          step('a', noop, { to: '0.1.0.2' }),
+          step('b', noop, { to: '0.1.0.1' }),
+        ],
         'out of version order',
       ],
       [[step('a', noop, { affects: ['save'] })], 'without a save migration'],
