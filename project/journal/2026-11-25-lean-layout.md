@@ -48,3 +48,6 @@ checkout, like CI or the push gate:
   engine's live pins, which the 0.5.1 roll is changing.
 
 Step 3: `agent-sync --from` re-points the kit skills at `src/scripts/.kit/`.
+
+`packages/wire`'s check formats with the root `.oxfmtrc.json` (it named
+`kit/`). The mover never looks inside nested packages.
