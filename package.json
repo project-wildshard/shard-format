@@ -461,6 +461,8 @@
   },
   "packageManager": "pnpm@10.34.9",
   "scripts": {
+    "dev": "node --test --watch 'src/!(format|ci)/**/*.test.ts'",
+    "build": "npm pack --dry-run --ignore-scripts",
     "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "typecheck": "node src/scripts/.kit/typecheck.mjs && npr tsc -p src/format/tsconfig.json && npr tsc -p src/format/tsconfig.lib.json && npr tsc -p tsconfig.browser-tools.json",
     "lint": "node src/scripts/.kit/bin-tools.mjs -c .oxlintrc.author.json --type-aware --deny-warnings --no-error-on-unmatched-pattern src packages",
