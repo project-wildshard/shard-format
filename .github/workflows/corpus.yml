@@ -11,6 +11,14 @@ name: corpus
 
 on:
   workflow_call:
+    # meta QA 11-25 row 45: a format release asks for every stored shard to read, not for a clean store. Store drift
+    # (another lane's superseded or proof upload the 09:17 prune has not taken yet) held v0.79.0's publish, so the
+    # release passes `store: reads`; the nightly and a dispatch keep --strict-store.
+    inputs:
+      store:
+        description: strict (the nightly) or reads (a release, drift reported but not blocking)
+        type: string
+        default: strict
   schedule:
     - cron: '17 10 * * *'
   workflow_dispatch:
@@ -52,7 +60,10 @@ jobs:
           key: corpus-${{ github.run_id }}
           restore-keys: corpus-
       - name: Validate every stored shard
+        env:
+          STORE: ${{ inputs.store }}
         run: |
           started=$(date +%s)
-          node src/cli/main.ts corpus --cache tmp/corpus --strict-store
+          if [ "$STORE" = reads ]; then strict=(); else strict=(--strict-store); fi
+          node src/cli/main.ts corpus --cache tmp/corpus "${strict[@]}"
           echo "::notice::corpus took $(( $(date +%s) - started )) s"

@@ -35,6 +35,8 @@ jobs:
   corpus:
     if: github.event_name == 'push' && !startsWith(github.ref_name, 'wire-v')
     uses: ./.github/workflows/corpus.yml
+    with:
+      store: reads
   publish:
     needs: corpus
     if: always() && github.event_name == 'push' && (needs.corpus.result == 'success' || (needs.corpus.result == 'skipped' && startsWith(github.ref_name, 'wire-v')))
