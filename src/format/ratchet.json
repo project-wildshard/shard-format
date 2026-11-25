@@ -2943,7 +2943,7 @@
    "typescript(no-generated-empty-object-type)": 2,
    "typescript(prefer-readonly-parameter-types)": 8,
    "unicorn(filename-case)": 1,
-   "unicorn(max-nested-calls)": 97,
+   "unicorn(max-nested-calls)": 87,
    "unicorn(number-literal-case)": 1,
    "unicorn(numeric-separators-style)": 1
   },

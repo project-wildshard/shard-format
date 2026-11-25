@@ -47,6 +47,8 @@ const pixel: v.GenericSchema<PostGraphPixelInput, PostGraphPixel> = v.variant('o
 const link = v.union([name, finite]);
 const tiers = v.pipe(v.array(v.picklist(['phone', 'desktop'])), v.minLength(1));
 
+/** QA 11-24 row 70: a painted grass's card atlas (a phone and a full size), omitted by a grass without cards. */
+const grassCards = v.strictObject({ url: v.pipe(v.string(), v.regex(/^\/[A-Za-z0-9/_.-]+$/u)), phoneUrl: v.pipe(v.string(), v.regex(/^\/[A-Za-z0-9/_.-]+$/u)), name: v.pipe(v.string(), v.minLength(1), v.maxLength(64)) });
 const triple = v.tuple([finite, finite, finite]), quad = v.tuple([finite, finite, finite, finite]);
 /** G615: a painterly level's painted world (the post-graph look's optional `painted` row); each part's own host admits its
  *  row (air, ground, tiles, capture, grass rows, the painterly world's rows, panorama and key). */
@@ -63,7 +65,7 @@ export const PaintedWorldSchema: v.GenericSchema<PaintedWorldRowInput, PaintedWo
   world: v.exactOptional(v.strictObject({ rows: v.unknown(), panorama: v.unknown(), key: v.unknown(), ridge: v.pipe(v.array(finite), v.maxLength(8192)),
     grade: v.strictObject({ lend: v.pipe(v.string(), v.minLength(1), v.maxLength(128)), uniforms: v.record(v.pipe(v.string(), v.regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/u)), finite), saturation: v.string() }),
     tint: v.record(v.pipe(v.string(), v.regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}$/u)), v.picklist(['key', 'moon', 'light', 'veil', 'veilColour', 'flash'])) })),
-  grass: v.strictObject({ rows: v.unknown(), cards: v.strictObject({ url: v.pipe(v.string(), v.regex(/^\/[A-Za-z0-9/_.-]+$/u)), phoneUrl: v.pipe(v.string(), v.regex(/^\/[A-Za-z0-9/_.-]+$/u)), name: v.pipe(v.string(), v.minLength(1), v.maxLength(64)) }) }),
+  grass: v.strictObject({ rows: v.unknown(), cards: v.exactOptional(grassCards) }),
 });
 /** An admitted painted world row. */
 
@@ -199,7 +201,7 @@ interface PaintedWorldRowFields {
     };
     grass: {
         rows: unknown;
-        cards: {
+        cards?: {
             url: string;
             phoneUrl: string;
             name: string;
