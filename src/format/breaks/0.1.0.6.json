@@ -76,6 +76,26 @@
     {
       "path": "./loadout#LoadoutSchema.launcher.slot",
       "noFileChange": "FP22d: a held weapon slot also accepts declared.weapon.<id> beside the closed names (a widening); every file that validated still validates, no shard file field changes"
+    },
+    {
+      "path": "./fieldPresentation#GrassPresentationSchema",
+      "noFileChange": "QA 11-24 row 70: grass card clumps become optional, all together; every kept file has all of them (three looks, both tiers' cards and scenes, cardsHeight), so it admits exactly as before"
+    },
+    {
+      "path": "./fieldPresentation#GrassPresentationSchema.view.looks",
+      "noFileChange": "QA 11-24 row 70: grass card clumps become optional, all together; every kept file has all of them (three looks, both tiers' cards and scenes, cardsHeight), so it admits exactly as before"
+    },
+    {
+      "path": "./fieldPresentation#GrassPresentationSchema.view.looks[0]",
+      "noFileChange": "QA 11-24 row 70: grass card clumps become optional, all together; every kept file has all of them (three looks, both tiers' cards and scenes, cardsHeight), so it admits exactly as before"
+    },
+    {
+      "path": "./fieldPresentation#GrassPresentationSchema.view.looks[1]",
+      "noFileChange": "QA 11-24 row 70: grass card clumps become optional, all together; every kept file has all of them (three looks, both tiers' cards and scenes, cardsHeight), so it admits exactly as before"
+    },
+    {
+      "path": "./fieldPresentation#GrassPresentationSchema.view.looks[2]",
+      "noFileChange": "QA 11-24 row 70: grass card clumps become optional, all together; every kept file has all of them (three looks, both tiers' cards and scenes, cardsHeight), so it admits exactly as before"
     }
   ]
 }
