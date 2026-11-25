@@ -1,21 +1,4 @@
 {
- "0.1.0.0 src/test/fixtures/cli-fixture": {
-  "fp6-four-part-version": "47062959f18ac1c660568be4d300f7e81f34d8cc3a4077d1c048ed1f24ec8eee",
-  "journal-glyph-images": "c2a72758c6bd1b1db3ec32c58587d40592dc1c10504e3dcb892275b24f08cc52",
-  "fp8-shardfile-pointer": "c2a72758c6bd1b1db3ec32c58587d40592dc1c10504e3dcb892275b24f08cc52",
-  "fp3-drop-runtime-trust": "c2a72758c6bd1b1db3ec32c58587d40592dc1c10504e3dcb892275b24f08cc52",
-  "cp14-format-version": "0d2bb99b1716cabbdc1f4b43f858834ed1ec30cc839e77f9b3c3d81329cd9114",
-  "fp4-drop-empty-index-fields": "4bec260c8a5db339ea93b9b9771af027d8ba25c48286222183334a53e07d3dd2",
-  "pr4-preparation-marker": "cb0ed4b6d57dccffd74dd7a2fef32841302a0fc95e063f055fa37024e6d4f294",
-  "fp26-save-revision": "b6270b07409d5100b1b50a329c6ed2f4a9bca4b0df77fac917f9f06c58ae34d0",
-  "fp10-schema-source": "b6270b07409d5100b1b50a329c6ed2f4a9bca4b0df77fac917f9f06c58ae34d0",
-  "fp4-drop-requires-capabilities": "39cb7b13ae644bd7d34ae97bed9fba403dc51bf8588761ee967724fa0741132f",
-  "fp33-drop-requires-sdk": "d42547348b0cd06ab21b54226bc21546b1613c41a697b0215c6ac7ecaf0c3300",
-  "fp43-homes-to-members": "d42547348b0cd06ab21b54226bc21546b1613c41a697b0215c6ac7ecaf0c3300",
-  "fp34-manifest-moved-words": "f30ee22f36997e669dda45501187b2bc3929c337daa5453dbdb04e563cd22bdb",
-  "fp36-discovery-moved-words": "f30ee22f36997e669dda45501187b2bc3929c337daa5453dbdb04e563cd22bdb",
-  "fp47b-level-look": "f30ee22f36997e669dda45501187b2bc3929c337daa5453dbdb04e563cd22bdb"
- },
  "0.1.0.1 src/test/fixtures/cli-fixture": {
   "cp14-format-version": "ca3dc67c5fc73fc659ba4df351d8326c512421286d75c9168ed154871840dc99",
   "fp4-drop-empty-index-fields": "06eaac2207a7ba2e3d7feb75bf2f3c9015fbc416d3ae241c82e723fa5bb77dbb",

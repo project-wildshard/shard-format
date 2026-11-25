@@ -19,12 +19,12 @@ import { SHARDFILE_VERSION } from './version.ts'
 
 import type { FormatMigration } from './format-migrations.ts'
 
-// SHARD-COMPAT CP1: the chain on the made-up CLI product (format `0.1`, unprepared), with FORMAT-PRUNE FP6 as its first step.
+// SHARD-COMPAT CP1: the chain on the made-up CLI product (format `0.1.0.1`, the floor since FORMAT-PRUNE FP24, unprepared).
 
 type Files = ReadonlyMap<string, Uint8Array>
 type Json = Record<string, unknown>
 
-// ZONE-SNAPSHOTS ZS5 (J507): the made-up CLI product (format 0.1, one terrain
+// ZONE-SNAPSHOTS ZS5 (J507): the made-up CLI product (format 0.1.0.1, one terrain
 // tile) is the old original this chain carries forward; no stored zone.
 const CORPUS = new URL('../test/fixtures/cli-fixture/', import.meta.url)
   .pathname
@@ -78,26 +78,27 @@ describe('the migration chain', (): void => {
     ).toBe((index['build'] as Json)['sourceHash'])
   })
 
-  test('FP6 writes the four-part spelling and the copy validates', (): void => {
+  test('FP24: the chain starts at the floor, and a two-part original is below it', (): void => {
     const original = corpusFiles()
-    const migrated = migrateShardfile(original, { hash: sha256, to: '0.1.0.0' })
-    expect(migrated).toMatchObject({
-      from: '0.1',
-      to: '0.1.0.0',
-      applied: ['fp6-four-part-version'],
-    })
-    const index = json(migrated.files, 'shard.json')
-    expect(index['version']).toBe('0.1.0.0')
-    expect(index['requires']).not.toHaveProperty('sdk')
+    const migrated = migrateShardfile(original, { hash: sha256, to: '0.1.0.2' })
+    expect(migrated).toMatchObject({ from: '0.1.0.1', to: '0.1.0.2' })
+    expect(migrated.applied).not.toContain('fp6-four-part-version')
     expect(migrated.files.has('validation.json')).toBe(false)
     expect(migrated.digest).toBe(
       sha256(migrated.files.get('shard.json') ?? new Uint8Array()),
     )
-    expect(
-      validateMigrated(migrated.files, { hash: sha256, judged: 'stored' }).index
-        .version,
-    ).toBe('0.1.0.0')
     expect(original.get('shard.json')).toEqual(corpusFiles().get('shard.json'))
+    const twoPart = new Map(original).set(
+      'shard.json',
+      new TextEncoder().encode(
+        new TextDecoder()
+          .decode(original.get('shard.json'))
+          .replace('"version":"0.1.0.1"', '"version":"0.1"'),
+      ),
+    )
+    expect((): unknown => migrateShardfile(twoPart, { hash: sha256 })).toThrow(
+      'below the floor 0.1.0.1',
+    )
   })
 
   test('twice equals once, and the chain is deterministic', (): void => {
@@ -119,7 +120,7 @@ describe('the migration chain', (): void => {
     let ran = false
     const spy: FormatMigration = {
       id: 'spy',
-      to: '0.1.0.0',
+      to: SHARDFILE_VERSION,
       touches: 'data',
       affects: [],
       apply: (): void => {
@@ -157,8 +158,11 @@ describe('the migration chain', (): void => {
       hash: sha256,
       migrations: [...FORMAT_MIGRATIONS, edit],
     })
+    // The made-up product is at the floor, 0.1.0.1: the steps that write it have nothing to do there.
     expect(migrated.applied).toEqual([
-      ...FORMAT_MIGRATIONS.map((step: FormatMigration): string => step.id),
+      ...FORMAT_MIGRATIONS.filter((step: FormatMigration): boolean =>
+        versionBelow('0.1.0.1', step.to),
+      ).map((step: FormatMigration): string => step.id),
       'test-edit',
     ])
     expect(migrated.to).toBe(SHARDFILE_VERSION)
@@ -210,10 +214,9 @@ describe('the migration chain', (): void => {
     ).toThrow('Format 0.1.0.2 drops version, schemas')
   })
 
-  test('the spelling step sits just below its four-part twin', (): void => {
-    expect(versionBelow('0.1', '0.1.0.0')).toBe(true)
-    expect(versionBelow('0.1.0.0', '0.1.0.0')).toBe(false)
-    expect(versionBelow('0.1.0.0', '0.1')).toBe(false)
+  test('a step runs on every file below its version and on none at it', (): void => {
+    expect(versionBelow('0.1.0.1', '0.1.0.1')).toBe(false)
+    expect(versionBelow('0.1.0.2', '0.1.0.1')).toBe(false)
     expect(versionBelow('0.1.0.1', '0.1.0.2')).toBe(true)
   })
 

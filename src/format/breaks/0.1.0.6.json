@@ -204,6 +204,26 @@
     {
       "path": "./sectionVersions#ACCEPTED_SECTION_VERSIONS",
       "noFileChange": "FORMAT-PRUNE FP20: the three deleted species-program sections leave the accepted section versions with their schemas; no live file carries them"
+    },
+    {
+      "path": "./outputIndex#OutputIndexSchema.version|",
+      "noFileChange": "FORMAT-PRUNE FP24 (J508) deletes the two-part spelling 0.1 and 0.1.0.0, FP6's chain step and the version.two-part deprecation at zero live users: every kept original declares 0.1.0.4 or 0.1.0.6 (39 of 39 read 2026-11-25 20:18 UTC; corpus/usage.json counts no version.two-part or fp6 user), so the floor moves to 0.1.0.1"
+    },
+    {
+      "path": "./version#LEGACY_INDEX_VERSIONS",
+      "noFileChange": "FORMAT-PRUNE FP24 (J508) deletes the two-part spelling 0.1 and 0.1.0.0, FP6's chain step and the version.two-part deprecation at zero live users: every kept original declares 0.1.0.4 or 0.1.0.6 (39 of 39 read 2026-11-25 20:18 UTC; corpus/usage.json counts no version.two-part or fp6 user), so the floor moves to 0.1.0.1"
+    },
+    {
+      "path": "./version#SHARDFILE_VERSIONS",
+      "noFileChange": "FORMAT-PRUNE FP24 (J508) deletes the two-part spelling 0.1 and 0.1.0.0, FP6's chain step and the version.two-part deprecation at zero live users: every kept original declares 0.1.0.4 or 0.1.0.6 (39 of 39 read 2026-11-25 20:18 UTC; corpus/usage.json counts no version.two-part or fp6 user), so the floor moves to 0.1.0.1"
+    },
+    {
+      "path": "./version#SHARDFILE_FLOOR",
+      "noFileChange": "FORMAT-PRUNE FP24 (J508) deletes the two-part spelling 0.1 and 0.1.0.0, FP6's chain step and the version.two-part deprecation at zero live users: every kept original declares 0.1.0.4 or 0.1.0.6 (39 of 39 read 2026-11-25 20:18 UTC; corpus/usage.json counts no version.two-part or fp6 user), so the floor moves to 0.1.0.1"
+    },
+    {
+      "path": "./version#compatibleShardfileVersion",
+      "noFileChange": "FORMAT-PRUNE FP24: WR11's N-1 test compatibleShardfileVersion goes; every known format shares one breaking format, so readsFormat (the known list cut at the reader) answers the same for every file a reader admits; engine folder.ts and api-server format-version.ts move to it"
     }
   ]
 }

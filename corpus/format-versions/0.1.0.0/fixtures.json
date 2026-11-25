@@ -1,8 +1,0 @@
-{
- "about": "ZONE-SNAPSHOTS ZS4 (J507): format 0.1.0.0 (spelled 0.1) on the made-up CLI product (one terrain tile, ui strings); no stored zone. It goes with FP24 (J508).",
- "fixtures": [
-  {
-   "folder": "src/test/fixtures/cli-fixture"
-  }
- ]
-}

@@ -1,5 +1,5 @@
 {
- "chainId": "7fb99df514911b2d33971020558588383cb20bf49e901465396668b58c40d068",
+ "chainId": "20f96edad33e3a752996f20c3358eeb95786a55265f8dade71cbf6d05845b910",
  "excluded": {
   "./aacIndex#indexRecordingAac": "function: behaviour, not a shape (its schema inputs are locked)",
   "./achievementCounters#parseAchievementCounterData": "function: behaviour, not a shape (its schema inputs are locked)",
@@ -695,9 +695,9 @@
   "./vehicles#vehicleRules": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#carriesEngineFloor": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#compareShardfileVersions": "function: behaviour, not a shape (its schema inputs are locked)",
-  "./version#compatibleShardfileVersion": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#outputIndexEnvelope": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#parseShardfileVersion": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./version#readsFormat": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#shardfileFormatOf": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesIndexFormatVersion": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesPreparationMarker": "function: behaviour, not a shape (its schema inputs are locked)",

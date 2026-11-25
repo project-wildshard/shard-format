@@ -7,12 +7,8 @@ const ONE = 1
 
 const SHARDFILE_VERSION = '0.1.0.6'
 /** Formats whose `shard.json` names its version in `version`, beside the frozen layout marker `formatVersion: 2`.
- * Legacy 0.1 is the byte-preserving spelling of 0.1.0.0. */
-const LEGACY_INDEX_VERSIONS: readonly ['0.1', '0.1.0.0', '0.1.0.1'] = [
-  '0.1',
-  '0.1.0.0',
-  '0.1.0.1',
-] as const
+ * FORMAT-PRUNE FP24 (J508) deleted the two-part `0.1` and `0.1.0.0`: no kept original declares either. */
+const LEGACY_INDEX_VERSIONS: readonly ['0.1.0.1'] = ['0.1.0.1'] as const
 /** Formats whose `shard.json` names its version in `formatVersion` (SHARD-COMPAT CP14, FORMAT-PRUNE FP25): the
  * layout marker and `version` are gone, so a reader tells the two envelopes apart by the field's type. */
 const INDEX_FORMAT_VERSIONS: readonly [
@@ -50,7 +46,9 @@ type FormatVersionParts = readonly [number, number, number, number]
 /** @deprecated SHARD-COMPAT SP10: use `FormatVersionParts`. */
 type ShardfileVersionParts = FormatVersionParts
 
-/** Read canonical bounded decimal components; the legacy two-part spelling has zero counters. */
+/** Read canonical bounded decimal components. No shard file declares the two-part spelling any more (FORMAT-PRUNE
+ * FP24); it parses with zero counters only because the API's ledger keys a zero-counter format that way
+ * (`originalFormat`), until its stored rows move (SHARD-COMPAT CP16). */
 function parseShardfileVersion(input: unknown): FormatVersionParts {
   if (
     typeof input !== 'string' ||
@@ -79,29 +77,17 @@ function compareShardfileVersions(left: unknown, right: unknown): number {
   return ZERO
 }
 
-/** The oldest format a reader admits (J486). Below it a shard file needs the migration chain or a re-upload. */
-const SHARDFILE_FLOOR = '0.1.0.0'
+/** The oldest format a reader admits (J486). Below it a shard file needs a re-upload. */
+const SHARDFILE_FLOOR = '0.1.0.1'
 
-/** A reader admits every format at or below its own in the same breaking format, down to the floor (J486,
- * replacing WR11's N and N-1 window). Additive counters only add optional fields, so an older file is still a
- * valid file; a newer one can carry declarations the reader does not know, so it waits for a newer reader. */
-function compatibleShardfileVersion(
-  input: unknown,
-  reader: unknown = SHARDFILE_VERSION,
-): boolean {
-  try {
-    const [major, minor, breaking] = parseShardfileVersion(input)
-    const [readMajor, readMinor, readBreaking] = parseShardfileVersion(reader)
-    return (
-      major === readMajor &&
-      minor === readMinor &&
-      breaking === readBreaking &&
-      compareShardfileVersions(input, reader) <= ZERO &&
-      compareShardfileVersions(input, SHARDFILE_FLOOR) >= ZERO
-    )
-  } catch {
-    return false
-  }
+/** Whether a reader at `reader` reads `input`: a known format from the floor up to the reader's own (J486). FORMAT-PRUNE
+ * FP24 deleted WR11's N-1 test (`compatibleShardfileVersion`): every known format shares one breaking format, so the
+ * window is the known list cut at the reader. */
+function readsFormat(input: unknown, reader: string = SHARDFILE_VERSION): boolean {
+  return (
+    SHARDFILE_VERSIONS.some((version: string): boolean => version === input) &&
+    compareShardfileVersions(input, reader) <= ZERO
+  )
 }
 
 /** The format version a `shard.json` declares: `formatVersion` when it is a version string (0.1.0.2 on), else the
@@ -281,5 +267,5 @@ export {
   type ShardfileVersionParts,
   parseShardfileVersion,
   compareShardfileVersions,
-  compatibleShardfileVersion,
+  readsFormat,
 }

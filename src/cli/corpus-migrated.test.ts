@@ -24,13 +24,13 @@ const TRUNCATED = 4096
 describe('the corpus judges a refused original through the chain', (): void => {
   it('counts the copy valid and names the steps that ran', async (): Promise<void> => {
     const packed = await packFolder(FIXTURE, path.join(scratch, 'fixture.tar'))
-    // The fixture spells its format "0.1": the chain writes the four-part spelling, and the copy validates.
+    // The fixture is at the floor, 0.1.0.1: the chain moves it to the 0.1.0.2 envelope first, and the copy validates.
     const verdict = await migratedVerdict(
       packed.file,
       true,
       new Error('as stored'),
     )
-    assert.equal(verdict.applied[0], 'fp6-four-part-version')
+    assert.equal(verdict.applied[0], 'cp14-format-version')
     // FP4's repair step drops requires.capabilities and FP33's step requires.sdk, so the copy counts neither.
     assert.deepEqual(verdict.deprecations, [])
     assert.ok(verdict.applied.includes('fp4-drop-requires-capabilities'))

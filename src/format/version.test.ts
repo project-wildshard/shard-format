@@ -13,20 +13,35 @@ import {
   shardfileFormatOf,
   outputIndexEnvelope,
   compareShardfileVersions,
-  compatibleShardfileVersion,
+  readsFormat,
   parseShardfileVersion,
 } from './version.ts'
 
-test('legacy format spelling equals the zero-counter revision', (): void => {
+test('the API ledger key spelling still parses as the zero-counter revision', (): void => {
   expect(parseShardfileVersion('0.1')).toEqual([0, 1, 0, 0])
   expect(compareShardfileVersions('0.1', '0.1.0.0')).toBe(0)
   expect(compareShardfileVersions('0.1.0.10', '0.1.0.9')).toBe(1)
 })
 
 test('the real source and transport schemas admit every listed version', (): void => {
-  for (const version of [SHARDFILE_VERSION, '0.1.0.1', '0.1.0.0', '0.1']) {
-    expect(compatibleShardfileVersion(version)).toBe(true)
+  for (const version of [SHARDFILE_VERSION, '0.1.0.1']) {
+    expect(readsFormat(version)).toBe(true)
     expect(parseShardfileField('version', version)).toBe(version)
+  }
+})
+
+test('FP24 (J508): the two-part spelling and 0.1.0.0 are gone; the floor is 0.1.0.1', (): void => {
+  expect(SHARDFILE_FLOOR).toBe('0.1.0.1')
+  expect(SHARDFILE_VERSIONS[0]).toBe(SHARDFILE_FLOOR)
+  for (const version of ['0.1', '0.1.0.0']) {
+    expect(readsFormat(version)).toBe(false)
+    expect((): unknown => parseShardfileField('version', version)).toThrow()
+    expect((): unknown =>
+      parse(OutputIndexSchema.entries.version, version),
+    ).toThrow()
+    expect((): unknown =>
+      shardfileFormatOf({ formatVersion: LEGACY_LAYOUT, version }),
+    ).toThrow()
   }
 })
 
@@ -98,12 +113,12 @@ test('CP14: a writer passes legacy rows through outputIndexEnvelope and gets the
 })
 
 test('the additive window never reaches a newer or breaking format', (): void => {
-  expect(compatibleShardfileVersion('0.1.0.1', '0.1')).toBe(false)
-  expect(compatibleShardfileVersion('0.1.0.1', '0.1.0.2')).toBe(true)
-  expect(compatibleShardfileVersion('0.1.0.2', '0.1.0.3')).toBe(true)
-  expect(compatibleShardfileVersion('0.1.0.3', '0.1.0.4')).toBe(true)
+  expect(readsFormat('0.1.0.1', '0.1.0.1')).toBe(true)
+  expect(readsFormat('0.1.0.1', '0.1.0.2')).toBe(true)
+  expect(readsFormat('0.1.0.2', '0.1.0.3')).toBe(true)
+  expect(readsFormat('0.1.0.3', '0.1.0.4')).toBe(true)
   for (const version of ['0.1.0.7', '0.1.1.0', '0.2', '1.1.0.1', '0.0']) {
-    expect(compatibleShardfileVersion(version)).toBe(false)
+    expect(readsFormat(version)).toBe(false)
     expect((): unknown => parseShardfileField('version', version)).toThrow()
     expect((): unknown =>
       parse(OutputIndexSchema.entries.version, version),
@@ -116,14 +131,11 @@ test('the additive window never reaches a newer or breaking format', (): void =>
 
 test('a reader admits every older additive counter down to the floor (J486)', (): void => {
   for (const version of SHARDFILE_VERSIONS) {
-    expect(compatibleShardfileVersion(version)).toBe(true)
+    expect(readsFormat(version)).toBe(true)
   }
-  expect(compatibleShardfileVersion('0.1', '0.1.0.2')).toBe(true)
-  expect(compatibleShardfileVersion('0.1.0.0', '0.1.0.9')).toBe(true)
-  expect(compatibleShardfileVersion(SHARDFILE_FLOOR, '0.1.0.30')).toBe(true)
-  expect(compatibleShardfileVersion('0.1.0.3', '0.1.0.2')).toBe(false)
-  expect(compatibleShardfileVersion('0.0', '0.1.0.2')).toBe(false)
-  expect(compatibleShardfileVersion('0.1.0.1', '0.1.1.0')).toBe(false)
+  expect(readsFormat(SHARDFILE_FLOOR, '0.1.0.30')).toBe(true)
+  expect(readsFormat('0.1.0.3', '0.1.0.2')).toBe(false)
+  expect(readsFormat('0.0', '0.1.0.2')).toBe(false)
 })
 
 test('malformed and unbounded components never enter the format window', (): void => {
@@ -139,6 +151,6 @@ test('malformed and unbounded components never enter the format window', (): voi
     '0.1\n',
   ]) {
     expect((): unknown => parseShardfileVersion(value)).toThrow()
-    expect(compatibleShardfileVersion(value)).toBe(false)
+    expect(readsFormat(value)).toBe(false)
   }
 })

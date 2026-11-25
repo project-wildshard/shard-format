@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 
 import { FORMAT_MIGRATIONS } from '../format/format-migrations.ts'
-import { SHARDFILE_VERSION } from '../format/version.ts'
+import { SHARDFILE_FLOOR, SHARDFILE_VERSION } from '../format/version.ts'
 
 /** FE11's golden file: per `<version> <fixture>`, the hash after each chain step it takes. */
 async function goldens(): Promise<
@@ -30,9 +30,13 @@ test('every chain step and the current format version have an FE11 golden', asyn
         Object.keys(row),
     ),
   )
-  const missing = FORMAT_MIGRATIONS.map(
-    (step: Readonly<{ id: string }>): string => step.id,
-  ).filter((id: string): boolean => !steps.has(id))
+  // FORMAT-PRUNE FP24: a step that writes the floor runs only as a repair on a file already there; no versioned fixture
+  // sits below the floor to carry it, so its corpus/format-steps fixture (format-steps.test.ts) is its proof.
+  const missing = FORMAT_MIGRATIONS.filter(
+    (step: Readonly<{ to: string }>): boolean => step.to !== SHARDFILE_FLOOR,
+  )
+    .map((step: Readonly<{ id: string }>): string => step.id)
+    .filter((id: string): boolean => !steps.has(id))
   assert.deepEqual(
     missing,
     [],

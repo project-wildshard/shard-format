@@ -1,8 +1,8 @@
 {
- "about": "ZONE-SNAPSHOTS ZS4 (J507): format 0.1.0.1 on the made-up CLI product, carried up to 0.1.0.1 by the chain; no stored zone. Each step's own rewrite is proved on corpus/format-steps.",
+ "about": "ZONE-SNAPSHOTS ZS4 (J507): format 0.1.0.1, the floor since FORMAT-PRUNE FP24 (J508), on the made-up CLI product (one terrain tile, ui strings) as written; no stored zone. Each step's own rewrite is proved on corpus/format-steps.",
  "fixtures": [
   {
-   "madeUp": "src/test/fixtures/cli-fixture"
+   "folder": "src/test/fixtures/cli-fixture"
   }
  ]
 }

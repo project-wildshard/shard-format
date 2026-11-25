@@ -38,7 +38,6 @@ interface DeprecationRule extends Deprecation {
   readonly uses: (shard: Readonly<DeprecationInput>) => boolean
 }
 
-const LEGACY_SPELLING = '0.1'
 /** Deprecated in the current format with no data change: a shard file of any version may still carry it. */
 const CURRENT = '0.1.0.1'
 /** Format 0.1.0.2's envelope (SHARD-COMPAT CP14, FORMAT-PRUNE FP4 and FP25). */
@@ -59,16 +58,8 @@ function field(value: unknown, key: string): unknown {
     : undefined
 }
 
+/** FORMAT-PRUNE FP24 deleted `version.two-part` with the spelling and its chain step: the format no longer admits `0.1`. */
 const RULES: readonly DeprecationRule[] = [
-  {
-    id: 'version.two-part',
-    path: 'shard.json version and requires.sdk spelled "0.1"',
-    since: '0.1.0.0',
-    replacement: 'the four-part "0.1.0.0"',
-    migration: 'fp6-four-part-version',
-    uses: (shard: Readonly<DeprecationInput>): boolean =>
-      field(shard.index, 'version') === LEGACY_SPELLING,
-  },
   {
     id: 'shard.version',
     path: 'shard.json version beside the layout marker formatVersion 2 (SHARD-COMPAT CP14)',

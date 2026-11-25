@@ -83,7 +83,7 @@ describe('the deprecation counter (FE7)', (): void => {
   test('finds each used path and words its warning', (): void => {
     const shard = {
       index: {
-        version: '0.1',
+        version: '0.1.0.1',
         runtime: { kind: 'client-plan', trust: 'first-party' },
       },
       sections: new Map<string, unknown>([
@@ -91,7 +91,6 @@ describe('the deprecation counter (FE7)', (): void => {
       ]),
     }
     expect(deprecationsUsed(shard).map((row): string => row.id)).toEqual([
-      'version.two-part',
       'manifest.spawn',
       'runtime.trust',
     ])
@@ -103,10 +102,10 @@ describe('the deprecation counter (FE7)', (): void => {
     ).toEqual(['shard.version', 'shard.empty-fields'])
     const report = deprecationReport(shard, ['kept'])
     expect(report.warnings[0]).toBe('kept')
-    expect(report.warnings[1]).toContain(
-      'deprecated since 0.1.0.0 (version.two-part)',
+    expect(report.warnings.at(-1)).toContain(
+      'deprecated since 0.1.0.1 (runtime.trust)',
     )
-    expect(report.warnings[1]).toContain('fp6-four-part-version')
+    expect(report.warnings.at(-1)).toContain('fp3-drop-runtime-trust')
     expect(
       deprecationsUsed({
         index: { formatVersion: '0.1.0.2' },
@@ -131,7 +130,6 @@ describe('the deprecation counter (FE7)', (): void => {
       { hash: sha256, judged: 'stored' },
     )
     expect(validated.deprecations).toEqual([
-      'version.two-part',
       'shard.version',
       'shard.empty-fields',
       'shard.sdk-marker',
@@ -141,7 +139,7 @@ describe('the deprecation counter (FE7)', (): void => {
     ])
     expect(
       validated.warnings.some((line: string): boolean =>
-        line.includes('version.two-part'),
+        line.includes('shard.version'),
       ),
     ).toBe(true)
     const copy = migrateShardfile(original, { hash: sha256 })

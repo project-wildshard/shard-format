@@ -25,6 +25,7 @@ import {
 } from './format-migration-prune.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 import {
+  SHARDFILE_FLOOR,
   SHARDFILE_VERSIONS,
   compareShardfileVersions,
   parseShardfileVersion,
@@ -55,33 +56,12 @@ interface FormatMigration {
   readonly repairs?: (shard: Readonly<MigratingShard>) => boolean
 }
 
-const TWO_PART = 2
 const ZERO = 0
 const ONE = 1
-const LEGACY_SPELLING = '0.1'
-const FOUR_PART_ZERO = '0.1.0.0'
 
-/** FORMAT-PRUNE FP6: the two-part spelling `0.1` becomes `0.1.0.0`, the same format written the one way. */
-const fourPartVersion: FormatMigration = {
-  id: 'fp6-four-part-version',
-  to: FOUR_PART_ZERO,
-  touches: 'data',
-  affects: [],
-  apply: (shard: Readonly<MigratingShard>): void => {
-    const { requires } = shard.index
-    if (
-      typeof requires === 'object' &&
-      requires !== null &&
-      Reflect.get(requires, 'sdk') === LEGACY_SPELLING
-    ) {
-      Reflect.set(requires, 'sdk', FOUR_PART_ZERO)
-    }
-  },
-}
-
-/** Every migration, oldest first. */
+/** Every migration, oldest first. FORMAT-PRUNE FP24 deleted FP6's `fp6-four-part-version` (`0.1` to `0.1.0.0`) with
+ * the two-part spelling: the chain starts at the floor. */
 const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
-  fourPartVersion,
   journalGlyphImages,
   shardfilePointer,
   dropRuntimeTrust,
@@ -98,8 +78,7 @@ const FORMAT_MIGRATIONS: readonly FormatMigration[] = [
   levelLook,
 ]
 
-/** Whether a file at `version` still needs a step that writes `to`. The legacy two-part spelling sits just below its
- * four-part twin, so the spelling step runs once and never again. */
+/** Whether a file at `version` still needs a step that writes `to`. */
 function versionBelow(version: string, to: string): boolean {
   const left = parseShardfileVersion(version)
   const right = parseShardfileVersion(to)
@@ -109,9 +88,7 @@ function versionBelow(version: string, to: string): boolean {
       return difference < ZERO
     }
   }
-  return (
-    version.split('.').length === TWO_PART && to.split('.').length > TWO_PART
-  )
+  return false
 }
 
 /** Refuse one step: a `to` that is no format version, out of version order after `last`, or a save-affecting step with
@@ -135,7 +112,7 @@ function checkStep(step: Readonly<FormatMigration>, last: string): void {
 /** Refuse a registry the chain cannot run as written (FE8): a repeated id, or a step `checkStep` refuses. */
 function checkMigrations(migrations: readonly FormatMigration[]): void {
   const ids = new Set<string>()
-  let last: string = LEGACY_SPELLING
+  let last: string = SHARDFILE_FLOOR
   for (const step of migrations) {
     if (ids.has(step.id)) {
       throw new Error(`Migration ${step.id} is registered twice`)
