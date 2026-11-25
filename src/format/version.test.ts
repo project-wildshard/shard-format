@@ -57,14 +57,16 @@ test('CP14: a writer passes legacy rows through outputIndexEnvelope and gets the
     requires: { sdk: '0.1.0.2', capabilities: [], commons: [] },
     runtime: { kind: 'client-plan', files: [], lines: 0, binds: [] },
   }
+  // FP33: requires.sdk is deleted, so a writer's envelope drops it at every version.
   expect(outputIndexEnvelope({ ...legacy, version: '0.1.0.1' })).toEqual({
     ...legacy,
+    requires: { capabilities: [], commons: [] },
     version: '0.1.0.1',
   })
   expect(outputIndexEnvelope({ ...legacy, version: '0.1.0.2' })).toEqual({
     format: 'wildshard.shardfile',
     formatVersion: '0.1.0.2',
-    requires: { sdk: '0.1.0.2', capabilities: [], commons: [] },
+    requires: { capabilities: [], commons: [] },
     runtime: { kind: 'client-plan', binds: [] },
   })
   // PR4: from 0.1.0.3 the sdk marker goes; a prepared '0.3' becomes preparation spec 3 unless the writer names one.
@@ -87,10 +89,9 @@ test('CP14: a writer passes legacy rows through outputIndexEnvelope and gets the
       version: '0.1.0.3',
     }).preparation,
   ).toBe(4)
-  // FP33: from 0.1.0.5 requires carries no sdk.
   expect(
     outputIndexEnvelope({ ...legacy, version: '0.1.0.4' }).requires,
-  ).toEqual({ sdk: '0.1.0.2', capabilities: [], commons: [] })
+  ).toEqual({ capabilities: [], commons: [] })
   expect(
     outputIndexEnvelope({ ...legacy, version: '0.1.0.5' }).requires,
   ).toEqual({ capabilities: [], commons: [] })

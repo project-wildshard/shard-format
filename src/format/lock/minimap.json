@@ -364,8 +364,6 @@
   "./minimap#ManifestMetadataSchema.forest?.understory?.shrubs": {"ref":"./audio#AudioDataSchema.level?.samples?.loopGains{v}"},
   "./minimap#ManifestMetadataSchema.grade": {"type":"exact_optional","expects":"Object"},
   "./minimap#ManifestMetadataSchema.grade?": {"ref":"./look-level#LookLevelSchema.grade"},
-  "./minimap#ManifestMetadataSchema.gridShardfile": {"type":"exact_optional","expects":"string"},
-  "./minimap#ManifestMetadataSchema.gridShardfile?": {"ref":"./audio#AudioDataSchema.level?.ambience"},
   "./minimap#ManifestMetadataSchema.ground": {"type":"exact_optional","expects":"Object"},
   "./minimap#ManifestMetadataSchema.ground?": {"type":"strict_object","expects":"Object"},
   "./minimap#ManifestMetadataSchema.ground?.paths": {"type":"exact_optional","expects":"\"plugin\""},

@@ -129,16 +129,6 @@ const RULES: readonly DeprecationRule[] = [
   ...COOK_DEPRECATIONS,
   ...SPECIES_FEATURE_DEPRECATIONS,
   {
-    id: 'requires.sdk',
-    path: 'shard.json requires.sdk (SHARD-COMPAT CP8): a copy of the format version',
-    since: ENVELOPE,
-    replacement:
-      'nothing: formatVersion names the format; format 0.1.0.5 refuses it and the chain drops it (FORMAT-PRUNE FP33)',
-    migration: 'fp33-drop-requires-sdk',
-    uses: (shard: Readonly<DeprecationInput>): boolean =>
-      field(field(shard.index, 'requires'), 'sdk') !== undefined,
-  },
-  {
     id: 'requires.capabilities',
     path: 'shard.json requires.capabilities (FORMAT-PRUNE FP4): always empty, never read',
     since: ENVELOPE,
@@ -147,18 +137,6 @@ const RULES: readonly DeprecationRule[] = [
     migration: 'fp4-drop-requires-capabilities',
     uses: (shard: Readonly<DeprecationInput>): boolean =>
       field(field(shard.index, 'requires'), 'capabilities') !== undefined,
-  },
-  {
-    id: 'manifest.gridShardfile',
-    path: 'sections/ui/level manifest.gridShardfile (and the discovery mount)',
-    since: '0.1.0.1',
-    replacement: 'manifest.shardfile',
-    migration: 'fp8-shardfile-pointer',
-    uses: (shard: Readonly<DeprecationInput>): boolean =>
-      field(
-        field(shard.sections.get('ui/level'), 'manifest'),
-        'gridShardfile',
-      ) !== undefined,
   },
   ...MANIFEST_MOVED_DEPRECATIONS,
   ...LEVEL_DEPRECATIONS,

@@ -2,6 +2,26 @@
   "version": "0.1.0.6",
   "entries": [
     {
+      "path": "./outputIndex#OutputIndexSchema.requires.sdk",
+      "noFileChange": "FORMAT-PRUNE FP33 deletes deprecated requires.sdk at zero live users: FE13 (corpus/usage.json, 34 live originals and 29 engine pins on 2026-11-25) shows none carries it, 0.1.0.5 on never wrote it, and the chain drops it from every copy it writes, at any target (fp33-drop-requires-sdk, format-migration-deleted.ts)"
+    },
+    {
+      "path": "./shardSections#RequiresSchema.sdk",
+      "noFileChange": "FORMAT-PRUNE FP33 deletes deprecated requires.sdk at zero live users: FE13 (corpus/usage.json, 34 live originals and 29 engine pins on 2026-11-25) shows none carries it, 0.1.0.5 on never wrote it, and the chain drops it from every copy it writes, at any target (fp33-drop-requires-sdk, format-migration-deleted.ts)"
+    },
+    {
+      "path": "./minimap#ManifestMetadataSchema.gridShardfile",
+      "noFileChange": "FORMAT-PRUNE FP44 deletes the old grid pointer at zero live users: FE13 (corpus/usage.json, 34 live originals and 29 engine pins on 2026-11-25) shows none carries it, writers write manifest.shardfile, and the chain renames it in every copy it writes, at any target (fp8-shardfile-pointer, format-migration-deleted.ts)"
+    },
+    {
+      "path": "./version#SHARDFILE_VERSION_NO_REQUIRES_SDK",
+      "noFileChange": "FORMAT-PRUNE FP33: writers never write requires.sdk at any version now (it is deleted from the schema), so the version that first dropped it and its test have no reader; no consumer imports either (engine, sharddev, api-server)"
+    },
+    {
+      "path": "./version#writesNoRequiresSdk",
+      "noFileChange": "FORMAT-PRUNE FP33: writers never write requires.sdk at any version now (it is deleted from the schema), so the version that first dropped it and its test have no reader; no consumer imports either (engine, sharddev, api-server)"
+    },
+    {
       "path": "./version#SHARDFILE_VERSION",
       "migration": "fp47b-level-look"
     },

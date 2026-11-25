@@ -1,5 +1,5 @@
 {
- "chainId": "5367cb8770df7b3ac30a7811bfce5c400d13a73e341f33274125bf24510509a2",
+ "chainId": "7fb99df514911b2d33971020558588383cb20bf49e901465396668b58c40d068",
  "excluded": {
   "./aacIndex#indexRecordingAac": "function: behaviour, not a shape (its schema inputs are locked)",
   "./achievementCounters#parseAchievementCounterData": "function: behaviour, not a shape (its schema inputs are locked)",
@@ -203,7 +203,10 @@
   "./forestPlacement#treeGridOf": "function: behaviour, not a shape (its schema inputs are locked)",
   "./formatHook#installFormatHook": "function: behaviour, not a shape (its schema inputs are locked)",
   "./formatMigrations#FORMAT_MIGRATIONS": "not plain data: a class instance or a record holding functions",
+  "./formatMigrations#chainIdOf": "function: behaviour, not a shape (its schema inputs are locked)",
   "./formatMigrations#checkMigrations": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./formatMigrations#deletedFieldsIn": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./formatMigrations#mendDeletedFields": "function: behaviour, not a shape (its schema inputs are locked)",
   "./formatMigrations#versionBelow": "function: behaviour, not a shape (its schema inputs are locked)",
   "./geometryPack#GeometryPackData": "function: behaviour, not a shape (its schema inputs are locked)",
   "./geometryPack#packedRows": "function: behaviour, not a shape (its schema inputs are locked)",
@@ -697,7 +700,6 @@
   "./version#parseShardfileVersion": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#shardfileFormatOf": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesIndexFormatVersion": "function: behaviour, not a shape (its schema inputs are locked)",
-  "./version#writesNoRequiresSdk": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesPreparationMarker": "function: behaviour, not a shape (its schema inputs are locked)",
   "./version#writesSaveRevision": "function: behaviour, not a shape (its schema inputs are locked)",
   "./viewDraws#viewDraws": "function: behaviour, not a shape (its schema inputs are locked)",

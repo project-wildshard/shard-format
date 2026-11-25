@@ -87,15 +87,12 @@ describe('the deprecation counter (FE7)', (): void => {
         runtime: { kind: 'client-plan', trust: 'first-party' },
       },
       sections: new Map<string, unknown>([
-        [
-          'ui/level',
-          { manifest: { gridShardfile: '/shardfiles/x/shard.json' } },
-        ],
+        ['ui/level', { manifest: { spawn: [0, 0, 0] } }],
       ]),
     }
     expect(deprecationsUsed(shard).map((row): string => row.id)).toEqual([
       'version.two-part',
-      'manifest.gridShardfile',
+      'manifest.spawn',
       'runtime.trust',
     ])
     expect(
@@ -149,7 +146,6 @@ describe('the deprecation counter (FE7)', (): void => {
       'shard.sdk-marker',
       // FP19: the made-up CLI product is built and never prepared.
       'shard.unprepared',
-      'requires.sdk',
       'requires.capabilities',
     ])
     expect(
@@ -162,6 +158,7 @@ describe('the deprecation counter (FE7)', (): void => {
       validateMigrated(copy.files, { hash: sha256, judged: 'stored' })
         .deprecations,
     ).toEqual([])
-    // FP4 and FP33: fp4-drop-requires-capabilities and fp33-drop-requires-sdk mend them, so the copy counts none.
+    // FP4: fp4-drop-requires-capabilities mends it, so the copy counts none. FP33 and FP44 deleted requires.sdk and
+    // manifest.gridShardfile at zero users, so neither is counted any more.
   })
 })

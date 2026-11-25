@@ -42,9 +42,6 @@ const SHARDFILE_VERSION_PREPARATION = '0.1.0.3'
 /** The first format whose `shard.json` names the save lineage `identity.saveRevision` instead of `identity.revision`
  * (FORMAT-PRUNE FP26, J493): the number keys saves and only ever rises; it is not the API's shard revision. */
 const SHARDFILE_VERSION_SAVE_REVISION = '0.1.0.4'
-/** The first format whose `shard.json` carries no `requires.sdk` (FORMAT-PRUNE FP33, SHARD-COMPAT CP8): it only ever
- * copied the format version, and nothing reads it. */
-const SHARDFILE_VERSION_NO_REQUIRES_SDK = '0.1.0.5'
 /** The first format whose `shard.json` may name the lowest engine release that draws it, `requires.engine` (FORMAT-PRUNE
  * FP47b, J505): an engine on an older format refuses the word, so the floor holds there too. */
 const SHARDFILE_VERSION_ENGINE_FLOOR = '0.1.0.6'
@@ -149,13 +146,6 @@ function writesSaveRevision(version: string): boolean {
   )
 }
 
-/** Whether a format version writes no `requires.sdk` (0.1.0.5 on, FP33). */
-function writesNoRequiresSdk(version: string): boolean {
-  return (
-    compareShardfileVersions(version, SHARDFILE_VERSION_NO_REQUIRES_SDK) >= ZERO
-  )
-}
-
 /** Whether a format version may carry `requires.engine` (0.1.0.6 on, FP47b). */
 function carriesEngineFloor(version: string): boolean {
   return (
@@ -194,16 +184,17 @@ function withoutKeys(value: unknown, keys: readonly string[]): unknown {
   )
 }
 
-/** `requires` as `version` writes it: no `sdk` from 0.1.0.5 (FORMAT-PRUNE FP33), no `engine` floor below 0.1.0.6 (FP47b). */
+/** `requires` as `version` writes it: never an `sdk` (FORMAT-PRUNE FP33 deleted it), no `engine` floor below 0.1.0.6
+ * (FP47b). */
 function requiresAt(requires: unknown, version: string): unknown {
   return withoutKeys(requires, [
-    ...(writesNoRequiresSdk(version) ? ['sdk'] : []),
+    'sdk',
     ...(carriesEngineFloor(version) ? [] : ['engine']),
   ])
 }
 
-/** The rows a version from 0.1.0.3 on changes in place: PR4's preparation marker, FP26's save lineage, then FP33's
- * `requires.sdk`. */
+/** The rows a version from 0.1.0.3 on changes in place: PR4's preparation marker, FP26's save lineage, then `requires`
+ * (FP33's deleted `sdk`, FP47b's engine floor). */
 function laterEnvelopeRows(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- it changes the writer's envelope in place
   envelope: Record<string, unknown>,
@@ -277,12 +268,10 @@ export {
   writesIndexFormatVersion,
   writesPreparationMarker,
   writesSaveRevision,
-  writesNoRequiresSdk,
   carriesEngineFloor,
   SHARDFILE_VERSION_ENGINE_FLOOR,
   SHARDFILE_VERSION_PREPARATION,
   SHARDFILE_VERSION_SAVE_REVISION,
-  SHARDFILE_VERSION_NO_REQUIRES_SDK,
   SHARDFILE_FLOOR,
   type FormatVersion,
   type FormatVersionParts,

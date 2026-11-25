@@ -88,7 +88,7 @@ describe('the migration chain', (): void => {
     })
     const index = json(migrated.files, 'shard.json')
     expect(index['version']).toBe('0.1.0.0')
-    expect((index['requires'] as Json)['sdk']).toBe('0.1.0.0')
+    expect(index['requires']).not.toHaveProperty('sdk')
     expect(migrated.files.has('validation.json')).toBe(false)
     expect(migrated.digest).toBe(
       sha256(migrated.files.get('shard.json') ?? new Uint8Array()),
@@ -222,29 +222,6 @@ describe('the migration chain', (): void => {
     expect(
       parseOutputLineageIndex({ ...index, sdk: '0.3' }).identity.slug,
     ).toBe('cli-fixture')
-  })
-})
-
-describe('requires.sdk (FP33)', (): void => {
-  test('the chain drops it, 0.1.0.5 refuses it, and an older file keeps it as written', (): void => {
-    const original = json(corpusFiles(), 'shard.json')
-    const requires = original['requires'] as Json
-    expect(requires['sdk']).toBe('0.1')
-    expect(parseOutputIndex(original).requires.sdk).toBe('0.1')
-    const copy = migrateShardfile(corpusFiles(), { hash: sha256 })
-    expect(copy.applied).toContain('fp33-drop-requires-sdk')
-    const index = json(copy.files, 'shard.json')
-    expect(Object.hasOwn(index['requires'] as Json, 'sdk')).toBe(false)
-    expect(
-      validateMigrated(copy.files, { hash: sha256, judged: 'stored' }).index
-        .requires.sdk,
-    ).toBeUndefined()
-    expect((): unknown =>
-      parseOutputIndex({
-        ...index,
-        requires: { ...(index['requires'] as Json), sdk: SHARDFILE_VERSION },
-      }),
-    ).toThrow(`Format ${SHARDFILE_VERSION} carries no requires.sdk`)
   })
 })
 

@@ -5,9 +5,7 @@ import type { BudgetTier } from './budget-tiers.ts';
 import * as v from 'valibot';
 import { WIRE_CELL, WIRE_TILE_SIZES } from './wireLimits.ts';
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts';
-import { SHARDFILE_VERSIONS } from './version.ts';
 import { oneSaveRevisionSpelling, saveRevisionOf } from './save-revision.ts';
-import type { FormatVersion } from './version.ts';
 import { RuntimeCostSchema } from './runtimeCost.ts';
 import { CommonsCostsSchema } from './commonsCosts.ts';
 import { ScriptBindingsSchema } from './scripts.ts';
@@ -46,7 +44,7 @@ const IdentityRowSchema = v.strictObject({ slug: name, name: v.pipe(v.string(), 
 function identityWithSaveRevision(row: Readonly<v.InferOutput<typeof IdentityRowSchema>>): ShardIdentity { const { revision: _old, saveRevision: _new, ...rest } = row; return { ...rest, saveRevision: saveRevisionOf(row) }; }
 export const IdentitySchema: v.GenericSchema<ShardIdentityInput, ShardIdentity> = v.pipe(IdentityRowSchema, v.check(oneSaveRevisionSpelling, 'Shard identity needs exactly one of saveRevision or revision'), v.transform(identityWithSaveRevision));
 /** Wire revision, capabilities and exact commons declarations. */
-export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ sdk: v.exactOptional(v.picklist(SHARDFILE_VERSIONS)), capabilities: v.exactOptional(ShardNamesSchema), engine: v.exactOptional(EngineReleaseSchema), commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
+export const RequiresSchema: v.GenericSchema<ShardRequiresInput, ShardRequires> = v.strictObject({ capabilities: v.exactOptional(ShardNamesSchema), engine: v.exactOptional(EngineReleaseSchema), commons: v.pipe(v.array(ShardHashSchema), v.maxLength(limits.commons)), commonsWire: v.optional(v.record(ShardHashSchema, ShardNaturalSchema), {}), commonsCosts: v.optional(CommonsCostsSchema, {}) });
 /** Authored compressed and resident ceilings. */
 export const BudgetsSchema: v.GenericSchema<ShardBudgetsInput, ShardBudgets> = v.strictObject({
   /** Reviewed whole-client floor retained when an opaque runtime becomes declared data. */
@@ -251,8 +249,6 @@ interface ShardIdentityFields {
 }
 export type ShardIdentity = { [Key in keyof ShardIdentityFields]: ShardIdentityFields[Key] };
 interface ShardRequiresInputFields {
-    /** SHARD-COMPAT CP8: deprecated (a copy of the format version, never read); writers stop sourcing it. */
-    sdk?: FormatVersion;
     /** FORMAT-PRUNE FP4: deprecated (always empty, never read); the chain drops it and writers stop sourcing it. */
     capabilities?: ShardNamesInput;
     /** FORMAT-PRUNE FP47b (J505): the lowest engine release that can draw this product (0.1.0.6 on; `engine-floor.ts`). */
@@ -263,7 +259,6 @@ interface ShardRequiresInputFields {
 }
 export type ShardRequiresInput = { [Key in keyof ShardRequiresInputFields]: ShardRequiresInputFields[Key] };
 interface ShardRequiresFields {
-    sdk?: FormatVersion;
     capabilities?: ShardNames;
     engine?: string;
     commons: (ShardHash)[];

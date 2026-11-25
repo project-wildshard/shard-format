@@ -1,3 +1,4 @@
+import { DELETED_FIELD_IDS } from './format-migration-deleted.ts'
 // oxlint-disable typescript/prefer-readonly-parameter-types -- a step edits the shard it is handed, in place
 /** The migration chain's registry (SHARD-COMPAT CP1, J486). A migration is one pure, data-only step that rewrites an
  * older shard file's JSON to a newer format version. It is not a save migration (`migrations.ts`) and not a catalogue
@@ -22,6 +23,7 @@ import {
   schemaSource,
   shardfilePointer,
 } from './format-migration-prune.ts'
+import { validationSourceBytes } from './validationReceipt.ts'
 import {
   SHARDFILE_VERSIONS,
   compareShardfileVersions,
@@ -144,10 +146,40 @@ function checkMigrations(migrations: readonly FormatMigration[]): void {
   }
 }
 
+/** The runner's own version: a change in how it runs the steps changes every chain id. */
+const RUNNER = 1
+
+/** Hash over every registered step, the deleted fields the runner mends and the runner (`migrated_shardfiles.chain_id`). */
+function chainIdOf(
+  migrations: readonly FormatMigration[],
+  hash: (bytes: Uint8Array) => string,
+): string {
+  const steps = migrations.map(
+    (step: Readonly<FormatMigration>): Record<string, unknown> => ({
+      id: step.id,
+      to: step.to,
+      touches: step.touches,
+      affects: [...step.affects],
+    }),
+  )
+  return hash(
+    validationSourceBytes({
+      runner: RUNNER,
+      migrations: steps,
+      deleted: DELETED_FIELD_IDS,
+    }),
+  )
+}
+
 export {
   FORMAT_MIGRATIONS,
+  chainIdOf,
   checkMigrations,
   type FormatMigration,
   type MigratingShard,
   versionBelow,
 }
+export {
+  deletedFieldsIn,
+  mendDeletedFields,
+} from './format-migration-deleted.ts'

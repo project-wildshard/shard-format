@@ -23,7 +23,10 @@ import {
 } from './format-migration-envelope.ts'
 import {
   FORMAT_MIGRATIONS,
+  chainIdOf,
   checkMigrations,
+  deletedFieldsIn,
+  mendDeletedFields,
   versionBelow,
 } from './format-migrations.ts'
 import { validateShardfileFolder } from './shardfileValidation.ts'
@@ -61,7 +64,7 @@ interface MigratedShardfile {
   readonly from: string
   /** The copy's format version. */
   readonly to: string
-  /** Migration ids, in the order they ran. */
+  /** Migration ids, in the order they ran, then each deleted field the copy was mended of (`format-migration-deleted.ts`). */
   readonly applied: readonly string[]
   /** Hash over every registered step and the runner (`migrated_shardfiles.chain_id`). */
   readonly chainId: string
@@ -78,20 +81,7 @@ interface Admitted {
   readonly from: string
 }
 
-const RUNNER = 1
 const NONE = 0
-
-function chainId(migrations: readonly FormatMigration[], hash: Hash): string {
-  const steps = migrations.map(
-    (step: Readonly<FormatMigration>): JsonRecord => ({
-      id: step.id,
-      to: step.to,
-      touches: step.touches,
-      affects: [...step.affects],
-    }),
-  )
-  return hash(validationSourceBytes({ runner: RUNNER, migrations: steps }))
-}
 
 /** Refuse a format above the reader or below the floor. */
 function checkWindow(from: unknown, to: string): string {
@@ -183,7 +173,7 @@ function runs(
   )
 }
 
-/** Run the steps, then rebuild the inventory around what they changed. */
+/** Run the steps, mend the deleted fields, then rebuild the inventory around what they changed. */
 function writeCopy(
   files: Files,
   shard: MigratingShard,
@@ -193,6 +183,7 @@ function writeCopy(
     steps: readonly FormatMigration[]
     hash: Hash
     onStep: MigrateOptions['onStep']
+    mended: string[]
   }>,
 ): Map<string, Uint8Array> {
   const { index } = shard
@@ -206,6 +197,7 @@ function writeCopy(
     ),
   ])
   runSteps(shard, plan.steps, plan.onStep)
+  plan.mended.push(...mendDeletedFields(shard))
   const out = new Map(
     [...files].filter(
       ([path]: readonly [string, Uint8Array]): boolean => !gone.has(path),
@@ -246,12 +238,12 @@ function migrateShardfile(
     sections: readSections(files, admitted.index),
     mounts,
   }
-  const window = { from: admitted.from, to }
   const steps = migrations.filter((step: Readonly<FormatMigration>): boolean =>
-    runs(step, shard, window),
+    runs(step, shard, { from: admitted.from, to }),
   )
+  const mended: string[] = []
   const copy =
-    steps.length === NONE
+    steps.length === NONE && deletedFieldsIn(shard).length === NONE
       ? files
       : writeCopy(files, shard, {
           cook: admitted.cook,
@@ -259,13 +251,17 @@ function migrateShardfile(
           steps,
           hash: options.hash,
           onStep: options.onStep,
+          mended,
         })
   return {
     files: copy,
     from: admitted.from,
     to: String(declaredShardfileFormat(admitted.index)),
-    applied: steps.map((step: Readonly<FormatMigration>): string => step.id),
-    chainId: chainId(migrations, options.hash),
+    applied: [
+      ...steps.map((step: Readonly<FormatMigration>): string => step.id),
+      ...mended,
+    ],
+    chainId: chainIdOf(migrations, options.hash),
     digest: options.hash(copy.get(INDEX) ?? new Uint8Array()),
     preparation: preparationOf(admitted.cook, steps),
   }
