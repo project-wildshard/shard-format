@@ -65,7 +65,7 @@ jobs:
       # FORMAT-PRUNE FP42: the one-way ratchet audits today's engine and SDK
       # mains and every engine pin, never a frozen revision.
       - name: Make one-way scratch
-        run: node --input-type=module -e "import { scratchDir } from './scripts/scratch-dir.mjs'; scratchDir('codex-te2e', 'One-way source inputs')"
+        run: node --input-type=module -e "import { scratchDir } from './src/scripts/.kit/scratch-dir.mjs'; scratchDir('codex-te2e', 'One-way source inputs')"
       - name: Check out engine main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
