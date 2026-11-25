@@ -120,6 +120,38 @@
     {
       "path": "./fieldPresentation#GrassPresentationSchema.view.looks[2]",
       "noFileChange": "QA 11-24 row 70: grass card clumps become optional, all together; every kept file has all of them (three looks, both tiers' cards and scenes, cardsHeight), so it admits exactly as before"
+    },
+    {
+      "path": "./heldFinishes#HeldFinishesSchema.rows{v}.weapon|0",
+      "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
+    },
+    {
+      "path": "./heldFinishes#HeldFinishesSchema.rows{v}.weapon|1",
+      "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.bow.slot|0",
+      "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.bow.slot|1",
+      "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.firearm.slot|0",
+      "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.firearm.slot|1",
+      "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.launcher.slot|0",
+      "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
+    },
+    {
+      "path": "./loadout#LoadoutSchema.launcher.slot|1",
+      "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
     }
   ]
 }
