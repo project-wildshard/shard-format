@@ -27,7 +27,7 @@ import {execFileSync,spawn,spawnSync} from 'node:child_process';
 import {keepCopy,worktreeState} from './keep-copy.mjs';
 import {appendFileSync,existsSync,linkSync,lstatSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,realpathSync,renameSync,rmSync,writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
-import {dirname,join,resolve} from 'node:path';
+import {basename,dirname,join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {canonicalRoot,followMain,withStoreUse} from './worktree.mjs';
 import {stopWorktreeProcesses} from './worktree-reap.mjs';
@@ -826,6 +826,7 @@ class Landing{
   const canonical=canonicalRoot(this.root),parts=[];
   if(this.planTip!==null){
    const deleted=tryGit(this.root,['push','--quiet',`--force-with-lease=refs/heads/${this.branch}:${this.planTip}`,'origin','--delete',this.branch]);
+   if(deleted.status===0)logDeletedBranch(this.env,canonical,'remote',this.branch,this.planTip);
    parts.push(deleted.status===0?`origin ${this.branch} deleted`:`origin ${this.branch} kept (${deleted.stderr.trim().split('\n').at(-1)??'push refused'})`);
   }
   const dirtyResult=tryGit(this.root,['status','--porcelain','--untracked-files=all']);
@@ -870,7 +871,8 @@ class Landing{
    }
    const removed=tryGit(canonical,['worktree','remove',...(generatedOnly?['--force']:[]),this.root]);
    if(removed.status===0){
-    tryGitLocked(canonical,['update-ref','-d',`refs/heads/${this.branch}`,head],process.env,this.retry);
+    const gone=tryGitLocked(canonical,['update-ref','-d',`refs/heads/${this.branch}`,head],process.env,this.retry);
+    if(gone.status===0)logDeletedBranch(this.env,canonical,'local',this.branch,head);
     parts.push(`worktree and ${this.branch} removed; continue from ${canonical}`);
    }else parts.push(`worktree kept (${removed.stderr.trim().split('\n').at(-1)??'git worktree remove refused'})`);
   }
@@ -891,6 +893,19 @@ class Landing{
   this.receipt(`landed ${short(head)} on main (${short(before)}..${short(head)}); ${rule}; rounds ${round}; branch ci ${this.runs.join(', ')||'none'}; main ci ${rule==='carried'||rule==='push'?'followed by main-watch':'reuses the branch run'}; ${seconds} s`);
   return 0;
  }
+}
+
+/** J521 (Jake 11-25: tools delete landed branches): every branch land deletes is one line in
+ * `~/.cache/wildshard/deleted-branches.log` (`WS_BRANCH_LOG`), the same `<time> <repo> <local|remote> <branch> <sha>`
+ * lines as meta's scripts/delete-landed-branches.sh; `git branch <name> <sha>` brings one back. A log that cannot be
+ * written never fails the land.
+ * @param {NodeJS.ProcessEnv} env @param {string} canonical @param {'local'|'remote'} where @param {string} branch @param {string} sha */
+export function logDeletedBranch(env,canonical,where,branch,sha){
+ const log=env.WS_BRANCH_LOG??join(homedir(),'.cache/wildshard/deleted-branches.log');
+ try{
+  mkdirSync(dirname(log),{recursive:true});
+  appendFileSync(log,`${new Date().toISOString().replace(/\.\d+Z$/u,'Z')} ${basename(canonical)} ${where} ${branch} ${sha.slice(0,12)}\n`);
+ }catch{/* The branch is gone either way; the sha is in the land line. */}
 }
 
 /** The only main push land makes: the exact SHA, an explicit non-forced refspec.

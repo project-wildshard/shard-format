@@ -9,6 +9,7 @@ export function parseArgs(argv: string[], env?: NodeJS.ProcessEnv): { mode: 'pus
 export function shaVerdict(data: unknown, sha: string, workflows?: readonly string[]): { state: 'pending' | 'green' | 'red'; runs: Record<string, { id: number; status: string; conclusion: string | null; branch: string; url: string; attempt: number }>; summary: string };
 export function failedJobs(data: unknown): { blocking: string[]; nonblocking: string[] };
 export function mainPushArgs(sha: string): string[];
+export function logDeletedBranch(env: NodeJS.ProcessEnv, canonical: string, where: 'local' | 'remote', branch: string, sha: string): void;
 export function land(argv: string[], cwd?: string, env?: NodeJS.ProcessEnv): Promise<number>;
 export function flakyFiles(directory: string, jobNames: readonly string[]): string[] | null;
 export function strikePlans(book: string, file: string, now: number): string[];
