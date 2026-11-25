@@ -6,7 +6,6 @@ interface ProductFacts {
   readonly pageKinds: readonly string[]
   readonly kinds: readonly string[]
   readonly missingLooks: number
-  readonly speciesPrograms: number
   readonly manifestFields: readonly string[]
 }
 const NONE = 0
@@ -121,12 +120,7 @@ function productFacts(
   files: readonly SourceFile[],
 ): ProductFacts {
   const declared = speciesData(files)
-  const programs = section(files, 'actors/species-programs')
-  const species = [
-    ...rows(declared['species']),
-    ...rows(programs['native']),
-    ...rows(programs['page']),
-  ]
+  const species = rows(declared['species'])
   return {
     slug,
     hosts: [...new Set(nativeHosts(files))],
@@ -139,7 +133,6 @@ function productFacts(
       species.map((value: unknown): unknown => object(value)['kind']),
     ),
     missingLooks: missingLooks(declared),
-    speciesPrograms: Object.keys(programs).length === NONE ? NONE : ONE,
     manifestFields: repeatedManifestFields(
       object(section(files, 'ui/level')['manifest']),
     ),
@@ -178,11 +171,6 @@ function productCounts(
     'products.rows-without-look': products.reduce(
       (total: number, product: Readonly<ProductFacts>): number =>
         total + product.missingLooks,
-      NONE,
-    ),
-    'products.species-program-sections': products.reduce(
-      (total: number, product: Readonly<ProductFacts>): number =>
-        total + product.speciesPrograms,
       NONE,
     ),
     'products.repeated-manifest-fields': new Set(

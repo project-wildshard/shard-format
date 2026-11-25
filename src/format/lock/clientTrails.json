@@ -1,4 +1,4 @@
 {
-  "./clientTrails#ClientTrailsSchema": {"ref":"./clientPlan#ClientFeatureSchema|53"},
+  "./clientTrails#ClientTrailsSchema": {"ref":"./clientPlan#ClientFeatureSchema|50"},
   "./clientTrails#ProjectedTrailSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]}
 }

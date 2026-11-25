@@ -10,10 +10,6 @@ import {
 } from './manifest-deprecations.ts'
 import { SAVE_REVISION_DEPRECATION } from './save-revision.ts'
 import { SCHEMA_SOURCE_DEPRECATION } from './schema-source.ts'
-import {
-  SPECIES_FEATURE_DEPRECATIONS,
-  SPECIES_SECTION_DEPRECATIONS,
-} from './species-deprecations.ts'
 
 import type { OutputIndex } from './outputIndex.ts'
 
@@ -110,7 +106,6 @@ const RULES: readonly DeprecationRule[] = [
   SAVE_REVISION_DEPRECATION,
   SCHEMA_SOURCE_DEPRECATION,
   ...COOK_DEPRECATIONS,
-  ...SPECIES_FEATURE_DEPRECATIONS,
   {
     id: 'requires.capabilities',
     path: 'shard.json requires.capabilities (FORMAT-PRUNE FP4): always empty, never read',
@@ -133,7 +128,6 @@ const RULES: readonly DeprecationRule[] = [
     uses: (shard: Readonly<DeprecationInput>): boolean =>
       field(field(shard.index, 'runtime'), 'trust') !== undefined,
   },
-  ...SPECIES_SECTION_DEPRECATIONS,
   {
     id: 'admission.server',
     path: 'shard.json admission.server (native assembly, FORMAT-PRUNE FP16)',
@@ -154,8 +148,8 @@ interface SaveBridge {
   readonly reader: string
 }
 
-/** FP17's sort of the `legacy*` fields. the closed item slot field was shard data only and is deleted (FP22e); the
- * species book's `piercing.legacy` goes with the species-program family (FP15); none can be migrated by data alone. */
+/** FP17's sort of the `legacy*` fields. The closed item slot field was shard data only and is deleted (FP22e); the
+ * species-program family is deleted (FP20), its hunt bands' old kinds list optional until no kept file writes it. */
 const SAVE_BRIDGES: readonly SaveBridge[] = [
   {
     path: 'loadout bow.legacyItem',

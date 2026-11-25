@@ -11,10 +11,10 @@ export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<st
   const features = raw === undefined ? [] : parseClientPlan(raw).features;
   const page = hasDeclaredClientPage(source);
   if (!page) return rigs;
-  // OF19d1: a page drawing its declared bodies from their looks needs no species program
-  const errors: string[] = [...rigs], program = !pageDrawsDeclaredLooks(source, sections.get('sim/runtime-plan'), features);
+  // OF19d1, FORMAT-PRUNE FP20: a page draws its declared bodies from their looks (the species program is deleted)
+  const declaredPlan = sections.get('sim/runtime-plan'), errors: string[] = [...rigs, ...declaredPlan === undefined || pageDrawsDeclaredLooks(source, declaredPlan) ? [] : ['Data page draws its creatures from their declared looks']];
   if (source.runtime !== null) errors.push('Native client features require their typed data page owner');
-  for (const kind of ['world.scenes', 'motion.channels', ...program ? ['species.program'] as const : [], 'held.melee', 'quest.page'] as const)
+  for (const kind of ['world.scenes', 'motion.channels', 'held.melee', 'quest.page'] as const)
     if (!features.some(row => row.kind === kind)) errors.push(`Data page requires ${kind}`);
   const quest = features.find(row => row.kind === 'quest.page'), held = features.find(row => row.kind === 'held.melee');
   const declared = source.questHost?.page;
@@ -26,7 +26,7 @@ export function clientOwnershipRules(source: Shardfile, sections: ReadonlyMap<st
   // ONE-FORMAT OF19b0/OF19c0: declared spawns, their species and encounters run beside the plan's keeper (the engine
   // refuses a body both own); declared crowds do not
   if (source.crowds.length > 0) errors.push('Data page native roster cannot also install declared crowds');
-  for (const name of ['world/scenes', 'world/targets', ...program ? ['actors/species-programs'] : [], 'sim/runtime-plan', 'sim/scripts', 'look/painted'])
+  for (const name of ['world/scenes', 'world/targets', 'sim/runtime-plan', 'sim/scripts', 'look/painted'])
     if (!sections.has(name)) errors.push(`Data page requires ${name}`);
   const channels = new Set(source.clientChannels?.map(row => row.id));
   for (const feature of features) if (feature.kind === 'motion.channels') {

@@ -509,7 +509,7 @@
   "./rigLooks#pageDrawsDeclaredLooks": "function: behaviour, not a shape (its schema inputs are locked)",
   "./rigLooks#rigLookParameters": "function: behaviour, not a shape (its schema inputs are locked)",
   "./rigLooks#rigLookRules": "function: behaviour, not a shape (its schema inputs are locked)",
-  "./riggedHulls#parseRiggedHullBook": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./riggedHulls": "types only: nothing at run time to lock (its schemas are locked where they are built)",
   "./rows#parseRows": "function: behaviour, not a shape (its schema inputs are locked)",
   "./rows#rowRules": "function: behaviour, not a shape (its schema inputs are locked)",
   "./runtime-tier#runtimeTierIssues": "function: behaviour, not a shape (its schema inputs are locked)",

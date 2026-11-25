@@ -1,6 +1,3 @@
-import * as schema from 'valibot';
-import { isJsonData } from './json.ts';
-
 /** A generator flap: the back plane z(y) = z0 + (y - y0) · slope; every vertex above `yMin` behind it is pressed onto it,
  *  keeping `keep` of its depth; `bulge` (m) rounds the pressed patch out into a dome (0 at its rim). */
 export interface RiggedHullFlap {
@@ -57,104 +54,11 @@ export interface RiggedHullUrls {
   readonly parts?: { readonly file: string; readonly nodes: Readonly<Record<string, string>> };
 }
 
-/** A generated tier book. Product references are logical blob names; coats keep
- * their original KTX2 cache keys and image URLs. */
+/** A generated tier book, a shard generator's own data (its section and schema are deleted,
+ * FORMAT-PRUNE FP20). Product references are logical blob names; coats keep their original KTX2 cache keys and image
+ * URLs. */
 export interface RiggedHullBook {
   readonly family: RiggedHullFamilyRow;
   readonly tiers: Readonly<Record<'phone' | 'desktop', RiggedHullUrls>>;
   readonly productFiles: boolean;
 }
-
-const text = schema.pipe(schema.string(), schema.minLength(1), schema.maxLength(512)), num = schema.pipe(schema.number(), schema.finite());
-const rgbSchema = schema.tuple([num, num, num]);
-const resourcesSchema = schema.strictObject({
-  files: schema.record(text, schema.union([text, schema.strictObject({ rig: text, base: text, normal: text })])),
-  coats: schema.record(text, schema.strictObject({ key: text, image: text })),
-  coatDecode: schema.exactOptional(schema.literal('bitmap')), vertexColours: schema.exactOptional(schema.boolean()),
-  doubleSided: schema.exactOptional(schema.array(text)), parts: schema.exactOptional(schema.strictObject({ file: text, nodes: schema.record(text, text) })),
-});
-const bookSchema = schema.strictObject({ productFiles: schema.boolean(),
-  family: schema.strictObject({ label: text, rigs: schema.pipe(schema.array(text), schema.maxLength(128)), hulls: schema.record(text, text),
-    flaps: schema.exactOptional(schema.record(text, schema.strictObject({ yMin: num, y0: num, z0: num, slope: num, keep: num, bulge: num }))),
-    fur: schema.exactOptional(schema.record(text, schema.record(text, schema.strictObject({ rim: rgbSchema, sheenColor: rgbSchema })))) }),
-  tiers: schema.strictObject({ phone: resourcesSchema, desktop: resourcesSchema }),
-});
-/** Build-time and product admission share the same complete resource contract. */
-export const RiggedHullBookSchema: schema.GenericSchema<RiggedHullBookRowsInput, RiggedHullBookRows> = schema.pipe(bookSchema, schema.check(book => Object.values(book.tiers).every(source =>
-  [...book.family.rigs, ...Object.values(book.family.hulls)].every(hull => source.files[hull] !== undefined)), 'Missing hull resource'));
-/** Admit a complete immutable book before any loader starts. */
-export function parseRiggedHullBook(input: unknown): RiggedHullBook {
-  if (!isJsonData(input)) throw new Error('Rigged hull book requires plain data');
-  const book = schema.parse(RiggedHullBookSchema, input);
-  return book;
-}
-
-/** Admitted data contracts, independent of validator implementation metadata. */
-export type RiggedHullBookRowsInput = RiggedHullBookRows;
-interface RiggedHullBookRowsFields {
-    productFiles: boolean;
-    family: {
-        label: string;
-        rigs: (string)[];
-        hulls: Record<string, string>;
-        flaps?: Record<string, {
-            yMin: number;
-            y0: number;
-            z0: number;
-            slope: number;
-            keep: number;
-            bulge: number;
-        }>;
-        fur?: Record<string, Record<string, {
-            rim: [
-                number,
-                number,
-                number
-            ];
-            sheenColor: [
-                number,
-                number,
-                number
-            ];
-        }>>;
-    };
-    tiers: {
-        phone: {
-            files: Record<string, (string) | ({
-                rig: string;
-                base: string;
-                normal: string;
-            })>;
-            coats: Record<string, {
-                key: string;
-                image: string;
-            }>;
-            coatDecode?: 'bitmap';
-            vertexColours?: boolean;
-            doubleSided?: (string)[];
-            parts?: {
-                file: string;
-                nodes: Record<string, string>;
-            };
-        };
-        desktop: {
-            files: Record<string, (string) | ({
-                rig: string;
-                base: string;
-                normal: string;
-            })>;
-            coats: Record<string, {
-                key: string;
-                image: string;
-            }>;
-            coatDecode?: 'bitmap';
-            vertexColours?: boolean;
-            doubleSided?: (string)[];
-            parts?: {
-                file: string;
-                nodes: Record<string, string>;
-            };
-        };
-    };
-}
-export type RiggedHullBookRows = { [Key in keyof RiggedHullBookRowsFields]: RiggedHullBookRowsFields[Key] };

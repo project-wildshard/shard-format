@@ -1,5 +1,5 @@
-// ONE-FORMAT OF19d1: a look row can name a scene model library's rig (`platform.rig`), and a data page whose declared
-// bodies all have looks, and whose plan keeper stands none, needs no `species.program` feature to draw them.
+// ONE-FORMAT OF19d1: a look row can name a scene model library's rig (`platform.rig`). FORMAT-PRUNE FP20: a data page
+// draws its declared bodies from their looks, and its plan keeper stands none (the species program is deleted).
 import { expect, test } from 'vitest'
 
 import { clientOwnershipRules } from './clientOwnership.ts'
@@ -12,8 +12,7 @@ import {
 import type { RigLookRow } from './rig-looks.ts'
 import type { Shardfile } from './shardSchema.ts'
 
-const PROGRAM = 'Data page requires species.program'
-const SECTION = 'Data page requires actors/species-programs'
+const LOOKS = 'Data page draws its creatures from their declared looks'
 const LIBRARY = 'Rig look look.ray names no world/scenes models library'
 const SCENES = {
   libraries: [{ file: 'models.json', id: 'models', kind: 'models' }],
@@ -131,16 +130,14 @@ function rules(looked: boolean, kept: boolean): readonly string[] {
   )
 }
 
-test('a page drawing every declared body from its looks needs no species program', (): void => {
-  expect(rules(true, false)).not.toContain(PROGRAM)
-  expect(rules(true, false)).not.toContain(SECTION)
+test('a page drawing every declared body from its looks passes', (): void => {
+  expect(rules(true, false)).not.toContain(LOOKS)
   expect(rules(true, false)).not.toContain(LIBRARY)
 })
 
-test('a keeper body, or a declared body with no look, still needs the species program', (): void => {
-  expect(rules(true, true)).toContain(PROGRAM)
-  expect(rules(true, true)).toContain(SECTION)
-  expect(rules(false, false)).toContain(PROGRAM)
+test('FP20: a keeper body, or a declared body with no look, is refused', (): void => {
+  expect(rules(true, true)).toContain(LOOKS)
+  expect(rules(false, false)).toContain(LOOKS)
 })
 
 test('OF29e5: a data page need not name population.homes, which the engine stands', (): void => {

@@ -4,7 +4,6 @@ import { MarkedBossPresentationSchema } from './bossProfiles.ts';
 
 const finite = v.pipe(v.number(), v.finite());
 const id = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
-const home = v.strictObject({ x: finite, y: finite, z: finite, r: v.pipe(finite, v.minValue(Number.MIN_VALUE)) });
 const capture = v.union([
   v.strictObject({ flag: id }), v.strictObject({ action: id }),
   v.strictObject({ finish: v.literal(true) }), v.strictObject({ settle: v.literal('weather.fields') }),
@@ -24,13 +23,6 @@ export const ClientHeldMeleeSchema: v.StrictObjectSchema<{ readonly kind: v.Gene
   composed: v.optional(v.boolean(), false), stowedMode: v.exactOptional(id),
   finish: v.exactOptional(v.strictObject({ part: id, look: id, image: id, library: id })),
 });
-/** The existing SpeciesBrains catalogue, with original registration order and
- * body homes. The program and rig rows are referenced, never copied here. */
-export const ClientSpeciesProgramSchema: v.SchemaWithPipe<readonly [v.StrictObjectSchema<{ readonly kind: v.GenericSchema<ClientSpeciesProgramRowsInput['kind'], ClientSpeciesProgramRows['kind']>; readonly library: v.ExactOptionalSchema<v.GenericSchema<Exclude<ClientSpeciesProgramRowsInput['library'], undefined>, Exclude<ClientSpeciesProgramRows['library'], undefined>>, undefined>; readonly catalogue: v.ExactOptionalSchema<v.GenericSchema<Exclude<ClientSpeciesProgramRowsInput['catalogue'], undefined>, Exclude<ClientSpeciesProgramRows['catalogue'], undefined>>, undefined>; readonly homes: v.ExactOptionalSchema<v.GenericSchema<Exclude<ClientSpeciesProgramRowsInput['homes'], undefined>, Exclude<ClientSpeciesProgramRows['homes'], undefined>>, undefined>; readonly shove: v.OptionalSchema<v.GenericSchema<Exclude<ClientSpeciesProgramRowsInput['shove'], undefined>, Exclude<ClientSpeciesProgramRows['shove'], undefined>>, false>; }, undefined>, v.CheckAction<{ [K in keyof ClientSpeciesProgramRows]: ClientSpeciesProgramRows[K] }, 'Species program requires one source'>]> = v.pipe(v.strictObject({ kind: v.literal('species.program'), library: v.exactOptional(id),
-  catalogue: v.exactOptional(v.strictObject({ owner: id, actors: id, looks: id })),
-  homes: v.exactOptional(v.pipe(v.record(id, home), v.maxEntries(256))), shove: v.optional(v.boolean(), false),
-}), v.check(row => row.catalogue === undefined ? row.library !== undefined
-  : row.library === undefined && row.homes === undefined && !row.shove, 'Species program requires one source'));
 /** Saved page composition on the original flag/reward/NPC owners. Captures
  * select bounded platform actions, never a method or property path. */
 export const ClientQuestPageSchema: v.StrictObjectSchema<{ readonly kind: v.GenericSchema<ClientQuestPageRowsInput['kind'], ClientQuestPageRows['kind']>; readonly rows: v.GenericSchema<ClientQuestPageRowsInput['rows'], ClientQuestPageRows['rows']>; readonly progress: v.OptionalSchema<v.GenericSchema<Exclude<ClientQuestPageRowsInput['progress'], undefined>, Exclude<ClientQuestPageRows['progress'], undefined>>, false>; readonly promptOrder: v.GenericSchema<ClientQuestPageRowsInput['promptOrder'], ClientQuestPageRows['promptOrder']>; readonly endpoints: v.OptionalSchema<v.GenericSchema<Exclude<ClientQuestPageRowsInput['endpoints'], undefined>, Exclude<ClientQuestPageRows['endpoints'], undefined>>, readonly []>; readonly capture: v.OptionalSchema<v.GenericSchema<Exclude<ClientQuestPageRowsInput['capture'], undefined>, Exclude<ClientQuestPageRows['capture'], undefined>>, Record<never, never>>; }, undefined> = v.strictObject({ kind: v.literal('quest.page'),
@@ -105,40 +97,6 @@ interface ClientHeldMeleeRowsFields {
     };
 }
 export type ClientHeldMeleeRows = { [Key in keyof ClientHeldMeleeRowsFields]: ClientHeldMeleeRowsFields[Key] };
-interface ClientSpeciesProgramRowsInputFields {
-    kind: 'species.program';
-    library?: string;
-    catalogue?: {
-        owner: string;
-        actors: string;
-        looks: string;
-    };
-    homes?: Record<string, {
-        x: number;
-        y: number;
-        z: number;
-        r: number;
-    }>;
-    shove?: boolean | undefined;
-}
-export type ClientSpeciesProgramRowsInput = { [Key in keyof ClientSpeciesProgramRowsInputFields]: ClientSpeciesProgramRowsInputFields[Key] };
-interface ClientSpeciesProgramRowsFields {
-    kind: 'species.program';
-    library?: string;
-    catalogue?: {
-        owner: string;
-        actors: string;
-        looks: string;
-    };
-    homes?: Record<string, {
-        x: number;
-        y: number;
-        z: number;
-        r: number;
-    }>;
-    shove: boolean;
-}
-export type ClientSpeciesProgramRows = { [Key in keyof ClientSpeciesProgramRowsFields]: ClientSpeciesProgramRowsFields[Key] };
 interface ClientQuestPageRowsInputFields {
     kind: 'quest.page';
     rows: Omit<v.InferInput<typeof PersistedQuestPageSchema>, 'capture'>;

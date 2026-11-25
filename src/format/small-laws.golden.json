@@ -1,7 +1,6 @@
 {
   "about": "SDK-SPLIT SP4f1: engine host/headlessSections.ts, grid/frameModel.ts ROAD_SKY, grid/farView.ts FAR_CLIFF_FLOOR and plugin/clientChannelView.ts moverChannelValues over small-laws.golden-specs.ts",
   "sectionNames": [
-    "actors/species-programs",
     "view/modules",
     "sim/scripts",
     "actors/spawn-scripts",

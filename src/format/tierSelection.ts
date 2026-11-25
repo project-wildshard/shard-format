@@ -1,6 +1,5 @@
 import type { LateFile } from './admissionLate.ts';
 import { parseWorldScenes, worldScenesForTier } from './worldScenes.ts';
-import { parseRiggedHullBook } from './riggedHulls.ts';
 import { PosedLibrarySchema } from './namedJsonContracts.ts';
 import { parseClientPlan } from './clientPlan.ts';
 import { skinTierOff } from './skin-tier.ts';
@@ -169,17 +168,6 @@ export function* tierLibrarySteps(source: TierSelectionSource, tier: 'phone' | '
         cells: { phone: cells[tier], desktop: cells[tier] } } } };
     });
     sections.set('client/plan', { ...plan, features });
-  }
-  const hulls = sections.get('look/rigged-hulls');
-  if (hulls !== undefined) {
-    // The rigged-hull loader reads only its page tier's resources (looks/riggedHulls.ts).
-    const book = parseRiggedHullBook(hulls);
-    const off = (input: unknown): void => {
-      if (typeof input === 'string') { const hash = names.get(input); if (hash !== undefined) inactive.add(hash); }
-      else if (typeof input === 'object' && input !== null) for (const value of Object.values(input)) off(value);
-    };
-    off(book.tiers[tier === 'phone' ? 'desktop' : 'phone']);
-    sections.set('look/rigged-hulls', { ...book, tiers: { [tier]: book.tiers[tier] } });
   }
   // Posed libraries (looks/posedInstances.ts) read only their page tier's geometry and atlas.
   // Only a small named JSON can be one; the strict schema, not a name, identifies it.

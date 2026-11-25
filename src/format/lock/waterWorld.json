@@ -19,6 +19,6 @@
   "./waterWorld#WaterWorldSchema.practice|0": {"ref":"./practiceCourseRows#RidingPracticeSchema"},
   "./waterWorld#WaterWorldSchema.practice|1": {"type":"loose_object","expects":"Object"},
   "./waterWorld#WaterWorldSchema.practice|1.program": {"ref":"./heldWeaponDocuments#BladeDocumentSchema|1.power|1.program|0"},
-  "./waterWorld#WaterWorldSchema.surface": {"ref":"./clientPlan#ClientFeatureSchema|46.rows[]|0.surface"},
+  "./waterWorld#WaterWorldSchema.surface": {"ref":"./clientPlan#ClientFeatureSchema|44.rows[]|0.surface"},
   "./waterWorld#WaterWorldSchema.terrain": {"ref":"./clientChannels#WorldSceneSchema"}
 }

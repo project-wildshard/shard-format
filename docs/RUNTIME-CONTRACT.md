@@ -67,7 +67,6 @@ and nothing else. A **plain value** section holds its own schema's value, define
 | `actors/spawn-scripts` | `wildshard:actors/spawn-scripts@1` | plain value | `SpawnScript` (server), `parseSpawnScript` (shard-format) |
 | `actors/spawns` | `wildshard:actors/spawns@1` | root `runtime.spawns` | `installDeclaredBrains` (server) |
 | `actors/species` | `wildshard:actors/species@1` | root `rows.species` | `speciesResolver` (server), `clientSpeciesLooks` (page) |
-| `actors/species-programs` | `wildshard:actors/species-programs@1` | plain value | none: Metadata lent to existing page/native species and hunt owners. |
 | `actors/strikes` | `wildshard:actors/strikes@1` | plain value | none: Consumed by the runtime's explicitly imported creature host. |
 | `audio/audio` | `wildshard:audio/audio@1` | root `audio` | `installDeclaredAudio` (page) |
 | `client/plan` | `wildshard:client/plan@1` | plain value | `installClientPhase` (page) |
@@ -85,13 +84,11 @@ and nothing else. A **plain value** section holds its own schema's value, define
 | `held/loadout` | `wildshard:held/loadout@1` | plain value | `installHeldLoadout` (page) |
 | `held/melee` | `wildshard:held/melee@1` | plain value | none: Read by a native world whose plan names no item.swept host (engine, meta ONE-FORMAT OF22d2); until then each shard's item.swept host reads its server policy file. |
 | `look/colour-functions` | `wildshard:look/colour-functions@1` | plain value | `materialColourGraph` (page) |
-| `look/hull-book` | `wildshard:look/hull-book@1` | plain value | `productHullBook` (page) |
 | `look/keyed-sky` | `wildshard:look/keyed-sky@1` | plain value | `keyedSkyBackdrop` (page) |
 | `look/look` | `wildshard:look/look@1` | root `look`, `presentation` | `shardfileLook` (page) |
 | `look/map` | `wildshard:look/map@1` | root `map` | `reserveMapImage` (page) |
 | `look/materials` | `wildshard:look/materials@1` | root `rows.looks` | `clientMaterials` (page) |
 | `look/painted` | `wildshard:look/painted@1` | plain value | `productPaintedLook` (page) |
-| `look/rigged-hulls` | `wildshard:look/rigged-hulls@1` | plain value | `productRiggedHulls` (page) |
 | `look/toon` | `wildshard:look/toon@1` | plain value | `toonLook` (page) |
 | `models/island-library` | `wildshard:models/island-library@1` | plain value | `IslandLibrary` (page) |
 | `player/stealth` | `wildshard:player/stealth@1` | plain value | `StealthController` (page), `StealthRowsSchema` (shard-format) |
@@ -232,8 +229,6 @@ a `source`, and `content.catalogue` without finishes need none; `species.program
 | `motion.channels` | view | — | `installSceneMotion` | `world/scenes` |
 | `page.life` | view | — | `installClientPageLife` | — |
 | `player.enter` | both | `fallFloor` | `enterClientPlayer`, `installClientPlayerEnter` | — |
-| `population.hull-book` | view | — | `prepareDeclaredHullBookKit` | `actors/species-programs`, `explore/catalogue` |
-| `population.product-creatures` | view | — | — | — |
 | `population.wildlife` | view | — | `clientWildlife`, `installClientWildlife` | — |
 | `portal.ride` | both | `portalRide` | `installDeclaredPortalRide` | — |
 | `practice.course` | view | — | `installPracticeCourse` | — |
@@ -246,7 +241,6 @@ a `source`, and `content.catalogue` without finishes need none; `species.program
 | `quest.views` | view | — | `installEntryQuestViews` | `world/scenes` |
 | `quest.world` | both | `places` | `prepareQuestWorldEntry` | — |
 | `riding.session` | view | — | `installClientRiding` | — |
-| `species.program` | view | — | `installClientSpeciesProgram`, `prepareClientSpeciesCatalogue` | `actors/species-programs`, `sim/scripts`, `sim/runtime-plan` |
 | `state.adventure` | both | `saves` | `installClientAdventurePersistence` | — |
 | `stealth.entry` | both | `stealth` | `installClientStealthEntry`, `prepareClientStealthEntry` | `player/stealth` |
 | `strings.register` | view | — | `levelRegistrations.strings` | `ui/strings` |

@@ -27,7 +27,7 @@ const hunt = {
   limit: 8,
   player: 'origin',
   fight: { telegraphed: false, capExemptTags: [] },
-  bands: { states: ['sidestep'], scripted: true, legacyKinds: [] },
+  bands: { states: ['sidestep'], scripted: true },
   hit: { namespace: 'creature', tags: ['feel.blow'] },
 }
 

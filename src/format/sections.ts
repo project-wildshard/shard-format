@@ -4,8 +4,6 @@ import type {StealthRows} from './stealth.ts';
 import type { ColourFunctionBook } from './colourFunction.ts';
 import type { PaintedLookRow } from './paintedLook.ts';
 import type { ExplorerCatalogue } from './explorerCatalogue.ts';
-import type { RiggedHullBook } from './riggedHulls.ts';
-import type { HullLookBookRows } from './speciesLooks.ts';
 import type { ToonLookRow } from './toonLook.ts';
 import type { KeyedSkyStyle } from './keyedSky.ts';
 import type { SpawnScriptRows } from './spawnScripts.ts';
@@ -58,8 +56,6 @@ export interface PlatformSections {
   'view/modules': ViewModuleRow[];
   /** Client-only ordered model references, ignored by simulation. */
   'explore/catalogue': ExplorerCatalogue;
-  'look/rigged-hulls': RiggedHullBook;
-  'look/hull-book': HullLookBookRows;
   'look/toon': ToonLookRow;
   'look/painted': PaintedLookRow;
   'look/colour-functions': ColourFunctionBook;
@@ -111,8 +107,6 @@ export interface PlatformSections {
   'look/look': Pick<Shardfile, 'look' | 'presentation'>;
   'look/map': Pick<Shardfile, 'map'>;
   'look/materials': { readonly rows: Pick<Rows, 'looks'> };
-  /** ONE-FORMAT OF30: retired; an older product may carry it, nothing reads it. */
-  'actors/species-programs': unknown;
   /** new (KA5): sim-side steering mechanics, independently selected by decisions. */
   'actors/moves': ActorMoves;
   'actors/spawn-scripts': SpawnScriptRows[];

@@ -26,10 +26,6 @@
     "actors/species": {
       "hosts": ["server speciesResolver", "page clientSpeciesLooks"]
     },
-    "actors/species-programs": {
-      "hosts": [],
-      "note": "Metadata lent to existing page/native species and hunt owners."
-    },
     "actors/strikes": {
       "hosts": [],
       "note": "Consumed by the runtime's explicitly imported creature host."
@@ -107,9 +103,6 @@
     "look/colour-functions": {
       "hosts": ["page materialColourGraph"]
     },
-    "look/hull-book": {
-      "hosts": ["page productHullBook"]
-    },
     "look/keyed-sky": {
       "hosts": ["page keyedSkyBackdrop"]
     },
@@ -124,9 +117,6 @@
     },
     "look/painted": {
       "hosts": ["page productPaintedLook"]
-    },
-    "look/rigged-hulls": {
-      "hosts": ["page productRiggedHulls"]
     },
     "look/toon": {
       "hosts": ["page toonLook"]
@@ -369,14 +359,6 @@
       "page": ["enterClientPlayer", "installClientPlayerEnter"],
       "reads": []
     },
-    "population.hull-book": {
-      "page": ["prepareDeclaredHullBookKit"],
-      "reads": ["actors/species-programs", "explore/catalogue"]
-    },
-    "population.product-creatures": {
-      "page": [],
-      "reads": []
-    },
     "population.wildlife": {
       "page": ["clientWildlife", "installClientWildlife"],
       "reads": []
@@ -424,10 +406,6 @@
     "riding.session": {
       "page": ["installClientRiding"],
       "reads": []
-    },
-    "species.program": {
-      "page": ["installClientSpeciesProgram", "prepareClientSpeciesCatalogue"],
-      "reads": ["actors/species-programs", "sim/scripts", "sim/runtime-plan"]
     },
     "state.adventure": {
       "page": ["installClientAdventurePersistence"],

@@ -95,10 +95,6 @@ const product = [
   json('sections/look/materials.json', {
     rows: { looks: [{ species: 'one' }] },
   }),
-  json('sections/actors/species-programs.json', {
-    native: [{ kind: 'deer' }],
-    page: [{ kind: 'wolf' }],
-  }),
   json('sections/ui/level.json', {
     manifest: { spawn: {}, sky: {}, name: 'Discovery name' },
   }),
@@ -164,9 +160,8 @@ test('product inventory reads addressed plans, explicit looks and manifest dupli
     }),
   ])
   const counts = productCounts([first, second])
-  assert.deepEqual(first.kinds, ['boar', 'bear', 'deer', 'wolf'])
+  assert.deepEqual(first.kinds, ['boar', 'bear'])
   assert.equal(counts['products.rows-without-look'], 1)
-  assert.equal(counts['products.species-program-sections'], 1)
   assert.equal(counts['products.repeated-manifest-fields'], 2)
   assert.equal(counts['products.single-shard-server-hosts'], 1)
   assert.equal(counts['products.single-shard-page-features'], 2)

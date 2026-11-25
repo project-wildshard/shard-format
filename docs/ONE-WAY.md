@@ -49,12 +49,10 @@ FORMAT-PRUNE rows.
 | format.retired-vocabulary | 0 (198) | done (FP46) |
 | sdk.retired-vocabulary | 0 (84) | done (FP46) |
 | products.rows-without-look | 0 (0) | done |
-| products.species-program-sections | 0 (4) | done |
 | products.repeated-manifest-fields | 7 (12) | FP47 |
 | products.single-shard-server-hosts | 16 (41) | FP48 |
 | products.single-shard-page-features | 23 (30) | FP49 |
 | corpus.rows-without-look | 0 (0) | done |
-| corpus.species-program-sections | 0 (0) | done |
 | corpus.repeated-manifest-fields | 9 (11) | FP47 |
 
 ## Scope and exclusions

@@ -175,7 +175,7 @@
   "./questRuntime#QuestLeadRowsSchema.path[][1]": {"ref":"./questRuntime#QuestLeadRowsSchema.path[][0]"},
   "./questRuntime#QuestLeadRowsSchema.trot": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"min_value","expects":">=0","requirement":0}]},
   "./questRuntime#QuestRuntimeDocumentSchema": {"type":"unknown","expects":"unknown","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:ecf47a5371f79ec5"},{"kind":"schema","type":"strict_object","expects":"Object"}]},
-  "./questRuntime#QuestRuntimeFileSchema": {"ref":"./clientPlan#ClientFeatureSchema|45.source"},
+  "./questRuntime#QuestRuntimeFileSchema": {"ref":"./clientPlan#ClientFeatureSchema|43.source"},
   "./questRuntime#QuestRuntimeTableSchema": {"type":"strict_object","expects":"Object"},
   "./questRuntime#QuestRuntimeTableSchema.external": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"max_length","expects":"<=64","requirement":64}]},
   "./questRuntime#QuestRuntimeTableSchema.external[]": {"ref":"./questRuntime#QuestContentDocumentSchema.trader.rows[].blurb"},

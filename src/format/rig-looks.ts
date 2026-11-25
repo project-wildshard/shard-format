@@ -3,7 +3,7 @@
  * `platform.rig` names the `world/scenes` models library (`parameters.library`) whose rigs carry the body, and optionally
  * the rig body (`parameters.body`, else the species' kind). The rig brings its own skeleton, surfaces and clips, so the row
  * names no material and its animation is the rig's own (`platform.rig`, no parameters). This replaces a page's
- * `species.program` feature for drawing declared bodies (Sunscar Dunes' ray, strider and Matriarch).
+ * deleted species program for drawing declared bodies (Sunscar Dunes' ray, strider and Matriarch).
  */
 import {
   exactOptional,
@@ -139,7 +139,7 @@ function rigLookRules(
 }
 
 /** OF19d1: a page whose plan keeper stands no body (`keeper` is its actor ids), and whose every declared spawn's species
- *  has a look row, draws its creatures as an ordinary upload does, so it needs no `species.program` feature. */
+ *  has a look row, draws its creatures as an ordinary upload does. */
 function declaredLooksDraw(
   shard: Readonly<RigLookShard>,
   keeper: readonly string[],
@@ -156,22 +156,12 @@ function declaredLooksDraw(
   )
 }
 
-/** Whether a data page draws its declared bodies from their looks: it has no `species.program` feature, its runtime plan's
- *  keeper (`plan`, the `sim/runtime-plan` section) stands no body, and every declared spawn's species has a look. */
+/** Whether a data page draws its declared bodies from their looks: its runtime plan's keeper (`plan`, the
+ *  `sim/runtime-plan` section) stands no body, and every declared spawn's species has a look. */
 function pageDrawsDeclaredLooks(
   shard: Readonly<RigLookShard>,
   plan: unknown,
-  features: readonly Readonly<{ kind: string }>[],
 ): boolean {
-  if (
-    plan === undefined ||
-    features.some(
-      (row: Readonly<{ kind: string }>): boolean =>
-        row.kind === 'species.program',
-    )
-  ) {
-    return false
-  }
   return declaredLooksDraw(shard, nativeRuntimeActorIds(plan))
 }
 

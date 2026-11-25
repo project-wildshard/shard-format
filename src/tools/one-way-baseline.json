@@ -23,12 +23,10 @@
     "format.retired-vocabulary": 0,
     "sdk.retired-vocabulary": 0,
     "products.rows-without-look": 0,
-    "products.species-program-sections": 0,
     "products.repeated-manifest-fields": 0,
     "products.single-shard-server-hosts": 15,
     "products.single-shard-page-features": 23,
     "corpus.rows-without-look": 0,
-    "corpus.species-program-sections": 0,
     "corpus.repeated-manifest-fields": 0
   }
 }

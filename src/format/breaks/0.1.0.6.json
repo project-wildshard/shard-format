@@ -152,6 +152,58 @@
     {
       "path": "./loadout#LoadoutSchema.launcher.slot|1",
       "noFileChange": "FORMAT-PRUNE FP22e: the closed weapon names (crossbow, sword, rifle, sword-iron, bow, sabre, spear, empty) go with items.legacySlot, at its zero users: a held weapon is named by its declared item, declared.<equipment id>, which FP22d writers already write; the legacySlot deprecation check keeps this break refused while a kept original or an engine pin still carries the old shape"
+    },
+    {
+      "path": "./clientNative#ClientSpeciesProgramSchema",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look"
+    },
+    {
+      "path": "./clientPlan#ClientFeatureSchema|=population_hull-book",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look"
+    },
+    {
+      "path": "./clientPlan#ClientFeatureSchema|=population_product-creatures",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look"
+    },
+    {
+      "path": "./clientPlan#ClientFeatureSchema|=species_program",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look"
+    },
+    {
+      "path": "./headlessSections#HEADLESS_CONTEXT_SECTIONS",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look"
+    },
+    {
+      "path": "./riggedHulls#RiggedHullBookSchema",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look; the generator book type stays for shard generators"
+    },
+    {
+      "path": "./riggedHulls#parseRiggedHullBook",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look"
+    },
+    {
+      "path": "./speciesLooks#HullLookBookSchema",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look"
+    },
+    {
+      "path": "./speciesLooks#HullSpeciesSchema",
+      "noFileChange": "FORMAT-PRUNE FP20 deletes the species-program family at zero users: FE13 (corpus/usage.json) shows no kept original or engine pin carries the three retired sections or the two population features, and the feature.species.program deprecation check keeps this break refused while a kept original (Nalati r8, production) still names it; every live creature is a declared row drawn from its look; only the hull look book read it"
+    },
+    {
+      "path": "./featureSides#CLIENT_FEATURE_SIDES",
+      "noFileChange": "FORMAT-PRUNE FP20: the three deleted species-program feature kinds leave the side table with their schemas; no live file names them"
+    },
+    {
+      "path": "./featureSides#SIDE_TABLES",
+      "noFileChange": "FORMAT-PRUNE FP20: the three deleted species-program feature kinds leave the side table with their schemas; no live file names them"
+    },
+    {
+      "path": "./runtime-hosts.json#json",
+      "noFileChange": "FORMAT-PRUNE FP20: the deleted species-program sections and feature kinds leave the engine host table (docs only, no shard file field)"
+    },
+    {
+      "path": "./sectionVersions#ACCEPTED_SECTION_VERSIONS",
+      "noFileChange": "FORMAT-PRUNE FP20: the three deleted species-program sections leave the accepted section versions with their schemas; no live file carries them"
     }
   ]
 }

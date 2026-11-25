@@ -3,7 +3,6 @@ import { expect, test } from 'vitest'
 
 import { outputFixture } from '../test/helpers/output-fixture.ts'
 import { HarvestDropsSchema } from './harvest-rows.ts'
-import { parsePlatformDataSection } from './platformDataSections.ts'
 import { parseRows } from './rows.ts'
 import { parseShardfile, shardfileRules } from './shardSchema.ts'
 import { SpeciesLookBookSchema } from './speciesBookRows.ts'
@@ -137,56 +136,6 @@ test('drop admission bounds total delivery, ids and selectors without callbacks'
   expect(
     safeParse(HarvestDropsSchema, [{ item: 'own.trophy', count: 64 }]).success,
   ).toBe(true)
-})
-
-test('the real hull-book section strips gameplay declarations from look metadata', (): void => {
-  const rgb = [0.5, 0.5, 0.5]
-  const definition = {
-    id: creature.id,
-    kind: creature.kind,
-    label: creature.label,
-    variants: creature.variants,
-    harvest: [{ item: 'unregistered', count: 1, variants: ['absent'] }],
-    capExempt: true,
-    fur: {
-      texSeed: 1,
-      tex: {
-        contrast: 1,
-        grizzle: 1,
-        normalStrength: 1,
-        bristle: 1,
-        strandLen: 1,
-        root: 1,
-      },
-      roughness: 1,
-      sheen: 1,
-      sheenColor: rgb,
-      envMapIntensity: 1,
-      rim: rgb,
-      shellLen: 1,
-      shag: 1,
-    },
-    rigContract: { skeleton: 'fixture', clips: [], sockets: [] },
-    pose: { grazeNeck: 0, gallopTail: 0 },
-    body: {
-      bones: [],
-      furParts: [],
-      hardParts: [],
-      eyeParts: [],
-      dims: creature.dims,
-    },
-  }
-  const looked = parsePlatformDataSection('look/hull-book', {
-    slug: 'fixture',
-    definitions: { fixture: definition },
-    rows: [],
-  })
-  expect(Object.hasOwn(looked.definitions['fixture'] ?? {}, 'harvest')).toBe(
-    false,
-  )
-  expect(Object.hasOwn(looked.definitions['fixture'] ?? {}, 'capExempt')).toBe(
-    false,
-  )
 })
 
 test('build-only look metadata refuses gameplay harvest declarations', (): void => {

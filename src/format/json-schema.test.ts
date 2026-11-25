@@ -29,7 +29,6 @@ const UNPROJECTED: readonly string[] = [
   // Native assembly data, deleted at FP21.
   'file ^server/[a-z0-9][a-z0-9.-]*.json$',
   'section actors/spawn-scripts',
-  'section actors/species-programs',
   'section actors/strikes',
   'section client/plan',
   'section explore/catalogue',
@@ -37,7 +36,6 @@ const UNPROJECTED: readonly string[] = [
   'section held/loadout',
   'section look/colour-functions',
   'section look/painted',
-  'section look/rigged-hulls',
   'section look/toon',
   'section player/stealth',
   'section sim/bodies',

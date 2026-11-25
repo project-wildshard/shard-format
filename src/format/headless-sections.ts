@@ -4,7 +4,6 @@ import { parsePlatformDataSection } from './platformDataSections.ts'
 
 /** One defining context catalogue for author-build intake and worker transport. */
 export const HEADLESS_CONTEXT_SECTIONS = [
-  'actors/species-programs',
   'view/modules',
   'sim/scripts',
   'actors/spawn-scripts',

@@ -33,9 +33,9 @@ const golden = JSON.parse(
 describe('small laws match the engine', () => {
   it('lists the same headless sections and admits the same products', () => {
     expect(HEADLESS_CONTEXT_SECTIONS).toEqual([
-      ...golden.sectionNames.slice(0, 8),
+      ...golden.sectionNames.slice(0, 7),
       'world/vehicles',
-      ...golden.sectionNames.slice(8),
+      ...golden.sectionNames.slice(7),
       'client/plan',
       'server/plan',
     ])

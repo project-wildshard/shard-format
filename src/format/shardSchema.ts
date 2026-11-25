@@ -1,5 +1,4 @@
 import { creatureSizeRules, spawnCapacity } from './creature-sizes.ts';
-import { readSpeciesPrograms } from './speciesPrograms.ts';
 import type { StrikeDebrisPolicy } from './strike-debris.ts';
 import { strikeDebrisCatalogueRules } from './strike-debris.ts';
 import { harvestSpeciesRules } from './harvest-rows.ts';
@@ -332,10 +331,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
     const parsed = v.safeParse(VehiclesSchema, vehicles);
     errors.push(...parsed.success ? vehicleRules(parsed.output, s) : ['world/vehicles parses']);
   }
-  const metadata = sections?.get('actors/species-programs');
-  const roster = metadata === undefined ? undefined : readSpeciesPrograms(metadata);
-  const targets = [...s.rows.species, ...roster?.page ?? [], ...roster?.native ?? [], ...roster?.program?.species ?? []];
-  errors.push(...strikeDebrisCatalogueRules({ strikes: debrisStrikes, species: targets }));
+  errors.push(...strikeDebrisCatalogueRules({ strikes: debrisStrikes, species: s.rows.species }));
   const harvestItems = new Set((s.items.catalogue ?? []).map((row: Readonly<{ id: string }>): string => row.id));
   errors.push(...harvestSpeciesRules(s.rows.species, harvestItems));
   if (s.migrations.some(step => step.equipmentSlots?.some(rename => !s.items.rows.some(row => row.kind === 'weapon' && row.slot === rename.to)))) errors.push('migration equipment slots resolve declared weapons');

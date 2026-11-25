@@ -1,5 +1,5 @@
 {
-  "./lightEmitters#LightEmittersSchema": {"ref":"./clientPlan#ClientFeatureSchema|59.rows"},
+  "./lightEmitters#LightEmittersSchema": {"ref":"./clientPlan#ClientFeatureSchema|56.rows"},
   "./lightEmitters#LightPoolRowSchema": {"type":"strict_object","expects":"Object"},
   "./lightEmitters#LightPoolRowSchema.at": {"type":"tuple","expects":"Array"},
   "./lightEmitters#LightPoolRowSchema.at[0]": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"finite","expects":null,"requirement":"fn:018ffd18b673b9fc"}]},

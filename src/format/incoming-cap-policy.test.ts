@@ -13,7 +13,7 @@ const hunt = (fight: Readonly<Record<string, unknown>>): unknown => ({
   limit: 8,
   player: 'host',
   fight,
-  bands: { states: [], legacyKinds: [] },
+  bands: { states: [] },
   hit: { namespace: 'hunt', tags: [] },
 })
 

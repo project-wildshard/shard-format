@@ -4,8 +4,6 @@ import { DeclaredBodyOpsSchema, type DeclaredBodyOpsRows } from './bodySlots.ts'
 import {StealthRowsSchema,type StealthRows} from './stealth.ts';
 import { PaintedLookSchema, type PaintedLookRow } from './paintedLook.ts';
 import { ColourFunctionBookSchema, type ColourFunctionBook } from './colourFunction.ts';
-import { RiggedHullBookSchema, type RiggedHullBook } from './riggedHulls.ts';
-import { HullLookBookSchema, type HullLookBookRows } from './speciesLooks.ts';
 import { ExplorerCatalogueSchema, type ExplorerCatalogue } from './explorerCatalogue.ts';
 import { ToonLookSchema, type ToonLookRow } from './toonLook.ts';
 import { KEYED_SKY, type KeyedSkyStyle } from './keyedSky.ts';
@@ -25,7 +23,6 @@ import { LoadoutSchema, type LoadoutRows } from './loadout.ts';
 import { HeldFinishesSchema, type HeldFinishesRows } from './heldFinishes.ts';
 import { HeldGearSchema, type HeldGearRows } from './heldGear.ts';
 import * as v from 'valibot';
-import { isJsonData } from './json.ts';
 import { HeldEquipmentSchema, type HeldEquipmentRows } from './heldEquipment.ts';
 import { HeldMeleeSchema } from './items.ts';
 import type { NativeSweptPolicyRows } from './items.ts';
@@ -45,17 +42,12 @@ import { WaterFieldSchema } from './water-field.ts';
 import type { WaterFieldRows } from './water-field.ts';
 import type { Vehicles } from './vehicles.ts';
 
-/** ONE-FORMAT OF30: a retired section an older product may still carry: plain JSON, read by nothing. */
-const RETIRED_SECTION: v.GenericSchema<unknown, unknown> = v.pipe(v.unknown(), v.check(isJsonData, 'A retired section must be plain JSON'));
-
 /** New plain-value sections supplement the unchanged v1 model assembled from the older section envelopes. */
 export interface PlatformDataSections {
   'collections/displays': CollectionDisplaysRows;
   'models/island-library': ResolvedIslandLibraryRows;
   'player/stealth':StealthRows;
   'explore/catalogue': ExplorerCatalogue;
-  'look/rigged-hulls': RiggedHullBook;
-  'look/hull-book': HullLookBookRows;
   'look/toon': ToonLookRow;
   'look/painted': PaintedLookRow;
   'look/colour-functions': ColourFunctionBook;
@@ -77,8 +69,6 @@ export interface PlatformDataSections {
   'held/melee': NativeSweptPolicyRows;
   'ui/completion': CompletionRows;
   'sim/runtime-plan': NativeRuntimePlanData;
-  /** ONE-FORMAT OF30: retired. An older product still carrying it admits; nothing reads it. */
-  'actors/species-programs': unknown;
   'actors/moves': ActorMoves;
   'actors/spawn-scripts': SpawnScriptRows[];
   'actors/return-scripts': ReturnModuleRow[];
@@ -101,9 +91,6 @@ export const PLATFORM_DATA_SECTIONS: Readonly<{ [Name in keyof PlatformDataSecti
   'models/island-library': { schema: ResolvedIslandLibrarySchema },
   'player/stealth':{schema:StealthRowsSchema},
   'explore/catalogue': { schema: ExplorerCatalogueSchema },
-  'actors/species-programs': { schema: RETIRED_SECTION },
-  'look/rigged-hulls': { schema: RiggedHullBookSchema },
-  'look/hull-book': { schema: HullLookBookSchema },
   'look/toon': { schema: ToonLookSchema },
   'look/painted': { schema: PaintedLookSchema },
   'look/colour-functions': { schema: ColourFunctionBookSchema },
@@ -151,8 +138,6 @@ export function parsePlatformDataSection(name: 'collections/displays', value: un
 export function parsePlatformDataSection(name: 'models/island-library', value: unknown): ResolvedIslandLibraryRows;
 export function parsePlatformDataSection(name:'player/stealth',value:unknown):StealthRows;
 export function parsePlatformDataSection(name: 'explore/catalogue', value: unknown): ExplorerCatalogue;
-export function parsePlatformDataSection(name: 'look/rigged-hulls', value: unknown): RiggedHullBook;
-export function parsePlatformDataSection(name: 'look/hull-book', value: unknown): HullLookBookRows;
 export function parsePlatformDataSection(name: 'look/toon', value: unknown): ToonLookRow;
 export function parsePlatformDataSection(name: 'look/painted', value: unknown): PaintedLookRow;
 export function parsePlatformDataSection(name: 'look/colour-functions', value: unknown): ColourFunctionBook;
@@ -164,7 +149,6 @@ export function parsePlatformDataSection(name: 'held/loadout', value: unknown): 
 export function parsePlatformDataSection(name: 'held/finishes', value: unknown): HeldFinishesRows;
 export function parsePlatformDataSection(name: 'held/gear', value: unknown): HeldGearRows;
 export function parsePlatformDataSection(name: 'held/equipment', value: unknown): HeldEquipmentRows;
-export function parsePlatformDataSection(name: 'actors/species-programs', value: unknown): unknown;
 export function parsePlatformDataSection(name: 'actors/moves', value: unknown): ActorMoves;
 export function parsePlatformDataSection(name: 'actors/strikes', value: unknown): CreatureStrikes;
 export function parsePlatformDataSection(name: 'actors/spawn-scripts', value: unknown): SpawnScriptRows[];

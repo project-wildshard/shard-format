@@ -17,7 +17,7 @@ import { isJsonData } from './json.ts';
 import { LightEmittersSchema } from './lightEmitters.ts';
 import { EasedFieldsSchema } from './easedFields.ts';
 import { SceneMotionSchema } from './sceneMotion.ts';
-import { ClientHeldMeleeSchema, ClientSpeciesProgramSchema, ClientQuestPageSchema, ClientHeldBossSchema, ClientSpawnedBossSchema, ClientPlayerEnterSchema, ClientBossTelegraphSchema } from './clientNative.ts';
+import { ClientHeldMeleeSchema, ClientQuestPageSchema, ClientHeldBossSchema, ClientSpawnedBossSchema, ClientPlayerEnterSchema, ClientBossTelegraphSchema } from './clientNative.ts';
 
 const finite=v.pipe(v.number(),v.finite()),rgb=v.tuple([finite,finite,finite]);
 const label=v.pipe(v.string(),v.minLength(1),v.maxLength(512));
@@ -98,10 +98,6 @@ export const ClientFeatureSchema: v.GenericSchema<ClientFeatureInput, ClientFeat
   v.strictObject({ kind: v.literal('practice.course'), course: v.picklist(['horse', 'grapple']),
     title: label, blurb: label, icon: v.pipe(v.string(), v.minLength(1), v.maxLength(4096)), art: label, file: label }),
   v.strictObject({ kind: v.literal('held.claims.prepare'), id, source: v.exactOptional(v.strictObject({ slots: label, library: label })) }),
-  // OF30: retired (no pinned product names it since OF22; the engine runs nothing for it), still admitted so retained
-  // originals (Driftwood r4 to r6) keep validating; species-deprecations counts it until the J486 delete.
-  v.strictObject({ kind: v.literal('population.product-creatures') }),
-  v.strictObject({ kind: v.literal('population.hull-book') }),
   v.strictObject({ kind: v.literal('held.claims.install'), claims: id, preparation: v.exactOptional(v.picklist(['kit','world'])) }),
   v.strictObject({ kind: v.literal('held.claims.enter'), claims: id,
     grapple: v.strictObject({ item: id, profile: GrappleProfileSchema, hooks: GrappleHooksSchema, presentation: label }) }),
@@ -135,7 +131,7 @@ export const ClientFeatureSchema: v.GenericSchema<ClientFeatureInput, ClientFeat
   v.strictObject({ kind: v.literal('world.scenes') }),
   v.strictObject({ kind: v.literal('world.baked'), rows: v.pipe(v.array(BakedTilesSchema), v.minLength(1), v.maxLength(4), v.check(rows => new Set(rows.map(row => row.id)).size === rows.length, 'unique baked tile ids')) }),
   v.strictObject({ kind: v.literal('motion.channels'), rows: SceneMotionSchema }),
-  ClientHeldMeleeSchema, ClientSpeciesProgramSchema, ClientQuestPageSchema, ClientTrailsSchema, ClientCuesSchema,
+  ClientHeldMeleeSchema, ClientQuestPageSchema, ClientTrailsSchema, ClientCuesSchema,
   ClientHeldBossSchema, ClientSpawnedBossSchema, ClientPlayerEnterSchema, ClientBossTelegraphSchema,
   v.strictObject({ kind: v.literal('light.emitters'), rows: LightEmittersSchema }),
   v.strictObject({ kind: v.literal('weather.fields'), rows: EasedFieldsSchema, quest: id }),
@@ -177,8 +173,7 @@ export type ClientFeatureInput = { kind: 'strings.register'; } | { kind: 'conten
   species: string; guest: string; weather: string; sites?: string; figures: { rider: string; captain: string;
   storm: 'rider' | 'captain'; }; } | { kind: 'practice.course'; course: 'horse' | 'grapple'; title: string;
   blurb: string; icon: string; art: string; file: string; } | { kind: 'held.claims.prepare'; id: string;
-  source?: { slots: string; library: string; }; } | { kind: 'population.product-creatures'; } | { kind:
-  'population.hull-book'; } | { kind: 'held.claims.install'; claims: string; preparation?: 'kit' | 'world'; } |
+  source?: { slots: string; library: string; }; } | { kind: 'held.claims.install'; claims: string; preparation?: 'kit' | 'world'; } |
   { kind: 'held.claims.enter'; claims: string; grapple: { item: string; profile: v.InferInput<typeof GrappleProfileSchema>; hooks: v.InferOutput<typeof GrappleHooksSchema>; presentation: string; };
   } | { kind: 'portal.ride'; rows: v.InferInput<typeof DeclaredPortalRideSchema>; } | { kind: 'held.cosmetics'; } | { kind: 'held.ranged-feel'; } | {
   kind: 'bag.finds'; id: string; quest: string; file: string; } | { kind: 'look.painterly'; shadeTint: [number,
@@ -206,8 +201,7 @@ export type ClientFeatureInput = { kind: 'strings.register'; } | { kind: 'conten
   Record<string, 'uCloudShadow' | 'uToonNight' | 'uSeaLevel' | 'uCloudTime'>; toonSeaLevel: boolean; }; })[]; }
   | { kind: 'world.scenes'; } | { kind: 'world.baked'; rows: (v.InferInput<typeof BakedTilesSchema>)[]; } | {
   kind: 'motion.channels'; rows: v.InferInput<typeof SceneMotionSchema>; } | v.InferInput<typeof
-  ClientHeldMeleeSchema> | v.InferInput<typeof ClientSpeciesProgramSchema> | v.InferInput<typeof
-  ClientQuestPageSchema> | v.InferInput<typeof ClientTrailsSchema>
+  ClientHeldMeleeSchema> | v.InferInput<typeof ClientQuestPageSchema> | v.InferInput<typeof ClientTrailsSchema>
   | v.InferInput<typeof ClientCuesSchema> | v.InferInput<typeof ClientHeldBossSchema> | v.InferInput<typeof
   ClientSpawnedBossSchema> | v.InferInput<typeof ClientPlayerEnterSchema> | v.InferInput<typeof
   ClientBossTelegraphSchema> | { kind: 'light.emitters'; rows: v.InferInput<typeof LightEmittersSchema>; } | {
@@ -241,8 +235,7 @@ export type ClientFeatureRow = { kind: 'strings.register'; } | { kind: 'content.
   species: string; guest: string; weather: string; sites?: string; figures: { rider: string; captain: string;
   storm: 'rider' | 'captain'; }; } | { kind: 'practice.course'; course: 'horse' | 'grapple'; title: string;
   blurb: string; icon: string; art: string; file: string; } | { kind: 'held.claims.prepare'; id: string;
-  source?: { slots: string; library: string; }; } | { kind: 'population.product-creatures'; } | { kind:
-  'population.hull-book'; } | { kind: 'held.claims.install'; claims: string; preparation?: 'kit' | 'world'; } |
+  source?: { slots: string; library: string; }; } | { kind: 'held.claims.install'; claims: string; preparation?: 'kit' | 'world'; } |
   { kind: 'held.claims.enter'; claims: string; grapple: { item: string; profile: v.InferOutput<typeof GrappleProfileSchema>; hooks: v.InferOutput<typeof GrappleHooksSchema>; presentation: string; };
   } | { kind: 'portal.ride'; rows: v.InferOutput<typeof DeclaredPortalRideSchema>; } | { kind: 'held.cosmetics'; } | { kind: 'held.ranged-feel'; } | {
   kind: 'bag.finds'; id: string; quest: string; file: string; } | { kind: 'look.painterly'; shadeTint: [number,
@@ -270,8 +263,7 @@ export type ClientFeatureRow = { kind: 'strings.register'; } | { kind: 'content.
   number; })[]; lent: Record<string, 'uCloudShadow' | 'uToonNight' | 'uSeaLevel' | 'uCloudTime'>; toonSeaLevel:
   boolean; }; })[]; } | { kind: 'world.scenes'; } | { kind: 'world.baked'; rows: (v.InferOutput<typeof
   BakedTilesSchema>)[]; } | { kind: 'motion.channels'; rows: v.InferOutput<typeof SceneMotionSchema>; } |
-  v.InferOutput<typeof ClientHeldMeleeSchema> | v.InferOutput<typeof ClientSpeciesProgramSchema> |
-  v.InferOutput<typeof ClientQuestPageSchema> |
+  v.InferOutput<typeof ClientHeldMeleeSchema> | v.InferOutput<typeof ClientQuestPageSchema> |
   v.InferOutput<typeof ClientTrailsSchema> | v.InferOutput<typeof ClientCuesSchema> | v.InferOutput<typeof
   ClientHeldBossSchema> | v.InferOutput<typeof ClientSpawnedBossSchema> | v.InferOutput<typeof
   ClientPlayerEnterSchema> | v.InferOutput<typeof ClientBossTelegraphSchema> | { kind: 'light.emitters'; rows:

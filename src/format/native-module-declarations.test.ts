@@ -17,7 +17,7 @@ for(const name of ['clientNative','questHost','questInteractions','heldMelee','h
 test('native variants, defaults, module revisions and readonly look contracts stay precise',()=>{
  const consumer=resolve('src/format/t4-native-module-consumer.ts');
  let source=`import * as v from 'valibot';
-import {ClientPlayerEnterSchema,ClientHeldMeleeSchema,ClientSpeciesProgramSchema,ClientQuestPageSchema,ClientBossTelegraphSchema,ClientHeldBossSchema,ClientSpawnedBossSchema,type ClientHeldMeleeRowsInput,type ClientHeldMeleeRows} from './clientNative';
+import {ClientPlayerEnterSchema,ClientHeldMeleeSchema,ClientQuestPageSchema,ClientBossTelegraphSchema,ClientHeldBossSchema,ClientSpawnedBossSchema,type ClientHeldMeleeRowsInput,type ClientHeldMeleeRows} from './clientNative';
 import {ToonArmsLookSchema,HeldArmsSchema} from './heldArms';
 import {ScriptV2ContractSchema,ViewModuleSchema,type ScriptV2ContractRows} from './scriptContract';
 import {SCRIPT_V2_REVISIONS} from './scriptAdmissionV2';
@@ -26,8 +26,7 @@ import type {NativeQuestPropsRowsInput,NativeQuestPropsRows} from './questIntera
 import type {QuestHostRow} from './questHost';
 import {PlumbingSchema} from './plumbing';
 import {TOON_DAY_PRESET,type ToonDayRow} from './toonLook';
-import type {HullSpeciesRows} from './speciesLooks';
-export const variants=v.variant('kind',[ClientPlayerEnterSchema,ClientHeldMeleeSchema,ClientSpeciesProgramSchema,ClientQuestPageSchema,ClientBossTelegraphSchema,ClientHeldBossSchema,ClientSpawnedBossSchema]);
+export const variants=v.variant('kind',[ClientPlayerEnterSchema,ClientHeldMeleeSchema,ClientQuestPageSchema,ClientBossTelegraphSchema,ClientHeldBossSchema,ClientSpawnedBossSchema]);
 export const authored:ClientHeldMeleeRowsInput={kind:'held.melee',item:'sword',stage:'kit',targets:'scan'};
 export const admitted:ClientHeldMeleeRows=v.parse(ClientHeldMeleeSchema,authored);
 export const composed:boolean=admitted.composed;
@@ -52,7 +51,6 @@ export const raw:Record<string,unknown>=host;
 export const light:'colour'=TOON_DAY_PRESET.light;
 declare const day:ToonDayRow;
 export const start:number=day.start;
-export const clips:HullSpeciesRows['rigContract']['clips']=[];
 `;
  const options:ts.CompilerOptions={strict:true,exactOptionalPropertyTypes:true,noUncheckedIndexedAccess:true,
   target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext,moduleResolution:ts.ModuleResolutionKind.Bundler,
@@ -72,8 +70,7 @@ export const wrongCue:PolearmRows['profile']['cues']['fire']='fire';
 export const wrongWeapon:ArcWeaponRows['item']='sword';
 export const wrongAbi:ScriptV2ContractRows['abi']=1;
 day.start=0;
-export const unknownHost:QuestHostRow['unknownField']='no';
-export const wrongClips:HullSpeciesRows['rigContract']['clips']=['walk'];`;
+export const unknownHost:QuestHostRow['unknownField']='no';`;
  const refused=diagnostics().map(diagnostic=>diagnostic.code);
  expect(refused).toContain(2741);
  expect(refused).toContain(2739);
