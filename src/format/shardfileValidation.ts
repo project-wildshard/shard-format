@@ -1,8 +1,8 @@
 import { cookMountPath, readCookData } from './cook-data.ts';
 import { checkDiscoveryMount } from './manifest-deprecations.ts';
 import { requireCookPreparation } from './cook-preparation.ts';
-import { parseOutputIndex, validateOutputSection, assembleOutputShardfile, type OutputFile, type OutputIndex } from './outputIndex.ts';
-import { asWrittenIdentity } from './save-revision.ts';
+import { declaredSourceMatches, parseIncomingIndex, validateIncomingSection } from './incoming.ts';
+import { assembleOutputShardfile, type OutputFile, type OutputIndex } from './outputIndex.ts';
 import { decisionModuleContracts, scriptAdmissionRows, type ScriptAdmissionRows, type ScriptContract } from './scriptContract.ts';
 import { registeredJsonContract, validateRegisteredJson } from './registeredJson.ts';
 import { validatePlatformFile } from './platformFileFamilies.ts';
@@ -183,7 +183,7 @@ type ReadListed = (entry: Readonly<{ path: string; hash: string; bytes: number }
 function readSections(index: OutputIndex, read: ReadListed): Map<string, unknown> {
   const payloads = new Map<string, unknown>();
   for (const entry of index.sections) {
-    coded('section-invalid', (): void => { const value = readCanonicalJson(read(entry)); assertSectionSides(entry.name, value); validateOutputSection(entry.name, value); payloads.set(entry.name, value); });
+    coded('section-invalid', (): void => { const value = readCanonicalJson(read(entry)); assertSectionSides(entry.name, value); validateIncomingSection(entry.name, value); payloads.set(entry.name, value); });
   }
   return payloads;
 }
@@ -234,7 +234,7 @@ function readCook(index: OutputIndex, read: ReadListed, ports: Pick<ShardfileVal
  *  check that refused (SA41, `issue-codes.ts`). */
 export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileValidationPorts): ValidatedShardfile {
   const verify = ports.verify ?? ((bytes: Uint8Array, expected: string): boolean => ports.hash(bytes) === expected);
-  const index = coded('index-invalid', (): OutputIndex => parseOutputIndex(readCanonicalJson(files.read('shard.json', limits.sourceBytes))));
+  const index = coded('index-invalid', (): OutputIndex => parseIncomingIndex(readCanonicalJson(files.read('shard.json', limits.sourceBytes))));
   const listed = new Set(['shard.json', 'validation.json']), { assets, keep } = assetStore(files.read, ports.readThrough === true);
   const read: ReadListed = (entry): Uint8Array => coded('file-mismatch', (): Uint8Array => {
     listed.add(entry.path);
@@ -260,6 +260,6 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
   const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index, judged: ports.judged ?? 'upload', armed: ports.armed });
   checkWorldTargets(shard, payloads.get('world/targets'));
-  if (ports.hash(validationSourceBytes(asWrittenIdentity(shard, index.formatVersion))) !== index.build.sourceHash) throw issueError('source-hash', 'Output sections differ from the declared source hash');
+  if (!declaredSourceMatches(shard, index, ports.hash)) throw issueError('source-hash', 'Output sections differ from the declared source hash');
   return { index, shard, assets, sections: payloads, scripts, ...deprecationReport({ index, sections: payloads, cook }, warnings), policy: admittedVerdict(shard), audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
 }

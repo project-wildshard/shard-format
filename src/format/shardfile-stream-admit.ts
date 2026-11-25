@@ -8,10 +8,10 @@ import {
   assetAdmission,
   preflightDeclaredCosts,
 } from './assetAdmission.ts'
+import { declaredSourceMatches } from './incoming.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { assembleOutputShardfile } from './outputIndex.ts'
 import { admittedVerdict, recordVerdict } from './policy-verdict.ts'
-import { writtenSourceBytes } from './save-revision.ts'
 import { offlineMemoryAdmission } from './shardfile-assets.ts'
 import {
   assertShardfileTargets,
@@ -142,10 +142,7 @@ function admitTail(
   }>,
 ): void {
   checkWorldTargets(shard, product.payloads.get('world/targets'))
-  if (
-    product.hash(writtenSourceBytes(shard, product.index.formatVersion)) !==
-    product.index.build.sourceHash
-  ) {
+  if (!declaredSourceMatches(shard, product.index, product.hash)) {
     throw issueError(
       'source-hash',
       'Output sections differ from the declared source hash',

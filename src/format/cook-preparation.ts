@@ -17,6 +17,7 @@ import {
   union,
 } from 'valibot'
 
+import { sentSdkOf } from './incoming-sent.ts'
 import {
   failureOf,
   fenceValid,
@@ -246,11 +247,16 @@ function requireCookPreparation(
     return
   }
   // SHARD-COMPAT PR5 (J487): every failing prepared part is named, not the first.
+  // FP60: a published client hashed the index as sent, `requires.sdk` included (`incoming-sent.ts`).
+  const sdk = sentSdkOf(index)
+  const sent = { ...index, requires: { ...index.requires, sdk } }
+  const fresh = (sdk === undefined ? [index] : [index, sent]).some(
+    (row: Frozen<OutputIndex>): boolean =>
+      cook.inputHash ===
+      digest(cookPreparationBytes(row, cook.mounts, cook.renderer)),
+  )
   const failures = [
-    cook.inputHash ===
-    digest(cookPreparationBytes(index, cook.mounts, cook.renderer))
-      ? undefined
-      : `stale cook preparation: run ${fix}`,
+    fresh ? undefined : `stale cook preparation: run ${fix}`,
     failureOf((): void => {
       fenceValid(index, { fence: cook.fence ?? [], mounts: cook.mounts }, fix)
     }),

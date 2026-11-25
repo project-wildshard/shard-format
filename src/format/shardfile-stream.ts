@@ -15,9 +15,9 @@
 
 import { SHARDFILE_ADMISSION_LIMITS as limits } from './admissionLimits.ts'
 import { assertSectionSides } from './feature-sides.ts'
+import { parseIncomingIndex, validateIncomingSection } from './incoming.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
 import { unheldMount } from './manifest-deprecations.ts'
-import { parseOutputIndex, validateOutputSection } from './outputIndex.ts'
 import { admittedVerdict } from './policy-verdict.ts'
 import { assertScriptSides } from './script-sides.ts'
 import { scriptAdmissionRows } from './scriptContract.ts'
@@ -212,7 +212,7 @@ function readIndex(replay: Readonly<Replay>): OutputIndex {
     hash: shardJson.sha,
     bytes: shardJson.size,
   }
-  return parseOutputIndex(readCanonicalJson(listedBytes(replay, listed)))
+  return parseIncomingIndex(readCanonicalJson(listedBytes(replay, listed)))
 }
 
 /** Each section: listed, hashed, canonical and valid; with the script side warnings (`assertScriptSides`). */
@@ -226,7 +226,7 @@ function readSections(
     withIssueCode('section-invalid', (): void => {
       const value = readCanonicalJson(listedBytes(replay, entry))
       assertSectionSides(entry.name, value)
-      validateOutputSection(entry.name, value)
+      validateIncomingSection(entry.name, value)
       payloads.set(entry.name, value)
     })
   }
