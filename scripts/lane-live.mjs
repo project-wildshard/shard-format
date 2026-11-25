@@ -72,9 +72,16 @@ function pidfileLive(root, depth = 0) {
   return false;
 }
 
-/** @param {unknown} session @param {string|undefined} activeLog
+/** @param {unknown} session @param {string|undefined} activeLog @param {unknown} [terminal]
  * @returns {{live?:boolean,latest?:number}} */
-function sessionEvidence(session, activeLog) {
+function sessionEvidence(session, activeLog, terminal) {
+  // The hc terminal the owner ran in (scratch-dir's `pane`): live while hc says so.
+  if (typeof terminal === 'string' && /^[\w.@:/-]+$/u.test(terminal)) {
+    const got = spawnSync('hc', ['get', terminal], { encoding: 'utf8', timeout: 2000, maxBuffer: 8 * 1024 * 1024 });
+    if (got.status === 0) {
+      try { if (JSON.parse(got.stdout)?.state === 'live') return { live: true }; } catch {/* Unreadable evidence is skipped. */}
+    }
+  }
   if (typeof session !== 'string' || !/^[\w.@:-]+$/u.test(session)) return {};
   // A transcript's existence is not liveness: use its most recent write.
   let latest = 0;
@@ -85,14 +92,6 @@ function sessionEvidence(session, activeLog) {
         const info = statSync(join(root, String(row)));
         if (info.isFile()) latest = Math.max(latest, info.mtimeMs);
       }
-    } catch {/* Unreadable evidence is skipped. */}
-  }
-  const listed = spawnSync('herdr', ['agent', 'list'], { encoding: 'utf8', timeout: 2000, maxBuffer: 8 * 1024 * 1024 });
-  if (listed.status === 0) {
-    try {
-      /** @type {{agent_session?:{value?:string}}[]} */
-      const agents = JSON.parse(listed.stdout)?.result?.agents ?? [];
-      if (agents.some(agent => agent.agent_session?.value === session)) return { live: true };
     } catch {/* Unreadable evidence is skipped. */}
   }
   return { live: latest > 0 && activeHoursSince(new Date(latest), { log: activeLog }) < 24, latest };
@@ -114,7 +113,7 @@ export function laneLive(path, { receipts = RECEIPTS, activeHours, cwdLive, cwds
     const hours = activeHours ?? activeHoursSince(lstatSync(root).mtime, { log: activeLog });
     return { state: 'unknown', reason: hours >= 72 ? 'no readable .owner; at least 72 active hours, investigate' : 'no readable .owner' };
   }
-  const evidence = sessionLive === undefined ? sessionEvidence(record.session, activeLog) : { live: sessionLive, latest: 0 };
+  const evidence = sessionLive === undefined ? sessionEvidence(record.session, activeLog, record.pane) : { live: sessionLive, latest: 0 };
   if (evidence.live) return { state: 'live', reason: 'owner session is present' };
   const line = receipt(record.lane, receipts, record.receiptOffset);
   if (line && /\s(?:DONE|ENDED):/u.test(line)) return { state: 'ended', reason: 'ending receipt' };

@@ -325,7 +325,10 @@ class Landing{
   this.quarantineAt=0;
   /** @type {unknown[]} */this.quarantinedEntries=[];
   /** @type {LandConfig} */this.config=LAND_DEFAULTS;
-  this.lane=/^[a-z][a-z0-9_-]*$/u.test(env.WS_LANE_NAME??'')?String(env.WS_LANE_NAME):'land';
+  // Meta QA 11-25 row 43: a land runs only under a lane name, never calling itself `land`.
+  const lane=env.WS_LANE_NAME??'';
+  if(!/^[a-z][a-z0-9_-]*$/u.test(lane))throw new StopError(`land runs only under a lane name: set WS_LANE_NAME=<your lane> (lowercase letters, digits, _ or -, such as WS_LANE_NAME=opus-ma node scripts/land.mjs)${lane===''?'':`; ${JSON.stringify(lane)} is not one`}`);
+  this.lane=lane;
   const inside=tryGit(cwd,['rev-parse','--show-toplevel']);
   if(inside.status!==0)throw new StopError('not inside a git checkout');
   this.root=inside.stdout.trim();
@@ -806,7 +809,7 @@ class Landing{
    mkdirSync(dirname(script),{recursive:true});writeFileSync(script,readFileSync(own));
    env={...this.env,WS_MAIN_WATCH_ROOT:canonical};
   }
-  const args=[script,`--follow=${head}`,`--lane=${this.lane}`,...(this.env.HERDR_PANE_ID?[`--pane=${this.env.HERDR_PANE_ID}`]:[])];
+  const args=[script,`--follow=${head}`,`--lane=${this.lane}`,...(this.env.HC_TERMINAL_ID?[`--pane=${this.env.HC_TERMINAL_ID}`]:[])];
   try{
    spawn(process.execPath,args,{cwd:canonical,env,detached:true,stdio:'ignore'}).unref();
    this.say('watch',`main-watch follows ${short(head)} and reports main's ci (receipt, and a message here on red)`);
@@ -842,7 +845,9 @@ class Landing{
     const saved=keepCopy(this.root,{keepRoot:this.env.WS_SESSION_KEEP_ROOT});
     this.say('copied',`recoverable worktree state saved at ${saved.dir}`);
    }catch(error){
-    const line=parts.concat(`worktree kept: copy failed (${error instanceof Error?error.message:String(error)})`).join('; ');
+    // QA 11-25 row 34: over 50 MiB the small, irreplaceable part is copied anyway; the tree stays, and the line says where.
+    const partial=error instanceof Error&&'keepDir' in error?`over 50 MiB; partial copy (unpushed commits, patches, source and scripts) at ${String(error.keepDir)}, the rest listed in its SKIPPED.txt`:null;
+    const line=parts.concat(partial===null?`worktree kept: copy failed (${error instanceof Error?error.message:String(error)})`:`worktree kept: ${partial}`).join('; ');
     this.say('cleaned',line);
     return line;
    }

@@ -164,8 +164,10 @@ describe('a planted plan worktree is invisible to the parent checkout', {skip: o
   });
 
   test('a whole-root oxfmt check runs cleanly and lists nothing from it', () => {
-    assert.ok(existsSync(join(ROOT, 'kit/.oxfmtrc.json')), 'no kit/.oxfmtrc.json');
-    const format = run(bin('oxfmt'), ['-c', 'kit/.oxfmtrc.json', '--list-different', '.']);
+    // The kit's format config: kit/ on the old layout, the root in a lean repo (lean-layout L2).
+    const config = ['kit/.oxfmtrc.json', '.oxfmtrc.json'].find((path) => existsSync(join(ROOT, path)));
+    assert.ok(config, 'no kit/.oxfmtrc.json or .oxfmtrc.json');
+    const format = run(bin('oxfmt'), ['-c', config, '--list-different', '.']);
     // --list-different exits 1 when some file differs; anything else, or any stderr, is a broken run. A whole root
     // always holds files outside the formatted folders, so an empty list means it formatted nothing.
     assert.equal(format.error, undefined);

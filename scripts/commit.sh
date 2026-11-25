@@ -294,7 +294,7 @@ finally:
               "at": time.time(), "elapsedMs": round(elapsed), "waitMs": round(wait),
               "workMs": round(work), "lockMs": round(hold), "exitCode": code,
               "gateDeferred": handoffs, "sourceMs": round(source_seconds * 1000),
-              "lane": os.getenv("WS_COMMIT_LANE") or os.getenv("HERDR_PANE_ID")}
+              "lane": os.getenv("WS_COMMIT_LANE") or os.getenv("HC_TERMINAL_ID")}
     try:
         with open(Path(common) / "commit-times.jsonl", "a") as ledger:
             ledger.write(json.dumps(timing, separators=(",", ":")) + "\n")

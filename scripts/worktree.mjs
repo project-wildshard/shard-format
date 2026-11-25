@@ -9,7 +9,7 @@
 //      writes the rest; `git status` must then be clean and the hooks live, or setup takes its worktree back;
 //   3. `pnpm install --frozen-lockfile --offline`: pnpm's store, cloned, not downloaded;
 //   4. `pnpm pins` when the repo has that script (shard products from ~/.cache/wildshard/pins);
-//   5. names the herdr pane (inside herdr only) and prints the land steps.
+//   5. labels the hc terminal (inside hc only) and prints the land steps.
 // Before step 1 adds anything, meta REPO-DISK DK9 (Q41): it refuses when the repo's volume has under MIN_FREE_GIB
 // free or the repo already has MAX_WORKTREES live worktrees under .worktrees/, and names the oldest parked one.
 // WS_WORKTREE_FREE_GIB stands in for the measured free GiB (tests); setting it is a deliberate override.
@@ -27,7 +27,8 @@ import {homedir} from 'node:os';
 import {basename,dirname,join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {WORKTREES} from './worktree-ignore.mjs';
-import {freeBytes,lastActivity,linkedWorktrees,onMain,parseReapArgs,reap} from './worktree-reap.mjs';
+import {laneLive} from './lane-live.mjs';
+import {freeBytes,lastActivity,linkedWorktrees,onMain,parseReapArgs,processDirectories,reap} from './worktree-reap.mjs';
 
 export const SLUG=/^[a-z0-9][a-z0-9._-]{0,63}$/u;
 const REGULAR=/^100(?:644|755)$/u;
@@ -87,6 +88,8 @@ export function withStoreUse(env,what,fn){
 
 /** Meta REPO-DISK DK9 (DEV-SPEED Q41): at most this many live plan worktrees per repo. */
 export const MAX_WORKTREES=6;
+/** J358: how long a landed, clean worktree sits untouched before a full cap lists it as ended (it never removes it). */
+export const ENDED_IDLE_MS=30*60_000;
 /** Meta REPO-DISK DK9: refuse a new worktree when the repo's volume has less free than this, in GiB. */
 export const MIN_FREE_GIB=60;
 
@@ -131,8 +134,40 @@ export function capRefusal(canonical,env){
  const oldest=parked[0];
  const hint=oldest===undefined
   ?`none of them is parked (landed on origin/main and clean): land one, or remove one by hand`
-  :`the oldest parked worktree is ${WORKTREES}/${oldest.slug} (landed, clean, idle ${((Date.now()-oldest.at)/3_600_000).toFixed(1)} h); \`node scripts/worktree.mjs reap\` frees it once idle 24 h with no process inside, or land and remove one by hand`;
- return `${why}; ${hint}`;
+  :`the oldest parked worktree is ${WORKTREES}/${oldest.slug} (landed, clean, idle ${((Date.now()-oldest.at)/3_600_000).toFixed(1)} h)`;
+ return `${why}; ${hint}${full?endedList(endedWorktrees(canonical,env)):''}`;
+}
+
+/**
+ * J358 (Jake, 2026-11-15: "No fucking auto delete in scripts"; coordinator 11-24 reverts the cap reaper): the plan
+ * worktrees that have clearly ended: landed (tip on origin/main), clean, idle ENDED_IDLE_MS, with no process or pidfile
+ * inside. Report only: a full cap names them with the commands that remove them, a keep-copy first, for an agent to run.
+ * Only `land` removes a worktree itself (its own, just landed).
+ * @param {string} canonical @param {NodeJS.ProcessEnv} env @param {number} [now]
+ * @returns {{slug:string,idleHours:number}[]} oldest first
+ */
+export function endedWorktrees(canonical,env,now=Date.now()){
+ const roots=new Set([join(canonical,WORKTREES),join(realpathSync(canonical),WORKTREES)]);
+ const live=linkedWorktrees(canonical).filter(tree=>roots.has(dirname(resolve(tree.path)))&&existsSync(tree.path));
+ const directories=processDirectories(),cwds=directories===undefined?null:[...directories.values()];
+ return live.flatMap(tree=>{
+  const slug=basename(tree.path);
+  if(tree.branch!==`refs/heads/plan/${slug}`||!onMain(canonical,tree.head))return [];
+  const at=lastActivity(tree.path,git(tree.path,['rev-parse','--absolute-git-dir']).trim());
+  if(now-at<ENDED_IDLE_MS)return [];
+  const dirty=spawnSync('git',['--no-optional-locks','status','--porcelain','--untracked-files=all'],{cwd:tree.path,encoding:'utf8',maxBuffer:64<<20});
+  if(dirty.status!==0||dirty.stdout.trim()!=='')return [];
+  // A process or pidfile inside keeps it off the list; an owner session that has gone quiet, or no owner file, does not.
+  if(laneLive(tree.path,{cwds,sessionLive:false,activeHours:Number.POSITIVE_INFINITY,receipts:env.WS_LANE_RECEIPTS}).state==='live')return [];
+  return [{slug,at}];
+ }).sort((a,b)=>a.at-b.at).map(({slug,at})=>({slug,idleHours:(now-at)/3_600_000}));
+}
+
+/** The refusal's list: each ended worktree and the one command that removes it, copy first. @param {{slug:string,idleHours:number}[]} ended */
+export function endedList(ended){
+ if(ended.length===0)return '';
+ const rows=ended.map(({slug,idleHours})=>`\n  node scripts/keep-copy.mjs ${WORKTREES}/${slug} && git worktree remove ${WORKTREES}/${slug} && git branch -d plan/${slug}   # ${slug}: landed, clean, idle ${idleHours.toFixed(1)} h, nothing running`);
+ return `\nended worktrees (J358: nothing removes them for you; copy first, then remove, from the canonical checkout):${rows.join('')}`;
 }
 
 /** @param {string[]} argv */
@@ -367,9 +402,9 @@ export function worktreeNew(argv,cwd=process.cwd(),env=process.env){
  const childEnv=Object.fromEntries(Object.entries(env).filter(([key])=>!key.startsWith('GIT_')));
  if(options.install&&existsSync(manifest))timed('install',()=>withStoreUse(env,'worktree install',()=>run(tree,'pnpm',['install','--frozen-lockfile','--offline'],childEnv)));
  if(options.pins&&scripts.pins!==undefined)timed('pins',()=>run(tree,'pnpm',['--silent','pins'],childEnv));
- if(options.herdr&&env.HERDR_ENV==='1'&&env.HERDR_PANE_ID!==undefined&&env.HERDR_PANE_ID!==''){
-  const named=spawnSync('herdr',['pane','rename',env.HERDR_PANE_ID,`${basename(canonical)} ${branch}`],{encoding:'utf8'});
-  if(named.status!==0)process.stderr.write(`worktree: herdr pane not renamed (${named.error?.message??named.stderr.trim()})\n`);
+ if(options.herdr&&env.HC_TERMINAL_ID!==undefined&&env.HC_TERMINAL_ID!==''){
+  const named=spawnSync('hc',['label',env.HC_TERMINAL_ID,`goal=${basename(canonical)} ${branch}`],{encoding:'utf8'});
+  if(named.status!==0)process.stderr.write(`worktree: hc terminal not labelled (${named.error?.message??named.stderr.trim()})\n`);
  }
  // LAND-SIMPLIFY LS2: local readers use main's last measured test seconds; refresh a missing or day-old table in the
  // background (scripts/test-timings.mjs fetch). It never holds up the worktree, and a failure only leaves the defaults.

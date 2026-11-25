@@ -60,6 +60,15 @@ function git(cwd, args) {
 /** @param {string} text @param {number} [n] */
 function firstLines(text, n = 6) { return text.trim().split('\n').slice(0, n).join(' | '); }
 
+/** A refused commit's reason: its X, blocked and refused lines first (a long staged list would push them past any
+ * first-lines cut), else its first 12 lines. @param {string} text */
+export function commitRefusal(text) {
+  // oxlint-disable-next-line no-control-regex -- strips terminal colour codes.
+  const lines = text.split('\n').map((line) => line.replaceAll(/\u001B\[[0-9;]*m/gu, '').trim()).filter(Boolean);
+  const red = lines.filter((line) => /(?:^|\s)X\s|blocked|refused|Error: /u.test(line)).slice(0, 8);
+  return (red.length > 0 ? red : lines.slice(0, 12)).join(' | ');
+}
+
 /** Refuse anything but main with no rebase, merge, cherry-pick or revert in progress. @param {string} cwd */
 export function checkState(cwd) {
   if (run(cwd, ['symbolic-ref', '--quiet', 'HEAD']).stdout.trim() !== 'refs/heads/main') {
@@ -76,12 +85,22 @@ export function checkState(cwd) {
  * them to new SHAs, so the subject is what survives. */
 const OWN = new Set();
 
+/** Meta QA 11-25 row 43: main-push and land run only under a lane name (`WS_LANE_NAME`); with none they once called
+ * themselves by the script's name, and a HOLD guard read the HOLD's own lander as a stranger. Null when the name is good.
+ * @param {NodeJS.ProcessEnv} env @param {string} script @returns {string|null} */
+export function laneRefusal(env, script) {
+  const lane = env.WS_LANE_NAME ?? '';
+  if (/^[a-z][a-z0-9_-]*$/u.test(lane)) return null;
+  return `${script} runs only under a lane name: set WS_LANE_NAME=<your lane> (lowercase letters, digits, _ or -, such as ` +
+    `WS_LANE_NAME=opus-ma node scripts/${script}.mjs ...)${lane === '' ? '' : `; ${JSON.stringify(lane)} is not one`}`;
+}
+
 /** One `lane-receipts.log` line, `<HH:MM Cancún> <lane> <text>` (the Mac's clock is Cancún time). WS_MAIN_PUSH_RECEIPT=0
  * (the tests) writes none. @param {string} text */
 function receipt(text) {
   if (process.env.WS_MAIN_PUSH_RECEIPT === '0') return;
   const file = resolve(process.env.WS_LANE_RECEIPTS ?? join(homedir(), '.cache/wildshard/lane-receipts.log'));
-  const lane = /^[a-z][a-z0-9_-]*$/u.test(process.env.WS_LANE_NAME ?? '') ? process.env.WS_LANE_NAME : 'main-push';
+  const lane = process.env.WS_LANE_NAME ?? 'unnamed';
   try {
     mkdirSync(dirname(file), { recursive: true });
     appendFileSync(file, `${new Date().toTimeString().slice(0, 5)} Cancún ${lane} ${text.replaceAll(/\s+/gu, ' ').slice(0, 1000)}\n`);
@@ -104,7 +123,7 @@ export function commitFiles(cwd, files, messages) {
   const commit = run(cwd, ['commit', ...messages.flatMap((message) => ['-m', message]), '--', ...files]);
   if (commit.status !== 0) {
     if (untracked.length > 0) run(cwd, ['reset', '--quiet', '--', ...untracked]);
-    throw new StopError(`git commit refused: ${firstLines(`${commit.stdout}\n${commit.stderr}`, 12)}`);
+    throw new StopError(`git commit refused: ${commitRefusal(`${commit.stdout}\n${commit.stderr}`)}`);
   }
   const made = git(cwd, ['rev-parse', '--short=8', 'HEAD']);
   OWN.add(git(cwd, ['log', '-1', '--format=%s', 'HEAD']));
@@ -378,6 +397,9 @@ if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(resolve(p
   let made = '';
   try {
     checkState(cwd);
+    // Meta QA 11-25 row 43: a push runs only under a lane name, never calling itself `main-push`.
+    const lane = laneRefusal(process.env, 'main-push');
+    if (lane !== null) throw new StopError(lane);
     // Five lanes' gates can queue for the lock: wait up to about 30 min for it unless --tries says otherwise.
     release = takeLock(cwd, { tries: process.argv.includes('--tries') ? options.tries : 120, wait: options.wait, log });
     const commit = () => {

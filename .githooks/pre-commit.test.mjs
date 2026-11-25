@@ -196,4 +196,15 @@ describe('pre-commit hook', () => {
     assert.equal(result.status, 0, result.stderr);
     assert.doesNotMatch(result.stderr, /other\.txt/);
   });
+
+  // FAST-RELEASE FR-A4 (J505): kit-owned files change in repo-kit and arrive by its stamp, never by hand here.
+  test('refuses an edit to a kit-owned file, unless the kit stamp (KIT_STAMP=1) or ALLOW_KIT_EDIT=1 makes it', () => {
+    const { commit } = sandbox();
+    const owned = '# Kit-owned (repo-kit files/): edit it there, never in a shard repo.\nname: publish\n';
+    assert.equal(commit({ '.github/workflows/publish.yml': owned, 'notes.txt': 'a\n' }, MSG).status, 0);
+    blocked(commit({ '.github/workflows/publish.yml': owned + '# by hand\n' }, MSG), /kit-owned file is edited in repo-kit[\s\S]*publish\.yml/);
+    assert.equal(commit({ '.github/workflows/publish.yml': owned + '# stamped\n' }, MSG, { env: { KIT_STAMP: '1' } }).status, 0);
+    assert.equal(commit({ '.github/workflows/publish.yml': owned + '# hatch\n' }, MSG, { env: { ALLOW_KIT_EDIT: '1' } }).status, 0);
+    assert.equal(commit({ 'notes.txt': 'b\n' }, MSG).status, 0, 'any other file commits as before');
+  });
 });
