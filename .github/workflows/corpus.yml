@@ -5,7 +5,7 @@
 # The release job (npm-publish.yml) runs it on the tagged commit before `npm publish`; it also runs nightly on main.
 # ZONE-SNAPSHOTS ZS3 (J507): it judges only the live set (engine's production and staging pins); any failure blocks
 # (no known-failures list), and a listed original that is neither live, a rollback copy nor a channel's pointer is
-# store drift and blocks too. It runs at 10:17 UTC, after the API's 09:17 prune. Never in the pre-push gate. The downloads are public: no R2 token is needed. Downloads and verdicts are cached by
+# store drift and blocks too (`--strict-store`, on since ZS11: 95 listed, 31 live valid, 0 drift on 11-25). It runs at 10:17 UTC, after the API's 09:17 prune. Never in the pre-push gate. The downloads are public: no R2 token is needed. Downloads and verdicts are cached by
 # shard hash, and a verdict is re-checked whenever the validator changes.
 name: corpus
 
@@ -54,5 +54,5 @@ jobs:
       - name: Validate every stored shard
         run: |
           started=$(date +%s)
-          node src/cli/main.ts corpus --cache tmp/corpus
+          node src/cli/main.ts corpus --cache tmp/corpus --strict-store
           echo "::notice::corpus took $(( $(date +%s) - started )) s"
