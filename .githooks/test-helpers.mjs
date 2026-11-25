@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HOOKS = dirname(fileURLToPath(import.meta.url));
-const SCRIPTS = join(HOOKS, '..', 'kit', 'scripts');
+const SCRIPTS = join(HOOKS, '..', 'src', 'scripts', '.kit');
 export const TRAILER = 'Assisted-by: Claude:claude-opus-5-5';
 export const ok = (subject, body = 'Why this matters.') => `${subject}\n\n${body}\n\n${TRAILER}\n`;
 
@@ -50,7 +50,7 @@ export function sandbox() {
   git(['config', 'user.email', 'test@example.com']);
   git(['config', 'commit.gpgsign', 'false']);
   cpSync(HOOKS, join(root, '.githooks'), { recursive: true });
-  if (existsSync(SCRIPTS)) cpSync(SCRIPTS, join(root, 'kit', 'scripts'), { recursive: true }); // ask tooling
+  if (existsSync(SCRIPTS)) cpSync(SCRIPTS, join(root, 'src', 'scripts', '.kit'), { recursive: true }); // ask tooling
   git(['config', 'core.hooksPath', '.githooks']);
   const write = (path, content) => {
     mkdirSync(dirname(join(root, path)), { recursive: true });

@@ -20,7 +20,7 @@ Run from the repo root.
   its own CI job. `wire check` is an empty scaffold until WS2.
 - `pnpm check`: typecheck + lint + the src/format ratchet + format:check
   + unit tests + format's tests + asks. The pre-push hook and CI run it.
-- `pnpm typecheck`: `kit/tsconfig.json` (CLI, tools, tests),
+- `pnpm typecheck`: the root `tsconfig.json` (CLI, tools, tests),
   `src/format/tsconfig.json` (format and its tests, Node types) and
   `src/format/tsconfig.lib.json` (the library alone: ES2022, no Node,
   no DOM).
@@ -38,16 +38,16 @@ Run from the repo root.
   engine's pins release): each migrates to the current format, twice
   equals once, a fresh process gets the same digest, and the copy
   validates. A format version with no fixture fails. CI runs it.
-- `pnpm test:hooks`: the `.githooks/` suite (CI, and pre-commit when
-  hooks change).
-- `pnpm lint:fix` / `pnpm format`: the hooks only check; these fix.
+- `pnpm test` also runs the kit's tests (`src/test/.kit/`), the
+  `.githooks/` suite and the agent hook tests.
+- `pnpm fix` / `pnpm format`: the hooks only check; these fix.
 - `node src/cli/main.ts --help`: the CLI without installing it.
 - `node src/cli/main.ts validate <dir|tar>`: validate a built product,
   a folder or a tarball.
 - `node src/cli/main.ts pack <dir> [--out <file>]`: tar a folder. What
   its sections measure follows them, so edit a section and pack.
 - `pnpm md:wrap`: rewraps Markdown prose to ~72 columns.
-- `kit/scripts/ask-new.sh "<Jake's words>"`: opens an ask
+- `src/scripts/.kit/ask-new.sh "<Jake's words>"`: opens an ask
   (`docs/tasks/asks/README.md`).
 
 ## Wire package workspace
@@ -154,7 +154,7 @@ Scratch goes in `tmp/<task>/` and is deleted when done.
 - The library (`src/format`, not its tests) imports only `valibot`,
   `meshoptimizer/decoder` and its own modules, by relative `./x.ts`
   path, never by its package name.
-- Every function has an explicit return type. `kit/.oxlintrc.json`
+- Every function has an explicit return type. `.oxlintrc.author.json`
   denies every category (D28); disable a rule only with a one-line
   reason beside it.
 - Pin dependencies exactly (`.npmrc` has `save-exact=true`).

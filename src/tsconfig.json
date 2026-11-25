@@ -1,5 +1,5 @@
 {
-  "extends": "../kit/tsconfig.json",
+  "extends": "../tsconfig.json",
   "include": [
     "ci",
     "cli",

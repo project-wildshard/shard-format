@@ -1,5 +1,9 @@
-# Paths under src/ that kit/.oxfmtrc.json ignored when it lived in src/;
-# its ignorePatterns now only reach kit/, and oxfmt refuses ".." (J329).
+# Paths oxfmt skips. The root .oxfmtrc.json is repo-kit's, so this repo's
+# own skips live here: the kit's tooling and canonical fixtures. The
+# format library (its own ratchet) is skipped in the verbs.
 src/scripts/**
 src/**/*.md
 src/dist/**
+src/test/fixtures/**
+# The repo's own plain-JS tooling tests (were test/tooling/).
+src/test/*.mjs

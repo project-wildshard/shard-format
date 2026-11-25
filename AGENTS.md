@@ -9,13 +9,13 @@
 > Written by: Claude and Codex (agents). Jake gardens this; it may be purged or promoted above the line.
 
  - AGENTS.md: agents edit only below the J241 marker, never above it; README.md stays humans-only unless Jake says otherwise
- - Every request for work from Jake -> kit/scripts/ask-new.sh "<his words>", rules in docs/tasks/asks/README.md
+ - Every request for work from Jake -> src/scripts/.kit/ask-new.sh "<his words>", rules in docs/tasks/asks/README.md
  - Follow-up work is a row in a live plan, never a new ask.
 
 Git hygiene
 
  - Small Commit early & often.
- - Shared-checkout work commits on main. Plan work may instead use a plan worktree and `land` (J240): `node scripts/worktree.mjs new <slug>` makes `.worktrees/<slug>` on `plan/<slug>`; commit there by pathspec. Never push `plan/<slug>` by hand: only `land` pushes it (a hand push spends a CI run and can cancel the one land waits on). `WS_LANE_NAME=<lane> node scripts/land.mjs` pushes the branch, waits for its exact-SHA `ci` (land.config.json), rebases and fast-forwards main. Never hand-push a plan branch to main, never `--no-verify` or `SKIP_*`, never force main; only `land` force-pushes your `plan/*` branch, under its own lease. No other branches or worktrees.
+ - Shared-checkout work commits on main. Plan work may instead use a plan worktree and `land` (J240): `node src/scripts/.kit/worktree.mjs new <slug>` makes `.worktrees/<slug>` on `plan/<slug>`; commit there by pathspec. Never push `plan/<slug>` by hand: only `land` pushes it (a hand push spends a CI run and can cancel the one land waits on). `WS_LANE_NAME=<lane> node src/scripts/.kit/land.mjs` pushes the branch, waits for its exact-SHA `ci` (land.config.json), rebases and fast-forwards main. Never hand-push a plan branch to main, never `--no-verify` or `SKIP_*`, never force main; only `land` force-pushes your `plan/*` branch, under its own lease. No other branches or worktrees.
  - Use pre-commit & pre-push git hooks for keeping checks/quality/lints etc.
  - On main: push after every commit. In a plan worktree: commit often; `land` does the pushing.
  - Every meaningful commit writes a journal into project/journal, the why & informal.

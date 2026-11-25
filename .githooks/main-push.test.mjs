@@ -1,4 +1,4 @@
-// scripts/main-push.mjs (meta M1; the kit copy of engine's .githooks/main-push.test.mjs, itself ported from meta's MF7
+// src/scripts/.kit/main-push.mjs (meta M1; the kit copy of engine's .githooks/main-push.test.mjs, itself ported from meta's MF7
 // main-push test): real git, a bare fake remote and two clones of it. Lane A works in the "shared checkout" beside
 // another lane's tracked edit, staged file and untracked file; lane B pushes in between. Skipped on a git without
 // `git replay --ref-action` (2.50+), which main-push needs.
@@ -8,9 +8,9 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync }
 import { join } from 'node:path';
 import { after, beforeEach, test as nodeTest } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { commitRefusal, laneRefusal, parseArgs } from '../scripts/main-push.mjs';
+import { commitRefusal, laneRefusal, parseArgs } from '../src/scripts/.kit/main-push.mjs';
 
-const SCRIPT = fileURLToPath(new URL('../scripts/main-push.mjs', import.meta.url));
+const SCRIPT = fileURLToPath(new URL('../src/scripts/.kit/main-push.mjs', import.meta.url));
 const repoDir = fileURLToPath(new URL('..', import.meta.url));
 const work = join(repoDir, `tmp/main-push-test-${process.pid}`);
 const remote = join(work, 'remote.git');

@@ -4,8 +4,8 @@
 // Lane scratch under tmp/ holds other lanes' tree copies (tmp/<lane>/<sha>/src/...): never this checkout's tests (FORMAT-PRUNE
 // FP43: two stale copies turned a push gate red).
 import { configDefaults, defineConfig } from 'vitest/config';
-import { viteTmpRoot } from './scripts/vite-tmp.mjs';
-import { WORKTREE_GLOB, worktreeWatchIgnored } from './scripts/worktree-ignore.mjs';
+import { viteTmpRoot } from './src/scripts/.kit/vite-tmp.mjs';
+import { WORKTREE_GLOB, worktreeWatchIgnored } from './src/scripts/.kit/worktree-ignore.mjs';
 
 export default defineConfig({
   plugins: [viteTmpRoot()],

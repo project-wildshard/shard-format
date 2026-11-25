@@ -27,10 +27,14 @@ const LINE_FEED = 10
 // The format lock (FE1) mirrors every schema as data; it is generated, not
 // source, so its names never count toward a one-way ceiling.
 const LOCK_FOLDER = 'src/format/lock/'
+// Tooling under src/ (repo-kit lean layout, D31): the repo's scripts and
+// repo-kit's stamped tests. They sat outside src/ before and never counted.
+const TOOLING = /^src\/(?:scripts\/|test\/\.kit\/)/u
 
 function sourcePath(name: string): boolean {
   return (
     !name.startsWith(LOCK_FOLDER) &&
+    !TOOLING.test(name) &&
     /\.(?:[cm]?[jt]sx?|json|md)$/u.test(name) &&
     (/^(?:src\/|docs\/|packages\/[^/]+\/(?:src|docs)\/)/u.test(name) ||
       /^packages\/[^/]+\/[^/]+\.md$/u.test(name) ||

@@ -5,7 +5,7 @@ import path from 'node:path'
 import { afterEach, test } from 'node:test'
 import { promisify } from 'node:util'
 
-import { scratchDir } from '../../scripts/scratch-dir.mjs'
+import { scratchDir } from '../scripts/.kit/scratch-dir.mjs'
 import { countRises, sourceCounts } from './one-way-counts.ts'
 import { mainRevision, revisionFiles, workingFiles } from './one-way-source.ts'
 

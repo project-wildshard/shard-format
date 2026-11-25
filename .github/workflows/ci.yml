@@ -46,7 +46,7 @@ jobs:
           path: ~/.cache/npm-bin-deps
           key: npr-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.bin-deps/package.json', '.bin-deps/package-lock.json') }}
       - run: pnpm exec npr install --frozen
-      - run: node kit/scripts/bin-pins.mjs
+      - run: node src/scripts/.kit/bin-pins.mjs
       # The agent hook scripts are shellchecked in pnpm check, at this exact
       # version (.agents/hooks/test/shellcheck.test.mjs refuses any other on CI).
       # MR6: hosted runners are Linux/X64, the Mac mini's VM is Linux/ARM64;
@@ -84,7 +84,6 @@ jobs:
         env:
           WS_ONE_WAY_ENGINE_ROOT: ${{ github.workspace }}/tmp/codex-te2e/one-way/engine
           WS_ONE_WAY_SDK_ROOT: ${{ github.workspace }}/tmp/codex-te2e/one-way/sharddev
-      - run: pnpm test:hooks
       - run: pnpm test:ci
       - run: pnpm test:chain
 
@@ -113,7 +112,7 @@ jobs:
           path: ~/.cache/npm-bin-deps
           key: npr-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.bin-deps/package.json', '.bin-deps/package-lock.json') }}
       - run: pnpm exec npr install --frozen
-      - run: node kit/scripts/bin-pins.mjs
+      - run: node src/scripts/.kit/bin-pins.mjs
       # The three recording proofs run inside check:wire, so pre-push's
       # pnpm check runs them too (TS16h): a red one never reaches origin.
       - run: pnpm check:wire

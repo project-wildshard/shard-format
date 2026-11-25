@@ -20,7 +20,7 @@ interface ShardRules {
 const NONE = 0
 const VERSION_PARTS = 4
 const VALUE = 1
-const SCOPE = ['src/', 'corpus/', 'test/', 'scripts/', 'packages/']
+const SCOPE = ['src/', 'corpus/', 'test/', 'src/scripts/', 'packages/']
 const SELF = new Set([
   'src/tools/zone-snapshot-core.ts',
   'src/tools/zone-snapshot-guard.ts',

@@ -8,9 +8,9 @@
 //   3. Per staged blob: 1 MB cap, credential scan, bash / module syntax.
 //   4. Journal: 30+ changed lines need a project/journal/*.md entry
 //      staged (D25; SKIP_JOURNAL=1).
-//   5. Staged ask files pass kit/scripts/asks.mjs check.
+//   5. Staged ask files pass src/scripts/.kit/asks.mjs check.
 //   6. Touching .githooks/, .agents/hooks/ (or the old .claude/hooks/) or
-//      kit/scripts/ runs the hook suite, the agent hook tests with it.
+//      src/scripts/.kit/ runs the hook suite, the agent hook tests with it.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { blobSizes, checkBlob, git, peers, planWorktreeSlug, printPeers, rebaseHeadName, report } from './lib.mjs';
@@ -77,9 +77,9 @@ const sizes = blobSizes(entries.map((entry) => entry.object));
 const problems = entries.flatMap((entry) => checkBlob(entry, sizes.get(entry.object) ?? 0));
 if (report('commit blocked', problems)) process.exit(1);
 
-// Ask files (docs/tasks/asks/) follow kit/scripts/asks.mjs's rules. It reads
+// Ask files (docs/tasks/asks/) follow src/scripts/.kit/asks.mjs's rules. It reads
 // the staged blobs through the inherited GIT_INDEX_FILE.
-const asksTool = 'kit/scripts/asks.mjs';
+const asksTool = 'src/scripts/.kit/asks.mjs';
 if (files.some((path) => /^docs\/tasks\/asks\/[^/]+\.md$/.test(path)) && existsSync(asksTool)) {
   if (spawnSync(process.execPath, [asksTool, 'check'], { stdio: 'inherit' }).status !== 0) process.exit(1);
 }

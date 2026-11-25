@@ -5,7 +5,7 @@ import { test, describe, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
-import { fixtureScratch } from '../test/tooling/owned-scratch.mjs';
+import { fixtureScratch } from '../src/test/.kit/owned-scratch.mjs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -81,12 +81,12 @@ describe('session brief: line cap', () => {
     git('init', '-q', '-b', 'main');
     const hooks = relative(ROOT, dirname(BRIEF));
     cpSync(dirname(BRIEF), join(repo, hooks), { recursive: true });
-    write('kit/scripts/asks.mjs', readFileSync(join(ROOT, 'kit', 'scripts', 'asks.mjs'), 'utf8'));
+    write('src/scripts/.kit/asks.mjs', readFileSync(join(ROOT, 'src', 'scripts', '.kit', 'asks.mjs'), 'utf8'));
     for (let i = 1; i <= 8; i++) write(`docs/tasks/asks/A${i}.md`, `# A${i}\n\n**Status:** open (2026-11-11)\n**Ask:** ask ${i}\n`);
     for (let i = 1; i <= 9; i++) write(`docs/plans/opus-2026-11-11-p${i}.md`, `# P${i}\n\n> **State:** in progress, 2026-11-11.\n`);
     write('project/journal/2026-11-11.md', `${Array.from({ length: 10 }, (_, i) => `journal line ${i + 1}`).join('\n')}\n`);
-    write('scripts/worktree.mjs', '// the plan-worktree tool\n');
-    for (const name of ['leftovers-report', 'lane-live']) write(`scripts/${name}.mjs`, readFileSync(join(ROOT, `scripts/${name}.mjs`), 'utf8'));
+    write('src/scripts/.kit/worktree.mjs', '// the plan-worktree tool\n');
+    for (const name of ['leftovers-report', 'lane-live']) write(`src/scripts/.kit/${name}.mjs`, readFileSync(join(ROOT, `src/scripts/.kit/${name}.mjs`), 'utf8'));
     for (let i = 4; i <= 7; i++) write(`tmp/lane-${i}/out.log`, 'x\n');
     write('.gitignore', 'tmp/\n');
     for (let i = 1; i <= 3; i++) write(`tmp/lane-${i}/out.log`, 'x\n');

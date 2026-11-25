@@ -93,7 +93,7 @@ its file names and diff before committing; leave peer working bytes
 and staged entries in place. Then use the sanctioned entry:
 
 ```sh
-scripts/commit.sh --patch own.patch "<full commit message>" -- <files...>
+src/scripts/.kit/commit.sh --patch own.patch "<full commit message>" -- <files...>
 ```
 
 The message includes the repository's normal Assisted-by trailer.

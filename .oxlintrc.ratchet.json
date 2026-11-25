@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // The format library's lint ratchet (src/tools/format-ratchet.ts): the
+  // root config's rules over src/format/, which that config skips.
+  // ignorePatterns don't pass through extends (K11), so nothing is
+  // skipped here. Not named .oxlintrc.json, so oxlint never finds it
+  // as a nested config.
+  "extends": ["./.oxlintrc.author.json"]
+}
