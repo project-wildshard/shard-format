@@ -31,6 +31,7 @@ import { mountedImageBytes, NO_BYTES } from './boot-memory-cost.ts';
 import { admittedVerdict, policyVerdict, recordVerdict } from './policy-verdict.ts';
 import type { Judged, PolicyVerdict } from './policy-verdict.ts';
 import { deprecationReport } from './deprecations.ts';
+import { refuseCarriedKtx2 } from './carried-ktx2.ts';
 import { currentSchemaSource } from './schema-source.ts';
 import type { DeprecationReport } from './deprecations.ts';
 
@@ -258,6 +259,7 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
     coded('runtime-files', (): void => { ports.runtimeImports?.(entry.path, decoder().decode(read(entry))); });
   }
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
+  coded('carried-ktx2', (): void => { refuseCarriedKtx2(index, files.paths(), ports.judged); });
   const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index, judged: ports.judged ?? 'upload', armed: ports.armed });
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (!declaredSourceMatches(shard, index, ports.hash)) throw issueError('source-hash', 'Output sections differ from the declared source hash');

@@ -40,6 +40,8 @@ interface CookMount {
   readonly path: string
   readonly hash: string
   readonly bytes: number
+  /** SF15 (J525): the cook leaves this image as it is and makes no KTX2 of it (UI art, pixel art). */
+  readonly keepImage?: true
 }
 
 interface LegacyCookData {
@@ -87,6 +89,7 @@ const mountRow: GenericSchema<unknown, CookMount> = strictObject({
   path: mountPath,
   hash: sha256Hex,
   bytes: byteCount,
+  keepImage: exactOptional(literal(true)),
 })
 
 const mountRows: GenericSchema<unknown, CookMount[]> = pipe(

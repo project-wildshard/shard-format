@@ -53,6 +53,8 @@ const VALIDATE_CODES = {
   'world-targets':
     '`world/targets` names an item or quest the shardfile does not declare.',
   'source-hash': 'The sections differ from the declared `build.sourceHash`.',
+  'carried-ktx2':
+    'A new upload carries its own KTX2 (a `ktx2` blob or a `.ktx2` file): a shardfile carries images only and the cook makes every KTX2 (J525).',
 } as const
 
 // Stream: the streaming validator's own refusals, beside the validate codes it shares.

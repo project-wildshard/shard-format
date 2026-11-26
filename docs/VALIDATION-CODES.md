@@ -40,6 +40,7 @@ finding. Match the code, never the message: messages may be reworded, codes are 
 | `asset-admission` | An asset's bytes fail admission: parse, hash or wire size, costs, bounds or script contract. |
 | `world-targets` | `world/targets` names an item or quest the shardfile does not declare. |
 | `source-hash` | The sections differ from the declared `build.sourceHash`. |
+| `carried-ktx2` | A new upload carries its own KTX2 (a `ktx2` blob or a `.ktx2` file): a shardfile carries images only and the cook makes every KTX2 (J525). |
 ## stream
 
 `validateShardfileStream` alone: `error.code` on the thrown Error.
