@@ -221,3 +221,41 @@ test("the ratchet audits a sibling's newest main and refuses a planted kind lite
     'engine.kind-literals: 0 -> 1',
   )
 })
+
+const LEAN_TOOLS = [
+  'src/scripts/tool.mjs',
+  'src/scripts/.kit/land.mjs',
+  'src/test/parity/escape.test.mjs',
+  'packages/sim/src/.kit/stamp.ts',
+] as const
+
+async function plantTools(root: string, text: string): Promise<string> {
+  let revision = ''
+  for (const file of LEAN_TOOLS) {
+    // eslint-disable-next-line no-await-in-loop -- Each plant is its own commit on one repository.
+    await mkdir(path.dirname(path.join(root, file)), { recursive: true })
+    // eslint-disable-next-line no-await-in-loop -- Each plant is its own commit on one repository.
+    revision = await commitNew(root, file, text)
+  }
+  return revision
+}
+
+test("a lean repo's tools never count as its source: src/scripts/, src/test/ and every .kit folder (QA 11-25 row 101)", async (): Promise<void> => {
+  const root = await fixture()
+  const original = await engineCounts(root, await pin(root))
+  const word = `// ${['trus', 'ted'].join('')}\n`
+  const tools = await plantTools(root, word)
+  const files = await revisionFiles(root, tools)
+  assert.deepEqual(
+    files
+      .map((row: Readonly<SourceFile>): string => row.path)
+      .filter((name: string): boolean => /scripts|test|\.kit/u.test(name)),
+    [],
+  )
+  assert.deepEqual(countRises(original, await engineCounts(root, tools)), [])
+  refusesGrowth(
+    original,
+    await engineCounts(root, await commitNew(root, 'src/label.ts', word)),
+    'engine.retired-vocabulary: 0 -> 1',
+  )
+})
