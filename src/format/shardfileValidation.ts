@@ -1,4 +1,4 @@
-import { assertStandaloneArt, readDiscoveryArt } from './standalone-art.ts';
+import { assertShardMountUrls, assertStandaloneArt, readDiscoveryArt } from './standalone-art.ts';
 import { cookMountPath, readCookData } from './cook-data.ts';
 import { checkDiscoveryMount, isDiscoveryMount } from './manifest-deprecations.ts';
 import { requireCookPreparation } from './cook-preparation.ts';
@@ -259,6 +259,7 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
     const mounts = cook?.mounts ?? [];
     const discovery = mounts.filter((mount): boolean => isDiscoveryMount(mount.path)).map((mount): unknown => readDiscoveryArt(read(mount)));
     assertStandaloneArt([...payloads.values(), ...discovery], mounts);
+    assertShardMountUrls(index.identity.slug, mounts);
   }
   for (const entry of index.runtime?.files ?? []) {
     if (ports.runtimeImports === undefined) throw issueError('runtime-files', 'Copied runtime files need a runtime import checker');

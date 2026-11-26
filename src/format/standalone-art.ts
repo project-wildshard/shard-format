@@ -57,8 +57,37 @@ function assertStandaloneArt(
   }
 }
 
+/** Art and authored programs are scoped to the owning shard. Discovery is product metadata. */
+function assertShardMountUrls(
+  slug: string,
+  mounts: readonly Readonly<CookMount>[],
+): void {
+  const prefix = `/assets/${slug}/`
+  const program = `/programs/${slug}.json`
+  const discovery = `/shardfiles/${slug}/discovery.json`
+  const images = `/shardfiles/${slug}/blobs/image/`
+  for (const { url, hash } of mounts) {
+    const image =
+      url.startsWith(images) &&
+      ['.jpg', '.png', '.webp'].some(
+        (suffix): boolean => url === `${images}${hash}${suffix}`,
+      )
+    if (
+      !url.startsWith(prefix) &&
+      url !== program &&
+      url !== discovery &&
+      !image
+    ) {
+      throw issueError(
+        'cook-invalid',
+        `Shard ${slug} mount ${url} must use ${prefix} or ${program}`,
+      )
+    }
+  }
+}
+
 function readDiscoveryArt(bytes: Readonly<Uint8Array>): unknown {
   return JSON.parse(new TextDecoder().decode(bytes)) as unknown
 }
 
-export { assertStandaloneArt, readDiscoveryArt }
+export { assertShardMountUrls, assertStandaloneArt, readDiscoveryArt }

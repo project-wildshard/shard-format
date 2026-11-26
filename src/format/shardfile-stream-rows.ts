@@ -20,7 +20,11 @@ import { decisionModuleContracts } from './scriptContract.ts'
 import { mountSharesBlob } from './shardfile-reads.ts'
 import { inspectFacts, ktx2Text } from './shardfile-stream-facts.ts'
 import { outputBlobKind, readCanonicalJson } from './shardfileValidation.ts'
-import { assertStandaloneArt, readDiscoveryArt } from './standalone-art.ts'
+import {
+  assertShardMountUrls,
+  assertStandaloneArt,
+  readDiscoveryArt,
+} from './standalone-art.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { DeprecationReport } from './deprecations.ts'
@@ -277,6 +281,7 @@ function streamedDeprecations(
       .filter((mount): boolean => isDiscoveryMount(mount.path))
       .map((mount): unknown => readDiscoveryArt(listedBytes(replay, mount)))
     assertStandaloneArt([...shard.sections.values(), ...discovery], mounts)
+    assertShardMountUrls(shard.index.identity.slug, mounts)
   }
   return deprecationReport(
     { index: shard.index, sections: shard.sections, cook },

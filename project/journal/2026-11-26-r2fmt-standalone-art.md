@@ -10,3 +10,8 @@ and signed API request. The normal push check finished the dense wire
 recording's byte and recovery checks, then missed its 9.5-second wall-clock
 limit at 13.9 seconds under load. That timing check reproduced on the
 release branch, before the standalone art change.
+
+SF4 checks the owner of each mount in both validators. Zone art and programs
+use the shard slug. The shard's discovery document and content-addressed hero
+images keep their existing product URLs. Cross-shard and engine-wide mounts
+are refused. The client lookup lands through opus-repacks.
