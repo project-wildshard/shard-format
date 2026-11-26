@@ -9,7 +9,7 @@ import {execFileSync} from 'node:child_process';
 import {getPriority,loadavg} from 'node:os';
 import {build} from 'vite';
 import {chromium} from '../browser/playwright.mjs';
-import {KEYCHAIN_ARGS} from '../../../scripts/chromium-keychain.mjs';
+import {KEYCHAIN_ARGS} from '../.kit/chromium-keychain.mjs';
 import {POLICY,compareRuns} from '../../../packages/wire/lib/bench/capture/benchmark-stats.js';
 import {prepareTraffic} from '../../../packages/wire/lib/bench/capture/benchmark-data.js';
 import {measureTraffic,benchmarkSink} from '../../../packages/wire/lib/bench/capture/benchmark.js';

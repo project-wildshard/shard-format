@@ -29,6 +29,7 @@ const LINE_FEED = 10
 const LOCK_FOLDER = 'src/format/lock/'
 // Tooling under src/ (repo-kit lean layout, D31): the repo's scripts and
 // repo-kit's stamped tests. They sat outside src/ before and never counted.
+// Script-paths: src/scripts/, the lean place itself
 const TOOLING = /^src\/(?:scripts\/|test\/\.kit\/)/u
 
 function sourcePath(name: string): boolean {
