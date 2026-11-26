@@ -10,6 +10,7 @@ import type { AudioWaiver } from './audio-waiver.ts';
 import { isOutputIndex, outputBlobPath } from './outputAddress.ts';
 import { OUTPUT_SECTIONS, assembleOutputTransport, isPlatformDataSection, type OutputHostSectionName } from './outputFields.ts';
 import * as v from 'valibot';
+import { ShardVersionSchema } from './shard-version.ts';
 import { assertFormatWindow } from './format-window.ts';
 import { assertCellBounds } from './cellBounds.ts';
 import { ShardfileFieldSchemas, parseShardfile, type Shardfile } from './shardSchema.ts';
@@ -45,6 +46,8 @@ const PreparationSpecNumberSchema = v.pipe(v.number(), v.integer(), v.minValue(L
 /** Format 2 inventories every emitted byte except its index and validation receipt. */
 export const OutputIndexSchema: v.GenericSchema<OutputIndexRowsInput, OutputIndexRows> & { readonly entries: { readonly [Key in keyof OutputIndexRows]-?: v.GenericSchema<OutputIndexRowsInput[Key], OutputIndexRows[Key]> } } = v.strictObject({
   format: v.literal('wildshard.shardfile'),
+  /** Author-written package version. Earlier stored shardfiles omit it. */
+  shardVersion: v.exactOptional(ShardVersionSchema),
   /** SHARD-COMPAT CP14 (FP25): the format version itself from 0.1.0.2; the legacy envelope carries the frozen layout marker
    * `2` here and its version in `version`. `checkIndexEnvelope` holds each envelope to its own fields. */
   formatVersion: IndexFormatVersionSchema, version: LegacyIndexVersionSchema,
@@ -242,6 +245,7 @@ export function assembleOutputShardfile(input: unknown, sections: ReadonlyMap<st
 /** Exact admitted data, independent of validator implementation metadata. */
 interface OutputIndexRowsInputFields {
     format: "wildshard.shardfile";
+    shardVersion?: string;
     formatVersion: typeof LEGACY_LAYOUT | IndexFormatVersion;
     sdk?: "0.2" | "0.3";
     /** A spec this package reads (3, 4), or a newer one kept unread (SP1b1a). */
@@ -342,6 +346,7 @@ interface OutputIndexRowsInputFields {
 export type OutputIndexRowsInput = { [Key in keyof OutputIndexRowsInputFields]: OutputIndexRowsInputFields[Key] };
 interface OutputIndexRowsFields {
     format: "wildshard.shardfile";
+    shardVersion?: string;
     formatVersion: typeof LEGACY_LAYOUT | IndexFormatVersion;
     sdk?: "0.2" | "0.3";
     /** A spec this package reads (3, 4), or a newer one kept unread (SP1b1a). */

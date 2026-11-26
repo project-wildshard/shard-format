@@ -13,6 +13,8 @@
   "./cookData#CookDataSchema|0.mounts[].url": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^(?:\\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*)+$/u","requirement":"re:/^(?:\\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*)+$/u"}]},
   "./cookData#CookDataSchema|0.packs": {"type":"exact_optional","expects":"\"fence\""},
   "./cookData#CookDataSchema|0.packs?": {"type":"literal","expects":"\"fence\"","literal":"fence"},
+  "./cookData#CookDataSchema|0.shardVersion": {"type":"exact_optional","expects":"string"},
+  "./cookData#CookDataSchema|0.shardVersion?": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"max_length","expects":"<=128","requirement":128},{"kind":"validation","type":"regex","expects":"/^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:(?:0|[1-9]\\d*)|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?$/u","requirement":"re:/^(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(?:-(?:(?:0|[1-9]\\d*)|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?$/u"}]},
   "./cookData#CookDataSchema|0.version": {"type":"literal","expects":"1","literal":1},
   "./cookData#CookDataSchema|1": {"type":"strict_object","expects":"Object"},
   "./cookData#CookDataSchema|1.fence": {"type":"array","expects":"Array","pipe":[{"kind":"validation","type":"check","expects":null,"requirement":"fn:2e7b895bb5b0596b"}]},
@@ -34,6 +36,8 @@
   "./cookData#CookDataSchema|1.programs.shaders[][]": {"ref":"./cookData#CookDataSchema|1.programs.programs[][0]"},
   "./cookData#CookDataSchema|1.programs.version": {"type":"literal","expects":"2","literal":2},
   "./cookData#CookDataSchema|1.renderer": {"ref":"./cookData#CookDataSchema|1.fence[]"},
+  "./cookData#CookDataSchema|1.shardVersion": {"type":"exact_optional","expects":"string"},
+  "./cookData#CookDataSchema|1.shardVersion?": {"ref":"./cookData#CookDataSchema|0.shardVersion?"},
   "./cookData#CookDataSchema|1.version": {"type":"literal","expects":"3","literal":3},
   "./cookData#CookDataSchema|2": {"type":"strict_object","expects":"Object"},
   "./cookData#CookDataSchema|2.fence": {"ref":"./cookData#CookDataSchema|1.fence"},
@@ -46,5 +50,7 @@
   "./cookData#CookDataSchema|2.programs.programs": {"ref":"./cookData#CookDataSchema|1.programs.programs"},
   "./cookData#CookDataSchema|2.programs.shaders": {"ref":"./cookData#CookDataSchema|1.programs.shaders"},
   "./cookData#CookDataSchema|2.programs.version": {"type":"literal","expects":"3","literal":3},
+  "./cookData#CookDataSchema|2.shardVersion": {"type":"exact_optional","expects":"string"},
+  "./cookData#CookDataSchema|2.shardVersion?": {"ref":"./cookData#CookDataSchema|0.shardVersion?"},
   "./cookData#CookDataSchema|2.version": {"type":"literal","expects":"4","literal":4}
 }

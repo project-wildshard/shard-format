@@ -17,6 +17,7 @@ import {
   CookPreparationSchema,
   CookSpecPreparationSchema,
 } from './cook-preparation.ts'
+import { ShardVersionSchema } from './shard-version.ts'
 
 import type {
   CookPreparation,
@@ -44,6 +45,7 @@ interface CookMount {
 interface LegacyCookData {
   readonly version: typeof COOK_DATA_VERSION
   readonly mounts: readonly CookMount[]
+  readonly shardVersion?: string
   /** 'fence' packs what the boot reads before control; unset, the whole level. */
   readonly packs?: 'fence'
   /** The stable identities a recorded cold boot read before control. */
@@ -105,6 +107,7 @@ const identities: GenericSchema<unknown, string[]> = pipe(
 const LegacyCookDataSchema = strictObject({
   version: literal(COOK_DATA_VERSION),
   mounts: mountRows,
+  shardVersion: exactOptional(ShardVersionSchema),
   packs: exactOptional(literal('fence')),
   fence: exactOptional(identities),
 })
@@ -112,17 +115,21 @@ const LegacyCookDataSchema = strictObject({
 const PreparedCookDataSchema = strictObject({
   ...CookPreparationSchema.entries,
   mounts: mountRows,
+  shardVersion: exactOptional(ShardVersionSchema),
 })
 /** SHARD-COMPAT PR4: preparation spec 4, which names no engine. */
 const SpecCookDataSchema = strictObject({
   ...CookSpecPreparationSchema.entries,
   mounts: mountRows,
+  shardVersion: exactOptional(ShardVersionSchema),
 })
 interface PreparedCookData extends CookPreparation {
   readonly mounts: readonly CookMount[]
+  readonly shardVersion?: string
 }
 interface SpecCookData extends CookSpecPreparation {
   readonly mounts: readonly CookMount[]
+  readonly shardVersion?: string
 }
 type CookData = LegacyCookData | PreparedCookData | SpecCookData
 const CookDataSchema: GenericSchema<unknown, CookData> = variant('version', [
