@@ -40,7 +40,7 @@ nothing and runs nothing.
    file: every section re-parsed against its schema, every blob
    re-hashed, every cost re-measured, every budget checked. The SDK
    runs it before upload and the API runs it again on the way in, so
-   an author's own numbers are never trusted.
+   an author's own numbers are never taken on faith.
 5. **Cook and play.** The engine cooks the admitted file into runtime
    packs and runs it. The server owns the gameplay; a page draws it.
 
