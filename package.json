@@ -29,6 +29,7 @@
     "packages/wire/src/net-command.ts",
     "src/cli/*.ts",
     "src/cli/*.mjs",
+    "src/scripts/.kit/wildshard-agent-requests.mjs",
     "!src/cli/*.test.ts",
     "corpus/exports/**",
     "src/format/meshopt-static.mjs",
