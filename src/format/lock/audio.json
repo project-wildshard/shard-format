@@ -503,7 +503,7 @@
   "./audio#AudioDataSchema.music?.slots": {"ref":"./audio#AudioDataSchema.music?.bootSlots"},
   "./audio#AudioDataSchema.music?.source": {"type":"nullable","expects":"(Object | null)"},
   "./audio#AudioDataSchema.music?.source?": {"type":"strict_object","expects":"Object"},
-  "./audio#AudioDataSchema.music?.source?.dir": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^\\/assets\\/music\\/[a-z0-9_-]+\\/$/u","requirement":"re:/^\\/assets\\/music\\/[a-z0-9_-]+\\/$/u"}]},
+  "./audio#AudioDataSchema.music?.source?.dir": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^\\/assets\\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\\/)?music\\/[a-z0-9_-]+\\/$/u","requirement":"re:/^\\/assets\\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\\/)?music\\/[a-z0-9_-]+\\/$/u"}]},
   "./audio#AudioDataSchema.music?.source?.manifestKey": {"ref":"./audio#AudioDataSchema.ambience?.phrases?[].program.steps[]|0.id"},
   "./audio#AudioDataSchema.music?.synthLead": {"type":"picklist","expects":"(\"pluck\" | \"marimba\")"},
   "./audio#AudioDataSchema.music?.synthLead|": ["pluck","marimba"],

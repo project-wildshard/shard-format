@@ -73,7 +73,8 @@ const UTF16_BOM_LOW = 254
 const UNKNOWN_REASON = 'bytes in no audio container AU5 knows; they still count'
 
 // SF4: a zone's own audio sits under its slug, `/assets/<slug>/music/` or `/assets/<slug>/sfx/`
-const ROLE_PATTERN = /^\/assets\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)?(?<role>music|sfx)\//u
+const ROLE_PATTERN =
+  /^\/assets\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)?(?<role>music|sfx)\//u
 const AUDIO_EXTENSION =
   /\.(?:m4a|mp4|aac|wav|wave|flac|aif|aiff|aifc|caf|mp3|ogg|oga|opus|webm|weba)$/iu
 

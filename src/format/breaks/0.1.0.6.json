@@ -228,6 +228,14 @@
     {
       "path": "./issue-codes#ISSUE_FAMILIES",
       "noFileChange": "SF15 (J525) adds the carried-ktx2 refusal code: a new code beside the others, no file changes shape; it refuses only a new upload that carries its own KTX2, and stored shard files (pins, kept originals, cooks) are judged 'stored' and read as before"
+    },
+    {
+      "path": "./audio#AudioDataSchema.music.source.dir",
+      "noFileChange": "SF4 widens the score source dir: it also admits a zone's own /assets/<slug>/music/<key>/ beside the engine-wide /assets/music/<key>/, so every file valid before stays valid and no file changes; the engine reads both folders (plan/repacks zoneAssets.ts)"
+    },
+    {
+      "path": "./audioProfiles#AudioMusicSchema.source.dir",
+      "noFileChange": "SF4 widens the score source dir: it also admits a zone's own /assets/<slug>/music/<key>/ beside the engine-wide /assets/music/<key>/, so every file valid before stays valid and no file changes; the engine reads both folders (plan/repacks zoneAssets.ts)"
     }
   ]
 }

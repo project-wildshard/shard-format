@@ -100,8 +100,8 @@ test('a set-catalogue score plays only the engine title beside its own source', 
   expect(slotsOf(own)).toEqual(['title'])
 })
 
-test("a zone's own score source sits under its slug (SF4)", (): void => {
-  const own = (dir: string): Record<string, unknown> => score({
+const zoneScore = (dir: string): Record<string, unknown> =>
+  score({
     base: 'score',
     slots: ['score'],
     bootSlots: ['title'],
@@ -110,9 +110,13 @@ test("a zone's own score source sits under its slug (SF4)", (): void => {
     setCatalogue: SET_CATALOGUE,
     selection: [{ slots: ['score'], when: [] }],
   })
-  expect(slotsOf(own('/assets/open-plot-thin-ice/music/thin-ice/'))).toEqual(['title'])
-  expect(refusal(own('/assets/Open/music/thin-ice/'))).not.toBe('')
-  expect(refusal(own('/assets/a/b/music/thin-ice/'))).not.toBe('')
+
+test("a zone's own score source sits under its slug (SF4)", (): void => {
+  expect(
+    slotsOf(zoneScore('/assets/open-plot-thin-ice/music/thin-ice/')),
+  ).toEqual(['title'])
+  expect(refusal(zoneScore('/assets/Open/music/thin-ice/'))).not.toBe('')
+  expect(refusal(zoneScore('/assets/a/b/music/thin-ice/'))).not.toBe('')
 })
 
 test('the refusal names every engine slot', (): void => {
