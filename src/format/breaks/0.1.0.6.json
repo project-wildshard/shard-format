@@ -224,6 +224,10 @@
     {
       "path": "./version#compatibleShardfileVersion",
       "noFileChange": "FORMAT-PRUNE FP24: WR11's N-1 test compatibleShardfileVersion goes; every known format shares one breaking format, so readsFormat (the known list cut at the reader) answers the same for every file a reader admits; engine folder.ts and api-server format-version.ts move to it"
+    },
+    {
+      "path": "./issue-codes#ISSUE_FAMILIES",
+      "noFileChange": "SF15 (J525) adds the carried-ktx2 refusal code: a new code beside the others, no file changes shape; it refuses only a new upload that carries its own KTX2, and stored shard files (pins, kept originals, cooks) are judged 'stored' and read as before"
     }
   ]
 }

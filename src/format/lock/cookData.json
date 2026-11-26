@@ -9,6 +9,8 @@
   "./cookData#CookDataSchema|0.mounts[]": {"type":"strict_object","expects":"Object"},
   "./cookData#CookDataSchema|0.mounts[].bytes": {"type":"number","expects":"number","pipe":[{"kind":"validation","type":"safe_integer","expects":null,"requirement":"fn:c9f0ee58890f970c"}]},
   "./cookData#CookDataSchema|0.mounts[].hash": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^[a-f0-9]{64}$/u","requirement":"re:/^[a-f0-9]{64}$/u"}]},
+  "./cookData#CookDataSchema|0.mounts[].keepImage": {"type":"exact_optional","expects":"true"},
+  "./cookData#CookDataSchema|0.mounts[].keepImage?": {"type":"literal","expects":"true","literal":true},
   "./cookData#CookDataSchema|0.mounts[].path": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^(?:mounts|blobs)\\//u","requirement":"re:/^(?:mounts|blobs)\\//u"}]},
   "./cookData#CookDataSchema|0.mounts[].url": {"type":"string","expects":"string","pipe":[{"kind":"validation","type":"regex","expects":"/^(?:\\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*)+$/u","requirement":"re:/^(?:\\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]*)+$/u"}]},
   "./cookData#CookDataSchema|0.packs": {"type":"exact_optional","expects":"\"fence\""},
