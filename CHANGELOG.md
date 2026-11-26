@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.80.0 (2026-11-25)
+
+- Format 0.1 and 0.1.0.0 shardfiles are no longer read; the floor is 0.1.0.1, and the N-1 test is gone.
+- Species programs are deleted: shardfiles declare species, and the actors/species-programs section is gone.
+- The items.legacySlot field is deleted; weapons and loadouts use declared item ids.
+- Closed weapon-name breaks are named in the format's break record.
+
 ## v0.79.3 (2026-11-25)
 
 - Installs on Node 26 as well as Node 24 (engines.node >=24.18.0 <27), so engine and SDK tooling on Node 26 can take this format.
