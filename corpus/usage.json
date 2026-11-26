@@ -1,13 +1,12 @@
 {
- "measuredAt": "2026-11-25T12:27:06.523Z",
- "validator": "0.78.0",
- "originals": 34,
+ "measuredAt": "2026-11-26T00:43:34.158Z",
+ "validator": "0.79.3",
+ "originals": 32,
  "deprecations": {
   "requires.capabilities": [
-   "mossgate r24 (engine pin)",
+   "mossgate r24",
    "mirror-salt r7 (engine pin)",
-   "far-reach r8 (engine pin)",
-   "glowfen r6 (engine pin)",
+   "glowfen r6",
    "open-plot-alien-plain r3 (engine pin)",
    "open-plot-clockwork-canyon r3 (engine pin)",
    "open-plot-coral-drift r4 (engine pin)",
@@ -28,19 +27,10 @@
    "open-plot-desert-ruin r3 (engine pin)",
    "brasscap-mesa r17"
   ],
-  "feature.species.program": [
-   "nalati-grasslands r8"
-  ],
-  "items.legacySlot": [
-   "nalati-grasslands r8",
-   "driftwood-isle r12 (engine pin)",
-   "pine-hollow r16 (engine pin)"
-  ],
   "admission.server": [
-   "nalati-grasslands r8",
-   "driftwood-isle r12 (engine pin)",
-   "pine-hollow r16 (engine pin)",
-   "nalati-grasslands r9 (engine pin)"
+   "nalati-grasslands r10 (engine pin)",
+   "pine-hollow r18 (engine pin)",
+   "driftwood-isle r13 (engine pin)"
   ]
  },
  "migrations": {},
