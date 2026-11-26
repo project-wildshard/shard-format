@@ -1,4 +1,5 @@
 import { maxLength, pipe, regex, string } from 'valibot'
+
 import type { GenericSchema } from 'valibot'
 
 // SemVer without build metadata, reserved for the catalogue's migrated copies.
