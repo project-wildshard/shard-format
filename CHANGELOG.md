@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.79.3 (2026-11-25)
+
+- Installs on Node 26 as well as Node 24 (engines.node >=24.18.0 <27), so engine and SDK tooling on Node 26 can take this format.
+
 ## v0.79.2 (2026-11-25)
 
 - Uploads from @wildshard/upload 0.4.22 and 0.4.25 pass again: 0.79.1 refused their requires.sdk.
