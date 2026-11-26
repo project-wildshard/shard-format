@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Builds the format docs site (format.wildshard.io, ask A3) into src/site/dist: static HTML for people, raw Markdown,
+// Builds the format docs site (format.wildshard.io, ask A3) into tmp/site: static HTML for people, raw Markdown,
 // /llms.txt and /llms-full.txt for agents. docs/ stays the single source: each reference page is a docs/*.md rendered
 // as it is, and src/site/pages/ holds the few hand-written pages (the two front doors, the tour, the glossary, the
 // agent skill). The public GitHub repo's source is the spec; the site only explains it.
 //
-//   node src/scripts/site/build.mjs [--out <dir>]     # default src/site/dist (gitignored)
+//   node src/scripts/site/build.mjs [--out <dir>]     # default tmp/site (not src/: the one-way ratchet reads src/)
 //
 // Links: a docs/ link to a published doc becomes its page (HTML) or its absolute .md URL (Markdown); a link to any
 // other file the repo tracks goes to GitHub; a link to a file the repo doesn't have (singleplayer-era paths) keeps
@@ -384,8 +384,8 @@ export async function build(options) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
-  const { values } = parseArgs({ options: { out: { type: 'string', default: join(SITE, 'dist') } } });
-  const result = await build({ out: values.out ?? join(SITE, 'dist') });
+  const { values } = parseArgs({ options: { out: { type: 'string', default: join(ROOT, 'tmp', 'site') } } });
+  const result = await build({ out: values.out ?? join(ROOT, 'tmp', 'site') });
   for (const warning of result.warnings) process.stderr.write(`site: warning: ${warning}\n`);
   process.stdout.write(
     `site: built format ${result.version.format} at ${result.version.sha.slice(0, 12)} into ${result.out} (${result.dropped.length} links to files outside this repo kept as text)\n`,

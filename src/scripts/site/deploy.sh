@@ -5,7 +5,7 @@
 # credential; CLOUDFLARE_API_TOKEN works too.
 #
 #   bash src/scripts/site/deploy.sh                 # commit first: it ships HEAD, not the working tree
-#   bash src/scripts/site/deploy.sh --build-only    # build HEAD's export into src/site/dist and stop
+#   bash src/scripts/site/deploy.sh --build-only    # build HEAD's export into tmp/site and stop
 #
 # wrangler is not a dependency of this repo (package.json changes wait for Jake): it uses `wrangler` on PATH, else
 # `npx wrangler@$WRANGLER_VERSION`.
@@ -29,8 +29,8 @@ echo "site-deploy: building ${sha:0:12}"
 SITE_BUILD_SHA="$sha" node "$work/src/scripts/site/build.mjs" --out "$work/src/site/dist"
 
 if [ "${1:-}" = "--build-only" ]; then
-  rm -rf "$repo/src/site/dist" && cp -R "$work/src/site/dist" "$repo/src/site/dist"
-  echo "site-deploy: built ${sha:0:12} into src/site/dist (no upload)"
+  rm -rf "$repo/tmp/site" && cp -R "$work/src/site/dist" "$repo/tmp/site"
+  echo "site-deploy: built ${sha:0:12} into tmp/site (no upload)"
   exit 0
 fi
 

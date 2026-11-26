@@ -48,7 +48,8 @@ Run from the repo root.
   its sections measure follows them, so edit a section and pack.
 - `pnpm md:wrap`: rewraps Markdown prose to ~72 columns.
 - `node src/scripts/site/build.mjs`: builds the docs site into
-  `src/site/dist/` (see "Docs site").
+  `tmp/site/` (see "Docs site"). Never into `src/`: the one-way
+  ratchet reads every file there, ignored ones too.
 - `bash src/scripts/site/deploy.sh`: builds HEAD and deploys it to
   format.wildshard.io.
 - `src/scripts/.kit/ask-new.sh "<Jake's words>"`: opens an ask
