@@ -47,7 +47,7 @@ decode, compile, admission and first playable frame separately. See
 [the author targets, good/bad cards and completion checklist](SHARDS.md#performance-comes-first).
 `@wildshard/sdk/reportCard` provides the same structured report for author tooling.
 
-**The format version** (`SHARDFILE_VERSION`, `src/format/version.ts`) is a four-part number, today `0.1.0.2`, separate
+**The format version** (`SHARDFILE_VERSION`, `src/format/version.ts`) is a four-part number, today `0.1.0.6`, separate
 from this package's npm version (J486 Q5). From 0.1.0.2 `shard.json` names it in `formatVersion`
 (`"formatVersion": "0.1.0.2"`, SHARD-COMPAT CP14). Formats 0.1 to 0.1.0.1 wrote the frozen layout marker
 `"formatVersion": 2` and the version in `version`; a reader tells the two envelopes apart by the field's type, and
