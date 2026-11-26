@@ -70,9 +70,11 @@ function trackedPaths() {
   const paths = new Set();
   let listed = '';
   try {
+    // deploy.sh builds a `git archive` export under tmp/, inside this checkout's ignored files: that is no repo of its own.
+    if (resolve(git(['rev-parse', '--show-toplevel'])) !== resolve(ROOT)) return null;
     listed = git(['ls-files']);
   } catch {
-    // An export without .git (deploy.sh builds from `git archive`): trust the tree on disk.
+    // An export with no git around it: trust the tree on disk.
     return null;
   }
   for (const file of listed.split('\n')) {
