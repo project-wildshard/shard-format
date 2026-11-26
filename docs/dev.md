@@ -47,6 +47,10 @@ Run from the repo root.
 - `node src/cli/main.ts pack <dir> [--out <file>]`: tar a folder. What
   its sections measure follows them, so edit a section and pack.
 - `pnpm md:wrap`: rewraps Markdown prose to ~72 columns.
+- `node src/scripts/site/build.mjs`: builds the docs site into
+  `src/site/dist/` (see "Docs site").
+- `bash src/scripts/site/deploy.sh`: builds HEAD and deploys it to
+  format.wildshard.io.
 - `src/scripts/.kit/ask-new.sh "<Jake's words>"`: opens an ask
   (`docs/tasks/asks/README.md`).
 
@@ -136,10 +140,42 @@ Scratch goes in `tmp/<task>/` and is deleted when done.
 - `src/test/fixtures/`: test inputs, outside oxfmt (a product's JSON is
   canonical and hash-bound).
 - `src/scripts/`: repo tooling (asks, md-wrap), plain JS.
+- `src/site/`: the docs site's hand-written pages (`pages/`), its
+  stylesheet, `_headers` and `wrangler.jsonc`; `src/scripts/site/`
+  builds and deploys it.
 - `docs/`: living docs. `docs/plans/` is the queue, `docs/tasks/asks/`
   the receipts.
 - `project/`: history. `journal/`, `origins/` (the meta-repo plans this
   repo came from), `archive/`.
+
+## Docs site
+
+format.wildshard.io (ask A3) explains the format to people and agents.
+The source is the spec; the site only explains it, and says so.
+
+- **Single source.** Each reference page is a `docs/*.md` rendered as it
+  is (the list is `DOCS` in `src/scripts/site/build.mjs`); edit the doc,
+  not the site. `src/site/pages/` holds the hand-written pages: the home
+  page, the tour, the glossary, `/agents/` and the agent skill. They may
+  use `{{formatVersion}}`-style tokens, link site paths (`/tour/`) and
+  `repo:<path>`; a bad link fails the build. The format version is read
+  from `src/format/version.ts`, the tour's numbers from
+  `corpus/exports/brasscap-mesa`.
+- **Two front doors.** `/` for people, `/agents/` for agents. Every page
+  has a Markdown twin (`/tour.md`, `/docs/shardfile.md`,
+  `/agents/index.md`, `/agents/skill.md`), and `/llms.txt` and
+  `/llms-full.txt` index and concatenate them.
+- **Build.** `node src/scripts/site/build.mjs [--out <dir>]`: plain Node,
+  no dependencies (its own small Markdown renderer,
+  `src/scripts/site/markdown.mjs`, which escapes raw HTML). A docs link to
+  a file this repo tracks goes to GitHub; one to a file it doesn't have
+  (singleplayer-era paths) keeps its text. `src/test/site-build.test.mjs`
+  builds it in `pnpm test`.
+- **Deploy.** `bash src/scripts/site/deploy.sh` ships HEAD to the
+  Cloudflare Worker `wildshard-format`: static assets only, with the
+  custom domain `format.wildshard.io` on the wildshard.io zone www uses.
+  It uses `wrangler` on PATH (else `npx wrangler@4.162.0`) and checks
+  `/version.json` for the deployed SHA. Nothing deploys it on push yet.
 
 ## Code rules
 

@@ -1,0 +1,312 @@
+/* format.wildshard.io (ask A3): one stylesheet, light and dark, readable on a phone. */
+:root {
+  --bg: #fbfbf9;
+  --fg: #1d1f21;
+  --muted: #5d6166;
+  --line: #dcdcd6;
+  --soft: #f0f0eb;
+  --code: #eeeee8;
+  --link: #1f5fa8;
+  --accent: #2f7d8c;
+  --note: #e8f1f3;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141618;
+    --fg: #e3e4e6;
+    --muted: #9ba0a6;
+    --line: #2f3337;
+    --soft: #1c1f22;
+    --code: #22262a;
+    --link: #7fb4f0;
+    --accent: #6cc1cf;
+    --note: #182a2e;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    17px/1.6 system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+a {
+  color: var(--link);
+  text-underline-offset: 2px;
+}
+
+code,
+pre {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.86em;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+}
+
+.skip:focus {
+  left: 16px;
+  top: 8px;
+  z-index: 1;
+  background: var(--bg);
+  padding: 4px 8px;
+}
+
+header.site {
+  border-bottom: 1px solid var(--line);
+  background: var(--soft);
+  padding: 10px 16px 0;
+}
+
+header.site .bar,
+header.site nav,
+main,
+footer.site {
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+header.site .bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.brand {
+  color: var(--fg);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+.brand span {
+  color: var(--accent);
+}
+
+.version {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+header.site nav {
+  display: flex;
+  gap: 4px 18px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 8px 0 10px;
+}
+
+header.site nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding-bottom: 2px;
+}
+
+header.site nav a[aria-current='page'] {
+  color: var(--fg);
+  border-bottom: 2px solid var(--accent);
+}
+
+main {
+  padding: 8px 16px 40px;
+}
+
+.prose h1 {
+  font-size: 1.9rem;
+  line-height: 1.2;
+  margin: 1.2rem 0 1rem;
+}
+
+.prose h2 {
+  font-size: 1.4rem;
+  margin: 2.2rem 0 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+
+.prose h3 {
+  font-size: 1.12rem;
+  margin: 1.6rem 0 0.4rem;
+}
+
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-size: 1rem;
+  margin: 1.2rem 0 0.3rem;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  position: relative;
+  overflow-wrap: anywhere;
+}
+
+.anchor {
+  float: left;
+  margin-left: -1.1em;
+  width: 1.1em;
+  color: var(--muted);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h1:hover .anchor,
+h2:hover .anchor,
+h3:hover .anchor,
+h4:hover .anchor,
+.anchor:focus {
+  opacity: 1;
+}
+
+.prose p,
+.prose li {
+  overflow-wrap: break-word;
+}
+
+.prose :not(pre) > code {
+  background: var(--code);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+  overflow-wrap: anywhere;
+}
+
+.prose pre {
+  background: var(--code);
+  border-radius: 6px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  line-height: 1.45;
+}
+
+.prose blockquote {
+  margin: 1rem 0;
+  padding: 0.2rem 1rem;
+  border-left: 3px solid var(--line);
+  color: var(--muted);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+}
+
+.prose li + li {
+  margin-top: 0.2rem;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 2rem 0;
+}
+
+.table {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  vertical-align: top;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  background: var(--soft);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.doc td {
+  min-width: 8rem;
+}
+
+.note,
+.callout {
+  background: var(--note);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.92rem;
+}
+
+.toc {
+  margin: 1rem 0;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.92rem;
+}
+
+.toc summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.toc ol {
+  margin: 0.5rem 0 0.2rem;
+}
+
+footer.site {
+  border-top: 1px solid var(--line);
+  padding: 16px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 16px;
+  }
+
+  .prose h1 {
+    font-size: 1.55rem;
+  }
+
+  .anchor {
+    display: none;
+  }
+}
+
+/* In a table, a long name scrolls the table rather than breaking mid-word. */
+.prose td code,
+.prose th code {
+  overflow-wrap: normal;
+  word-break: normal;
+}
