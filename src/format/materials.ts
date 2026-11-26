@@ -204,7 +204,7 @@ export function graphFileRules(source: Pick<Shardfile, 'look' | 'state' | 'files
     const deps = new Set(files.get(material.file)?.dependencies);
     for (const param of Object.values(checked.graph.params ?? {})) {
       // a lent texture names no file: its runtime lends it (as an inline graph's)
-      if (param.type === 'texture' && param.role !== 'lent' && (typeof param.value !== 'string' || !deps.has(param.value) || files.get(param.value)?.kind !== 'ktx2')) errors.push(`material ${materialId}: a graph file's texture is a KTX2 dependency of its file row`);
+      if (param.type === 'texture' && param.role !== 'lent' && (typeof param.value !== 'string' || !deps.has(param.value) || !['ktx2', 'image'].includes(files.get(param.value)?.kind ?? ''))) errors.push(`material ${materialId}: a graph file's texture is a KTX2 or image (SF16) dependency of its file row`);
     }
     errors.push(...bindingTypeErrors(materialId, checked.graph, dayChannels));
   }

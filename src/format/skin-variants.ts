@@ -53,7 +53,9 @@ function readSkinFile(
   const skin = { hash, ...parseSkinFile(bytes) }
   const expected = skinFileDependencies(skin.row, skin.binding)
   const texture = (ref: string): boolean =>
-    ref.startsWith('commons:') || files.get(ref)?.kind === 'ktx2'
+    ref.startsWith('commons:') ||
+    files.get(ref)?.kind === 'ktx2' ||
+    files.get(ref)?.kind === 'image'
   if (
     file.dependencies.length !== expected.length ||
     file.dependencies.some((ref, index): boolean => ref !== expected[index]) ||

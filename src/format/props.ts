@@ -142,7 +142,7 @@ export function validatePropsReferences(props: ShardProps, content: { files: rea
   for (const entry of [...props.panels, ...props.models]) { model(entry.file); if (!content.library.includes(entry.file)) throw new Error('Prop panel/model must belong to the library'); }
   if (props.far !== null) { model(props.far); if (!content.far?.files.includes(props.far)) throw new Error('Props far proxy disagrees with far files'); }
   const refs = new Set([...props.tiles.flatMap((t) => [t.file, ...t.additionalFiles ?? []]), ...props.panels.map((p) => p.file), ...props.models.map((p) => p.file), ...(props.far === null ? [] : [props.far])]);
-  for (const texture of props.textures) if (!refs.has(texture.model) || files.get(texture.colour)?.kind !== 'ktx2' || !files.get(texture.model)?.dependencies.includes(texture.colour)) throw new Error('Prop texture must be a declared KTX2 dependency');
+  for (const texture of props.textures) if (!refs.has(texture.model) || !['ktx2', 'image'].includes(files.get(texture.colour)?.kind ?? '') || !files.get(texture.model)?.dependencies.includes(texture.colour)) throw new Error('Prop texture must be a declared KTX2 dependency');
   if (props.materials !== undefined) validatePropMaterials(props.materials, { look: content.look?.materials ?? {}, models: [...refs], textures: props.textures, files: content.files });
   if (props.splat !== undefined) {
     if (props.materials !== undefined && Object.hasOwn(props.materials, props.splat.material)) throw new Error('Splat terrain material cannot also name a prop material');

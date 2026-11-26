@@ -112,7 +112,7 @@ export function validatePropMaterials(materials: PropMaterials, context: {
         if (graph !== null && param?.type !== 'texture' && !(slotName === 'colour' && graph !== undefined && graphUsesMeshMap(graph))) throw new Error(`props material "${name}": graph ${row.id} has no texture param "${slotName}" for its ${slotName} slot`);
       } else if (!(FAMILY_SLOTS[family] ?? []).includes(slotName)) throw new Error(`props material "${name}": the ${family} family draws no ${slotName} slot`);
       const file = files.get(value.file);
-      if (file?.kind !== 'ktx2' || !declared.has(value.file)) throw new Error(`props material "${name}": its ${slotName} texture must be a KTX2 dependency of a declared props GLB`);
+      if ((file?.kind !== 'ktx2' && file?.kind !== 'image') || !declared.has(value.file)) throw new Error(`props material "${name}": its ${slotName} texture must be a KTX2 or image (SF16) dependency of a declared props GLB`);
       if (catalogue.has(value.file)) throw new Error(`props material "${name}": its ${slotName} texture is also a look.materials texture (one sampler per file)`);
       // a graph reads every texture param in the colour role (clientGraphs): its slots take that role
       const role = family === 'graph' ? 'colour' : propSlotUse(slotName), seenRole = roles.get(value.file);

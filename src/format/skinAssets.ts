@@ -39,7 +39,7 @@ function skinLookRules(source: Pick<Shardfile, 'rows' | 'files' | 'library'>): s
     // OF27b: a skin file depends on its GLB, then its material's textures (KTX2 files or commons)
     const textures = file?.dependencies.slice(1) ?? [];
     if (file?.kind !== 'json' || glb?.kind !== 'glb' || !source.library.includes(skin)
-      || textures.some((ref): boolean => !ref.startsWith('commons:') && files.get(ref)?.kind !== 'ktx2')) {errors.push('skin look file references');}
+      || textures.some((ref): boolean => !ref.startsWith('commons:') && files.get(ref)?.kind !== 'ktx2' && files.get(ref)?.kind !== 'image')) {errors.push('skin look file references');}
     if (!libraryJson(source.library, kinds, variants)) {errors.push('skin variant table references');}
     if (!libraryJson(source.library, kinds, phone)) {errors.push('skin phone file references');}
     if (!libraryJson(source.library, kinds, phoneVariants)) {errors.push('skin phone variant table references');}

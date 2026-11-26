@@ -25,14 +25,29 @@ function mipBytes(width: number, height: number): number {
   }
 }
 
-/** Admit bounded embedded WebP or Basis KTX2 through their matching texture extensions; external/data URIs
+const GLB_IMAGE_MIMES: ReadonlySet<string> = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/ktx2']);
+const CORE_IMAGE_MIMES: ReadonlySet<string> = new Set(['image/png', 'image/jpeg']);
+
+/** SF16 (J525): a texture with no extensions binds a core image by `source`. Its charge: a shardfile's GLB may carry PNG or JPEG images bound by `source`; the cook encodes them to KTX2. */
+function coreTexture(texture: Readonly<Record<string, unknown>>, images: readonly { readonly mime: string; readonly gpu: number }[], samplers: number): { bytes: number; uses: number } {
+  const image = images[count(texture['source'])];
+  if (image === undefined || (texture['sampler'] !== undefined && count(texture['sampler']) >= samplers)) {
+    throw new Error('Missing GLB texture image or sampler');
+  }
+  if (!CORE_IMAGE_MIMES.has(image.mime)) {
+    throw new Error('GLB texture extension differs from image MIME');
+  }
+  return { bytes: image.gpu, uses: 0 };
+}
+
+/** Admit bounded embedded PNG or JPEG (core `source`, SF16) and WebP or Basis KTX2 through their matching texture extensions; external/data URIs
  * and other bindings still refuse. Charge decoded images and conservative RGBA8 mips per texture/material use,
  * conservatively covering loader clones for different material colour spaces. The GLB aggregate cap also applies. */
 export function glbImageCost(doc: Record<string, unknown>, views: readonly Record<string, unknown>[], binary: Uint8Array): { decoded: number; gpu: number } {
   let decoded = 0;
   const images = list(doc['images'] ?? [], 16).map(value => {
     const image = record(value); noExtensions(image);
-    if (image['uri'] !== undefined || (image['mimeType'] !== 'image/webp' && image['mimeType'] !== 'image/ktx2')) throw new Error('GLB images require embedded WebP or Basis KTX2 bytes');
+    if (image['uri'] !== undefined || !GLB_IMAGE_MIMES.has(String(image['mimeType']))) throw new Error('GLB images require embedded PNG, JPEG, WebP or Basis KTX2 bytes');
     const view = views[count(image['bufferView'])];
     if (view === undefined || view['byteStride'] !== undefined || view['target'] !== undefined) throw new Error('Invalid GLB image view');
     const offset = count(view['byteOffset'] ?? 0), length = count(view['byteLength']);
@@ -61,9 +76,8 @@ export function glbImageCost(doc: Record<string, unknown>, views: readonly Recor
       || ![33071, 33648, 10497].includes(count(sampler['wrapT'] ?? 10497))) throw new Error('Invalid GLB image sampler');
     return sampler;
   });
-  const textures = list(doc['textures'] ?? [], 32).map(value => {
-    const texture = record(value), extensions = record(texture['extensions']);
-    const extension = extensions['EXT_texture_webp'] === undefined ? 'KHR_texture_basisu' : 'EXT_texture_webp';
+  const extensionTexture = (texture: Readonly<Record<string, unknown>>): { bytes: number; uses: number } => {
+    const extensions = record(texture['extensions']), extension = extensions['EXT_texture_webp'] === undefined ? 'KHR_texture_basisu' : 'EXT_texture_webp';
     if (texture['source'] !== undefined || Object.keys(extensions).length !== 1 || extensions[extension] === undefined
       || !list(doc['extensionsUsed'] ?? [], 32).includes(extension)) throw new Error('GLB texture requires an unambiguous declared image extension');
     const binding = record(extensions[extension]);
@@ -72,6 +86,10 @@ export function glbImageCost(doc: Record<string, unknown>, views: readonly Recor
     if (image === undefined || (texture['sampler'] !== undefined && samplers[count(texture['sampler'])] === undefined)) throw new Error('Missing GLB texture image or sampler');
     if (image.mime !== (extension === 'KHR_texture_basisu' ? 'image/ktx2' : 'image/webp')) throw new Error('GLB texture extension differs from image MIME');
     return { bytes: image.gpu, uses: 0 };
+  };
+  const textures = list(doc['textures'] ?? [], 32).map(value => {
+    const texture = record(value);
+    return texture['extensions'] === undefined ? coreTexture(texture, images, samplers.length) : extensionTexture(texture);
   });
   if (images.length === 0 && textures.length === 0) return { decoded: 0, gpu: 0 };
   const bind = (value: unknown): void => {

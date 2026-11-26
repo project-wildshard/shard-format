@@ -74,7 +74,7 @@ export function splatTextureRefs(splat: SplatTerrain | undefined, tier?: 'phone'
 }
 
 /**
- * Check a splat terrain against the admitted files: every layer file is a KTX2 dependency of a declared props tile GLB, one
+ * Check a splat terrain against the admitted files: every layer file is a KTX2 or image (SF16) dependency of a declared props tile GLB, one
  * file plays one role (a file may repeat within a role, never across colour and data), and none is also a `look.materials`
  * or named prop material texture (the arrays own their files). `tiles` are the declared props tile GLBs. Throws the first refusal.
  */
@@ -86,7 +86,9 @@ export function validateSplatTerrain(splat: SplatTerrain, context: {
   const declared = new Set(context.tiles.flatMap((tile) => files.get(tile)?.dependencies ?? []));
   const elsewhere = new Set([...materialTextureRefs(context.look), ...context.propTextures]), roles = new Map<string, string>();
   for (const set of [splat.layers, ...(splat.phone === undefined ? [] : [splat.phone])]) for (const role of Object.keys(SPLAT_ROLES) as SplatRole[]) for (const [layer, hash] of set[role].entries()) {
-    if (files.get(hash)?.kind !== 'ktx2' || !declared.has(hash)) throw new Error(`props.splat ${role} layer ${layer}: must be a KTX2 dependency of a declared props tile`);
+    // SF16 (J525): a layer may be a PNG or JPEG image the cook encodes to its KTX2 `#layer` twin.
+    const kind = files.get(hash)?.kind;
+    if ((kind !== 'ktx2' && kind !== 'image') || !declared.has(hash)) throw new Error(`props.splat ${role} layer ${layer}: must be a KTX2 or image dependency of a declared props tile`);
     if (elsewhere.has(hash)) throw new Error(`props.splat ${role} layer ${layer}: also bound by another material (the arrays own their files)`);
     const use = SPLAT_ROLES[role], seen = roles.get(hash);
     if (seen !== undefined && seen !== use) throw new Error(`props.splat ${role} layer ${layer}: one texture cannot mix colour and numeric data roles`);
