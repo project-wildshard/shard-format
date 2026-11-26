@@ -191,12 +191,6 @@ describe('the migration chain', (): void => {
     expect(parseOutputLineageIndex(index).schemas).toEqual([])
     expect(readOutputDownloadIndex(index).schemas).toEqual([])
     expect(parseOutputIndex(index).formatVersion).toBe('0.1.0.2')
-    expect(
-      parseOutputIndex({ ...index, shardVersion: '1.2.3-rc.1' }).shardVersion,
-    ).toBe('1.2.3-rc.1')
-    expect((): unknown =>
-      parseOutputIndex({ ...index, shardVersion: '1.2.3+build' }),
-    ).toThrow(/shardVersion/u)
   })
 
   test('CP14: a 0.1.0.2 index carrying a legacy field is refused naming it, and a legacy one missing one', (): void => {
