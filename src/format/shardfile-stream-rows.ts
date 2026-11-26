@@ -20,6 +20,7 @@ import { decisionModuleContracts } from './scriptContract.ts'
 import { mountSharesBlob } from './shardfile-reads.ts'
 import { inspectFacts, ktx2Text } from './shardfile-stream-facts.ts'
 import { outputBlobKind, readCanonicalJson } from './shardfileValidation.ts'
+import { assertStandaloneArt, readDiscoveryArt } from './standalone-art.ts'
 import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { DeprecationReport } from './deprecations.ts'
@@ -270,7 +271,17 @@ function streamedDeprecations(
     listed === undefined
       ? undefined
       : readCanonicalJson(listedBytes(replay, listed))
-  return deprecationReport({ ...shard, cook }, warnings)
+  if (replay.judged !== 'stored' && shard.index.shardVersion !== undefined) {
+    const mounts = cook === undefined ? [] : readCookData(cook).mounts
+    const discovery = mounts
+      .filter((mount): boolean => isDiscoveryMount(mount.path))
+      .map((mount): unknown => readDiscoveryArt(listedBytes(replay, mount)))
+    assertStandaloneArt([...shard.sections.values(), ...discovery], mounts)
+  }
+  return deprecationReport(
+    { index: shard.index, sections: shard.sections, cook },
+    warnings,
+  )
 }
 
 export type { KeptMember, Replay }
