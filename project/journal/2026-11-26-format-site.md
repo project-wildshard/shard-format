@@ -18,3 +18,10 @@ on Cloudflare like www, and said the public repo's source is the spec.
   404s; links to files the repo has go to GitHub.
 - Deploy mirrors www: a static-assets Worker, `wildshard-format`, with a
   custom domain on the same zone, shipped from a `git archive` of HEAD.
+- Push 1 failed the one-way ratchet: "never trusted" on the home page is
+  retired vocabulary. Reworded. Then a local build in `src/site/dist`
+  tripped it again (the ratchet walks ignored files under `src/` too), so
+  the build writes `tmp/site` now. deploy.sh's archive under `tmp/` sat
+  inside this checkout, so `git ls-files` there was empty; fixed.
+- Deployed 158093e: format.wildshard.io and
+  wildshard-format.wildshard.workers.dev. No CI deploy yet (www has one).
