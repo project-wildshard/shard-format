@@ -50,7 +50,6 @@ import type {
   WalkPorts,
 } from './shardfile-stream-tar.ts'
 import type { Shardfile } from './shardSchema.ts'
-import { refuseCarriedKtx2 } from './carried-ktx2.ts'
 
 /** The host services a streaming validation needs. */
 interface StreamValidationPorts extends JudgedPorts {
@@ -260,15 +259,13 @@ async function validateShardfileStream(
     members: walked.members,
     listed: new Set(['validation.json']),
     hash: ports.hash,
+    judged: ports.judged,
   }
   const index = withIssueCode('index-invalid', (): OutputIndex =>
     readIndex(replay),
   )
   const { sections, warnings, scripts } = readSections(replay, index)
   replayBeforePacks(replay, index, scripts)
-  withIssueCode('carried-ktx2', (): void => {
-    refuseCarriedKtx2(index, walked.members.keys(), ports.judged)
-  })
   const before = admitBeforeAssets(index, sections, { ...ports, scripts })
   const later = await assetPasses({
     open,
@@ -298,7 +295,6 @@ async function validateShardfileStream(
     reads: later.reads + NEXT,
   }
 }
-
 export type { StoredSource } from './shardfile-stream-assets.ts'
 export type { StreamValidationPorts, StreamedShardfile }
 export { STREAM_BLOB_CAP, STREAM_KEPT_CAP, validateShardfileStream }

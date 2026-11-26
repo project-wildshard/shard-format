@@ -6,6 +6,7 @@
 // The index and script rows are valibot's output types, which the replay only
 // reads; their parameters say so in a disable comment rather than a deep type.
 
+import { refuseCarriedKtx2 } from './carried-ktx2.ts'
 import { cookMountPath, readCookData } from './cook-data.ts'
 import { requireCookPreparation } from './cook-preparation.ts'
 import { deprecationReport } from './deprecations.ts'
@@ -23,6 +24,7 @@ import { validationSourceBytes } from './validationReceipt.ts'
 
 import type { DeprecationReport } from './deprecations.ts'
 import type { OutputIndex } from './outputIndex.ts'
+import type { Judged } from './policy-verdict.ts'
 import type { ScriptAdmissionRows } from './scriptContract.ts'
 import type { FactsMember } from './shardfile-stream-facts.ts'
 import type { StreamMember } from './shardfile-stream-tar.ts'
@@ -41,6 +43,8 @@ interface Replay {
   readonly members: ReadonlyMap<string, KeptMember>
   readonly listed: Set<string>
   readonly hash: (bytes: Readonly<Uint8Array>) => string
+  /** SF15: how the upload is judged, for the carried-KTX2 refusal (`carried-ktx2.ts`). */
+  readonly judged?: Judged | undefined
 }
 
 const NONE = 0
@@ -244,6 +248,10 @@ function replayPacksToInventory(
   }
   replayCook(replay, index)
   replayInventory(replay, index)
+  // SF15 (J525): a new upload carries images only; the folder validator checks it after its inventory too.
+  withIssueCode('carried-ktx2', (): void => {
+    refuseCarriedKtx2(index, replay.members.keys(), replay.judged)
+  })
 }
 
 /** The deprecation report, with `cook.json` as the folder validator passes it (FORMAT-PRUNE FP23's gate: without it
