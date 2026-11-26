@@ -30,7 +30,7 @@ jobs:
           package_json_file: package.json
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version-file: package.json
+          node-version-file: .node-version
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       # Org git dependencies are public (J160, J163). pnpm-lock.yaml can record
@@ -103,7 +103,7 @@ jobs:
           package_json_file: package.json
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version-file: package.json
+          node-version-file: .node-version
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
@@ -135,7 +135,7 @@ jobs:
           version: 10.34.9
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version-file: package.json
+          node-version-file: .node-version
       - name: Read org repos over HTTPS
         run: |
           base="https://github.com/project-wildshard/"
