@@ -250,6 +250,10 @@ describe('measure', (): void => {
     expect(isRecordingUrl('/assets/sfx/a/hit.AIF')).toBe(true)
     expect(isRecordingUrl('/assets/music/coral-drift/music.json')).toBe(false)
     expect(isRecordingUrl('/assets/baked/x.m4a')).toBe(false)
+    // SF4: a zone's own audio, under its slug
+    expect(isRecordingUrl('/assets/open-plot-thin-ice/sfx/thin-ice/bed.m4a')).toBe(true)
+    expect(isRecordingUrl('/assets/nalati-grasslands/music/nalati/calm.m4a')).toBe(true)
+    expect(isRecordingUrl('/assets/far-reach/models/a.m4a')).toBe(false)
   })
 })
 

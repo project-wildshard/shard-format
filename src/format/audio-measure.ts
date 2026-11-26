@@ -72,11 +72,12 @@ const MP3_SYNC_HIGH = 224
 const UTF16_BOM_LOW = 254
 const UNKNOWN_REASON = 'bytes in no audio container AU5 knows; they still count'
 
-const ROLE_PATTERN = /^\/assets\/(?<role>music|sfx)\//u
+// SF4: a zone's own audio sits under its slug, `/assets/<slug>/music/` or `/assets/<slug>/sfx/`
+const ROLE_PATTERN = /^\/assets\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)?(?<role>music|sfx)\//u
 const AUDIO_EXTENSION =
   /\.(?:m4a|mp4|aac|wav|wave|flac|aif|aiff|aifc|caf|mp3|ogg|oga|opus|webm|weba)$/iu
 
-/** Whether a public URL sits in an audio folder (`/assets/music/` or `/assets/sfx/`). */
+/** Whether a public URL sits in an audio folder (`/assets/music/`, `/assets/sfx/` or a zone's `/assets/<slug>/music|sfx/`). */
 function isAudioFolderUrl(url: string): boolean {
   return ROLE_PATTERN.test(url)
 }

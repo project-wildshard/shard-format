@@ -62,7 +62,7 @@ export const AudioMusicSchema: v.GenericSchema<AudioMusic> = v.pipe(v.strictObje
   setCatalogue:v.exactOptional(v.strictObject({inventory:v.picklist(['base','title']),priority:v.boolean(),bootSynth:v.boolean(),titleStings:v.boolean(),baseSamples:v.boolean(),cueOverlay:v.boolean()})),
   lifecycle:v.exactOptional(v.strictObject({persistent:v.boolean(),dispose:v.boolean(),logChanges:v.boolean(),bossScene:v.exactOptional(id)})),
   synthLead: v.picklist(['pluck', 'marimba']), minFade: v.pipe(finite, v.minValue(0), v.maxValue(60)),
-  source: v.nullable(v.strictObject({ dir: v.pipe(v.string(), v.regex(/^\/assets\/music\/[a-z0-9_-]+\/$/u)), manifestKey: id })),
+  source: v.nullable(v.strictObject({ dir: v.pipe(v.string(), v.regex(/^\/assets\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)?music\/[a-z0-9_-]+\/$/u)), manifestKey: id })),
   sets: v.record(id, id), selection: v.pipe(v.array(v.strictObject({ slots: list, when: conditions })), v.minLength(1), v.maxLength(64)),
   selectMode: v.picklist(['first', 'all']),
   catalogue: v.exactOptional(v.strictObject({ mode: v.picklist(['slots','bank']), extraStings: v.pipe(v.array(v.picklist(['pickup','death','chunk','dawn'])),v.maxLength(4)), stingSets: v.strictObject({ pickup:v.exactOptional(id),death:v.exactOptional(id),chunk:v.exactOptional(id),dawn:v.exactOptional(id) }) })),
