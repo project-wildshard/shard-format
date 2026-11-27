@@ -15,6 +15,8 @@ import path from 'node:path'
 import { after, describe, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
+import type { CookMount } from '../format/cook-data.ts'
+
 // A real product: written by singleplayer's author SDK
 // (writeOutputProduct over emptyShardfile, one terrain tile, ui/strings)
 // at Raynos/project-wildshard-singleplayer@36d00c6645.
@@ -89,15 +91,15 @@ function hashOf(text: string): string {
   return createHash('sha256').update(text).digest('hex')
 }
 
-/** One mount's `cook.json`, as canonical JSON. */
-function cookData(listed: string): string {
-  const row = {
+/** The mounted files declared in cook.json, as canonical JSON. */
+function cookData(listed: string, names: readonly string[]): string {
+  const mounts = names.map((name): CookMount => ({
     bytes: Buffer.byteLength(listed),
     hash: hashOf(listed),
-    path: 'mounts/assets/fixture/art.bin',
-    url: '/assets/fixture/art.bin',
-  }
-  return `${JSON.stringify({ mounts: [row], version: 1 })}\n`
+    path: `mounts/assets/fixture/${name}`,
+    url: `/assets/fixture/${name}`,
+  }))
+  return `${JSON.stringify({ mounts, version: 1 })}\n`
 }
 
 /** Adds the `cook` row to `shard.json`, which keeps sorted keys. */
@@ -112,12 +114,24 @@ function listCookData(dir: string, data: string): void {
   writeFileSync(file, text.replace('"files":', `"cook":${row},"files":`))
 }
 
-/** The fixture carrying one mounted file, as a product that stands alone does. */
-function mounted(name: string, body: string, listed: string): string {
+/** The fixture carrying mounted files, as a product that stands alone does. */
+function mounted(
+  name: string,
+  body: string,
+  {
+    listed = body,
+    names = ['art.bin'],
+  }: Readonly<{
+    listed?: string
+    names?: readonly string[]
+  }> = {},
+): string {
   const dir = copy(name)
-  const data = cookData(listed)
+  const data = cookData(listed, names)
   mkdirSync(path.join(dir, 'mounts/assets/fixture'), { recursive: true })
-  writeFileSync(path.join(dir, 'mounts/assets/fixture/art.bin'), body)
+  for (const filename of names) {
+    writeFileSync(path.join(dir, 'mounts/assets/fixture', filename), body)
+  }
   writeFileSync(path.join(dir, 'cook.json'), data)
   listCookData(dir, data)
   return dir
@@ -125,20 +139,47 @@ function mounted(name: string, body: string, listed: string): string {
 
 describe('shardfile validate on a product with mounts', (): void => {
   it('takes a mount whose bytes match cook.json', (): void => {
-    const run = cli(['validate', mounted('mount-good', 'art', 'art')])
+    const run = cli(['validate', mounted('mount-good', 'art')])
 
     assert.equal(run.status, 0, run.stderr)
   })
 
+  it('warns about paired hand-made phone mounts without refusing the product (J525)', (): void => {
+    const names = [
+      'art.bin',
+      'art.phone.bin',
+      'art-phone.bin',
+      'unpaired.phone.bin',
+    ]
+    const run = cli([
+      'validate',
+      mounted('mount-phone-copies', 'art', { names }),
+    ])
+
+    assert.equal(run.status, 0, run.stderr)
+    assert.deepEqual(
+      run.stdout.split('\n').filter((line): boolean => line.includes('J525:')),
+      names
+        .slice(1, 3)
+        .map(
+          (name): string =>
+            `warning: J525: /assets/fixture/${name} is a hand-made phone copy of /assets/fixture/art.bin. Keep the original and let the cook make tier variants.`,
+        ),
+    )
+  })
+
   it('refuses a mount whose bytes differ', (): void => {
-    const run = cli(['validate', mounted('mount-bad', 'tra', 'art')])
+    const run = cli([
+      'validate',
+      mounted('mount-bad', 'tra', { listed: 'art' }),
+    ])
 
     assert.equal(run.status, 3)
     assert.match(run.stderr, /Output hash or size mismatch/u)
   })
 
   it('refuses a file under mounts/ that cook.json does not list', (): void => {
-    const dir = mounted('mount-extra', 'art', 'art')
+    const dir = mounted('mount-extra', 'art')
     writeFileSync(path.join(dir, 'mounts/assets/fixture/more.bin'), 'more')
     const run = cli(['validate', dir])
 

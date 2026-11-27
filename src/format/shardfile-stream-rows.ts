@@ -7,7 +7,7 @@
 // reads; their parameters say so in a disable comment rather than a deep type.
 
 import { refuseCarriedKtx2 } from './carried-ktx2.ts'
-import { cookMountPath, readCookData } from './cook-data.ts'
+import { cookMountPath, phoneCopyWarnings, readCookData } from './cook-data.ts'
 import { requireCookPreparation } from './cook-preparation.ts'
 import { deprecationReport } from './deprecations.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
@@ -275,8 +275,8 @@ function streamedDeprecations(
     listed === undefined
       ? undefined
       : readCanonicalJson(listedBytes(replay, listed))
+  const mounts = cook === undefined ? [] : readCookData(cook).mounts
   if (replay.judged !== 'stored' && shard.index.shardVersion !== undefined) {
-    const mounts = cook === undefined ? [] : readCookData(cook).mounts
     const discovery = mounts
       .filter((mount): boolean => isDiscoveryMount(mount.path))
       .map((mount): unknown => readDiscoveryArt(listedBytes(replay, mount)))
@@ -285,7 +285,7 @@ function streamedDeprecations(
   }
   return deprecationReport(
     { index: shard.index, sections: shard.sections, cook },
-    warnings,
+    [...warnings, ...phoneCopyWarnings(mounts)],
   )
 }
 

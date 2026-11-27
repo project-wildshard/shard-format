@@ -155,6 +155,21 @@ function readCookData(input: unknown): CookData {
   return data
 }
 
+/** J525: identify legacy phone copies beside their original mounts. */
+function phoneCopyWarnings(mounts: readonly Readonly<CookMount>[]): string[] {
+  const urls = new Set(mounts.map((mount): string => mount.url))
+  const warnings: string[] = []
+  for (const url of urls) {
+    const original = url.replace(/[.-]phone(?=\.[^./]+$)/u, '')
+    if (original !== url && urls.has(original)) {
+      warnings.push(
+        `J525: ${url} is a hand-made phone copy of ${original}. Keep the original and let the cook make tier variants.`,
+      )
+    }
+  }
+  return warnings
+}
+
 /** SHARD-COMPAT SP1b1a: `cook.json`'s version alone, read without its rows, so a reader can name a newer spec
  * (`unreadPreparationSpec`) before `readCookData` refuses it. `undefined` when it names no integer version. */
 function cookDataSpec(input: unknown): number | undefined {
@@ -173,5 +188,6 @@ export {
   CookDataSchema,
   cookDataSpec,
   cookMountPath,
+  phoneCopyWarnings,
   readCookData,
 }

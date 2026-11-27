@@ -1,5 +1,5 @@
 import { assertShardMountUrls, assertStandaloneArt, readDiscoveryArt } from './standalone-art.ts';
-import { cookMountPath, readCookData } from './cook-data.ts';
+import { cookMountPath, phoneCopyWarnings, readCookData } from './cook-data.ts';
 import type { CookData, CookMount } from './cook-data.ts';
 import { checkDiscoveryMount, isDiscoveryMount } from './manifest-deprecations.ts';
 import { isPreparedCook, requireCookPreparation } from './cook-preparation.ts';
@@ -284,5 +284,5 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
   const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index, judged: ports.judged ?? 'upload', armed: ports.armed });
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (!declaredSourceMatches(shard, index, ports.hash)) throw issueError('source-hash', 'Output sections differ from the declared source hash');
-  return { index, shard, assets, sections: payloads, scripts, ...deprecationReport({ index, sections: payloads, cook }, warnings), policy: admittedVerdict(shard), audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
+  return { index, shard, assets, sections: payloads, scripts, ...deprecationReport({ index, sections: payloads, cook }, [...warnings, ...phoneCopyWarnings(cook?.mounts ?? [])]), policy: admittedVerdict(shard), audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };
 }
