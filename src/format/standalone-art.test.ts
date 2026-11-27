@@ -72,3 +72,27 @@ test('the engine-built physics binary is engine art', (): void => {
     assertStandaloneArt([{ physics: ['/assets/physics/rapier.wasm'] }], [])
   }).not.toThrow()
 })
+
+test('a URL template is covered by a mounted file it names', (): void => {
+  // A keyed sky names its files as `{id}` templates (Pine Hollow's look keyFiles).
+  const keyFiles = {
+    color: '/assets/example/hdri/{id}_2k.key.jpg',
+    gain: '/assets/example/hdri/{id}_2k.key.gain.png',
+  }
+  const mounts = [
+    mount('/assets/example/hdri/dusk_2k.key.jpg'),
+    mount('/assets/example/hdri/dusk_2k.key.gain.png'),
+  ]
+  expect((): void => {
+    assertStandaloneArt([{ keyFiles }], mounts)
+  }).not.toThrow()
+  expect((): void => {
+    assertStandaloneArt([{ keyFiles }], mounts.slice(0, 1))
+  }).toThrow(keyFiles.gain)
+  expect((): void => {
+    assertStandaloneArt(
+      [{ keyFiles }],
+      [mount('/assets/example/hdri/a/b_2k.key.jpg')],
+    )
+  }).toThrow('{id}')
+})

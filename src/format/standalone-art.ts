@@ -40,7 +40,29 @@ function skyCovered(stem: string, mounts: ReadonlySet<string>): boolean {
   )
 }
 
+/** A URL template (`/assets/z/hdri/{id}_2k.key.jpg`, a keyed sky's files) names at least one supplied file. */
+function templateCovered(url: string, mounts: ReadonlySet<string>): boolean {
+  const pattern = new RegExp(
+    `^${url
+      .split(/\{[a-z][a-zA-Z0-9]*\}/u)
+      .map((part: string): string =>
+        part.replaceAll(/[$()*+.?[\\\]^{|}]/gu, String.raw`\$&`),
+      )
+      .join('[^/]+')}$`,
+    'u',
+  )
+  for (const path of [...mounts, ...ENGINE_ART]) {
+    if (pattern.test(path)) {
+      return true
+    }
+  }
+  return false
+}
+
 function covered(url: string, mounts: ReadonlySet<string>): boolean {
+  if (/\{[a-z][a-zA-Z0-9]*\}/u.test(url)) {
+    return templateCovered(url, mounts)
+  }
   if (
     supplied(url, mounts) ||
     (url.includes('/hdri/') && skyCovered(url, mounts))
