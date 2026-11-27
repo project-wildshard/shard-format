@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.82.1 (2026-11-26)
+
+- Read the engine's current uploadNumber pins in the stored corpus check.
+- Release the standalone shardfile art guard and slug-scoped mounts, including a shard's own discovery and hero URLs.
+- Refuse carried GPU textures on new uploads and admit slug-scoped audio.
+- Recognize ground folders and sky stems when the shard carries the files they name.
+
 ## v0.82.0 (2026-11-26)
 
 - Require art named by a standalone shardfile to be carried by that shardfile or supplied by the engine.
