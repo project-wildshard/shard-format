@@ -1,9 +1,10 @@
 /** AUDIO AU18 (J304): one music style per shard. The engine ships one style (piano), and its manifest has these slots
  *  beside `title`. A score names the engine music it plays by slot, and the engine cook derives the hashed files from
- *  these names, so an engine re-encode never needs a new shard revision. */
-const ENGINE_MUSIC_SLOTS: readonly string[] = ['island', 'pine']
+ *  these names, so an engine re-encode never needs a new shard revision. Meta SF23 retired `island` and `pine`: a zone
+ *  that plays them carries its own copy as a slot set named for its slug (`sets: { pine: '<slug>' }`). */
+const ENGINE_MUSIC_SLOTS: readonly string[] = []
 const ENGINE_SLOTS_MESSAGE =
-  'a slot played from the engine style (set base, or unset) is title, island or pine (J304)'
+  'a slot played from the engine style (set base, or unset) is title; carry any other as your own set (J304, SF23)'
 
 /** The score rows that name engine music. */
 interface EngineMusicRows {

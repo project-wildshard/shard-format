@@ -1,4 +1,4 @@
 {
-  "./engineMusic#ENGINE_MUSIC_SLOTS": ["island","pine"],
-  "./engineMusic#ENGINE_SLOTS_MESSAGE": "a slot played from the engine style (set base, or unset) is title, island or pine (J304)"
+  "./engineMusic#ENGINE_MUSIC_SLOTS": [],
+  "./engineMusic#ENGINE_SLOTS_MESSAGE": "a slot played from the engine style (set base, or unset) is title; carry any other as your own set (J304, SF23)"
 }

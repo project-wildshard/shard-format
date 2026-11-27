@@ -50,19 +50,38 @@ const refusal = (input: Readonly<Record<string, unknown>>): string => {
   return parsed.success ? '' : parsed.issues[0].message
 }
 
-test('Driftwood plays the engine title and island', (): void => {
-  expect(slotsOf(score({}))).toEqual(['title', 'island'])
+// SF23: the engine's island and pine slots retired; a zone that plays them carries its own set, named for its slug.
+test("Driftwood plays the engine title and its own island", (): void => {
+  expect(slotsOf(score({ sets: { island: 'driftwood-isle' } }))).toEqual([
+    'title',
+  ])
 })
 
-test("Pine plays the engine's pine slot; its own sets are not engine music", (): void => {
+test("Pine plays its own pine, night and boss sets; none is engine music", (): void => {
   const pine = score({
     base: 'pine',
     slots: ['pine', 'night', 'boss'],
     bootSlots: ['title', 'pine'],
-    sets: { pine: 'base', night: 'pine-hollow', boss: 'pine-hollow' },
+    sets: { pine: 'pine-hollow', night: 'pine-hollow', boss: 'pine-hollow' },
     selection: [{ slots: ['pine'], when: [] }],
   })
-  expect(slotsOf(pine)).toEqual(['title', 'pine'])
+  expect(slotsOf(pine)).toEqual(['title'])
+})
+
+test('a score that plays the retired engine island or pine is refused', (): void => {
+  expect(refusal(score({}))).toContain('carry any other as your own set')
+  expect(
+    refusal(
+      score({
+        base: 'pine',
+        slots: ['pine'],
+        bootSlots: ['title'],
+        sets: {},
+        selection: [{ slots: ['pine'], when: [] }],
+      }),
+    ),
+  ).toContain('SF23')
+  expect(ENGINE_MUSIC_SLOTS).toEqual([])
 })
 
 test('a slot left out of sets is an engine slot, so an unknown one is refused', (): void => {
@@ -73,7 +92,7 @@ test('a slot left out of sets is an engine slot, so an unknown one is refused', 
     sets: {},
     selection: [{ slots: ['harbor'], when: [] }],
   })
-  expect(refusal(harbor)).toContain('title, island or pine')
+  expect(refusal(harbor)).toContain('is title;')
 })
 
 test('a slot set to base by name is refused when the engine has no such slot', (): void => {
