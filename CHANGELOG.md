@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.82.9 (2026-11-27)
+
+- The engine's music style now offers only its title; a zone plays any other slot from its own music set.
+- A score that still names the old engine island or pine slots is refused with a message saying to carry its own set.
+
 ## v0.82.8 (2026-11-27)
 
 - An images-only shard's skin looks no longer go over the streaming cap at upload: their image textures are not held.
