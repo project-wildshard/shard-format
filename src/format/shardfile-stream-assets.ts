@@ -139,7 +139,7 @@ function namedKeys(
  *  tables), but not its textures (`ktx2`, OF27b): no later check reads a texture's bytes (`validateSkinAssets` reads the
  *  JSON and the GLB, and each texture's own costs were checked as it streamed, by `admitFileBytes`). Holding them put
  *  Nalati r7's declared skin looks (OF30: 18 textures, 15.7 MB) over `PLACED_HOLD_CAP`. */
-const UNHELD_DEPENDENCY_KIND = 'ktx2'
+const UNHELD_DEPENDENCY_KINDS: ReadonlySet<string> = new Set(['ktx2', 'image'])
 
 /** The placed keys, and the listed dependencies of the JSON among them (a skin file names its GLB; Codex review). */
 function placedKeys(
@@ -163,7 +163,7 @@ function placedKeys(
       for (const dependency of row.dependencies) {
         for (const found of hashKeys(dependency, paths).filter(
           (held: string): boolean =>
-            rows.get(held)?.kind !== UNHELD_DEPENDENCY_KIND,
+            !UNHELD_DEPENDENCY_KINDS.has(rows.get(held)?.kind ?? ''),
         )) {
           keys.add(found)
         }

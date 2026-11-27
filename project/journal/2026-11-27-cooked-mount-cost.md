@@ -16,3 +16,6 @@ v0.82.5 never reached npm: its corpus gate refused 24 stored originals with a st
 library projection read image bytes to tell an off-grid image apart, and a streamed admission holds none. That
 projection now reads no image bytes; the offline estimate keeps charging raw images through `rawImages`. 0.82.6 ships
 the fix with a test whose asset map refuses every read.
+
+SF24 rides along in 0.82.7: the stream left only `ktx2` skin textures unheld, so an images-only skin set (Nalati
+0.0.11, 42 looks, 43.1 MB of PNG and JPEG) went over the 48 MB hold cap at commit. `image` is unheld too (opus-pins2).
