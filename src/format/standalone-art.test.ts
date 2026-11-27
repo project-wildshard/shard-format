@@ -65,3 +65,10 @@ test('a sky stem admits its HDR or complete gain pair', (): void => {
     assertStandaloneArt(look, [colour])
   }).toThrow(sky)
 })
+
+test('the engine-built physics binary is engine art', (): void => {
+  // A shard's boot rows name it (sharddev sharedBootPhysics); Pine Hollow's build with an authored shardVersion refused it.
+  expect((): void => {
+    assertStandaloneArt([{ physics: ['/assets/physics/rapier.wasm'] }], [])
+  }).not.toThrow()
+})

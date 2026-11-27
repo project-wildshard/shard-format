@@ -38,6 +38,9 @@ export const ENGINE_ART: ReadonlySet<string> = new Set([
   '/assets/music/piano/sting-death-8ee9ff5d.m4a',
   '/assets/music/piano/sting-pickup-5ba19a30.m4a',
   '/assets/music/piano/title-7ce82663.m4a',
+  // The engine's build copies the physics binary here (engine vite/rapier.ts); it is gitignored, so not in SF1's list.
+  // A shard's boot rows name it through the SDK's sharedBootPhysics (opus-pine, Pine Hollow's shardVersion build).
+  '/assets/physics/rapier.wasm',
   '/assets/practice/dummies/straw-cloth.glb',
   '/assets/practice/dummies/unimate-motion.glb',
   '/assets/practice/dummies/wood-steel.glb',
