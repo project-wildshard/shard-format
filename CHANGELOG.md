@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.82.3 (2026-11-27)
+
+- A shard with a shardVersion may name the engine's physics binary without mounting it.
+- A file template such as a keyed sky's {id} files passes when a mounted file matches it.
+- Phone memory counts the phone image a phone loads in place of its desktop twin, not both.
+
 ## v0.82.2 (2026-11-26)
 
 - A zone's own music and sound recordings bind by their URL under the zone's folder.
