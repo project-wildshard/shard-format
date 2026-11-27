@@ -3,3 +3,5 @@
 The folder and streamed validators name hand-made phone copies after the
 files pass validation. J525 leaves tier encoding to the cook. Existing
 products remain valid.
+
+The helper is internal. The public format lock matches the previous release.

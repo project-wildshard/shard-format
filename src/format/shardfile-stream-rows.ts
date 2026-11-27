@@ -7,7 +7,7 @@
 // reads; their parameters say so in a disable comment rather than a deep type.
 
 import { refuseCarriedKtx2 } from './carried-ktx2.ts'
-import { cookMountPath, phoneCopyWarnings, readCookData } from './cook-data.ts'
+import { cookMountPath, readCookData } from './cook-data.ts'
 import { requireCookPreparation } from './cook-preparation.ts'
 import { deprecationReport } from './deprecations.ts'
 import { issueError, withIssueCode } from './issue-codes.ts'
@@ -15,6 +15,7 @@ import {
   checkDiscoveryMount,
   isDiscoveryMount,
 } from './manifest-deprecations.ts'
+import { phoneCopyWarnings } from './phone-copy-warnings.ts'
 import { validatePlatformFile } from './platformFileFamilies.ts'
 import { decisionModuleContracts } from './scriptContract.ts'
 import { mountSharesBlob } from './shardfile-reads.ts'

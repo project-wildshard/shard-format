@@ -1,5 +1,5 @@
 import { assertShardMountUrls, assertStandaloneArt, readDiscoveryArt } from './standalone-art.ts';
-import { cookMountPath, phoneCopyWarnings, readCookData } from './cook-data.ts';
+import { cookMountPath, readCookData } from './cook-data.ts';
 import type { CookData, CookMount } from './cook-data.ts';
 import { checkDiscoveryMount, isDiscoveryMount } from './manifest-deprecations.ts';
 import { isPreparedCook, requireCookPreparation } from './cook-preparation.ts';
@@ -24,6 +24,7 @@ import { assertScriptSides } from './script-sides.ts';
 import { shardfileRecordings } from './shardfile-audio.ts';
 import type { RecordingMeasure } from './audio-measure.ts';
 import { issueError, withIssueCode as coded } from './issue-codes.ts';
+import { phoneCopyWarnings } from './phone-copy-warnings.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
 import { memoryContext, offlineMemoryIssues } from './memory-line.ts';
 import { armedZone } from './memory-armed.ts';
