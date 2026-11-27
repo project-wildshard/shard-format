@@ -59,6 +59,8 @@ export function materialGraphIr(entry: MaterialEntry, file: (hash: string) => Ui
   return checked.graph;
 }
 /** D74: why a built product's catalogue may not hold an inline graph (the SDK lowers an authored one into its file) */
+/** SF16/SF17 (J525): a texture named by hash is a KTX2 or a PNG or JPEG image the cook encodes. */
+export const isTextureKind = (kind: string | undefined): boolean => kind === 'ktx2' || kind === 'image';
 export const INLINE_GRAPH_REFUSAL = 'material catalogue holds no inline graph: the SDK lowers an authored graph into a graph file { family: "graph", file }';
 /** The wire boundary (product admission): every graph of a built product's catalogue is a graph file or a preset. An
  *  authored declaration may still hold inline graphs; the SDK lowers them before admission. */

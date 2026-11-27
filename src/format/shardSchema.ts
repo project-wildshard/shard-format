@@ -61,7 +61,7 @@ import { MigrationsSchema, migrationRules } from './migrations.ts';
 import { skinLookRules } from './skinAssets.ts';
 import { skinLookTextureRefs } from './skin-textures.ts';
 import { attachmentFileRules } from './creature-attachments.ts';
-import { MaterialsSchema, FamilyLooksSchema, MaterialCurvesSchema, TextureSamplersSchema, materialExists, materialTextureRefs, materialGraphRules, materialCurveRules, textureSamplerRules, graphBindingSources } from './materials.ts';
+import { isTextureKind, MaterialsSchema, FamilyLooksSchema, MaterialCurvesSchema, TextureSamplersSchema, materialExists, materialTextureRefs, materialGraphRules, materialCurveRules, textureSamplerRules, graphBindingSources } from './materials.ts';
 import { PostStackSchema, postStackRules } from './postStack.ts';
 import { LookSkySchema, lookSkyRules } from './look-sky.ts';
 import type { LookSky, LookSkyInput } from './look-sky.ts';
@@ -286,7 +286,7 @@ export function shardfileRules(s: Shardfile, sections?: ReadonlyMap<string, unkn
     const id = libraryPending.pop(); if (id === undefined || libraryClosure.has(id)) continue;
     libraryClosure.add(id); libraryPending.push(...files.get(id)?.dependencies ?? []);
   }
-  if (materialRefs.some((id) => !/^(?:commons:)?[a-f0-9]{64}$/u.test(id) || !libraryClosure.has(id) || (id.startsWith('commons:') ? !s.requires.commons.includes(id.slice(8)) : files.get(id)?.kind !== 'ktx2'))) errors.push('admitted material texture library references');
+  if (materialRefs.some((id) => !/^(?:commons:)?[a-f0-9]{64}$/u.test(id) || !libraryClosure.has(id) || (id.startsWith('commons:') ? !s.requires.commons.includes(id.slice(8)) : !isTextureKind(files.get(id)?.kind)))) errors.push('admitted material texture library references');
   if (s.items.rows.some(row => row.view.asset !== undefined && (!libraryClosure.has(row.view.asset) ||
     (row.view.asset.startsWith('commons:') ? !commons.has(row.view.asset.slice(8)) : files.get(row.view.asset)?.kind !== 'glb')))) errors.push('admitted item model library references');
   const lut = s.look.grade.lut === null || s.look.grade.lut.startsWith('commons:') ? null : files.get(s.look.grade.lut);

@@ -341,6 +341,7 @@
   "./materials#graphFileRules": "function: behaviour, not a shape (its schema inputs are locked)",
   "./materials#graphFileTextureRefs": "function: behaviour, not a shape (its schema inputs are locked)",
   "./materials#inlineGraphRules": "function: behaviour, not a shape (its schema inputs are locked)",
+  "./materials#isTextureKind": "function: behaviour, not a shape (its schema inputs are locked)",
   "./materials#materialCurveRules": "function: behaviour, not a shape (its schema inputs are locked)",
   "./materials#materialExists": "function: behaviour, not a shape (its schema inputs are locked)",
   "./materials#materialGraphIr": "function: behaviour, not a shape (its schema inputs are locked)",
