@@ -11,3 +11,8 @@ anything the cook leaves raw (kept images, off-grid images, `/shardfiles/` blob 
 Image files the cook leaves raw (off the grid: Nine's 804x1626 portrait) now charge decoded and RGBA too, where SF5g
 had charged them as a cooked file; that raises six old pins by 5 to 19 MB, all far under both lines. Nine 0.0.12
 becomes 1.19 GB loading, 0.81 GB playing.
+
+v0.82.5 never reached npm: its corpus gate refused 24 stored originals with a stream-miss, because the runtime
+library projection read image bytes to tell an off-grid image apart, and a streamed admission holds none. That
+projection now reads no image bytes; the offline estimate keeps charging raw images through `rawImages`. 0.82.6 ships
+the fix with a test whose asset map refuses every read.

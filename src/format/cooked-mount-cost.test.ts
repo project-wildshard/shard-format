@@ -14,6 +14,7 @@ import {
   cookLeavesImageRaw,
   mountedImagesCharge,
 } from './cooked-mount-cost.ts'
+import { textureLibrarySource } from './deviceMemoryCost.ts'
 
 import type { MountedImage } from './cooked-mount-cost.ts'
 import type { Shardfile } from './shardSchema.ts'
@@ -217,4 +218,28 @@ test('an image file the cook leaves raw charges decoded and RGBA in the phone te
   })
   expect(raw.content).toBe(MB + gpu + 4 * MB)
   expect(raw.textures).toBe(gpu)
+})
+
+/** A streamed admission's assets: every read of bytes it did not hold refuses (v0.82.5's corpus stream-miss). */
+function streamAssets(): Map<string, Uint8Array> {
+  const assets = new Map<string, Uint8Array>()
+  assets.get = (hash: string): never => {
+    throw new Error(
+      `stream: an asset check read ${hash}, which the stream did not hold`,
+    )
+  }
+  return assets
+}
+
+test('the library projection never reads an image file’s bytes: a streamed admission holds none', () => {
+  const gpu = 1024 * 1024 * 4
+  const source = shard(gpu)
+  const library = {
+    ...source,
+    budgets: {
+      ...source.budgets,
+      library: { resident: gpu + 4 * MB + gpu, compressed: MB },
+    },
+  } as unknown as Shardfile
+  expect(() => textureLibrarySource(library, streamAssets())).not.toThrow()
 })
