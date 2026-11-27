@@ -10,8 +10,13 @@ const referenced = new Map<string, unknown>([
 ])
 const url = `${layer}diffuse.jpg`
 
-function mount(url: string): CookMount {
-  return { url, path: `mounts${url}`, hash: 'a'.repeat(64), bytes: 1 }
+function mount(assetUrl: string): CookMount {
+  return {
+    url: assetUrl,
+    path: `mounts${assetUrl}`,
+    hash: 'a'.repeat(64),
+    bytes: 1,
+  }
 }
 
 test('a ground layer named outside of the shardfile is refused', (): void => {
