@@ -4,7 +4,7 @@ import type { Pin } from './corpus-pins.ts'
 import type { StoredRecord } from './corpus.ts'
 
 // ZONE-SNAPSHOTS ZS3 (J507): the corpus counts only what players load. Live is what the signed release files name and
-// the signed placements place (public at packs.wildshard.io/releases/, the files api-server's prune reads), plus
+// the signed placements place (public at releases.wildshard.io since RL10, the files api-server's prune reads), plus
 // engine's pins (the next release's). The API keeps more: each live revision's 3 earlier revisions as rollback copies
 // (api-server ZS2), which roll back with their engine release and never count as users, and whatever a channel's own
 // pointer still names (`/api/catalogue.json`). A listed original that is none of these is store drift: the prune
@@ -178,7 +178,7 @@ async function channelHashes(
 /** The hashes players load: each signed release file's shards and placement's cells, and engine's pins. */
 async function liveHashes(
   input: Readonly<{
-    packs: string
+    releases: string
     listed: readonly StoredRecord[]
     pins: readonly Readonly<Pin>[]
   }>,
@@ -193,11 +193,7 @@ async function liveHashes(
   const channels = await Promise.all(
     RELEASE_CHANNELS.map(
       async (channel: string): Promise<readonly string[]> =>
-        await channelHashes(
-          `${input.packs}/releases/${channel}`,
-          byRevision,
-          get,
-        ),
+        await channelHashes(`${input.releases}/${channel}`, byRevision, get),
     ),
   )
   const pinned = input.pins.map((pin: Readonly<Pin>): string => pin.hash)

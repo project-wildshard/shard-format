@@ -19,3 +19,7 @@ the fix with a test whose asset map refuses every read.
 
 SF24 rides along in 0.82.7: the stream left only `ktx2` skin textures unheld, so an images-only skin set (Nalati
 0.0.11, 42 looks, 43.1 MB of PNG and JPEG) went over the 48 MB hold cap at commit. `image` is unheld too (opus-pins2).
+
+The 0.82.7 publish then stopped at its corpus gate: RL10 had just removed the signed release files from
+`packs.wildshard.io/releases/`, and the corpus still read them there. It reads `releases.wildshard.io` now; 0.82.8 ships
+both estimate fixes, the skin-image hold and this.

@@ -39,8 +39,9 @@ const ENGINE_PINS =
   'https://raw.githubusercontent.com/project-wildshard/engine/main/test/pins'
 /** ZS3 (J507): the next releases, production's and staging's, as engine pins them. */
 const LIVE_PINS = `${ENGINE_PINS}/shardfiles.json,${ENGINE_PINS}/staging.json`
-/** The signed release and placement files api-server's prune reads, public. */
-const PACKS = 'https://packs.wildshard.io'
+/** The signed release and placement files api-server's prune reads, public: R2 layout RL10 moved them from
+ *  `packs.wildshard.io/releases/` to the root of `wildshard-releases` and removed the old keys. */
+const RELEASES = 'https://releases.wildshard.io'
 
 interface LiveSet {
   readonly pins: readonly Pin[]
@@ -57,7 +58,7 @@ async function liveSet(args: MarkedArgs): Promise<LiveSet> {
     validator: '',
     fetch: args.get,
   })
-  const live = await liveHashes({ packs: PACKS, listed, pins }, args.get)
+  const live = await liveHashes({ releases: RELEASES, listed, pins }, args.get)
   return { pins, listed, live }
 }
 

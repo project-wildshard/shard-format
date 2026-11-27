@@ -33,7 +33,7 @@ function answer(url: string): unknown {
   if (url.endsWith('-placements.json')) {
     return { body: JSON.stringify({ cells: [] }), signature: 'test' }
   }
-  if (url.includes('/releases/')) {
+  if (new URL(url).host === 'releases.wildshard.io') {
     return { body: JSON.stringify({ shards: [] }), signature: 'test' }
   }
   return { shards: [] }
@@ -58,7 +58,7 @@ function recording(seen: Seen[]): typeof fetch {
 }
 
 describe('corpus agent marker', (): void => {
-  it('marks every read of the API and the packs host', async (): Promise<void> => {
+  it('marks every read of the API and the releases host', async (): Promise<void> => {
     const seen: Seen[] = []
     const code = await corpusCommand({
       api: API,
@@ -76,7 +76,7 @@ describe('corpus agent marker', (): void => {
     )
     assert.deepEqual([...hosts].toSorted(), [
       'api.wildshard.io',
-      'packs.wildshard.io',
+      'releases.wildshard.io',
     ])
     for (const one of seen) {
       assert.match(one.userAgent ?? '', /\bWildshardAgent\/1\b/u, one.url)
