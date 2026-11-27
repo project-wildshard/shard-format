@@ -4,6 +4,12 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.82.0 (2026-11-26)
+
+- Require art named by a standalone shardfile to be carried by that shardfile or supplied by the engine.
+- Keep zone mounts under their shard slug, including the zone program and its own discovery and hero URLs.
+- Refuse carried GPU textures for new uploads and admit the zone audio names.
+
 ## v0.81.0 (2026-11-26)
 
 - Shardfiles and cook metadata can declare the author's shard version separately from the format version.
