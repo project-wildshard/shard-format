@@ -27,12 +27,29 @@ function mentionedAssets(values: Iterable<unknown>): Set<string> {
   return found
 }
 
+function supplied(url: string, mounts: ReadonlySet<string>): boolean {
+  return mounts.has(url) || ENGINE_ART.has(url)
+}
+
+/** The runtime loads the HDR source or the complete baked colour and gain pair. */
+function skyCovered(stem: string, mounts: ReadonlySet<string>): boolean {
+  return (
+    supplied(`${stem}_2k.hdr`, mounts) ||
+    (supplied(`${stem}_2k.sky.jpg`, mounts) &&
+      supplied(`${stem}_2k.gain.png`, mounts))
+  )
+}
+
 function covered(url: string, mounts: ReadonlySet<string>): boolean {
-  if (!url.endsWith('/')) {
-    return mounts.has(url) || ENGINE_ART.has(url)
+  if (
+    supplied(url, mounts) ||
+    (url.includes('/hdri/') && skyCovered(url, mounts))
+  ) {
+    return true
   }
+  const folder = url.endsWith('/') ? url : `${url}/`
   for (const path of mounts) {
-    if (path.startsWith(url)) {
+    if (path.startsWith(folder)) {
       return true
     }
   }

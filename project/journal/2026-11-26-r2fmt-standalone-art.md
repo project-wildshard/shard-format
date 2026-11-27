@@ -19,3 +19,9 @@ are refused. The client lookup lands through opus-repacks.
 The isolated browser declarations proof passed twice in its own file,
 including the case that hit its 120-second limit in the broad push gate.
 The final folder and stream scope checks passed against the SF1 list.
+
+Zone look rows name ground folders without a trailing slash and sky stems
+before the renderer adds the _2k suffix. Admit the folder only with a file
+under its slash-delimited path, and the sky with its HDR source or a complete
+baked colour and gain pair. The tests include neighbouring folders and a
+partial sky pair. This ships in the 0.82.1 fix-forward.
