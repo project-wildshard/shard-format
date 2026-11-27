@@ -6,6 +6,14 @@ import type { Shardfile } from './shardSchema.ts'
 import type { TierSelectionSource } from './tierSelection.ts'
 
 const NO_BYTES = 0
+const NO_FILES: ReadonlySet<string> = new Set()
+
+/** The files the phone terms read differently: those a phone never fetches (`inactive`) and, SF25, the image files the
+ *  cook leaves raw (`raw`, off the 4x4 grid), which a phone decodes and uploads as RGBA. */
+interface PhoneFiles {
+  readonly inactive: ReadonlySet<string>
+  readonly raw?: ReadonlySet<string> | undefined
+}
 
 /** The output index rows tier selection reads: the assembled Shardfile drops each file's `tier` and `variantOf`. */
 interface TierIndex {
@@ -47,17 +55,17 @@ function contentBytes(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
   shard: Shardfile,
   mountedImages: number,
-  inactive: ReadonlySet<string>,
+  { inactive, raw = NO_FILES }: Readonly<PhoneFiles>,
 ): number {
   let bytes = mountedImages
   for (const file of shard.files) {
     if (!inactive.has(file.hash)) {
-      // SF5g (J525): the cook encodes an image to the KTX2 a phone uploads, so the phone never decodes it.
+      // SF5g (J525): the cook encodes an image to the KTX2 a phone uploads, so the phone never decodes it; SF25: one it
+      // leaves raw (`rawImages`, off the 4x4 grid) is decoded.
+      const cooked = file.kind === 'image' && !raw.has(file.hash)
       bytes +=
         file.compressed +
-        (file.kind === 'audio' || file.kind === 'image'
-          ? NO_BYTES
-          : file.decoded)
+        (file.kind === 'audio' || cooked ? NO_BYTES : file.decoded)
     }
   }
   for (const wire of Object.values(shard.requires.commonsWire)) {
@@ -74,16 +82,25 @@ function gpuBytes(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
   shard: Shardfile,
   kinds: ReadonlySet<string>,
-  inactive: ReadonlySet<string>,
+  { inactive, raw = NO_FILES }: Readonly<PhoneFiles>,
 ): number {
   let bytes = NO_BYTES
   for (const file of shard.files) {
     if (kinds.has(file.kind) && !inactive.has(file.hash)) {
-      // SF5g (J525): an image uploads as the cook's phone ASTC 6x6 file, not as RGBA.
-      bytes += file.kind === 'image' ? cookedPhoneGpu(file.gpu) : file.gpu
+      // SF5g (J525): an image uploads as the cook's phone ASTC 6x6 file, not as RGBA; SF25: one the cook leaves raw as RGBA.
+      bytes +=
+        file.kind === 'image' && !raw.has(file.hash)
+          ? cookedPhoneGpu(file.gpu)
+          : file.gpu
     }
   }
   return bytes
 }
 
-export { contentBytes, gpuBytes, phoneInactiveFiles, type TierIndex }
+export {
+  contentBytes,
+  gpuBytes,
+  type PhoneFiles,
+  phoneInactiveFiles,
+  type TierIndex,
+}

@@ -68,7 +68,7 @@ test('MG6 epoch 5: a desktop-tier file is no part of the phone estimate', (): vo
   expect([...inactive]).toEqual([hash(3)])
   expect(phoneInactiveFiles(shard, undefined, new Map()).size).toBe(0)
   const every = phoneTerms(shard),
-    phone = phoneTerms(shard, 0, inactive)
+    phone = phoneTerms(shard, 0, { inactive })
   expect(every.content).toBe(9 * MB)
   expect(phone.content).toBe(6 * MB)
   expect(phone.geometry).toBe(6 * MB)

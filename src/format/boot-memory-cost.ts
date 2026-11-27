@@ -5,7 +5,7 @@ import { spawnViewSceneFiles } from './spawnView.ts'
 import { parseImageAsset } from './stillImage.ts'
 import { parseWorldScenes, worldScenesForTier } from './worldScenes.ts'
 
-import type { TierIndex } from './phone-files.ts'
+import type { PhoneFiles, TierIndex } from './phone-files.ts'
 import type { Shardfile } from './shardSchema.ts'
 import type { WorldScenesSection } from './worldScenes.ts'
 
@@ -43,6 +43,8 @@ interface PhoneTerms {
 }
 
 const NO_BYTES = 0
+/** No file left out, none left raw. */
+const EVERY_FILE: Readonly<PhoneFiles> = { inactive: new Set() }
 const TRIANGLE_CORNERS = 3
 const INDEX_COPIES = 2
 const FAR_SLAB_INDEX_SHARE = 0.75
@@ -163,7 +165,7 @@ function phoneTerms(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
   shard: Shardfile,
   mountedImages: number = NO_BYTES,
-  inactive: ReadonlySet<string> = new Set(),
+  files: Readonly<PhoneFiles> = EVERY_FILE,
 ): PhoneTerms {
   const cost = shard.runtime?.cost
   const commonsGpu = Object.values(shard.requires.commonsCosts).reduce(
@@ -174,14 +176,14 @@ function phoneTerms(
     content: contentBytes(
       shard,
       cost === undefined ? mountedImages : NO_BYTES,
-      inactive,
+      files,
     ),
     textures:
       cost === undefined
-        ? gpuBytes(shard, TEXTURE_KINDS, inactive) + commonsGpu + mountedImages
+        ? gpuBytes(shard, TEXTURE_KINDS, files) + commonsGpu + mountedImages
         : NO_BYTES,
     gl: cost === undefined ? NO_BYTES : Math.ceil(cost.glMB * MB),
-    geometry: gpuBytes(shard, GEOMETRY_KINDS, inactive),
+    geometry: gpuBytes(shard, GEOMETRY_KINDS, files),
     sims: Math.max(shard.budgets.sim.resident, shard.serverBudget.memory),
     runtimeReading:
       cost === undefined
@@ -250,6 +252,8 @@ function bootMemoryCosts(
   product: Readonly<{
     mountedImages?: number
     index?: TierIndex | undefined
+    /** SF25: the image files the cook leaves raw (`cookLeavesImageRaw`), charged decoded and as RGBA. */
+    rawImages?: ReadonlySet<string> | undefined
   }> = {},
 ): BootMemoryCosts {
   const rawScene = sections.get('world/scenes')
@@ -257,11 +261,10 @@ function bootMemoryCosts(
     rawScene === undefined
       ? undefined
       : worldScenesForTier(parseWorldScenes(rawScene), 'phone')
-  const terms = phoneTerms(
-    shard,
-    product.mountedImages ?? NO_BYTES,
-    phoneInactiveFiles(shard, product.index, sections),
-  )
+  const terms = phoneTerms(shard, product.mountedImages ?? NO_BYTES, {
+    inactive: phoneInactiveFiles(shard, product.index, sections),
+    raw: product.rawImages,
+  })
   const phone = bootPhoneBytes(terms)
   return {
     ...spawnMemoryCosts(shard, sections),

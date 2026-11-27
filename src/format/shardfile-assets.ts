@@ -30,14 +30,14 @@ import type { IssueCodeOf } from './issue-codes.ts';
 import { isNavigationData, navigationCost } from './navigationBytes.ts';
 
 type PerformancePolicy = 'refuse' | 'warn';
-interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex; readonly judged?: Judged; readonly armed?: boolean | ReadonlySet<string> | undefined }
+interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sections: ReadonlyMap<string, unknown>; readonly mountedImages?: number; readonly index?: TierIndex; readonly rawImages?: ReadonlySet<string>; readonly judged?: Judged; readonly armed?: boolean | ReadonlySet<string> | undefined }
 
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
-function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number; index?: TierIndex }>): PerformanceReport['memory'] {
+function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number; index?: TierIndex; rawImages?: ReadonlySet<string> }>): PerformanceReport['memory'] {
   const commons = nativeBytes + Object.values(source.requires.commonsCosts).reduce((sum, row) => sum + row.decoded + row.gpu, 0);
   const budget = { commons, boot: bootMemoryCosts(source, options.sections, options) };
-  // SF5g: a library image is charged as the KTX2 the cook makes from it (J525).
-  const cooked = cookedImageSource(source);
+  // SF5g: a library image is charged as the KTX2 the cook makes from it (J525); SF25: one it leaves raw is not.
+  const cooked = cookedImageSource(source, options.rawImages);
   return { near: nearbyContentCost(cooked, source.spawn.x, source.spawn.z, budget), worst: worstContentCost(cooked, budget), playingLimit: ARMED_LINES.playing, loadingLimit: ARMED_LINES.loading };
 }
 /** A performance issue's code and its metric words. */

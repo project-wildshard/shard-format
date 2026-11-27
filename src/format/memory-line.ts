@@ -104,6 +104,8 @@ type MemoryContext =
       sections: ReadonlyMap<string, unknown>
       mountedImages: number
       index?: TierIndex
+      /** SF25: the image files the cook leaves raw, charged decoded and as RGBA. */
+      rawImages?: ReadonlySet<string>
       judged?: 'upload' | 'stored'
       /** FP27b: the API catalogue's armed state for this shard; absent, the shard is not armed (FP27c). */
       armed?: boolean | ReadonlySet<string> | undefined
@@ -113,6 +115,7 @@ function memoryContext(context: MemoryContext): Readonly<{
   sections: ReadonlyMap<string, unknown>
   mountedImages: number
   index?: TierIndex
+  rawImages?: ReadonlySet<string>
   judged?: 'upload' | 'stored'
   armed?: boolean | ReadonlySet<string> | undefined
 }> {
@@ -123,6 +126,7 @@ function memoryContext(context: MemoryContext): Readonly<{
         sections: ReadonlyMap<string, unknown>
         mountedImages: number
         index?: TierIndex
+        rawImages?: ReadonlySet<string>
       }>)
 }
 
@@ -132,7 +136,8 @@ function offlineMemoryIssues(
   source: Shardfile,
   context: MemoryContext,
 ): ReturnType<typeof hardLineIssue>[] {
-  const { sections, mountedImages, index, armed } = memoryContext(context)
+  const { sections, mountedImages, index, rawImages, armed } =
+    memoryContext(context)
   const native = source.runtime?.cost
   const runtime =
     native === undefined ? EMPTY_BYTES : runtimeOfflineBytes(native)
@@ -140,10 +145,14 @@ function offlineMemoryIssues(
     (sum, row): number => sum + row.decoded + row.gpu,
     EMPTY_BYTES,
   )
-  // SF5g: a library image is charged as the KTX2 the cook makes from it (J525).
-  const cost = worstContentCost(cookedImageSource(source), {
+  // SF5g: a library image is charged as the KTX2 the cook makes from it (J525); SF25: one it leaves raw is not.
+  const cost = worstContentCost(cookedImageSource(source, rawImages), {
     commons: runtime + commons,
-    boot: bootMemoryCosts(source, sections, { mountedImages, index }),
+    boot: bootMemoryCosts(source, sections, {
+      mountedImages,
+      index,
+      rawImages,
+    }),
   })
   return memoryLineIssues(cost, armedZone(source.identity.slug, armed))
 }

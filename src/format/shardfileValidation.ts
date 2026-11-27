@@ -30,7 +30,9 @@ import { memoryContext, offlineMemoryIssues } from './memory-line.ts';
 import { armedZone } from './memory-armed.ts';
 import { runtimeTierIssues } from './runtime-tier.ts';
 import type { MemoryContext } from './memory-line.ts';
-import { mountedImageBytes, mountedImageOnPhone, NO_BYTES } from './boot-memory-cost.ts';
+import { mountedImageBytes, mountedImageOnPhone } from './boot-memory-cost.ts';
+import { cookedImageHead, cookEncodesMounts, cookLeavesImageRaw, mountedImagesCharge } from './cooked-mount-cost.ts';
+import type { MountedImage } from './cooked-mount-cost.ts';
 import { admittedVerdict, policyVerdict, recordVerdict } from './policy-verdict.ts';
 import type { Judged, PolicyVerdict } from './policy-verdict.ts';
 import { deprecationReport } from './deprecations.ts';
@@ -214,23 +216,26 @@ function checkServerAndKtx2(index: OutputIndex, read: ReadListed, assets: Readon
 
 type MountInventory = Readonly<{ formatVersion: OutputIndex['formatVersion']; files: readonly Readonly<Pick<OutputFile, 'hash' | 'path' | 'compressed'>>[] }>;
 
-/** C0 (J137): verify every cook mount, even a desktop image the phone never requests. */
-function checkedMountImageBytes(index: MountInventory, mount: Readonly<CookMount>, options: Readonly<{ read: ReadListed; onPhone: boolean }>): number {
-  if (mountSharesBlob(mount, index.files)) { return NO_BYTES; }
+/** C0 (J137): verify every cook mount, even a desktop image the phone never requests. SF25: an image mount's raw charge
+ *  and the size the cook encodes it at; none for a mount whose bytes are a product file, charged as that file. */
+function checkedMountImage(index: MountInventory, mount: Readonly<CookMount>, options: Readonly<{ read: ReadListed; onPhone: boolean }>): MountedImage | undefined {
+  if (mountSharesBlob(mount, index.files)) { return undefined; }
   if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
   const bytes = checkDiscoveryMount(index.formatVersion, mount.path, options.read(mount));
-  return options.onPhone ? mountedImageBytes(mount.path, bytes) : NO_BYTES;
+  return { url: mount.url, ...(mount.keepImage === true ? { keepImage: true } : {}), onPhone: options.onPhone, raw: mountedImageBytes(mount.path, bytes), head: cookedImageHead(bytes) };
 }
 
+/** SF25 (J525): the mounted images' charge, each the cook encodes as its phone files (`mountedImagesCharge`). */
 function checkedMountImages(index: MountInventory, read: ReadListed, cook: CookData | undefined): number {
   const mounts = cook?.mounts ?? [];
   const urls = new Set(mounts.map((mount): string => mount.url));
   const phoneFence = isPreparedCook(cook) && cook?.fence !== undefined ? new Set(cook.fence) : undefined;
-  let mountedImages = NO_BYTES;
+  const images: MountedImage[] = [];
   for (const mount of mounts) {
-    mountedImages += checkedMountImageBytes(index, mount, { read, onPhone: mountedImageOnPhone(mount, urls, phoneFence) });
+    const image = checkedMountImage(index, mount, { read, onPhone: mountedImageOnPhone(mount, urls, phoneFence) });
+    if (image !== undefined) { images.push(image); }
   }
-  return mountedImages;
+  return mountedImagesCharge(images, cookEncodesMounts(mounts));
 }
 
 /** The cook file and the mounted engine images measured alongside its own images. */
@@ -262,9 +267,12 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
   const payloads = readSections(index, read), warnings = coded('script-side', (): string[] => assertScriptSides(payloads, index, { ...files, verify }));
   const scripts = coded('script-admission', (): ScriptAdmissionRows => scriptAdmissionRows(payloads));
   const contracts = coded('script-admission', (): ReturnType<typeof decisionModuleContracts> => decisionModuleContracts(scripts, index.files));
+  // SF25: the image files the cook leaves raw (off the 4x4 grid), which the estimate charges decoded and as RGBA.
+  const rawImages = new Set<string>();
   for (const entry of index.files) {
     const bytes = read({ path: entry.path, hash: entry.hash, bytes: entry.compressed });
     coded('blob-invalid', (): void => { inspectBlob(entry, bytes, ports, entry.kind === 'wasm' ? contracts.get(entry.hash) ?? { abi: 0 } : undefined); });
+    if (entry.kind === 'image' && cookLeavesImageRaw(bytes)) { rawImages.add(entry.hash); }
     keep(entry, bytes, index.requires.commons.includes(entry.hash));
   }
   checkServerAndKtx2(index, read, assets);
@@ -282,7 +290,7 @@ export function validateShardfileFolder(files: ShardfileFiles, ports: ShardfileV
   }
   for (const path of files.paths()) if (!listed.has(path)) throw issueError('unlisted-file', `Unlisted output file: ${path}`);
   coded('carried-ktx2', (): void => { refuseCarriedKtx2(index, files.paths(), ports.judged); });
-  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index, judged: ports.judged ?? 'upload', armed: ports.armed });
+  const shard = admitShardfileFolder(coded('shard-schema', (): unknown => assembleOutputShardfile(index, payloads)), assets, ports.hash, 'warn', scripts, { sections: payloads, mountedImages, index, rawImages, judged: ports.judged ?? 'upload', armed: ports.armed });
   checkWorldTargets(shard, payloads.get('world/targets'));
   if (!declaredSourceMatches(shard, index, ports.hash)) throw issueError('source-hash', 'Output sections differ from the declared source hash');
   return { index, shard, assets, sections: payloads, scripts, ...deprecationReport({ index, sections: payloads, cook }, [...warnings, ...phoneCopyWarnings(cook?.mounts ?? [])]), policy: admittedVerdict(shard), audio: shardfileRecordings({ cook, read: files.read, shard, assets }) };

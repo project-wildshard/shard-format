@@ -5,6 +5,7 @@ import type { Shardfile } from './shardSchema.ts';
 import type { MemoryAdmission } from './memoryAdmission.ts';
 import { parseKtx2, ktx2DeviceGpu, type Ktx2DeviceCosts } from './ktx2Cost.ts';
 import { cookedImageSaving } from './cooked-image-cost.ts';
+import { cookLeavesImageRaw } from './cooked-mount-cost.ts';
 
 /** Apply the existing total-memory policy to declared or measured costs. */
 export function acceptsShardfileCost(memory: MemoryAdmission | undefined, source: Shardfile, stage: 'declared' | 'actual', cost: ReturnType<typeof worstContentCost>): boolean {
@@ -31,7 +32,9 @@ export function textureLibrarySource(source: Shardfile, assets: ReadonlyMap<stri
     seen.add(ref);
     const file = files.get(ref); if (file === undefined) continue;
     pending.push(...file.dependencies);
-    if (file.kind === 'image') {
+    // SF25: an image the cook leaves raw (off the 4x4 grid) keeps its decoded and RGBA charge.
+    const image = file.kind === 'image' ? assets.get(ref) : undefined;
+    if (file.kind === 'image' && (image === undefined || !cookLeavesImageRaw(image))) {
       saving += cookedImageSaving(file, transcodes);
     }
     if (file.kind !== 'ktx2') continue;

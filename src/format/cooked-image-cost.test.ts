@@ -96,7 +96,9 @@ for (const [width, height] of [
         Math.ceil(Math.max(1, height >> level) / 6) *
         16
     expect(cookedPhoneGpu(image.gpu)).toBe(astc6)
-    expect(contentBytes(asImage, 0, new Set())).toBe(1)
-    expect(gpuBytes(asImage, new Set(['image']), new Set())).toBe(astc6)
+    expect(contentBytes(asImage, 0, { inactive: new Set() })).toBe(1)
+    expect(gpuBytes(asImage, new Set(['image']), { inactive: new Set() })).toBe(
+      astc6,
+    )
   })
 }

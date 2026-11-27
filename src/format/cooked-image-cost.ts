@@ -37,9 +37,8 @@ function imageSize(rgba: number): readonly [number, number] {
   return [square, square]
 }
 
-/** A full mip chain's bytes, each level in the chain's blocks (a block of one 4-byte texel for RGBA). */
-function mipChainBytes(rgba: number, chain: Chain): number {
-  const [width, height] = imageSize(rgba)
+/** A full mip chain's bytes from `width` by `height` down to 1x1, each level in the chain's blocks. */
+function chainBytes(width: number, height: number, chain: Chain): number {
   let total = NO_BYTES
   let levelWidth = width
   let levelHeight = height
@@ -54,6 +53,17 @@ function mipChainBytes(rgba: number, chain: Chain): number {
     levelWidth = Math.max(TEXEL, Math.floor(levelWidth / WIDE))
     levelHeight = Math.max(TEXEL, Math.floor(levelHeight / WIDE))
   }
+}
+
+/** A full mip chain's bytes, each level in the chain's blocks (a block of one 4-byte texel for RGBA). */
+function mipChainBytes(rgba: number, chain: Chain): number {
+  const [width, height] = imageSize(rgba)
+  return chainBytes(width, height, chain)
+}
+
+/** SF25: the GPU bytes of a phone file the cook encodes ASTC 6x6 at `width` by `height`, with its mip chain. */
+function phoneChainBytes(width: number, height: number): number {
+  return chainBytes(width, height, PHONE_CHAIN)
 }
 
 /** What a library image no longer charges once charged as the KTX2 the cook makes from it (`parseKtx2`): its decoded
@@ -109,14 +119,18 @@ function libraryImages(
 }
 
 /** The shard with every library image charged as the KTX2 the cook makes from it (`cookedImageSaving`, no transcode):
- *  what the offline memory lines and the validation receipt judge, as admission's `textureLibrarySource` does. */
+ *  what the offline memory lines and the validation receipt judge, as admission's `textureLibrarySource` does. SF25: an
+ *  image the cook leaves raw (`rawImages`, off the 4x4 grid) keeps its decoded and RGBA charge. */
 function cookedImageSource(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- format's shard row, only read
   source: Shardfile,
+  rawImages: ReadonlySet<string> = new Set(),
 ): Shardfile {
   let saving = NO_BYTES
   for (const file of libraryImages(source)) {
-    saving += cookedImageSaving(file, false)
+    if (!rawImages.has(file.hash)) {
+      saving += cookedImageSaving(file, false)
+    }
   }
   if (saving === NO_BYTES) {
     return source
@@ -141,4 +155,4 @@ function cookedPhoneGpu(rgba: number): number {
   return mipChainBytes(rgba, PHONE_CHAIN)
 }
 
-export { cookedImageSaving, cookedImageSource, cookedPhoneGpu }
+export { cookedImageSaving, cookedImageSource, cookedPhoneGpu, phoneChainBytes }
