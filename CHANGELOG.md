@@ -4,6 +4,11 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.82.4 (2026-11-27)
+
+- An image charges what the KTX2 the cook makes from it charges, so cooked shards fit.
+- Phone memory charges an image as the cook's ASTC 6x6 phone file, not as source RGBA.
+
 ## v0.82.3 (2026-11-27)
 
 - A shard with a shardVersion may name the engine's physics binary without mounting it.
