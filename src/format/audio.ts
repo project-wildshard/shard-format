@@ -9,7 +9,8 @@ import { AudioRoutingSchema, AudioVoiceBindingsSchema } from './audioRouting.ts'
 import { AudioLoopEmitterSchema, AudioPlaybackSchema, AudioSurfaceSchema, AudioLoopGraphSchema, AudioObservationSystemSchema, AudioPcmProgramSchema, AudioMusicSchema, AudioSamplesSchema, AudioZonesSchema, AudioPhraseProgramSchema, AudioPhraseScheduleSchema } from './audioProfiles.ts';
 
 const id = v.pipe(v.string(), v.minLength(1), v.maxLength(128));
-const recordingPath = v.pipe(v.string(), v.maxLength(256), v.regex(/^\/assets\/(?:music|sfx)\/(?:[a-zA-Z0-9][a-zA-Z0-9._-]*\/)+[a-zA-Z0-9][a-zA-Z0-9._-]*\.(?:m4a|wav)$/u));
+// SF4: a zone's recordings sit under its slug (`/assets/<slug>/music|sfx/…`) beside the engine-wide folders
+const recordingPath = v.pipe(v.string(), v.maxLength(256), v.regex(/^\/assets\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)?(?:music|sfx)\/(?:[a-zA-Z0-9][a-zA-Z0-9._-]*\/)+[a-zA-Z0-9][a-zA-Z0-9._-]*\.(?:m4a|wav)$/u));
 const recordingRef = v.pipe(v.string(), v.regex(/^(?:commons:)?[a-f0-9]{64}$/u));
 const recordings = v.pipe(v.record(recordingPath, recordingRef), v.check(rows => Object.keys(rows).length <= 1024, 'bounded audio recording bindings'));
 const finite = v.pipe(v.number(), v.finite());

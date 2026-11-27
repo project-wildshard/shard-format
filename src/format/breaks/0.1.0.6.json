@@ -236,6 +236,10 @@
     {
       "path": "./audioProfiles#AudioMusicSchema.source.dir",
       "noFileChange": "SF4 widens the score source dir: it also admits a zone's own /assets/<slug>/music/<key>/ beside the engine-wide /assets/music/<key>/, so every file valid before stays valid and no file changes; the engine reads both folders (plan/repacks zoneAssets.ts)"
+    },
+    {
+      "path": "./audio#AudioDataSchema.recordings{k}",
+      "noFileChange": "SF4 widens the audio recording path: it also admits a zone's own /assets/<slug>/music|sfx/... beside the engine-wide /assets/music|sfx/..., so every file valid before stays valid and a re-packed zone's recordings bind."
     }
   ]
 }
