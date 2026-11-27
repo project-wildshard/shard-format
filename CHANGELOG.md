@@ -4,6 +4,13 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.82.6 (2026-11-27)
+
+- The phone memory estimate charges each image the cook mounts as the phone KTX2 the cook makes, not as a decoded image.
+- Nine Dragon's images-only upload falls from a 1.84 GB loading peak to 1.19 GB, under the 1.5 GB line.
+- A phone copy of an image the cook encodes charges nothing: the phone reads the original's cooked file.
+- Images the cook leaves as they are (kept images, sizes not a multiple of 4) charge their decoded size.
+
 ## v0.82.5 (2026-11-27)
 
 - The phone memory estimate charges each image the cook mounts as the phone KTX2 the cook makes, not as a decoded image.
