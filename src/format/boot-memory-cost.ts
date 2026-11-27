@@ -208,9 +208,13 @@ function mountedImageBytes(path: string, bytes: Readonly<Uint8Array>): number {
 function mountedImageOnPhone(
   mount: Readonly<{ url: string; hash: string; keepImage?: boolean }>,
   urls: ReadonlySet<string>,
-  phoneFence: ReadonlySet<string> | undefined,
+  phoneFence?: ReadonlySet<string>,
 ): boolean {
-  if (phoneFence === undefined || phoneFence.has(mount.hash) || mount.keepImage === true) {
+  if (
+    phoneFence === undefined ||
+    phoneFence.has(mount.hash) ||
+    mount.keepImage === true
+  ) {
     return true
   }
   const phone = mount.url.replace(/\.(?:png|jpg|webp)$/u, '.phone.webp')

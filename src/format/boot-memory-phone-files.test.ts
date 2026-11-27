@@ -83,14 +83,24 @@ test('MG6 epoch 5: a shard with no runtime counts its mounted images, a runtime 
   expect(home.runtimeReading).toBe(500 * MB)
 })
 
-test('counts the mounted phone image, any directly read desktop image and an unpaired fallback', (): void => {
-  const desktop = {url: '/assets/z/map.jpg', hash: hash(4)}
-  const phone = {url: '/assets/z/map.phone.webp', hash: hash(5)}
-  const fallback = {url: '/assets/z/other.png', hash: hash(6)}
-  const mounts = [desktop, phone, fallback], urls = new Set(mounts.map(mount => mount.url))
-  const phoneFence = new Set([phone.hash])
-  expect(mounts.filter(mount => mountedImageOnPhone(mount, urls, phoneFence))).toEqual([phone, fallback])
-  expect(mountedImageOnPhone(desktop, urls, new Set([desktop.hash]))).toBe(true)
-  expect(mountedImageOnPhone(desktop, urls, undefined)).toBe(true)
-  expect(mountedImageOnPhone({...desktop, keepImage: true}, urls, phoneFence)).toBe(true)
+const desktop = { url: '/assets/z/map.jpg', hash: hash(4) }
+const phone = { url: '/assets/z/map.phone.webp', hash: hash(5) }
+const fallback = { url: '/assets/z/other.png', hash: hash(6) }
+const mountUrls = new Set([desktop.url, phone.url, fallback.url])
+const phoneFence = new Set([phone.hash])
+
+test('charges a mounted phone image and an unpaired fallback', (): void => {
+  expect(mountedImageOnPhone(desktop, mountUrls, phoneFence)).toBe(false)
+  expect(mountedImageOnPhone(phone, mountUrls, phoneFence)).toBe(true)
+  expect(mountedImageOnPhone(fallback, mountUrls, phoneFence)).toBe(true)
+})
+
+test('keeps charging direct reads, unprepared mounts and images held as authored', (): void => {
+  expect(mountedImageOnPhone(desktop, mountUrls, new Set([desktop.hash]))).toBe(
+    true,
+  )
+  expect(mountedImageOnPhone(desktop, mountUrls)).toBe(true)
+  expect(
+    mountedImageOnPhone({ ...desktop, keepImage: true }, mountUrls, phoneFence),
+  ).toBe(true)
 })

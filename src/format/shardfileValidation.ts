@@ -1,7 +1,8 @@
 import { assertShardMountUrls, assertStandaloneArt, readDiscoveryArt } from './standalone-art.ts';
 import { cookMountPath, readCookData } from './cook-data.ts';
+import type { CookData, CookMount } from './cook-data.ts';
 import { checkDiscoveryMount, isDiscoveryMount } from './manifest-deprecations.ts';
-import { requireCookPreparation } from './cook-preparation.ts';
+import { isPreparedCook, requireCookPreparation } from './cook-preparation.ts';
 import { declaredSourceMatches, parseIncomingIndex, validateIncomingSection } from './incoming.ts';
 import { assembleOutputShardfile, type OutputFile, type OutputIndex } from './outputIndex.ts';
 import { decisionModuleContracts, scriptAdmissionRows, type ScriptAdmissionRows, type ScriptContract } from './scriptContract.ts';
@@ -210,25 +211,34 @@ function checkServerAndKtx2(index: OutputIndex, read: ReadListed, assets: Readon
   });
 }
 
-/** C0 (J137): the cook file; a mount passes the same hash and size checks as any listed file (`cook-invalid`). */
+type MountInventory = Readonly<{ formatVersion: OutputIndex['formatVersion']; files: readonly Readonly<Pick<OutputFile, 'hash' | 'path' | 'compressed'>>[] }>;
+
+/** C0 (J137): verify every cook mount, even a desktop image the phone never requests. */
+function checkedMountImageBytes(index: MountInventory, mount: Readonly<CookMount>, options: Readonly<{ read: ReadListed; onPhone: boolean }>): number {
+  if (mountSharesBlob(mount, index.files)) { return NO_BYTES; }
+  if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
+  const bytes = checkDiscoveryMount(index.formatVersion, mount.path, options.read(mount));
+  return options.onPhone ? mountedImageBytes(mount.path, bytes) : NO_BYTES;
+}
+
+function checkedMountImages(index: MountInventory, read: ReadListed, cook: CookData | undefined): number {
+  const mounts = cook?.mounts ?? [];
+  const urls = new Set(mounts.map((mount): string => mount.url));
+  const phoneFence = isPreparedCook(cook) && cook?.fence !== undefined ? new Set(cook.fence) : undefined;
+  let mountedImages = NO_BYTES;
+  for (const mount of mounts) {
+    mountedImages += checkedMountImageBytes(index, mount, { read, onPhone: mountedImageOnPhone(mount, urls, phoneFence) });
+  }
+  return mountedImages;
+}
+
+/** The cook file and the mounted engine images measured alongside its own images. */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- valibot's output type, only read
 function readCook(index: OutputIndex, read: ReadListed, ports: Pick<ShardfileValidationPorts, 'hash' | 'preparation'>): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } {
   return coded('cook-invalid', (): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } => {
     const cook = index.cook === undefined ? undefined : readCookData(readCanonicalJson(read(index.cook)));
     if (ports.preparation !== 'migrated') { coded('preparation-invalid', (): void => { requireCookPreparation(index, cook, ports.hash); }); }
-    const mounts = cook?.mounts ?? [];
-    const urls = new Set(mounts.map(mount => mount.url));
-    const phoneFence = cook === undefined || cook.version === 1 ? undefined : new Set(cook.fence);
-    let mountedImages = NO_BYTES;
-    for (const mount of mounts) {
-      if (!mountSharesBlob(mount, index.files)) {
-        if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
-        // MG6 epoch 3: the engine images a shard mounts decode at boot like its own (Far Reach's sky and textures).
-        const bytes = checkDiscoveryMount(index.formatVersion, mount.path, read(mount));
-        if (mountedImageOnPhone(mount, urls, phoneFence)) mountedImages += mountedImageBytes(mount.path, bytes);
-      }
-    }
-    return { cook, mountedImages };
+    return { cook, mountedImages: checkedMountImages(index, read, cook) };
   });
 }
 

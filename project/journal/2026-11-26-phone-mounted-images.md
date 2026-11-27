@@ -10,3 +10,6 @@ estimate at 1,491,642,573 bytes against the existing 1.5 GB line.
 Every mount still gets its hash and format checks. An unprepared
 product, a mount held as an image, and any direct desktop read in the
 phone fence retain their existing charge.
+
+The format ratchet passes. Four focused tests cover tier selection,
+mount charges, direct reads and an unpaired fallback.
