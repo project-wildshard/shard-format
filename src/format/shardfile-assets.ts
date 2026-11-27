@@ -19,6 +19,7 @@ import type { Judged } from './policy-verdict.ts';
 import { staleRuntimeIssues } from './memory-epoch.ts';
 import { MEMORY_HARD_BYTES, memoryLineIssues, runtimeOfflineBytes } from './memory-line.ts';
 import { bootMemoryCosts } from './boot-memory-cost.ts';
+import { cookedImageSource } from './cooked-image-cost.ts';
 import type { TierIndex } from './phone-files.ts';
 import { VIEW_DRAWS, viewDraws } from './view-draws.ts';
 import { DEFAULT_GRAPH_BUDGET } from "./materialGraph.ts";
@@ -35,7 +36,9 @@ interface PerformanceOptions { readonly policy: PerformancePolicy; readonly sect
 function reportMemory(source: Shardfile, nativeBytes: number, options: Readonly<{ sections: ReadonlyMap<string, unknown>; mountedImages?: number; index?: TierIndex }>): PerformanceReport['memory'] {
   const commons = nativeBytes + Object.values(source.requires.commonsCosts).reduce((sum, row) => sum + row.decoded + row.gpu, 0);
   const budget = { commons, boot: bootMemoryCosts(source, options.sections, options) };
-  return { near: nearbyContentCost(source, source.spawn.x, source.spawn.z, budget), worst: worstContentCost(source, budget), playingLimit: ARMED_LINES.playing, loadingLimit: ARMED_LINES.loading };
+  // SF5g: a library image is charged as the KTX2 the cook makes from it (J525).
+  const cooked = cookedImageSource(source);
+  return { near: nearbyContentCost(cooked, source.spawn.x, source.spawn.z, budget), worst: worstContentCost(cooked, budget), playingLimit: ARMED_LINES.playing, loadingLimit: ARMED_LINES.loading };
 }
 /** A performance issue's code and its metric words. */
 type Named = readonly [code: IssueCodeOf<'performance'>, metric: string];

@@ -2,6 +2,7 @@ import { parse } from 'valibot'
 
 import { bootMemoryCosts } from './boot-memory-cost.ts'
 import { worstContentCost } from './budget.ts'
+import { cookedImageSource } from './cooked-image-cost.ts'
 import {
   ARMED_LINES,
   armedZone,
@@ -139,7 +140,8 @@ function offlineMemoryIssues(
     (sum, row): number => sum + row.decoded + row.gpu,
     EMPTY_BYTES,
   )
-  const cost = worstContentCost(source, {
+  // SF5g: a library image is charged as the KTX2 the cook makes from it (J525).
+  const cost = worstContentCost(cookedImageSource(source), {
     commons: runtime + commons,
     boot: bootMemoryCosts(source, sections, { mountedImages, index }),
   })

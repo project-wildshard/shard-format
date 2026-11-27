@@ -1,4 +1,5 @@
 // MEMORY-GATES MG6 epoch 5 (mini-em11b): the files a phone never fetches, for the offline estimate's terms.
+import { cookedPhoneGpu } from './cooked-image-cost.ts'
 import { tierLibrarySteps } from './tierSelection.ts'
 
 import type { Shardfile } from './shardSchema.ts'
@@ -51,8 +52,12 @@ function contentBytes(
   let bytes = mountedImages
   for (const file of shard.files) {
     if (!inactive.has(file.hash)) {
+      // SF5g (J525): the cook encodes an image to the KTX2 a phone uploads, so the phone never decodes it.
       bytes +=
-        file.compressed + (file.kind === 'audio' ? NO_BYTES : file.decoded)
+        file.compressed +
+        (file.kind === 'audio' || file.kind === 'image'
+          ? NO_BYTES
+          : file.decoded)
     }
   }
   for (const wire of Object.values(shard.requires.commonsWire)) {
@@ -74,7 +79,8 @@ function gpuBytes(
   let bytes = NO_BYTES
   for (const file of shard.files) {
     if (kinds.has(file.kind) && !inactive.has(file.hash)) {
-      bytes += file.gpu
+      // SF5g (J525): an image uploads as the cook's phone ASTC 6x6 file, not as RGBA.
+      bytes += file.kind === 'image' ? cookedPhoneGpu(file.gpu) : file.gpu
     }
   }
   return bytes
