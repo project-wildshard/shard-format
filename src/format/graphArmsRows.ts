@@ -8,6 +8,7 @@ const names: v.GenericSchema<string[], string[]> & { readonly pipe: readonly [un
   v.check(rows => new Set(rows).size === rows.length));
 const count = v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(4096));
 const bounded = <T extends v.GenericSchema>(schema: T, max: number) => v.pipe(v.array(schema), v.maxLength(max));
+const imageExtension = v.exactOptional(v.picklist(['webp', 'png']));
 /** G475 held arms drawn in graph looks: a skinned rig played by the shared arm player (its blade row is the hit sweep's
  * and the swing trail's), its meshes dressed from rows, the trail sampled along the blade during each swing, and the
  * per-frame look writes as named sources. Client-only presentation; ids only, no callbacks. */
@@ -23,8 +24,8 @@ export const GraphArmsSchema: v.StrictObjectSchema<{ readonly rig: v.GenericSche
   /** every look's params, by look id; a frame source with no look writes each look that declares its param */
   params: v.record(name, bounded(name, 128)),
   meshes: bounded(v.strictObject({ name, channels: v.record(name, name), look: name, maps: v.exactOptional(name), hull: v.boolean(), doubleSide: v.boolean() }), 64),
-  /** per-mesh map pairs: `<base><maps>-<kind>.webp` (or its KTX2 stand-in) lent to the mesh look's params */
-  maps: v.strictObject({ base: name, names, kinds: v.strictObject({ maps: name, nrm: name }), anisotropy: finite }),
+  /** Per-mesh map pairs at `<base><name>-<kind>.<imageExtension>`, WebP for existing rows. */
+  maps: v.strictObject({ base: name, names, kinds: v.strictObject({ maps: name, nrm: name }), anisotropy: finite, imageExtension }),
   /** an R8 repeating weave and per-tier lossless decal images, all named product files */
   weave: v.strictObject({ file: name, size: count, param: name }),
   decal: v.strictObject({ files: v.strictObject({ phone: name, desktop: name }), param: name }),
@@ -89,6 +90,7 @@ interface GraphArmsRowInputFields {
             nrm: string;
         };
         anisotropy: number;
+        imageExtension?: 'webp' | 'png';
     };
     weave: {
         file: string;
@@ -168,6 +170,7 @@ interface GraphArmsRowFields {
             nrm: string;
         };
         anisotropy: number;
+        imageExtension?: 'webp' | 'png';
     };
     weave: {
         file: string;
