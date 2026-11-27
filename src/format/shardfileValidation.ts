@@ -28,7 +28,7 @@ import { memoryContext, offlineMemoryIssues } from './memory-line.ts';
 import { armedZone } from './memory-armed.ts';
 import { runtimeTierIssues } from './runtime-tier.ts';
 import type { MemoryContext } from './memory-line.ts';
-import { mountedImageBytes, NO_BYTES } from './boot-memory-cost.ts';
+import { mountedImageBytes, mountedImageOnPhone, NO_BYTES } from './boot-memory-cost.ts';
 import { admittedVerdict, policyVerdict, recordVerdict } from './policy-verdict.ts';
 import type { Judged, PolicyVerdict } from './policy-verdict.ts';
 import { deprecationReport } from './deprecations.ts';
@@ -216,12 +216,16 @@ function readCook(index: OutputIndex, read: ReadListed, ports: Pick<ShardfileVal
   return coded('cook-invalid', (): { cook: ReturnType<typeof readCookData> | undefined; mountedImages: number } => {
     const cook = index.cook === undefined ? undefined : readCookData(readCanonicalJson(read(index.cook)));
     if (ports.preparation !== 'migrated') { coded('preparation-invalid', (): void => { requireCookPreparation(index, cook, ports.hash); }); }
+    const mounts = cook?.mounts ?? [];
+    const urls = new Set(mounts.map(mount => mount.url));
+    const phoneFence = cook === undefined || cook.version === 1 ? undefined : new Set(cook.fence);
     let mountedImages = NO_BYTES;
-    for (const mount of cook?.mounts ?? []) {
+    for (const mount of mounts) {
       if (!mountSharesBlob(mount, index.files)) {
         if (mount.path !== cookMountPath(mount.url)) { throw new Error(`Mount path differs from its URL: ${mount.url}`); }
         // MG6 epoch 3: the engine images a shard mounts decode at boot like its own (Far Reach's sky and textures).
-        mountedImages += mountedImageBytes(mount.path, checkDiscoveryMount(index.formatVersion, mount.path, read(mount)));
+        const bytes = checkDiscoveryMount(index.formatVersion, mount.path, read(mount));
+        if (mountedImageOnPhone(mount, urls, phoneFence)) mountedImages += mountedImageBytes(mount.path, bytes);
       }
     }
     return { cook, mountedImages };

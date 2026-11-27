@@ -2,7 +2,7 @@
 // verdict, and leaves a runtime home's mounted engine images to its paired reading.
 import { expect, test } from 'vitest'
 
-import { phoneTerms } from './boot-memory-cost.ts'
+import { mountedImageOnPhone, phoneTerms } from './boot-memory-cost.ts'
 import { phoneInactiveFiles } from './phone-files.ts'
 
 import type { Shardfile } from './shardSchema.ts'
@@ -81,4 +81,16 @@ test('MG6 epoch 5: a shard with no runtime counts its mounted images, a runtime 
   const home = phoneTerms(product({ webContentMB: 400, glMB: 100 }), mounted)
   expect(home.content).toBe(9 * MB)
   expect(home.runtimeReading).toBe(500 * MB)
+})
+
+test('counts the mounted phone image, any directly read desktop image and an unpaired fallback', (): void => {
+  const desktop = {url: '/assets/z/map.jpg', hash: hash(4)}
+  const phone = {url: '/assets/z/map.phone.webp', hash: hash(5)}
+  const fallback = {url: '/assets/z/other.png', hash: hash(6)}
+  const mounts = [desktop, phone, fallback], urls = new Set(mounts.map(mount => mount.url))
+  const phoneFence = new Set([phone.hash])
+  expect(mounts.filter(mount => mountedImageOnPhone(mount, urls, phoneFence))).toEqual([phone, fallback])
+  expect(mountedImageOnPhone(desktop, urls, new Set([desktop.hash]))).toBe(true)
+  expect(mountedImageOnPhone(desktop, urls, undefined)).toBe(true)
+  expect(mountedImageOnPhone({...desktop, keepImage: true}, urls, phoneFence)).toBe(true)
 })

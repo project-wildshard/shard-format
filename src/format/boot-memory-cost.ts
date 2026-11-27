@@ -203,6 +203,20 @@ function mountedImageBytes(path: string, bytes: Readonly<Uint8Array>): number {
   }
 }
 
+/** The phone loader substitutes a known `.phone.webp` mount for its desktop
+ * image. A direct read in the prepared phone fence still counts. */
+function mountedImageOnPhone(
+  mount: Readonly<{ url: string; hash: string; keepImage?: boolean }>,
+  urls: ReadonlySet<string>,
+  phoneFence: ReadonlySet<string> | undefined,
+): boolean {
+  if (phoneFence === undefined || phoneFence.has(mount.hash) || mount.keepImage === true) {
+    return true
+  }
+  const phone = mount.url.replace(/\.(?:png|jpg|webp)$/u, '.phone.webp')
+  return phone === mount.url || !urls.has(phone)
+}
+
 /** MG6 epoch 4: the phone's playing (settled) and loading-peak estimates of a product's terms. */
 function bootPhoneBytes(
   terms: Readonly<PhoneTerms>,
@@ -261,6 +275,7 @@ export {
   bootMemoryCosts,
   bootPhoneBytes,
   mountedImageBytes,
+  mountedImageOnPhone,
   NO_BYTES,
   type PhoneTerms,
   phoneTerms,
