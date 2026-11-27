@@ -240,6 +240,14 @@
     {
       "path": "./audio#AudioDataSchema.recordings{k}",
       "noFileChange": "SF4 widens the audio recording path: it also admits a zone's own /assets/<slug>/music|sfx/... beside the engine-wide /assets/music|sfx/..., so every file valid before stays valid and a re-packed zone's recordings bind."
+    },
+    {
+      "path": "./engineMusic#ENGINE_MUSIC_SLOTS",
+      "noFileChange": "Meta SF23 retires the engine piano style's island and pine slots: every zone that played them from the engine now carries its own copy as a slot set named for its slug (Driftwood r14, Pine Hollow r19 and Mossgate r27 pinned, Mirror Salt 0.0.9 on staging from 1cfb54e), so no live original names them; the engine removes the four recordings with a guard test that refuses a pinned zone naming an engine slot but the title"
+    },
+    {
+      "path": "./engineMusic#ENGINE_SLOTS_MESSAGE",
+      "noFileChange": "Meta SF23: the refusal names the title as the one engine slot and says to carry any other as the zone's own set"
     }
   ]
 }
