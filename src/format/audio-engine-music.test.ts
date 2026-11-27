@@ -51,13 +51,13 @@ const refusal = (input: Readonly<Record<string, unknown>>): string => {
 }
 
 // SF23: the engine's island and pine slots retired; a zone that plays them carries its own set, named for its slug.
-test("Driftwood plays the engine title and its own island", (): void => {
+test('Driftwood plays the engine title and its own island', (): void => {
   expect(slotsOf(score({ sets: { island: 'driftwood-isle' } }))).toEqual([
     'title',
   ])
 })
 
-test("Pine plays its own pine, night and boss sets; none is engine music", (): void => {
+test('Pine plays its own pine, night and boss sets; none is engine music', (): void => {
   const pine = score({
     base: 'pine',
     slots: ['pine', 'night', 'boss'],
