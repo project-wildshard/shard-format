@@ -4,6 +4,10 @@ Every release has a section here before it is tagged: one to five bullets in pla
 Jake, never commit subjects. Add the next version's section at the top, commit and push it, then release as
 docs/dev.md says.
 
+## v0.81.0 (2026-11-26)
+
+- Shardfiles and cook metadata can declare the author's shard version separately from the format version.
+
 ## v0.80.0 (2026-11-25)
 
 - Format 0.1 and 0.1.0.0 shardfiles are no longer read; the floor is 0.1.0.1, and the N-1 test is gone.
