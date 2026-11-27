@@ -14,7 +14,7 @@ describe('engine pins in the corpus (FE13)', (): void => {
       api: 'https://api.wildshard.io',
       shards: [
         { slug: 'dunes', revision: 4, hash: LISTED, bytes: 10 },
-        { slug: 'pine-hollow', revision: 3, hash: PINNED_ONLY, bytes: 20 },
+        { slug: 'pine-hollow', uploadNumber: 3, hash: PINNED_ONLY, bytes: 20 },
       ],
     })
     const get: typeof fetch = async (): Promise<Response> =>

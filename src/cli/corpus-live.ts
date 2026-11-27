@@ -22,6 +22,7 @@ const CatalogueSchema = object({ shards: array(HeadSchema) })
 const SignedSchema = object({ body: string() })
 const ReleaseShard = object({
   slug: string(),
+  uploadNumber: optional(number()),
   revision: optional(number()),
   hash: optional(string()),
 })
@@ -155,11 +156,15 @@ async function channelHashes(
     (
       shard: Readonly<{
         slug: string
+        uploadNumber?: number | undefined
         revision?: number | undefined
         hash?: string | undefined
       }>,
     ): string | undefined =>
-      shard.hash ?? byRevision.get(`${shard.slug}@${String(shard.revision)}`),
+      shard.hash ??
+      byRevision.get(
+        `${shard.slug}@${String(shard.uploadNumber ?? shard.revision)}`,
+      ),
   )
   const cells = placed.cells.map(
     (cell: Readonly<{ hash?: string | undefined }>): string | undefined =>

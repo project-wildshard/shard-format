@@ -1,6 +1,16 @@
 import { readFile } from 'node:fs/promises'
 
-import { array, number, object, parse, pipe, regex, string } from 'valibot'
+import {
+  array,
+  number,
+  object,
+  parse,
+  pipe,
+  regex,
+  string,
+  transform,
+  union,
+} from 'valibot'
 
 import type { StoredRecord } from './corpus.ts'
 
@@ -11,12 +21,22 @@ import type { StoredRecord } from './corpus.ts'
 // the run, judged by hash like any other.
 
 const HASH = pipe(string(), regex(/^[a-f0-9]{64}$/u))
-const PinSchema = object({
+const pinFields = {
   slug: string(),
-  revision: number(),
   hash: HASH,
   bytes: number(),
-})
+}
+const CurrentPin = object({ ...pinFields, uploadNumber: number() })
+const PinSchema = union([
+  pipe(
+    CurrentPin,
+    transform(({ uploadNumber, ...pin }): Pin => ({
+      ...pin,
+      revision: uploadNumber,
+    })),
+  ),
+  object({ ...pinFields, revision: number() }),
+])
 const PinsSchema = object({ shards: array(PinSchema) })
 
 /** One shard file engine pins. */
