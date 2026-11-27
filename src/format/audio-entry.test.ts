@@ -45,10 +45,10 @@ test('entered audio bounds all numeric spatial facts and publication identities'
 });
 
 // SF4: a zone carries its recordings under its own slug; any other folder is still refused.
-test("audio recordings admit a zone's own music and sfx folders", () => {
+test("audio recordings admit a zone's own music and sfx folders", (): void => {
   const ref = 'a'.repeat(64);
   const zone = { '/assets/open-plot-coral-drift/music/coral-drift/take-b.m4a': ref, '/assets/sfx/best/hit.m4a': ref };
   expect(parseAudioData({ ...audio, recordings: zone }).recordings).toEqual(zone);
-  expect(() => parseAudioData({ ...audio, recordings: { '/assets/open-plot-coral-drift/models/take-b.m4a': ref } })).toThrow();
-  expect(() => parseAudioData({ ...audio, recordings: { '/assets/a/b/music/x/take.m4a': ref } })).toThrow();
+  expect((): unknown => parseAudioData({ ...audio, recordings: { '/assets/open-plot-coral-drift/models/take-b.m4a': ref } })).toThrow();
+  expect((): unknown => parseAudioData({ ...audio, recordings: { '/assets/a/b/music/x/take.m4a': ref } })).toThrow();
 });
