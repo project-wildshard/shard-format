@@ -1,2 +1,7 @@
 packages:
   - packages/wire
+
+# Install on pnpm's global store (GVS G9, meta QA 11-24 row 47): node_modules links
+# into the shared store, so the guarded store prune can run.
+enableGlobalVirtualStore: true
+confirmModulesPurge: false
