@@ -34,14 +34,23 @@ const VIEW_DRAWS: { readonly phone: number; readonly desktop: number } =
 const DESKTOP_TILE_TRIANGLES = 400_000
 
 /**
+ * The phone's fine-tile triangle line, J537 (Jake, 2026-11-28): 120k, up from
+ * `CONTENT_CAPS.l0.triangles` (40k). The starter template's fullest tile is
+ * 109,506 with no visible cut, and J343 drew 671k on an iPhone 17 Pro at 58
+ * to 60 fps. `CONTENT_CAPS.l0.triangles` stays the residency rig's figure.
+ */
+const PHONE_TILE_TRIANGLES = 120_000
+
+/**
  * SHARD-SOURCE AP9b: one fine (L0) tile's triangles per tier. The phone's is
- * `CONTENT_CAPS.l0.triangles`; desktop's is raised under J338 (look first).
- * Both are reported, not enforced: the sdk's budget table reads them.
+ * J537's line; desktop's is raised under J338 (look first). Both are
+ * reported, not enforced: the sdk's budget table and the performance card's
+ * `perf-tile-triangles` warning read them.
  */
 const TILE_TRIANGLES: { readonly phone: number; readonly desktop: number } =
   Object.freeze({
     desktop: DESKTOP_TILE_TRIANGLES,
-    phone: CONTENT_CAPS.l0.triangles,
+    phone: PHONE_TILE_TRIANGLES,
   })
 
 function centre(tile: ViewTile, axis: number): number {

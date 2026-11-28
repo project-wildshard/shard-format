@@ -48,5 +48,5 @@ test('AP8: a view sums the fine tiles near it, not one tile against the old 8-dr
 
 // SHARD-SOURCE AP9b: a fine tile's triangles per tier; phone is CONTENT_CAPS'.
 test('a fine tile has a triangle cap on each tier, desktop raised', (): void => {
-  expect(TILE_TRIANGLES).toEqual({ desktop: 400_000, phone: 40_000 })
+  expect(TILE_TRIANGLES).toEqual({ desktop: 400_000, phone: 120_000 })
 })

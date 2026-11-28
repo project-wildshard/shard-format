@@ -21,7 +21,7 @@ import { MEMORY_HARD_BYTES, memoryLineIssues, runtimeOfflineBytes } from './memo
 import { bootMemoryCosts } from './boot-memory-cost.ts';
 import { cookedImageSource } from './cooked-image-cost.ts';
 import type { TierIndex } from './phone-files.ts';
-import { VIEW_DRAWS, viewDraws } from './view-draws.ts';
+import { TILE_TRIANGLES, VIEW_DRAWS, viewDraws } from './view-draws.ts';
 import { DEFAULT_GRAPH_BUDGET } from "./materialGraph.ts";
 import { SCRIPT_LIMITS } from './scriptLimits.ts';
 import { MemoryAdmission } from './memoryAdmission.ts';
@@ -253,7 +253,9 @@ export function performanceTargetIssues(source: Shardfile, policy: 'refuse' | 'w
   check(['perf-critical-download', 'critical download bytes'], totals(source, reportCardClosure(source, source.critical)).bytes, C.sim.compressed);
   for (const tile of source.tiles) {
     const cap = tile.lod === 0 ? C.l0 : C.l1, id = `tile ${tile.lod}/${tile.x}/${tile.z}`;
-    check(['perf-tile-download', `${id} download bytes`], tile.compressed, cap.compressed, true); check(['perf-tile-triangles', `${id} triangles`], tile.triangles, cap.triangles, true);
+    // J537: a fine tile's phone triangle line is TILE_TRIANGLES.phone (120k); CONTENT_CAPS.l0's stays the residency rig's
+    const triangleLine = cap === C.l0 ? TILE_TRIANGLES.phone : cap.triangles;
+    check(['perf-tile-download', `${id} download bytes`], tile.compressed, cap.compressed, true); check(['perf-tile-triangles', `${id} triangles`], tile.triangles, triangleLine, true);
     check(['perf-tile-draws', `view at ${id} draws`], viewDraws(source.tiles, tile), VIEW_DRAWS.phone, true);
   }
   if (source.far !== null) {

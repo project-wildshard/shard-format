@@ -248,6 +248,10 @@
     {
       "path": "./engineMusic#ENGINE_SLOTS_MESSAGE",
       "noFileChange": "Meta SF23: the refusal names the title as the one engine slot and says to carry any other as the zone's own set"
+    },
+    {
+      "path": "./viewDraws#TILE_TRIANGLES",
+      "noFileChange": "J537 (Jake, 2026-11-28, QA 11-25 row 30) raises the phone's fine-tile triangle line from 40k to 120k: a report-only line (J338) that the sdk's budget table and the performance card's perf-tile-triangles warning read; nothing refuses on it, so no shard file changes and every file admits as before"
     }
   ]
 }
